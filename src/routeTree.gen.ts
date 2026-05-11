@@ -9,38 +9,155 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SolntsezashchitnyeRouteImport } from './routes/solntsezashchitnye'
+import { Route as OpravyRouteImport } from './routes/opravy'
+import { Route as LinzyDlyaOchkovRouteImport } from './routes/linzy-dlya-ochkov'
+import { Route as KontaktnyeLinzyRouteImport } from './routes/kontaktnye-linzy'
+import { Route as AksessuaryRouteImport } from './routes/aksessuary'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 
+const SolntsezashchitnyeRoute = SolntsezashchitnyeRouteImport.update({
+  id: '/solntsezashchitnye',
+  path: '/solntsezashchitnye',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpravyRoute = OpravyRouteImport.update({
+  id: '/opravy',
+  path: '/opravy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LinzyDlyaOchkovRoute = LinzyDlyaOchkovRouteImport.update({
+  id: '/linzy-dlya-ochkov',
+  path: '/linzy-dlya-ochkov',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KontaktnyeLinzyRoute = KontaktnyeLinzyRouteImport.update({
+  id: '/kontaktnye-linzy',
+  path: '/kontaktnye-linzy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AksessuaryRoute = AksessuaryRouteImport.update({
+  id: '/aksessuary',
+  path: '/aksessuary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProductsSlugRoute = ProductsSlugRouteImport.update({
+  id: '/products/$slug',
+  path: '/products/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/aksessuary': typeof AksessuaryRoute
+  '/kontaktnye-linzy': typeof KontaktnyeLinzyRoute
+  '/linzy-dlya-ochkov': typeof LinzyDlyaOchkovRoute
+  '/opravy': typeof OpravyRoute
+  '/solntsezashchitnye': typeof SolntsezashchitnyeRoute
+  '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/aksessuary': typeof AksessuaryRoute
+  '/kontaktnye-linzy': typeof KontaktnyeLinzyRoute
+  '/linzy-dlya-ochkov': typeof LinzyDlyaOchkovRoute
+  '/opravy': typeof OpravyRoute
+  '/solntsezashchitnye': typeof SolntsezashchitnyeRoute
+  '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/aksessuary': typeof AksessuaryRoute
+  '/kontaktnye-linzy': typeof KontaktnyeLinzyRoute
+  '/linzy-dlya-ochkov': typeof LinzyDlyaOchkovRoute
+  '/opravy': typeof OpravyRoute
+  '/solntsezashchitnye': typeof SolntsezashchitnyeRoute
+  '/products/$slug': typeof ProductsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/aksessuary'
+    | '/kontaktnye-linzy'
+    | '/linzy-dlya-ochkov'
+    | '/opravy'
+    | '/solntsezashchitnye'
+    | '/products/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/aksessuary'
+    | '/kontaktnye-linzy'
+    | '/linzy-dlya-ochkov'
+    | '/opravy'
+    | '/solntsezashchitnye'
+    | '/products/$slug'
+  id:
+    | '__root__'
+    | '/'
+    | '/aksessuary'
+    | '/kontaktnye-linzy'
+    | '/linzy-dlya-ochkov'
+    | '/opravy'
+    | '/solntsezashchitnye'
+    | '/products/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AksessuaryRoute: typeof AksessuaryRoute
+  KontaktnyeLinzyRoute: typeof KontaktnyeLinzyRoute
+  LinzyDlyaOchkovRoute: typeof LinzyDlyaOchkovRoute
+  OpravyRoute: typeof OpravyRoute
+  SolntsezashchitnyeRoute: typeof SolntsezashchitnyeRoute
+  ProductsSlugRoute: typeof ProductsSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/solntsezashchitnye': {
+      id: '/solntsezashchitnye'
+      path: '/solntsezashchitnye'
+      fullPath: '/solntsezashchitnye'
+      preLoaderRoute: typeof SolntsezashchitnyeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/opravy': {
+      id: '/opravy'
+      path: '/opravy'
+      fullPath: '/opravy'
+      preLoaderRoute: typeof OpravyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/linzy-dlya-ochkov': {
+      id: '/linzy-dlya-ochkov'
+      path: '/linzy-dlya-ochkov'
+      fullPath: '/linzy-dlya-ochkov'
+      preLoaderRoute: typeof LinzyDlyaOchkovRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kontaktnye-linzy': {
+      id: '/kontaktnye-linzy'
+      path: '/kontaktnye-linzy'
+      fullPath: '/kontaktnye-linzy'
+      preLoaderRoute: typeof KontaktnyeLinzyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/aksessuary': {
+      id: '/aksessuary'
+      path: '/aksessuary'
+      fullPath: '/aksessuary'
+      preLoaderRoute: typeof AksessuaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +165,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/products/$slug': {
+      id: '/products/$slug'
+      path: '/products/$slug'
+      fullPath: '/products/$slug'
+      preLoaderRoute: typeof ProductsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AksessuaryRoute: AksessuaryRoute,
+  KontaktnyeLinzyRoute: KontaktnyeLinzyRoute,
+  LinzyDlyaOchkovRoute: LinzyDlyaOchkovRoute,
+  OpravyRoute: OpravyRoute,
+  SolntsezashchitnyeRoute: SolntsezashchitnyeRoute,
+  ProductsSlugRoute: ProductsSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
