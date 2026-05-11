@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Heart, ChevronRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { getProduct, products } from "@/data/products";
+import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { ProductCard } from "@/components/ProductCard";
 import { cn } from "@/lib/utils";
@@ -39,7 +40,8 @@ export const Route = createFileRoute("/products/$slug")({
 });
 
 function ProductPage() {
-  const { product } = Route.useLoaderData();
+  const data = Route.useLoaderData() as { product: Product };
+  const { product } = data;
   const { add, toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
   const [color, setColor] = useState(product.colors?.[0]?.name);
