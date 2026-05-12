@@ -73,29 +73,51 @@ function ProductPage() {
       <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
         {/* Gallery */}
         <div>
-          <div className="aspect-square bg-surface rounded-sm overflow-hidden mb-3">
-            <img
-              src={product.images[activeImg]}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          {product.images.length > 1 && (
-            <div className="grid grid-cols-5 gap-2">
-              {product.images.map((img, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveImg(i)}
-                  className={cn(
-                    "aspect-square bg-surface rounded-sm overflow-hidden border-2",
-                    activeImg === i ? "border-brand" : "border-transparent",
-                  )}
-                >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+          <div className="group/card relative aspect-square bg-surface rounded-sm overflow-hidden mb-3">
+            {activeImg === -1 ? (
+              <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-surface text-foreground">
+                <TryOnIcon className="h-16 w-16" />
+                <div className="font-serif text-xl">Примерить онлайн</div>
+                <p className="text-xs text-muted-foreground max-w-[240px] text-center">
+                  Включите камеру и посмотрите, как оправа сидит на вашем лице.
+                </p>
+                <button className="mt-2 bg-ink text-primary-foreground text-sm px-5 py-2 rounded-sm hover:opacity-90">
+                  Запустить примерку
                 </button>
-              ))}
-            </div>
-          )}
+              </div>
+            ) : (
+              <img
+                src={product.images[activeImg]}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            )}
+            <TryOnBadge className="absolute bottom-3 left-3" />
+          </div>
+          <div className="grid grid-cols-5 gap-2">
+            <button
+              onClick={() => setActiveImg(-1)}
+              className={cn(
+                "aspect-square rounded-sm overflow-hidden border-2 flex items-center justify-center bg-surface",
+                activeImg === -1 ? "border-brand" : "border-transparent",
+              )}
+              aria-label="Примерить онлайн"
+            >
+              <TryOnIcon className="h-6 w-6" />
+            </button>
+            {product.images.map((img, i) => (
+              <button
+                key={i}
+                onClick={() => setActiveImg(i)}
+                className={cn(
+                  "aspect-square bg-surface rounded-sm overflow-hidden border-2",
+                  activeImg === i ? "border-brand" : "border-transparent",
+                )}
+              >
+                <img src={img} alt="" className="w-full h-full object-cover" />
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Info */}
