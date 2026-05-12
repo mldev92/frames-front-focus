@@ -3,13 +3,14 @@ import { Heart } from "lucide-react";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
+import { TryOnBadge } from "@/components/TryOnIcon";
 
 export function ProductCard({ product }: { product: Product }) {
   const { toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
 
   return (
-    <div className="group">
+    <div className="group/card group">
       <Link
         to="/products/$slug"
         params={{ slug: product.slug }}
