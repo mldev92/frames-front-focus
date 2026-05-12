@@ -51,6 +51,7 @@ export function ProductCard({ product }: { product: Product }) {
             className={cn("h-4 w-4", isSaved && "fill-brand text-brand")}
           />
         </button>
+        <TryOnBadge className="absolute bottom-3 left-3" />
       </Link>
       <div className="mt-3">
         <div className="text-xs text-muted-foreground">{product.brand}</div>
