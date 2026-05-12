@@ -6,6 +6,7 @@ import { getProduct, products } from "@/data/products";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { ProductCard } from "@/components/ProductCard";
+import { TryOnBadge, TryOnIcon } from "@/components/TryOnIcon";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/products/$slug")({
