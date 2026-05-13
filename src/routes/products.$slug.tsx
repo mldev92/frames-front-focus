@@ -308,6 +308,8 @@ function ProductPage() {
           </div>
         </section>
       )}
+
+      <LensPurposeModal open={lensModal} onClose={() => setLensModal(false)} />
     </div>
   );
 }
