@@ -29,6 +29,12 @@ export const Route = createFileRoute("/")({
 });
 
 const SERVICE_ICONS = [Calendar, Eye, Glasses, Wrench];
+const SERVICE_IMAGES = [
+  "/services1_online_appointment_doctor.png",
+  "/services2_vision_diagnostics.png",
+  "/services3_selection_of_glasses.png",
+  "/services4_glasses_repair.png",
+];
 const SERVICE_LIST = [
   { slug: "priem-vracha", title: "Запись к врачу" },
   { slug: "diagnostika", title: "Диагностика зрения" },
@@ -44,40 +50,40 @@ function HomePage() {
   return (
     <div>
       {/* HERO */}
-      <section className="bg-surface">
-        <div className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-24 grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-brand mb-4">
-              Новая коллекция · 2025
+      <section className="relative w-full">
+        <img
+          src="/1305banner.png"
+          alt="Новая коллекция ОПТИКА 100%"
+          className="w-full h-auto max-h-[600px] lg:max-h-[700px] object-cover"
+        />
+        <div className="absolute inset-0 flex items-center bg-gradient-to-r from-foreground/50 to-transparent">
+          <div className="mx-auto w-full max-w-7xl px-4 lg:px-8">
+            <div className="max-w-lg text-primary-foreground">
+              <div className="text-xs uppercase tracking-[0.2em] text-primary-foreground/80 mb-4">
+                Новая коллекция · 2025
+              </div>
+              <h1 className="font-serif text-5xl lg:text-7xl leading-[1.05]">
+                Очки, в которых хочется жить.
+              </h1>
+              <p className="mt-6 text-lg text-primary-foreground/90 max-w-md">
+                Современные оправы, профессиональный подбор и линзы мировых брендов в
+                салонах ОПТИКА 100% и онлайн.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link
+                  to="/opravy"
+                  className="inline-flex items-center gap-2 bg-white text-ink px-6 py-3 rounded-sm hover:opacity-90"
+                >
+                  Посмотреть оправы <ArrowRight className="h-4 w-4" />
+                </Link>
+                <Link
+                  to="/uslugi/priem-vracha"
+                  className="inline-flex items-center gap-2 border border-white text-white px-6 py-3 rounded-sm hover:bg-white/10"
+                >
+                  Записаться к врачу
+                </Link>
+              </div>
             </div>
-            <h1 className="font-serif text-5xl lg:text-7xl leading-[1.05]">
-              Очки, в которых хочется жить.
-            </h1>
-            <p className="mt-6 text-lg text-muted-foreground max-w-md">
-              Современные оправы, профессиональный подбор и линзы мировых брендов в
-              салонах ОПТИКА 100% и онлайн.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                to="/opravy"
-                className="inline-flex items-center gap-2 bg-ink text-primary-foreground px-6 py-3 rounded-sm hover:opacity-90"
-              >
-                Посмотреть оправы <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                to="/uslugi/priem-vracha"
-                className="inline-flex items-center gap-2 border border-foreground px-6 py-3 rounded-sm hover:bg-accent"
-              >
-                Записаться к врачу
-              </Link>
-            </div>
-          </div>
-          <div className="relative aspect-[4/5] bg-accent rounded-sm overflow-hidden">
-            <img
-              src="https://picsum.photos/seed/hero-optika/900/1100"
-              alt="Модель в оправе из новой коллекции"
-              className="w-full h-full object-cover"
-            />
           </div>
         </div>
       </section>
@@ -152,12 +158,20 @@ function HomePage() {
                   key={s.slug}
                   to="/uslugi/$slug"
                   params={{ slug: s.slug }}
-                  className="bg-background p-6 rounded-sm hover:shadow-md transition-shadow group"
+                  className="relative rounded-sm overflow-hidden hover:shadow-md transition-shadow group aspect-[4/3]"
                 >
-                  <Icon className="h-7 w-7 text-brand mb-6" />
-                  <div className="font-serif text-lg">{s.title}</div>
-                  <div className="mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 group-hover:text-foreground">
-                    Подробнее <ArrowRight className="h-3 w-3" />
+                  <img
+                    src={SERVICE_IMAGES[i]}
+                    alt={s.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
+                  <div className="relative z-10 p-6 h-full flex flex-col justify-end text-primary-foreground">
+                    <Icon className="h-7 w-7 text-primary-foreground/80 mb-3" />
+                    <div className="font-serif text-lg">{s.title}</div>
+                    <div className="mt-3 text-sm text-primary-foreground/70 inline-flex items-center gap-1 group-hover:text-primary-foreground">
+                      Подробнее <ArrowRight className="h-3 w-3" />
+                    </div>
                   </div>
                 </Link>
               );
@@ -213,7 +227,7 @@ function HomePage() {
           </div>
           <div className="aspect-[4/3] bg-accent rounded-sm overflow-hidden">
             <img
-              src="https://picsum.photos/seed/hero-kids/1200/900"
+              src="/main_bottom_child_banner.png"
               alt="Кабинет контроля миопии"
               className="w-full h-full object-cover"
             />

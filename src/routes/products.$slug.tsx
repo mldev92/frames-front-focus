@@ -73,7 +73,7 @@ function ProductPage() {
       <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
         {/* Gallery */}
         <div>
-          <div className="group/card relative aspect-square bg-surface rounded-sm overflow-hidden mb-3">
+          <div className="group/card relative bg-surface rounded-sm overflow-hidden mb-3">
             {activeImg === -1 ? (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-surface text-foreground">
                 <TryOnIcon className="h-16 w-16" />
@@ -89,7 +89,7 @@ function ProductPage() {
               <img
                 src={product.images[activeImg]}
                 alt={product.name}
-                className="w-full h-full object-cover"
+                className="w-full h-auto object-contain"
               />
             )}
             <TryOnBadge className="absolute bottom-3 left-3" />
@@ -110,11 +110,11 @@ function ProductPage() {
                 key={i}
                 onClick={() => setActiveImg(i)}
                 className={cn(
-                  "aspect-square bg-surface rounded-sm overflow-hidden border-2",
+                  "w-16 h-16 bg-surface rounded-sm overflow-hidden border-2 flex items-center justify-center",
                   activeImg === i ? "border-brand" : "border-transparent",
                 )}
               >
-                <img src={img} alt="" className="w-full h-full object-cover" />
+                <img src={img} alt="" className="max-w-full max-h-full object-contain" />
               </button>
             ))}
           </div>

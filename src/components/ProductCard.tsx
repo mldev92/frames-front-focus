@@ -14,13 +14,13 @@ export function ProductCard({ product }: { product: Product }) {
       <Link
         to="/products/$slug"
         params={{ slug: product.slug }}
-        className="block relative aspect-square bg-surface rounded-sm overflow-hidden"
+        className="block relative bg-surface rounded-sm overflow-hidden"
       >
         <img
           src={product.images[0]}
           alt={product.name}
           loading="lazy"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
         />
         {product.badges && product.badges.length > 0 && (
           <div className="absolute top-3 left-3 flex flex-col gap-1">
@@ -51,7 +51,7 @@ export function ProductCard({ product }: { product: Product }) {
             className={cn("h-4 w-4", isSaved && "fill-brand text-brand")}
           />
         </button>
-        <TryOnBadge className="absolute bottom-3 left-3" />
+        <TryOnBadge className="absolute bottom-3 right-3" />
       </Link>
       <div className="mt-3">
         <div className="text-xs text-muted-foreground">{product.brand}</div>

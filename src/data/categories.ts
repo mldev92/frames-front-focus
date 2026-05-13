@@ -1,6 +1,6 @@
 import type { Category } from "./types";
 
-const ph = (seed: string) => `https://picsum.photos/seed/${seed}/800/1000`;
+const img = (name: string) => `/category_${name}_gemini.png`;
 
 export interface CategoryInfo {
   slug: Category;
@@ -16,34 +16,34 @@ export const categories: CategoryInfo[] = [
     title: "Оправы",
     short: "Современные модели для повседневной носки",
     href: "/opravy",
-    image: ph("cat-opravy"),
+    image: img("frames"),
   },
   {
     slug: "solntsezashchitnye",
     title: "Солнцезащитные очки",
     short: "Защита от UV и стиль на каждый день",
     href: "/solntsezashchitnye",
-    image: ph("cat-sunglasses"),
+    image: img("sunglasses"),
   },
   {
     slug: "kontaktnye-linzy",
     title: "Контактные линзы",
     short: "Однодневные, месячные, торические",
     href: "/kontaktnye-linzy",
-    image: ph("cat-contacts"),
+    image: img("contact_lenses"),
   },
   {
     slug: "linzy-dlya-ochkov",
     title: "Линзы для очков",
     short: "ZEISS, Essilor, Hoya и другие",
     href: "/linzy-dlya-ochkov",
-    image: ph("cat-lenses"),
+    image: img("spectacle_lenses"),
   },
   {
     slug: "aksessuary",
     title: "Аксессуары",
     short: "Футляры, цепочки, средства ухода",
     href: "/aksessuary",
-    image: ph("cat-accessories"),
+    image: img("accessories"),
   },
 ];
