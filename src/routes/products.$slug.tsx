@@ -178,26 +178,8 @@ function ProductPage() {
 
           {/* Lens prescription */}
           {isLens && (
-            <div className="mt-8 p-4 bg-surface rounded-sm">
-              <div className="text-sm font-medium mb-3">Параметры рецепта</div>
-              <div className="grid grid-cols-3 gap-3 text-sm">
-                {["SPH", "BC", "DIA"].map((p) => (
-                  <label key={p} className="block">
-                    <span className="block text-xs text-muted-foreground mb-1">
-                      {p}
-                    </span>
-                    <select className="w-full bg-background border border-border rounded-sm px-2 py-1.5">
-                      <option>—</option>
-                      {p === "SPH" &&
-                        ["-1.00", "-1.50", "-2.00", "-2.50", "-3.00", "-4.00"].map((v) => (
-                          <option key={v}>{v}</option>
-                        ))}
-                      {p === "BC" && ["8.4", "8.6", "8.8"].map((v) => <option key={v}>{v}</option>)}
-                      {p === "DIA" && ["14.0", "14.2"].map((v) => <option key={v}>{v}</option>)}
-                    </select>
-                  </label>
-                ))}
-              </div>
+            <div className="mt-8">
+              <PrescriptionInput />
             </div>
           )}
 
