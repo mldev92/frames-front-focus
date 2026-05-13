@@ -53,6 +53,12 @@ function ProductPage() {
   const [tab, setTab] = useState<"specs" | "delivery" | "guide">("specs");
   const [lensModal, setLensModal] = useState(false);
 
+  const specIcons: Record<string, string> = {
+    "Длина дужки": "/icon_param_glasses_length.svg",
+    "Ширина моста": "/icon_param_bridge_length.svg",
+    "Ширина оправы": "/icon_param_hinge_distance.svg",
+  };
+
   const isLens = product.category === "kontaktnye-linzy";
   const related = products
     .filter((p) => p.category === product.category && p.slug !== product.slug)
@@ -271,12 +277,18 @@ function ProductPage() {
             <div className="py-6 text-sm">
               {tab === "specs" && (
                 <dl className="space-y-2">
-                  {product.specs.map((s) => (
-                    <div key={s.label} className="flex justify-between border-b border-border pb-2">
-                      <dt className="text-muted-foreground">{s.label}</dt>
-                      <dd>{s.value}</dd>
-                    </div>
-                  ))}
+                  {product.specs.map((s) => {
+                    const icon = specIcons[s.label];
+                    return (
+                      <div key={s.label} className="flex justify-between border-b border-border pb-2">
+                        <dt className="text-muted-foreground flex items-center gap-2">
+                          {icon && <img src={icon} alt="" className="opacity-60" style={{ width: 95, height: 37 }} />}
+                          {s.label}
+                        </dt>
+                        <dd>{s.value}</dd>
+                      </div>
+                    );
+                  })}
                 </dl>
               )}
               {tab === "guide" && (
