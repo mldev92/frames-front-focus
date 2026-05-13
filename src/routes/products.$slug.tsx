@@ -51,6 +51,7 @@ function ProductPage() {
   const [color, setColor] = useState(product.colors?.[0]?.name);
   const [activeImg, setActiveImg] = useState(0);
   const [tab, setTab] = useState<"specs" | "delivery" | "guide">("specs");
+  const [lensModal, setLensModal] = useState(false);
 
   const isLens = product.category === "kontaktnye-linzy";
   const related = products
