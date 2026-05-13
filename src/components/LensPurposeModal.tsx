@@ -8,7 +8,7 @@ interface Option {
   desc: string;
   count: string;
   from: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   hasHint?: boolean;
 }
 
