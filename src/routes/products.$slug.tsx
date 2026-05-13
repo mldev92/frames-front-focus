@@ -184,7 +184,25 @@ function ProductPage() {
           {(isLens ||
             product.category === "opravy" ||
             product.category === "linzy-dlya-ochkov") && (
-            <div className="mt-8">
+            <div className="mt-8 space-y-4">
+              {(product.category === "opravy" ||
+                product.category === "linzy-dlya-ochkov") && (
+                <button
+                  onClick={() => setLensModal(true)}
+                  className="w-full flex items-center justify-between gap-3 px-5 py-4 border border-border rounded-sm hover:border-foreground transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <Glasses className="h-5 w-5 text-brand" />
+                    <div className="text-left">
+                      <div className="text-sm font-medium">Подобрать линзы</div>
+                      <div className="text-xs text-muted-foreground">
+                        Для дали, близи, работы за компьютером и др.
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                </button>
+              )}
               <PrescriptionInput />
             </div>
           )}
