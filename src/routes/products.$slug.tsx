@@ -178,7 +178,9 @@ function ProductPage() {
           )}
 
           {/* Lens prescription */}
-          {isLens && (
+          {(isLens ||
+            product.category === "opravy" ||
+            product.category === "linzy-dlya-ochkov") && (
             <div className="mt-8">
               <PrescriptionInput />
             </div>
