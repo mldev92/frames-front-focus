@@ -8,6 +8,8 @@ import { useCart, formatPrice } from "@/lib/store/cart";
 import { ProductCard } from "@/components/ProductCard";
 import { TryOnBadge, TryOnIcon } from "@/components/TryOnIcon";
 import { PrescriptionInput } from "@/components/PrescriptionInput";
+import { LensPurposeModal } from "@/components/LensPurposeModal";
+import { Glasses } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/products/$slug")({
