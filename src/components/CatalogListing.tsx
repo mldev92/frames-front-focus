@@ -513,18 +513,15 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         {subtitle && <p className="mt-3 text-muted-foreground max-w-2xl">{subtitle}</p>}
       </div>
 
-      <div className="lg:flex lg:gap-10 lg:items-start">
-        {/* Sidebar — fully removed from flow when closed so products fill 100% width */}
-        {facets.length > 0 && sidebarOpen && (
-          <div className="hidden lg:flex lg:flex-col shrink-0 sticky top-4 self-start w-[260px]">
-            {/* "Скрыть фильтры" button at top of sidebar */}
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="flex items-center gap-1.5 text-sm font-medium mb-4 hover:text-brand transition-colors"
-            >
-              ← Скрыть фильтры
-            </button>
-            <div className="h-[calc(100vh-6rem)] overflow-y-auto pr-4">
+      <div className="lg:flex lg:items-start">
+        {facets.length > 0 && (
+          <div
+            className={cn(
+              "hidden lg:block shrink-0 sticky top-4 self-start overflow-hidden transition-[width,margin-right] duration-300 ease-in-out",
+              sidebarOpen ? "w-[260px] mr-10" : "w-0 mr-0",
+            )}
+          >
+            <div className="w-[260px] h-[calc(100vh-6rem)] overflow-y-auto pr-4">
               {FilterContent}
             </div>
           </div>
@@ -532,36 +529,34 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-6 gap-4">
-            <div className="text-sm text-muted-foreground shrink-0">
-              {filtered.length}{" "}
-              {filtered.length % 10 === 1 && filtered.length !== 11
-                ? "модель"
-                : filtered.length % 10 >= 2 &&
-                    filtered.length % 10 <= 4 &&
-                    !(filtered.length >= 12 && filtered.length <= 14)
-                  ? "модели"
-                  : "моделей"}
-            </div>
+            {/* Filter toggle — always left */}
+            {facets.length > 0 && (
+              <>
+                <button
+                  onClick={() => setSidebarOpen((v) => !v)}
+                  className="hidden lg:flex items-center gap-1.5 text-sm font-medium hover:text-brand transition-colors shrink-0"
+                >
+                  {sidebarOpen ? "← Скрыть фильтры" : "Показать фильтры →"}
+                </button>
+                <button
+                  onClick={() => setMobileFilters(true)}
+                  className="lg:hidden inline-flex items-center gap-2 text-sm border border-border rounded-sm px-3 py-1.5"
+                >
+                  <SlidersHorizontal className="h-4 w-4" /> Фильтры
+                </button>
+              </>
+            )}
             <div className="flex items-center gap-2 ml-auto">
-              {facets.length > 0 && (
-                <>
-                  {/* Desktop: "Показать фильтры" only when sidebar is closed */}
-                  {!sidebarOpen && (
-                    <button
-                      onClick={() => setSidebarOpen(true)}
-                      className="hidden lg:flex items-center gap-1.5 text-sm font-medium hover:text-brand transition-colors"
-                    >
-                      Показать фильтры →
-                    </button>
-                  )}
-                  <button
-                    onClick={() => setMobileFilters(true)}
-                    className="lg:hidden inline-flex items-center gap-2 text-sm border border-border rounded-sm px-3 py-1.5"
-                  >
-                    <SlidersHorizontal className="h-4 w-4" /> Фильтры
-                  </button>
-                </>
-              )}
+              <div className="hidden lg:block text-sm text-muted-foreground shrink-0">
+                {filtered.length}{" "}
+                {filtered.length % 10 === 1 && filtered.length !== 11
+                  ? "модель"
+                  : filtered.length % 10 >= 2 &&
+                      filtered.length % 10 <= 4 &&
+                      !(filtered.length >= 12 && filtered.length <= 14)
+                    ? "модели"
+                    : "моделей"}
+              </div>
               <div className="hidden md:flex items-center border border-border rounded-sm overflow-hidden">
                 <button
                   onClick={() => setGridCols(2)}
