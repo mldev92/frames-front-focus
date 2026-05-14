@@ -83,7 +83,7 @@ function ProductPage() {
       <div className="grid lg:grid-cols-2 gap-12 lg:gap-16">
         {/* Gallery */}
         <div>
-          <div className="group/card relative bg-surface rounded-sm overflow-hidden mb-3">
+          <div className="group/card relative bg-white rounded-sm overflow-hidden mb-3">
             {activeImg === -1 ? (
               <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-surface text-foreground">
                 <TryOnIcon className="h-16 w-16" />
@@ -105,16 +105,6 @@ function ProductPage() {
             <TryOnBadge className="absolute bottom-3 left-3" />
           </div>
           <div className="grid grid-cols-5 gap-2">
-            <button
-              onClick={() => setActiveImg(-1)}
-              className={cn(
-                "aspect-square rounded-sm overflow-hidden border-2 flex items-center justify-center bg-surface",
-                activeImg === -1 ? "border-brand" : "border-transparent",
-              )}
-              aria-label="Примерить онлайн"
-            >
-              <TryOnIcon className="h-6 w-6" />
-            </button>
             {product.images.map((img, i) => (
               <button
                 key={i}
@@ -127,135 +117,20 @@ function ProductPage() {
                 <img src={img} alt="" className="max-w-full max-h-full object-contain" />
               </button>
             ))}
-          </div>
-        </div>
-
-        {/* Info */}
-        <div>
-          <div className="text-xs uppercase tracking-wider text-muted-foreground">
-            {product.brand}
-          </div>
-          <h1 className="font-serif text-3xl lg:text-4xl mt-1">{product.name}</h1>
-          <div className="mt-3 flex gap-1.5">
-            {product.badges?.map((b) => (
-              <span
-                key={b}
-                className={cn(
-                  "text-[10px] uppercase tracking-wider px-2 py-1 rounded-sm",
-                  b === "Скидка"
-                    ? "bg-brand text-brand-foreground"
-                    : "bg-surface",
-                )}
-              >
-                {b}
-              </span>
-            ))}
-          </div>
-
-          <div className="mt-6 flex items-baseline gap-3">
-            <span className="font-serif text-3xl">{formatPrice(product.price)}</span>
-            {product.oldPrice && (
-              <span className="text-base text-muted-foreground line-through">
-                {formatPrice(product.oldPrice)}
-              </span>
-            )}
-          </div>
-
-          <p className="mt-6 text-muted-foreground">{product.description}</p>
-
-          {/* Colors */}
-          {product.colors && product.colors.length > 0 && (
-            <div className="mt-8">
-              <div className="text-sm mb-3">
-                Цвет: <span className="text-muted-foreground">{color}</span>
-              </div>
-              <div className="flex gap-2">
-                {product.colors.map((c) => (
-                  <button
-                    key={c.name}
-                    onClick={() => setColor(c.name)}
-                    aria-label={c.name}
-                    className={cn(
-                      "w-10 h-10 rounded-full border-2 transition-all",
-                      color === c.name ? "border-foreground" : "border-border",
-                    )}
-                    style={{ backgroundColor: c.hex }}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Lens prescription */}
-          {(isLens ||
-            product.category === "opravy" ||
-            product.category === "linzy-dlya-ochkov") && (
-            <div className="mt-8 space-y-4">
-              {(product.category === "opravy" ||
-                product.category === "linzy-dlya-ochkov") && (
-                <button
-                  onClick={() => setLensModal(true)}
-                  className="w-full flex items-center justify-between gap-3 px-5 py-4 border border-border rounded-sm hover:border-foreground transition-colors group"
-                >
-                  <div className="flex items-center gap-3">
-                    <Glasses className="h-5 w-5 text-brand" />
-                    <div className="text-left">
-                      <div className="text-sm font-medium">Подобрать линзы</div>
-                      <div className="text-xs text-muted-foreground">
-                        Для дали, близи, работы за компьютером и др.
-                      </div>
-                    </div>
-                  </div>
-                  <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
-                </button>
-              )}
-              <PrescriptionInput />
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="mt-8 flex gap-3">
             <button
-              onClick={() => {
-                add(product, { color });
-                toast.success(`«${product.name}» добавлен в корзину`);
-              }}
-              className="flex-1 bg-ink text-primary-foreground py-4 rounded-sm hover:opacity-90 font-medium"
-            >
-              В корзину
-            </button>
-            <button
-              onClick={() => toggleSaved(product.slug)}
-              aria-label="Отложить"
+              onClick={() => setActiveImg(-1)}
               className={cn(
-                "px-5 border border-border rounded-sm hover:bg-accent",
-                isSaved && "bg-surface",
+                "w-16 h-16 rounded-sm overflow-hidden border-2 flex items-center justify-center bg-surface",
+                activeImg === -1 ? "border-brand" : "border-transparent",
               )}
+              aria-label="Примерить онлайн"
             >
-              <Heart
-                className={cn("h-5 w-5", isSaved && "fill-brand text-brand")}
-              />
+              <TryOnIcon className="h-6 w-6" />
             </button>
-          </div>
-
-          {/* Trust strip */}
-          <div className="mt-8 grid grid-cols-3 gap-4 text-xs text-muted-foreground">
-            <div className="flex flex-col items-center text-center gap-1">
-              <Truck className="h-5 w-5" />
-              Доставка по СПб
-            </div>
-            <div className="flex flex-col items-center text-center gap-1">
-              <ShieldCheck className="h-5 w-5" />
-              Гарантия 12 мес
-            </div>
-            <div className="flex flex-col items-center text-center gap-1">
-              <RotateCcw className="h-5 w-5" />
-              Возврат 14 дней
-            </div>
           </div>
 
           {/* Tabs */}
-          <div className="mt-12 border-t border-border">
+          <div className="mt-10 border-t border-border">
             <div className="flex gap-6 border-b border-border text-sm">
               {[
                 ["specs", "Характеристики"],
@@ -307,12 +182,183 @@ function ProductPage() {
             </div>
           </div>
         </div>
+
+        {/* Info */}
+        <div>
+          <div className="text-xs uppercase tracking-wider text-muted-foreground">
+            {product.brand}
+          </div>
+          <h1 className="font-serif text-3xl lg:text-4xl mt-1">{product.name}</h1>
+          <div className="mt-3 flex gap-1.5">
+            {product.badges?.map((b) => (
+              <span
+                key={b}
+                className={cn(
+                  "text-[10px] uppercase tracking-wider px-2 py-1 rounded-sm",
+                  b === "Скидка"
+                    ? "bg-brand text-brand-foreground"
+                    : "bg-surface",
+                )}
+              >
+                {b}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-6 flex items-baseline gap-3">
+            <span className="font-serif text-3xl">{formatPrice(product.price)}</span>
+            {product.oldPrice && (
+              <span className="text-base text-muted-foreground line-through">
+                {formatPrice(product.oldPrice)}
+              </span>
+            )}
+          </div>
+
+          {/* Availability + Product Code */}
+          <div className="mt-3 flex items-center gap-4 text-sm">
+            <span className="inline-flex items-center gap-1.5 text-green-700">
+              <span className="w-2 h-2 rounded-full bg-green-600" />
+              В наличии
+            </span>
+            <span className="text-muted-foreground">
+              Артикул: <span className="text-foreground">{product.slug}</span>
+            </span>
+          </div>
+
+          <p className="mt-6 text-muted-foreground">{product.description}</p>
+
+          {/* Colors + Lens button — side by side */}
+          {(product.colors && product.colors.length > 0) && (
+            <div className="mt-8">
+              <div className="text-sm mb-3">
+                Цвет: <span className="text-muted-foreground">{color}</span>
+              </div>
+              <div className="flex items-end gap-4">
+                <div className="flex gap-2">
+                  {product.colors.map((c) => (
+                    <button
+                      key={c.name}
+                      onClick={() => setColor(c.name)}
+                      aria-label={c.name}
+                      className={cn(
+                        "w-10 h-10 rounded-full border-2 transition-all shrink-0",
+                        color === c.name ? "border-foreground" : "border-border",
+                      )}
+                      style={{ backgroundColor: c.hex }}
+                    />
+                  ))}
+                </div>
+                {(product.category === "opravy" ||
+                  product.category === "linzy-dlya-ochkov") && (
+                  <button
+                    onClick={() => setLensModal(true)}
+                    className="ml-auto inline-flex items-center gap-2 px-4 py-2.5 border border-border rounded-sm hover:border-foreground transition-colors group"
+                  >
+                    <Glasses className="h-4 w-4 text-brand" />
+                    <span className="text-sm font-medium whitespace-nowrap">Подобрать линзы</span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Prescription + lens button (for lens-only products, or when no colors) */}
+          {(isLens ||
+            product.category === "opravy" ||
+            product.category === "linzy-dlya-ochkov") && (
+            <div className="mt-4 space-y-4">
+              {(!product.colors || product.colors.length === 0) &&
+                (product.category === "opravy" ||
+                  product.category === "linzy-dlya-ochkov") && (
+                  <button
+                    onClick={() => setLensModal(true)}
+                    className="w-full flex items-center justify-between gap-3 px-5 py-4 border border-border rounded-sm hover:border-foreground transition-colors group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Glasses className="h-5 w-5 text-brand" />
+                      <div className="text-left">
+                        <div className="text-sm font-medium">Подобрать линзы</div>
+                        <div className="text-xs text-muted-foreground">
+                          Для дали, близи, работы за компьютером и др.
+                        </div>
+                      </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground" />
+                  </button>
+                )}
+              <PrescriptionInput />
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="mt-8 space-y-3">
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  add(product, { color });
+                  toast.success(`«${product.name}» добавлен в корзину`);
+                }}
+                className="flex-1 bg-ink text-primary-foreground py-4 rounded-sm hover:opacity-90 font-medium"
+              >
+                В корзину
+              </button>
+              <button
+                onClick={() => toggleSaved(product.slug)}
+                aria-label="Отложить"
+                className={cn(
+                  "px-5 border border-border rounded-sm hover:bg-accent",
+                  isSaved && "bg-surface",
+                )}
+              >
+                <Heart
+                  className={cn("h-5 w-5", isSaved && "fill-brand text-brand")}
+                />
+              </button>
+            </div>
+            {(product.category === "opravy" ||
+              product.category === "linzy-dlya-ochkov") && (
+              <button
+                onClick={() => {
+                  add(product, { color });
+                  toast.success(`«${product.name}» (без линз) добавлен в корзину`);
+                }}
+                className="w-full text-sm text-muted-foreground border border-border rounded-sm py-3 hover:text-foreground hover:border-foreground transition-colors"
+              >
+                Купить оправу без подбора линз
+              </button>
+            )}
+          </div>
+
+          {/* Trust strip */}
+          <div className="mt-8 grid grid-cols-4 gap-4 text-xs text-muted-foreground">
+            <div className="flex flex-col items-center text-center gap-1">
+              <Truck className="h-5 w-5" />
+              Доставка по СПб
+            </div>
+            <div className="flex flex-col items-center text-center gap-1">
+              <ShieldCheck className="h-5 w-5" />
+              Гарантия 12 мес
+            </div>
+            <div className="flex flex-col items-center text-center gap-1">
+              <RotateCcw className="h-5 w-5" />
+              Возврат 14 дней
+            </div>
+            <div className="relative flex flex-col items-center text-center gap-1 group cursor-default">
+              <img src="/icon_best_price_garanty.svg" alt="" className="h-5 w-5 opacity-60" />
+              <span>Гарантия лучшей цены</span>
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-ink text-primary-foreground text-[11px] px-2.5 py-1 rounded-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                Нашли дешевле? Снизим цену
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Related */}
       {related.length > 0 && (
         <section className="mt-24">
-          <h2 className="font-serif text-2xl lg:text-3xl mb-8">С этим покупают</h2>
+          <h2 className="font-serif text-2xl lg:text-3xl mb-8">Похожие товары</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-10">
             {related.map((p) => (
               <ProductCard key={p.slug} product={p} />

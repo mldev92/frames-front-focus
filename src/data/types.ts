@@ -29,6 +29,7 @@ export interface Product {
   badges?: Badge[];
   description: string;
   specs: { label: string; value: string }[];
+  hasTryOn?: boolean;
   // contact lens specific
   wearMode?: "Однодневные" | "Двухнедельные" | "Месячные";
   lensType?: string;

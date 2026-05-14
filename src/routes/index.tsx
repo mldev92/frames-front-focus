@@ -52,8 +52,8 @@ function HomePage() {
       {/* HERO */}
       <section className="relative w-full">
         <img
-          src="/1305banner.png"
-          alt="Новая коллекция ОПТИКА 100%"
+          src="/main_banner_v2.png"
+          alt="ОПТИКА 100% — оправы, очки и контактные линзы"
           className="w-full h-auto max-h-[600px] lg:max-h-[700px] object-cover"
         />
         <div className="absolute inset-0 flex items-center bg-gradient-to-r from-foreground/50 to-transparent">

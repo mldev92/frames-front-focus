@@ -3,25 +3,39 @@ import { Heart } from "lucide-react";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
-import { TryOnBadge } from "@/components/TryOnIcon";
 
 export function ProductCard({ product }: { product: Product }) {
   const { toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
+  const hasHoverImage = product.images.length > 1;
+
+  const displayColors = product.colors?.slice(0, 3) ?? [];
+  const extraCount = (product.colors?.length ?? 0) - displayColors.length;
 
   return (
-    <div className="group/card group">
+    <div className="group/card">
       <Link
         to="/products/$slug"
         params={{ slug: product.slug }}
-        className="block relative bg-surface rounded-sm overflow-hidden"
+        className="block relative aspect-square bg-white rounded-sm overflow-hidden"
       >
         <img
           src={product.images[0]}
           alt={product.name}
           loading="lazy"
-          className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+          className={cn(
+            "absolute inset-0 w-full h-full object-contain transition-opacity duration-500",
+            hasHoverImage ? "opacity-100 group-hover/card:opacity-0" : "opacity-100",
+          )}
         />
+        {hasHoverImage && (
+          <img
+            src={product.images[1]}
+            alt={product.name}
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-contain opacity-0 group-hover/card:opacity-100 transition-opacity duration-500"
+          />
+        )}
         {product.badges && product.badges.length > 0 && (
           <div className="absolute top-3 left-3 flex flex-col gap-1">
             {product.badges.map((b) => (
@@ -44,38 +58,48 @@ export function ProductCard({ product }: { product: Product }) {
             e.preventDefault();
             toggleSaved(product.slug);
           }}
-          className="absolute top-3 right-3 p-2 bg-background/90 rounded-full hover:bg-background"
+          className={cn(
+            "absolute top-3 right-3 p-2 bg-background/90 rounded-full hover:bg-background",
+            "opacity-0 group-hover/card:opacity-100 transition-opacity duration-200",
+            isSaved && "opacity-100",
+          )}
           aria-label="Отложить"
         >
-          <Heart
-            className={cn("h-4 w-4", isSaved && "fill-brand text-brand")}
-          />
+          <Heart className={cn("h-4 w-4", isSaved && "fill-brand text-brand")} />
         </button>
-        <TryOnBadge className="absolute bottom-3 right-3" />
       </Link>
-      <div className="mt-3">
-        <div className="text-xs text-muted-foreground">{product.brand}</div>
+      <div className="mt-3 space-y-1.5">
+        <div className="text-xs text-muted-foreground uppercase tracking-wider">{product.brand}</div>
         <Link
           to="/products/$slug"
           params={{ slug: product.slug }}
-          className="block font-medium hover:text-brand transition-colors"
+          className="block text-base font-semibold leading-snug hover:text-brand transition-colors"
         >
           {product.name}
         </Link>
         {product.colors && product.colors.length > 0 && (
-          <div className="mt-1.5 flex gap-1">
-            {product.colors.slice(0, 5).map((c) => (
+          <div className="flex flex-wrap gap-1">
+            {displayColors.map((c) => (
               <span
                 key={c.name}
-                className="w-3 h-3 rounded-full border border-border"
-                style={{ backgroundColor: c.hex }}
-                title={c.name}
-              />
+                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground border border-border rounded-full px-2 py-0.5"
+              >
+                <span
+                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                  style={{ backgroundColor: c.hex }}
+                />
+                {c.name}
+              </span>
             ))}
+            {extraCount > 0 && (
+              <span className="inline-flex items-center text-[11px] text-muted-foreground border border-border rounded-full px-2 py-0.5">
+                +{extraCount}
+              </span>
+            )}
           </div>
         )}
-        <div className="mt-1.5 flex items-baseline gap-2">
-          <span className="font-medium">{formatPrice(product.price)}</span>
+        <div className="flex items-baseline gap-2 pt-0.5">
+          <span className="font-semibold text-sm">{formatPrice(product.price)}</span>
           {product.oldPrice && (
             <span className="text-xs text-muted-foreground line-through">
               {formatPrice(product.oldPrice)}

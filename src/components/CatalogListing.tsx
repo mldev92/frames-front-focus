@@ -167,6 +167,8 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
   const [mobileFilters, setMobileFilters] = useState(false);
   const [tryOn, setTryOn] = useState(false);
   const [selectedColors, setSelectedColors] = useState<Set<string>>(new Set());
+  const [gridCols, setGridCols] = useState<2 | 3>(3);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const priceBounds = useMemo(() => {
     const ps = products.map((p) => p.price);
@@ -194,6 +196,20 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
   const filtered = useMemo(() => {
     let list = products.filter((p) => {
       if (p.price < price[0] || p.price > price[1]) return false;
+      if (tryOn && !p.hasTryOn) return false;
+      if (selectedColors.size > 0) {
+        const names = (p.colors ?? []).map((c) => c.name);
+        if (!names.some((n) => selectedColors.has(n))) return false;
+      }
+      const specMap: Record<string, number> = {};
+      for (const s of p.specs) {
+        const num = parseInt(s.value, 10);
+        if (!isNaN(num)) specMap[s.label] = num;
+      }
+      const width = specMap["Ширина оправы"];
+      const temple = specMap["Длина дужки"];
+      if (width !== undefined && (width < sizeWidth[0] || width > sizeWidth[1])) return false;
+      if (temple !== undefined && (temple < sizeTemple[0] || temple > sizeTemple[1])) return false;
       return Object.entries(active).every(([k, set]) => {
         if (!set || set.size === 0) return true;
         const v = (p as unknown as Record<string, string | undefined>)[k];
@@ -203,7 +219,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
     if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
     if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
     return list;
-  }, [products, active, sort, price]);
+  }, [products, active, sort, price, tryOn, selectedColors, sizeWidth, sizeTemple]);
 
   const toggle = (facet: string, value: string) => {
     setActive((prev) => {
@@ -327,9 +343,6 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
             <input type="checkbox" className="accent-[var(--brand)]" />
             <ShapeIcon d="rect" />
             <span className="flex-1">{t}</span>
-            <span className="text-muted-foreground text-xs">
-              ({Math.floor(Math.random() * 900 + 100)})
-            </span>
           </label>
         ))}
       </FilterSection>
@@ -399,9 +412,6 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           <label key={c} className="flex items-center gap-2 cursor-pointer hover:text-brand py-1">
             <input type="checkbox" className="accent-[var(--brand)]" />
             <span className="flex-1">{c}</span>
-            <span className="text-muted-foreground text-xs">
-              ({Math.floor(Math.random() * 4000 + 1000)})
-            </span>
           </label>
         ))}
       </FilterSection>
@@ -410,7 +420,6 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         <label className="flex items-center gap-2 cursor-pointer hover:text-brand">
           <input type="checkbox" className="accent-[var(--brand)]" />
           <span className="flex-1">да</span>
-          <span className="text-muted-foreground text-xs">(2 523)</span>
         </label>
       </FilterSection>
 
@@ -439,7 +448,6 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         <label className="flex items-center gap-2 cursor-pointer hover:text-brand">
           <input type="checkbox" className="accent-[var(--brand)]" />
           <span className="flex-1">да</span>
-          <span className="text-muted-foreground text-xs">(92)</span>
         </label>
       </FilterSection>
 
@@ -505,30 +513,103 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         {subtitle && <p className="mt-3 text-muted-foreground max-w-2xl">{subtitle}</p>}
       </div>
 
-      <div className="grid lg:grid-cols-[260px_1fr] gap-10">
-        {facets.length > 0 && <aside className="hidden lg:block">{FilterContent}</aside>}
+      <div className="lg:flex lg:gap-10 lg:items-start">
+        {/* Sidebar — fully removed from flow when closed so products fill 100% width */}
+        {facets.length > 0 && sidebarOpen && (
+          <div className="hidden lg:flex lg:flex-col shrink-0 sticky top-4 self-start w-[260px]">
+            {/* "Скрыть фильтры" button at top of sidebar */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="flex items-center gap-1.5 text-sm font-medium mb-4 hover:text-brand transition-colors"
+            >
+              ← Скрыть фильтры
+            </button>
+            <div className="h-[calc(100vh-6rem)] overflow-y-auto pr-4">
+              {FilterContent}
+            </div>
+          </div>
+        )}
 
-        <div>
-          <div className="flex items-center justify-between mb-6">
-            <div className="text-sm text-muted-foreground">Найдено: {filtered.length}</div>
-            <div className="flex items-center gap-3">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center justify-between mb-6 gap-4">
+            <div className="text-sm text-muted-foreground shrink-0">
+              {filtered.length}{" "}
+              {filtered.length % 10 === 1 && filtered.length !== 11
+                ? "модель"
+                : filtered.length % 10 >= 2 &&
+                    filtered.length % 10 <= 4 &&
+                    !(filtered.length >= 12 && filtered.length <= 14)
+                  ? "модели"
+                  : "моделей"}
+            </div>
+            <div className="flex items-center gap-2 ml-auto">
               {facets.length > 0 && (
-                <button
-                  onClick={() => setMobileFilters(true)}
-                  className="lg:hidden inline-flex items-center gap-2 text-sm border border-border rounded-sm px-3 py-1.5"
-                >
-                  <SlidersHorizontal className="h-4 w-4" /> Фильтры
-                </button>
+                <>
+                  {/* Desktop: "Показать фильтры" only when sidebar is closed */}
+                  {!sidebarOpen && (
+                    <button
+                      onClick={() => setSidebarOpen(true)}
+                      className="hidden lg:flex items-center gap-1.5 text-sm font-medium hover:text-brand transition-colors"
+                    >
+                      Показать фильтры →
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setMobileFilters(true)}
+                    className="lg:hidden inline-flex items-center gap-2 text-sm border border-border rounded-sm px-3 py-1.5"
+                  >
+                    <SlidersHorizontal className="h-4 w-4" /> Фильтры
+                  </button>
+                </>
               )}
-              <select
-                value={sort}
-                onChange={(e) => setSort(e.target.value as typeof sort)}
-                className="bg-background border border-border rounded-sm px-3 py-1.5 text-sm"
-              >
-                <option value="featured">Популярные</option>
-                <option value="price-asc">Цена ↑</option>
-                <option value="price-desc">Цена ↓</option>
-              </select>
+              <div className="hidden md:flex items-center border border-border rounded-sm overflow-hidden">
+                <button
+                  onClick={() => setGridCols(2)}
+                  className={cn(
+                    "px-2.5 py-1.5 transition-colors",
+                    gridCols === 2 ? "bg-foreground text-background" : "hover:bg-surface",
+                  )}
+                  aria-label="2 колонки"
+                >
+                  <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
+                    <rect x="1" y="1" width="6" height="6" rx="1" />
+                    <rect x="9" y="1" width="6" height="6" rx="1" />
+                    <rect x="1" y="9" width="6" height="6" rx="1" />
+                    <rect x="9" y="9" width="6" height="6" rx="1" />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setGridCols(3)}
+                  className={cn(
+                    "px-2.5 py-1.5 border-l border-border transition-colors",
+                    gridCols === 3 ? "bg-foreground text-background" : "hover:bg-surface",
+                  )}
+                  aria-label="3 колонки"
+                >
+                  <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
+                    <rect x="0.5" y="1" width="4" height="6" rx="1" />
+                    <rect x="6" y="1" width="4" height="6" rx="1" />
+                    <rect x="11.5" y="1" width="4" height="6" rx="1" />
+                    <rect x="0.5" y="9" width="4" height="6" rx="1" />
+                    <rect x="6" y="9" width="4" height="6" rx="1" />
+                    <rect x="11.5" y="9" width="4" height="6" rx="1" />
+                  </svg>
+                </button>
+              </div>
+              <div className="relative">
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as typeof sort)}
+                  className="appearance-none bg-background border border-border rounded-sm pl-3 pr-8 py-1.5 text-sm cursor-pointer focus:outline-none focus:border-brand"
+                >
+                  <option value="featured">Популярные</option>
+                  <option value="price-asc">Цена ↑</option>
+                  <option value="price-desc">Цена ↓</option>
+                </select>
+                <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
+                  ▾
+                </span>
+              </div>
             </div>
           </div>
 
@@ -551,7 +632,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
               Ничего не найдено. Попробуйте изменить фильтры.
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-x-5 gap-y-10">
+            <div className={cn("grid gap-x-5 gap-y-10", gridCols === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3")}>
               {filtered.map((p) => (
                 <ProductCard key={p.slug} product={p} />
               ))}
@@ -598,24 +679,44 @@ function FilterSection({
   title,
   titleClass,
   noBorder,
+  defaultOpen = true,
   children,
 }: {
   title: string;
   titleClass?: string;
   noBorder?: boolean;
+  defaultOpen?: boolean;
   children: React.ReactNode;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className={cn("py-4", !noBorder && "border-t border-border")}>
-      <div
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
         className={cn(
-          "font-serif lowercase tracking-wide mb-3 flex items-center gap-2",
+          "w-full font-serif lowercase tracking-wide flex items-center gap-2 text-left",
           titleClass ?? "text-sm",
         )}
       >
-        <span className="text-brand">▸</span> {title}
+        <span
+          className={cn(
+            "text-brand transition-transform duration-200",
+            open ? "rotate-90" : "rotate-0",
+          )}
+        >
+          ▸
+        </span>
+        <span className="flex-1">{title}</span>
+      </button>
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-300",
+          open ? "max-h-[1000px] mt-3 opacity-100" : "max-h-0 opacity-0",
+        )}
+      >
+        {children}
       </div>
-      {children}
     </div>
   );
 }
