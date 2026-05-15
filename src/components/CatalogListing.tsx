@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { SlidersHorizontal, X, Search } from "lucide-react";
+import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
 import type { Product } from "@/data/types";
@@ -311,25 +311,36 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         </div>
       </FilterSection>
 
-      {/* Frame shape with icons */}
+      {/* Frame shape — tile grid */}
       {hasFacet("shape") && (
         <FilterSection title="форма оправы">
-          <div className="space-y-1.5">
+          <div className="grid grid-cols-2 gap-2">
             {SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]).map((s) => {
               const count = facetCounts.shape?.[s.key] ?? 0;
               const checked = active.shape?.has(s.key) ?? false;
               return (
-                <label key={s.key} className="flex items-center gap-2 cursor-pointer hover:text-brand">
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => toggle("shape", s.key)}
-                    className="accent-[var(--brand)]"
-                  />
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => toggle("shape", s.key)}
+                  className={cn(
+                    "group relative flex flex-col items-center justify-center gap-1.5 rounded-md border bg-card px-2 py-3 text-center transition-all hover:-translate-y-[1px] hover:shadow-sm",
+                    checked
+                      ? "border-foreground ring-1 ring-foreground"
+                      : "border-border hover:border-foreground/40",
+                  )}
+                >
+                  {checked && (
+                    <span className="absolute right-1.5 top-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background">
+                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                    </span>
+                  )}
                   <ShapeIcon d={s.icon} />
-                  <span className="flex-1">{s.label}</span>
-                  <span className="text-muted-foreground text-xs">({count})</span>
-                </label>
+                  <span className="text-[11px] leading-tight first-letter:uppercase">
+                    {s.label}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">{count}</span>
+                </button>
               );
             })}
           </div>
@@ -338,47 +349,59 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
       {/* Frame type */}
       <FilterSection title="тип оправы">
-        {["ободковые", "полуободковые", "безободковые"].map((t) => (
-          <label key={t} className="flex items-center gap-2 cursor-pointer hover:text-brand py-1">
-            <input type="checkbox" className="accent-[var(--brand)]" />
-            <ShapeIcon d="rect" />
-            <span className="flex-1">{t}</span>
-          </label>
-        ))}
+        <div className="grid grid-cols-2 gap-2">
+          {["ободковые", "полуободковые", "безободковые"].map((t) => (
+            <button
+              key={t}
+              type="button"
+              className="flex flex-col items-center gap-1.5 rounded-md border border-border bg-card px-2 py-3 text-[11px] transition hover:border-foreground/40 hover:-translate-y-[1px] hover:shadow-sm"
+            >
+              <ShapeIcon d="rect" />
+              <span className="first-letter:uppercase">{t}</span>
+            </button>
+          ))}
+        </div>
       </FilterSection>
 
-      {/* Gender */}
+      {/* Gender — pills */}
       {hasFacet("gender") && (
         <FilterSection title="пол">
-          {Object.entries(facetCounts.gender ?? {}).map(([g, c]) => {
-            const checked = active.gender?.has(g) ?? false;
-            return (
-              <label key={g} className="flex items-center gap-2 cursor-pointer hover:text-brand py-1">
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggle("gender", g)}
-                  className="accent-[var(--brand)]"
-                />
-                <span className="inline-flex w-5 h-5 items-center justify-center rounded-full bg-surface text-xs">
-                  {GENDER_ICON[g] ?? "•"}
-                </span>
-                <span className="flex-1">{g.toLowerCase()}</span>
-                <span className="text-muted-foreground text-xs">({c})</span>
-              </label>
-            );
-          })}
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(facetCounts.gender ?? {}).map(([g, c]) => {
+              const checked = active.gender?.has(g) ?? false;
+              return (
+                <button
+                  key={g}
+                  type="button"
+                  onClick={() => toggle("gender", g)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition",
+                    checked
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border bg-card hover:border-foreground/50",
+                  )}
+                >
+                  <span className="text-sm leading-none">{GENDER_ICON[g] ?? "•"}</span>
+                  <span className="first-letter:uppercase">{g.toLowerCase()}</span>
+                  <span className={cn("text-[10px]", checked ? "opacity-70" : "text-muted-foreground")}>
+                    ({c})
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </FilterSection>
       )}
 
-      {/* Color swatches */}
+      {/* Color — tile grid with swatch + name */}
       <FilterSection title="цвет оправы">
-        <div className="grid grid-cols-7 gap-1.5">
+        <div className="grid grid-cols-2 gap-2">
           {COLOR_SWATCHES.map((c) => {
             const sel = selectedColors.has(c.name);
             return (
               <button
                 key={c.name}
+                type="button"
                 onClick={() =>
                   setSelectedColors((prev) => {
                     const next = new Set(prev);
@@ -387,24 +410,32 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                     return next;
                   })
                 }
-                title={c.name}
                 className={cn(
-                  "h-6 w-6 rounded-full border transition",
-                  sel ? "ring-2 ring-brand ring-offset-1 ring-offset-background" : "border-border",
+                  "flex items-center gap-2 rounded-md border bg-card px-2.5 py-2 text-left text-xs transition hover:-translate-y-[1px] hover:shadow-sm",
+                  sel ? "border-foreground ring-1 ring-foreground" : "border-border hover:border-foreground/40",
                 )}
-                style={{
-                  background: c.hex.includes("gradient") ? c.hex : c.hex,
-                  backgroundImage:
-                    c.hex === "transparent"
-                      ? "repeating-conic-gradient(#ddd 0 25%, #fff 0 50%)"
-                      : undefined,
-                  backgroundSize: c.hex === "transparent" ? "8px 8px" : undefined,
-                }}
-              />
+              >
+                <span
+                  className="h-5 w-5 shrink-0 rounded-full border border-border"
+                  style={{
+                    background: c.hex,
+                    backgroundImage:
+                      c.hex === "transparent"
+                        ? "repeating-conic-gradient(#ddd 0 25%, #fff 0 50%)"
+                        : c.hex.includes("gradient")
+                          ? c.hex
+                          : undefined,
+                    backgroundSize: c.hex === "transparent" ? "8px 8px" : undefined,
+                  }}
+                />
+                <span className="flex-1 truncate first-letter:uppercase">{c.name.toLowerCase()}</span>
+                {sel && <Check className="h-3 w-3" strokeWidth={3} />}
+              </button>
             );
           })}
         </div>
       </FilterSection>
+
 
       {/* Collections */}
       <FilterSection title="новинки">
@@ -423,24 +454,35 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         </label>
       </FilterSection>
 
-      {/* Material */}
+      {/* Material — tile grid */}
       {hasFacet("material") && (
         <FilterSection title="материал оправы">
-          {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
-            const checked = active.material?.has(m) ?? false;
-            return (
-              <label key={m} className="flex items-center gap-2 cursor-pointer hover:text-brand py-1">
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggle("material", m)}
-                  className="accent-[var(--brand)]"
-                />
-                <span className="flex-1">{m.toLowerCase()}</span>
-                <span className="text-muted-foreground text-xs">({c})</span>
-              </label>
-            );
-          })}
+          <div className="grid grid-cols-2 gap-2">
+            {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
+              const checked = active.material?.has(m) ?? false;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => toggle("material", m)}
+                  className={cn(
+                    "relative flex flex-col items-start gap-1 rounded-md border bg-card px-3 py-2.5 text-left transition hover:-translate-y-[1px] hover:shadow-sm",
+                    checked
+                      ? "border-foreground ring-1 ring-foreground"
+                      : "border-border hover:border-foreground/40",
+                  )}
+                >
+                  {checked && (
+                    <span className="absolute right-1.5 top-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background">
+                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                    </span>
+                  )}
+                  <span className="text-xs first-letter:uppercase">{m.toLowerCase()}</span>
+                  <span className="text-[10px] text-muted-foreground">{c} моделей</span>
+                </button>
+              );
+            })}
+          </div>
         </FilterSection>
       )}
 
@@ -685,29 +727,28 @@ function FilterSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className={cn("py-4", !noBorder && "border-t border-border")}>
+    <div className={cn("py-5", !noBorder && "border-t border-border")}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "w-full font-serif lowercase tracking-wide flex items-center gap-2 text-left",
-          titleClass ?? "text-sm",
+          "w-full flex items-center justify-between text-left group",
+          titleClass,
         )}
       >
-        <span
-          className={cn(
-            "text-brand transition-transform duration-200",
-            open ? "rotate-90" : "rotate-0",
-          )}
-        >
-          ▸
+        <span className="font-serif text-[15px] tracking-tight first-letter:uppercase">
+          {title}
         </span>
-        <span className="flex-1">{title}</span>
+        <span className="flex h-6 w-6 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors group-hover:border-foreground group-hover:text-foreground">
+          <ChevronDown
+            className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")}
+          />
+        </span>
       </button>
       <div
         className={cn(
           "overflow-hidden transition-all duration-300",
-          open ? "max-h-[1000px] mt-3 opacity-100" : "max-h-0 opacity-0",
+          open ? "max-h-[2000px] mt-4 opacity-100" : "max-h-0 opacity-0",
         )}
       >
         {children}
