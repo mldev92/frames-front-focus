@@ -436,40 +436,6 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         </div>
       </FilterSection>
 
-      {/* Color swatches */}
-      <FilterSection title="цвет оправы">
-        <div className="grid grid-cols-7 gap-1.5">
-          {COLOR_SWATCHES.map((c) => {
-            const sel = selectedColors.has(c.name);
-            return (
-              <button
-                key={c.name}
-                onClick={() =>
-                  setSelectedColors((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(c.name)) next.delete(c.name);
-                    else next.add(c.name);
-                    return next;
-                  })
-                }
-                title={c.name}
-                className={cn(
-                  "h-6 w-6 rounded-full border transition",
-                  sel ? "ring-2 ring-brand ring-offset-1 ring-offset-background" : "border-border",
-                )}
-                style={{
-                  background: c.hex.includes("gradient") ? c.hex : c.hex,
-                  backgroundImage:
-                    c.hex === "transparent"
-                      ? "repeating-conic-gradient(#ddd 0 25%, #fff 0 50%)"
-                      : undefined,
-                  backgroundSize: c.hex === "transparent" ? "8px 8px" : undefined,
-                }}
-              />
-            );
-          })}
-        </div>
-      </FilterSection>
 
       {/* Collections */}
       <FilterSection title="новинки">
