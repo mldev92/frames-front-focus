@@ -454,24 +454,35 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         </label>
       </FilterSection>
 
-      {/* Material */}
+      {/* Material — tile grid */}
       {hasFacet("material") && (
         <FilterSection title="материал оправы">
-          {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
-            const checked = active.material?.has(m) ?? false;
-            return (
-              <label key={m} className="flex items-center gap-2 cursor-pointer hover:text-brand py-1">
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggle("material", m)}
-                  className="accent-[var(--brand)]"
-                />
-                <span className="flex-1">{m.toLowerCase()}</span>
-                <span className="text-muted-foreground text-xs">({c})</span>
-              </label>
-            );
-          })}
+          <div className="grid grid-cols-2 gap-2">
+            {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
+              const checked = active.material?.has(m) ?? false;
+              return (
+                <button
+                  key={m}
+                  type="button"
+                  onClick={() => toggle("material", m)}
+                  className={cn(
+                    "relative flex flex-col items-start gap-1 rounded-md border bg-card px-3 py-2.5 text-left transition hover:-translate-y-[1px] hover:shadow-sm",
+                    checked
+                      ? "border-foreground ring-1 ring-foreground"
+                      : "border-border hover:border-foreground/40",
+                  )}
+                >
+                  {checked && (
+                    <span className="absolute right-1.5 top-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background">
+                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                    </span>
+                  )}
+                  <span className="text-xs first-letter:uppercase">{m.toLowerCase()}</span>
+                  <span className="text-[10px] text-muted-foreground">{c} моделей</span>
+                </button>
+              );
+            })}
+          </div>
         </FilterSection>
       )}
 
