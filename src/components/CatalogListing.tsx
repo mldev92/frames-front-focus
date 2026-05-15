@@ -685,29 +685,28 @@ function FilterSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className={cn("py-4", !noBorder && "border-t border-border")}>
+    <div className={cn("py-5", !noBorder && "border-t border-border")}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         className={cn(
-          "w-full font-serif lowercase tracking-wide flex items-center gap-2 text-left",
-          titleClass ?? "text-sm",
+          "w-full flex items-center justify-between text-left group",
+          titleClass,
         )}
       >
-        <span
-          className={cn(
-            "text-brand transition-transform duration-200",
-            open ? "rotate-90" : "rotate-0",
-          )}
-        >
-          ▸
+        <span className="font-serif text-[15px] tracking-tight first-letter:uppercase">
+          {title}
         </span>
-        <span className="flex-1">{title}</span>
+        <span className="flex h-6 w-6 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors group-hover:border-foreground group-hover:text-foreground">
+          <ChevronDown
+            className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")}
+          />
+        </span>
       </button>
       <div
         className={cn(
           "overflow-hidden transition-all duration-300",
-          open ? "max-h-[1000px] mt-3 opacity-100" : "max-h-0 opacity-0",
+          open ? "max-h-[2000px] mt-4 opacity-100" : "max-h-0 opacity-0",
         )}
       >
         {children}
