@@ -154,12 +154,6 @@ const COLOR_SWATCHES: { name: string; hex: string }[] = [
   { name: "Градиент", hex: "linear-gradient(135deg,#e8b8a0,#7a4a90)" },
 ];
 
-const GENDER_ICON: Record<string, string> = {
-  "Мужские": "♂",
-  "Женские": "♀",
-  "Унисекс": "⚥",
-  "Детские": "★",
-};
 
 export function CatalogListing({ title, subtitle, products, facets = [] }: ListingProps) {
   const [active, setActive] = useState<Record<string, Set<string>>>({});
@@ -176,9 +170,8 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
   }, [products]);
   const [price, setPrice] = useState<[number, number]>([priceBounds.min, priceBounds.max]);
 
-  const [sizeWidth, setSizeWidth] = useState<[number, number]>([1, 165]);
-  const [sizeHeight, setSizeHeight] = useState<[number, number]>([1, 156]);
-  const [sizeTemple, setSizeTemple] = useState<[number, number]>([1, 178]);
+  const [sizeWidth] = useState<[number, number]>([1, 165]);
+  const [sizeTemple] = useState<[number, number]>([1, 178]);
 
   const facetCounts = useMemo(() => {
     const out: Record<string, Record<string, number>> = {};
@@ -246,55 +239,107 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
   const hasFacet = (k: FacetKey) => facets.includes(k);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [availability, setAvailability] = useState<"all" | "in" | "out">("all");
+  const [styleTag, setStyleTag] = useState<string>("Все стили");
+  const STYLE_TAGS = ["Все стили", "Современные", "Минимализм", "Винтаж", "Бохо", "Индастриал", "Скандинавские"];
+
   const FilterContent = (
     <div className="text-sm">
-      <FilterSection title="фильтры" titleClass="text-base" noBorder>
-        <div className="flex items-center justify-between bg-surface rounded-sm px-3 py-2">
-          <span className="flex items-center gap-2">
-            <span className="inline-block w-5 h-5 rounded-full border border-border" />
-            онлайн-примерка
-          </span>
-          <button
-            onClick={() => setTryOn((v) => !v)}
-            className={cn(
-              "relative inline-flex h-5 w-9 rounded-full transition-colors",
-              tryOn ? "bg-brand" : "bg-muted",
-            )}
-            aria-label="Онлайн-примерка"
+      {/* Header */}
+      <div className="flex items-baseline justify-between pb-4">
+        <h2 className="font-serif text-2xl text-brand">Фильтры</h2>
+        <button
+          onClick={clearAll}
+          className="text-sm text-brand hover:underline"
+        >
+          Сбросить
+        </button>
+      </div>
+
+      {/* Search */}
+      <div className="relative mb-4">
+        <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Поиск..."
+          className="w-full bg-card border border-border rounded-md pl-9 pr-3 py-2 text-sm outline-none focus:border-brand"
+        />
+      </div>
+
+      {/* Sort by */}
+      <div className="flex items-center gap-3 pb-2">
+        <span className="text-sm font-medium shrink-0">Сортировать</span>
+        <div className="relative flex-1">
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as typeof sort)}
+            className="w-full appearance-none bg-card border border-border rounded-md pl-3 pr-8 py-2 text-sm cursor-pointer outline-none focus:border-brand"
           >
-            <span
-              className={cn(
-                "absolute top-0.5 h-4 w-4 rounded-full bg-background transition-transform",
-                tryOn ? "translate-x-4" : "translate-x-0.5",
-              )}
-            />
-          </button>
-          <span className="text-xs text-muted-foreground">{tryOn ? "да" : "нет"}</span>
+            <option value="featured">Популярные</option>
+            <option value="price-asc">Сначала дешёвые</option>
+            <option value="price-desc">Сначала дорогие</option>
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         </div>
-      </FilterSection>
+      </div>
+
+      {/* Frame shape — tile grid */}
+      {hasFacet("shape") && (
+        <FilterSection title="Форма">
+          <div className="grid grid-cols-2 gap-2">
+            {SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]).map((s) => {
+              const checked = active.shape?.has(s.key) ?? false;
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  onClick={() => toggle("shape", s.key)}
+                  className={cn(
+                    "group relative flex flex-col items-center justify-center gap-2 rounded-md border bg-card px-2 py-4 text-center transition-all hover:border-foreground/40 hover:shadow-sm",
+                    checked
+                      ? "border-brand ring-1 ring-brand"
+                      : "border-border",
+                  )}
+                >
+                  {checked && (
+                    <span className="absolute right-1.5 top-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-brand text-brand-foreground">
+                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
+                    </span>
+                  )}
+                  <ShapeIcon d={s.icon} />
+                  <span className="text-xs leading-tight first-letter:uppercase">
+                    {s.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </FilterSection>
+      )}
 
       {/* Price */}
-      <FilterSection title="цена">
+      <FilterSection title="Цена">
         <div className="flex items-center gap-2 mb-3">
-          <label className="flex-1 flex items-center gap-1 border border-border rounded-sm px-2 py-1">
-            <span className="text-muted-foreground text-xs">от</span>
+          <label className="flex-1 flex items-center gap-1 border border-border bg-card rounded-md px-3 py-2">
+            <span className="text-muted-foreground text-xs">₽</span>
             <input
               type="number"
               value={price[0]}
               onChange={(e) => setPrice([Number(e.target.value) || 0, price[1]])}
               className="w-full bg-transparent outline-none text-sm"
             />
-            <span className="text-muted-foreground text-xs">₽</span>
           </label>
-          <label className="flex-1 flex items-center gap-1 border border-border rounded-sm px-2 py-1">
-            <span className="text-muted-foreground text-xs">до</span>
+          <label className="flex-1 flex items-center gap-1 border border-border bg-card rounded-md px-3 py-2">
+            <span className="text-muted-foreground text-xs">₽</span>
             <input
               type="number"
               value={price[1]}
               onChange={(e) => setPrice([price[0], Number(e.target.value) || 0])}
               className="w-full bg-transparent outline-none text-sm"
             />
-            <span className="text-muted-foreground text-xs">₽</span>
           </label>
         </div>
         <Slider
@@ -303,69 +348,119 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           step={100}
           value={price}
           onValueChange={(v) => setPrice([v[0], v[1]] as [number, number])}
+          className="[&_[role=slider]]:border-brand [&_[role=slider]]:bg-background [&>span:first-child]:bg-brand/20 [&_[data-slot=slider-range]]:bg-brand"
         />
-        <div className="flex justify-between text-[11px] text-muted-foreground mt-1">
-          <span>{priceBounds.min} ₽</span>
-          <span>{Math.round((priceBounds.min + priceBounds.max) / 2)} ₽</span>
-          <span>{priceBounds.max} ₽</span>
+      </FilterSection>
+
+      {/* Color — compact swatch grid */}
+      <FilterSection title="Цвет">
+        <div className="grid grid-cols-6 gap-2.5">
+          {COLOR_SWATCHES.map((c) => {
+            const sel = selectedColors.has(c.name);
+            return (
+              <button
+                key={c.name}
+                type="button"
+                title={c.name}
+                onClick={() =>
+                  setSelectedColors((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(c.name)) next.delete(c.name);
+                    else next.add(c.name);
+                    return next;
+                  })
+                }
+                className={cn(
+                  "relative h-8 w-8 rounded-full border transition-all hover:scale-110",
+                  sel ? "ring-2 ring-brand ring-offset-2 ring-offset-background border-transparent" : "border-border",
+                )}
+                style={{
+                  background: c.hex,
+                  backgroundImage:
+                    c.hex === "transparent"
+                      ? "repeating-conic-gradient(#ddd 0 25%, #fff 0 50%)"
+                      : c.hex.includes("gradient")
+                        ? c.hex
+                        : undefined,
+                  backgroundSize: c.hex === "transparent" ? "8px 8px" : undefined,
+                }}
+              />
+            );
+          })}
         </div>
       </FilterSection>
 
-      {/* Frame shape — tile grid */}
-      {hasFacet("shape") && (
-        <FilterSection title="форма оправы">
-          <div className="grid grid-cols-2 gap-2">
-            {SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]).map((s) => {
-              const count = facetCounts.shape?.[s.key] ?? 0;
-              const checked = active.shape?.has(s.key) ?? false;
+      {/* Material — checkbox list */}
+      {hasFacet("material") && (
+        <FilterSection title="Материал">
+          <div className="space-y-2">
+            {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
+              const checked = active.material?.has(m) ?? false;
               return (
-                <button
-                  key={s.key}
-                  type="button"
-                  onClick={() => toggle("shape", s.key)}
-                  className={cn(
-                    "group relative flex flex-col items-center justify-center gap-1.5 rounded-md border bg-card px-2 py-3 text-center transition-all hover:-translate-y-[1px] hover:shadow-sm",
-                    checked
-                      ? "border-foreground ring-1 ring-foreground"
-                      : "border-border hover:border-foreground/40",
-                  )}
+                <label
+                  key={m}
+                  className="flex items-center gap-2.5 cursor-pointer group py-0.5"
                 >
-                  {checked && (
-                    <span className="absolute right-1.5 top-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background">
-                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
-                    </span>
-                  )}
-                  <ShapeIcon d={s.icon} />
-                  <span className="text-[11px] leading-tight first-letter:uppercase">
-                    {s.label}
+                  <span
+                    className={cn(
+                      "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
+                      checked ? "border-brand bg-brand text-brand-foreground" : "border-border bg-card group-hover:border-foreground/40",
+                    )}
+                  >
+                    {checked && <Check className="h-3 w-3" strokeWidth={3} />}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">{count}</span>
-                </button>
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggle("material", m)}
+                    className="sr-only"
+                  />
+                  <span className="flex-1 text-sm first-letter:uppercase">{m.toLowerCase()}</span>
+                  <span className="text-xs text-muted-foreground">({c})</span>
+                </label>
               );
             })}
           </div>
         </FilterSection>
       )}
 
-      {/* Frame type */}
-      <FilterSection title="тип оправы">
-        <div className="grid grid-cols-2 gap-2">
-          {["ободковые", "полуободковые", "безободковые"].map((t) => (
-            <button
-              key={t}
-              type="button"
-              className="flex flex-col items-center gap-1.5 rounded-md border border-border bg-card px-2 py-3 text-[11px] transition hover:border-foreground/40 hover:-translate-y-[1px] hover:shadow-sm"
-            >
-              <ShapeIcon d="rect" />
-              <span className="first-letter:uppercase">{t}</span>
-            </button>
-          ))}
+      {/* Availability — radios */}
+      <FilterSection title="Наличие">
+        <div className="space-y-2">
+          {([
+            ["all", "Все", products.length],
+            ["in", "В наличии", products.length],
+            ["out", "Под заказ", 0],
+          ] as const).map(([val, label, count]) => {
+            const checked = availability === val;
+            return (
+              <label key={val} className="flex items-center gap-2.5 cursor-pointer group py-0.5">
+                <span
+                  className={cn(
+                    "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                    checked ? "border-brand" : "border-border group-hover:border-foreground/40",
+                  )}
+                >
+                  {checked && <span className="h-2 w-2 rounded-full bg-brand" />}
+                </span>
+                <input
+                  type="radio"
+                  name="availability"
+                  checked={checked}
+                  onChange={() => setAvailability(val)}
+                  className="sr-only"
+                />
+                <span className="flex-1 text-sm">{label}</span>
+                <span className="text-xs text-muted-foreground">({count})</span>
+              </label>
+            );
+          })}
         </div>
       </FilterSection>
 
-      {/* Gender — pills */}
+      {/* Gender pills (kept) */}
       {hasFacet("gender") && (
-        <FilterSection title="пол">
+        <FilterSection title="Пол">
           <div className="flex flex-wrap gap-2">
             {Object.entries(facetCounts.gender ?? {}).map(([g, c]) => {
               const checked = active.gender?.has(g) ?? false;
@@ -377,13 +472,12 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition",
                     checked
-                      ? "border-foreground bg-foreground text-background"
+                      ? "border-brand bg-brand text-brand-foreground"
                       : "border-border bg-card hover:border-foreground/50",
                   )}
                 >
-                  <span className="text-sm leading-none">{GENDER_ICON[g] ?? "•"}</span>
                   <span className="first-letter:uppercase">{g.toLowerCase()}</span>
-                  <span className={cn("text-[10px]", checked ? "opacity-70" : "text-muted-foreground")}>
+                  <span className={cn("text-[10px]", checked ? "opacity-80" : "text-muted-foreground")}>
                     ({c})
                   </span>
                 </button>
@@ -393,158 +487,73 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         </FilterSection>
       )}
 
-      {/* Color — tile grid with swatch + name */}
-      <FilterSection title="цвет оправы">
-        <div className="grid grid-cols-2 gap-2">
-          {COLOR_SWATCHES.map((c) => {
-            const sel = selectedColors.has(c.name);
+      {/* Style — pills */}
+      <FilterSection title="Стиль">
+        <div className="flex flex-wrap gap-2">
+          {STYLE_TAGS.map((s) => {
+            const checked = styleTag === s;
             return (
               <button
-                key={c.name}
+                key={s}
                 type="button"
-                onClick={() =>
-                  setSelectedColors((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(c.name)) next.delete(c.name);
-                    else next.add(c.name);
-                    return next;
-                  })
-                }
+                onClick={() => setStyleTag(s)}
                 className={cn(
-                  "flex items-center gap-2 rounded-md border bg-card px-2.5 py-2 text-left text-xs transition hover:-translate-y-[1px] hover:shadow-sm",
-                  sel ? "border-foreground ring-1 ring-foreground" : "border-border hover:border-foreground/40",
+                  "inline-flex items-center rounded-full border px-3.5 py-1.5 text-xs transition",
+                  checked
+                    ? "border-brand bg-brand text-brand-foreground"
+                    : "border-border bg-card hover:border-foreground/50",
                 )}
               >
-                <span
-                  className="h-5 w-5 shrink-0 rounded-full border border-border"
-                  style={{
-                    background: c.hex,
-                    backgroundImage:
-                      c.hex === "transparent"
-                        ? "repeating-conic-gradient(#ddd 0 25%, #fff 0 50%)"
-                        : c.hex.includes("gradient")
-                          ? c.hex
-                          : undefined,
-                    backgroundSize: c.hex === "transparent" ? "8px 8px" : undefined,
-                  }}
-                />
-                <span className="flex-1 truncate first-letter:uppercase">{c.name.toLowerCase()}</span>
-                {sel && <Check className="h-3 w-3" strokeWidth={3} />}
+                {s}
               </button>
             );
           })}
         </div>
       </FilterSection>
 
-
-      {/* Collections */}
-      <FilterSection title="новинки">
-        {["коллекция 2026 года", "коллекция 2025 года", "коллекция 2024 года"].map((c) => (
-          <label key={c} className="flex items-center gap-2 cursor-pointer hover:text-brand py-1">
-            <input type="checkbox" className="accent-[var(--brand)]" />
-            <span className="flex-1">{c}</span>
-          </label>
-        ))}
-      </FilterSection>
-
-      <FilterSection title="поляризация">
-        <label className="flex items-center gap-2 cursor-pointer hover:text-brand">
-          <input type="checkbox" className="accent-[var(--brand)]" />
-          <span className="flex-1">да</span>
-        </label>
-      </FilterSection>
-
-      {/* Material — tile grid */}
-      {hasFacet("material") && (
-        <FilterSection title="материал оправы">
-          <div className="grid grid-cols-2 gap-2">
-            {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
-              const checked = active.material?.has(m) ?? false;
-              return (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => toggle("material", m)}
-                  className={cn(
-                    "relative flex flex-col items-start gap-1 rounded-md border bg-card px-3 py-2.5 text-left transition hover:-translate-y-[1px] hover:shadow-sm",
-                    checked
-                      ? "border-foreground ring-1 ring-foreground"
-                      : "border-border hover:border-foreground/40",
-                  )}
-                >
-                  {checked && (
-                    <span className="absolute right-1.5 top-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background">
-                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
-                    </span>
-                  )}
-                  <span className="text-xs first-letter:uppercase">{m.toLowerCase()}</span>
-                  <span className="text-[10px] text-muted-foreground">{c} моделей</span>
-                </button>
-              );
-            })}
-          </div>
-        </FilterSection>
-      )}
-
-      <FilterSection title="фотохромные">
-        <label className="flex items-center gap-2 cursor-pointer hover:text-brand">
-          <input type="checkbox" className="accent-[var(--brand)]" />
-          <span className="flex-1">да</span>
-        </label>
-      </FilterSection>
-
-      {/* Sizes */}
-      <FilterSection title="размеры оправы">
-        <SizeSlider label="ширина" icon="↔" value={sizeWidth} onChange={setSizeWidth} max={165} />
-        <SizeSlider label="высота" icon="↕" value={sizeHeight} onChange={setSizeHeight} max={156} />
-        <SizeSlider label="дужка" icon="—" value={sizeTemple} onChange={setSizeTemple} max={178} />
-      </FilterSection>
-
       {/* Brands */}
       {hasFacet("brand") && (
-        <FilterSection title="бренды">
-          <div className="flex gap-1 mb-3">
-            <button className="px-3 py-1 text-xs rounded-sm bg-brand text-brand-foreground">
-              популярные
-            </button>
-            <button className="px-3 py-1 text-xs rounded-sm border border-border">все</button>
-          </div>
-          <div className="relative mb-2">
-            <Search className="h-3.5 w-3.5 absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="найти"
-              className="w-full bg-transparent border border-border rounded-sm pl-7 pr-2 py-1.5 text-sm outline-none focus:border-brand"
-            />
-          </div>
-          <div className="max-h-72 overflow-y-auto pr-1 space-y-1">
+        <FilterSection title="Бренды" defaultOpen={false}>
+          <div className="max-h-72 overflow-y-auto pr-1 space-y-2">
             {Object.entries(facetCounts.brand ?? {})
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([b, c]) => {
                 const checked = active.brand?.has(b) ?? false;
                 return (
-                  <label key={b} className="flex items-center gap-2 cursor-pointer hover:text-brand">
+                  <label key={b} className="flex items-center gap-2.5 cursor-pointer group py-0.5">
+                    <span
+                      className={cn(
+                        "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
+                        checked ? "border-brand bg-brand text-brand-foreground" : "border-border bg-card group-hover:border-foreground/40",
+                      )}
+                    >
+                      {checked && <Check className="h-3 w-3" strokeWidth={3} />}
+                    </span>
                     <input
                       type="checkbox"
                       checked={checked}
                       onChange={() => toggle("brand", b)}
-                      className="accent-[var(--brand)]"
+                      className="sr-only"
                     />
-                    <span className="flex-1">{b}</span>
-                    <span className="text-muted-foreground text-xs">({c})</span>
+                    <span className="flex-1 text-sm">{b}</span>
+                    <span className="text-xs text-muted-foreground">({c})</span>
                   </label>
                 );
               })}
           </div>
-          <button className="mt-3 text-brand text-xs hover:underline">смотреть все ▾</button>
         </FilterSection>
       )}
 
-      {activeChips.length > 0 && (
-        <button onClick={clearAll} className="text-sm text-brand hover:underline mt-2">
-          Сбросить все
+      {/* Apply button */}
+      <div className="sticky bottom-0 -mx-4 mt-4 bg-gradient-to-t from-background via-background to-transparent px-4 pb-2 pt-4">
+        <button
+          type="button"
+          onClick={() => setMobileFilters(false)}
+          className="w-full bg-brand text-brand-foreground rounded-md py-3 text-sm font-medium hover:bg-brand/90 transition-colors"
+        >
+          Применить фильтры ({filtered.length})
         </button>
-      )}
+      </div>
     </div>
   );
 
@@ -757,34 +766,3 @@ function FilterSection({
   );
 }
 
-function SizeSlider({
-  label,
-  icon,
-  value,
-  onChange,
-  max,
-}: {
-  label: string;
-  icon: string;
-  value: [number, number];
-  onChange: (v: [number, number]) => void;
-  max: number;
-}) {
-  return (
-    <div className="mb-4">
-      <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-        <span className="text-base">{icon}</span>
-        <span>
-          {value[0]} — {value[1]} мм.
-        </span>
-      </div>
-      <Slider
-        min={1}
-        max={max}
-        step={1}
-        value={value}
-        onValueChange={(v) => onChange([v[0], v[1]] as [number, number])}
-      />
-    </div>
-  );
-}
