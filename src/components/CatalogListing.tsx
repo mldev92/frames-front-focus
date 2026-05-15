@@ -176,9 +176,8 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
   }, [products]);
   const [price, setPrice] = useState<[number, number]>([priceBounds.min, priceBounds.max]);
 
-  const [sizeWidth, setSizeWidth] = useState<[number, number]>([1, 165]);
-  const [sizeHeight, setSizeHeight] = useState<[number, number]>([1, 156]);
-  const [sizeTemple, setSizeTemple] = useState<[number, number]>([1, 178]);
+  const [sizeWidth] = useState<[number, number]>([1, 165]);
+  const [sizeTemple] = useState<[number, number]>([1, 178]);
 
   const facetCounts = useMemo(() => {
     const out: Record<string, Record<string, number>> = {};
