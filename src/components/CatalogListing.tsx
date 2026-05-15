@@ -154,12 +154,6 @@ const COLOR_SWATCHES: { name: string; hex: string }[] = [
   { name: "Градиент", hex: "linear-gradient(135deg,#e8b8a0,#7a4a90)" },
 ];
 
-const GENDER_ICON: Record<string, string> = {
-  "Мужские": "♂",
-  "Женские": "♀",
-  "Унисекс": "⚥",
-  "Детские": "★",
-};
 
 export function CatalogListing({ title, subtitle, products, facets = [] }: ListingProps) {
   const [active, setActive] = useState<Record<string, Set<string>>>({});
