@@ -12,6 +12,9 @@ export const products: Product[] = [
     category: "opravy",
     price: 10900,
     images: ["/processed_glasses_example.png", "/processed_glasses_example2.png"],
+    // MVP pilot: borrowed Jeeliz GlassesDB demo SKU until our own 3D model is produced
+    vtoSku: "rayban_aviator_or_vertFlash",
+    hasTryOn: true,
     colors: [
       { name: "Кристалл", hex: "#e8e4df" },
       { name: "Дымчатый", hex: "#6b6b70" },

@@ -9,6 +9,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { TryOnBadge, TryOnIcon } from "@/components/TryOnIcon";
 import { PrescriptionInput } from "@/components/PrescriptionInput";
 import { LensPurposeModal } from "@/components/LensPurposeModal";
+import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { Glasses } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +53,10 @@ function ProductPage() {
   const [activeImg, setActiveImg] = useState(0);
   const [tab, setTab] = useState<"specs" | "delivery" | "guide">("specs");
   const [lensModal, setLensModal] = useState(false);
+  const [vtoOpen, setVtoOpen] = useState(false);
+  // Always show VTO — fall back to demo SKU when product has no custom model yet
+  const vtoSku = product.vtoSku ?? "rayban_wayfarer_havane_marron";
+
 
   const specIcons: Record<string, string> = {
     "Длина дужки": "/icon_param_glasses_length.svg",
@@ -84,25 +89,15 @@ function ProductPage() {
         {/* Gallery */}
         <div>
           <div className="group/card relative bg-white rounded-sm overflow-hidden mb-3">
-            {activeImg === -1 ? (
-              <div className="w-full h-full flex flex-col items-center justify-center gap-3 bg-surface text-foreground">
-                <TryOnIcon className="h-16 w-16" />
-                <div className="font-serif text-xl">Примерить онлайн</div>
-                <p className="text-xs text-muted-foreground max-w-[240px] text-center">
-                  Включите камеру и посмотрите, как оправа сидит на вашем лице.
-                </p>
-                <button className="mt-2 bg-ink text-primary-foreground text-sm px-5 py-2 rounded-sm hover:opacity-90">
-                  Запустить примерку
-                </button>
-              </div>
-            ) : (
-              <img
-                src={product.images[activeImg]}
-                alt={product.name}
-                className="w-full h-auto object-contain"
-              />
-            )}
-            <TryOnBadge className="absolute bottom-3 left-3" />
+            <img
+              src={product.images[activeImg]}
+              alt={product.name}
+              className="w-full h-auto object-contain"
+            />
+            <TryOnBadge
+              className="absolute bottom-3 left-3"
+              onClick={() => setVtoOpen(true)}
+            />
           </div>
           <div className="grid grid-cols-5 gap-2">
             {product.images.map((img, i) => (
@@ -117,12 +112,10 @@ function ProductPage() {
                 <img src={img} alt="" className="max-w-full max-h-full object-contain" />
               </button>
             ))}
+            {/* VTO thumbnail — always last in the strip */}
             <button
-              onClick={() => setActiveImg(-1)}
-              className={cn(
-                "w-16 h-16 rounded-sm overflow-hidden border-2 flex items-center justify-center bg-surface",
-                activeImg === -1 ? "border-brand" : "border-transparent",
-              )}
+              onClick={() => setVtoOpen(true)}
+              className="w-16 h-16 rounded-sm overflow-hidden border-2 border-transparent flex items-center justify-center bg-surface hover:border-brand transition-colors"
               aria-label="Примерить онлайн"
             >
               <TryOnIcon className="h-6 w-6" />
@@ -320,7 +313,7 @@ function ProductPage() {
               product.category === "linzy-dlya-ochkov") && (
               <button
                 onClick={() => {
-                  add(product, { color });
+                  add(product, { color, openDrawer: false });
                   toast.success(`«${product.name}» (без линз) добавлен в корзину`);
                 }}
                 className="w-full text-sm text-muted-foreground border border-border rounded-sm py-3 hover:text-foreground hover:border-foreground transition-colors"
@@ -368,6 +361,11 @@ function ProductPage() {
       )}
 
       <LensPurposeModal open={lensModal} onClose={() => setLensModal(false)} />
+      <VirtualTryOnModal
+        open={vtoOpen}
+        onClose={() => setVtoOpen(false)}
+        vtoSku={vtoSku}
+      />
     </div>
   );
 }

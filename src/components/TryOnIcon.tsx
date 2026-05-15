@@ -29,12 +29,18 @@ export function TryOnIcon({ className }: { className?: string }) {
 export function TryOnBadge({
   className,
   label = "Примерить онлайн",
+  onClick,
 }: {
   className?: string;
   label?: string;
+  onClick?: (e?: React.MouseEvent) => void;
 }) {
   return (
     <div
+      role="button"
+      tabIndex={0}
+      onClick={onClick}
+      onKeyDown={(e) => e.key === "Enter" && onClick?.()}
       className={cn(
         "group/tryon inline-flex items-center gap-1.5 bg-background/95 backdrop-blur rounded-full p-2 shadow-sm border border-border cursor-pointer",
         className,

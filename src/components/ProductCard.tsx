@@ -1,13 +1,18 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
+import { TryOnBadge } from "@/components/TryOnIcon";
+import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { cn } from "@/lib/utils";
 
 export function ProductCard({ product }: { product: Product }) {
   const { toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
   const hasHoverImage = product.images.length > 1;
+  const [vtoOpen, setVtoOpen] = useState(false);
+  const vtoSku = product.vtoSku ?? "rayban_wayfarer_havane_marron";
 
   const displayColors = product.colors?.slice(0, 3) ?? [];
   const extraCount = (product.colors?.length ?? 0) - displayColors.length;
@@ -53,6 +58,15 @@ export function ProductCard({ product }: { product: Product }) {
             ))}
           </div>
         )}
+        {/* Always-visible VTO badge — click opens modal without navigating */}
+        <TryOnBadge
+          className="absolute bottom-3 left-3"
+          onClick={(e) => {
+            e?.preventDefault();
+            e?.stopPropagation();
+            setVtoOpen(true);
+          }}
+        />
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -107,6 +121,12 @@ export function ProductCard({ product }: { product: Product }) {
           )}
         </div>
       </div>
+
+      <VirtualTryOnModal
+        open={vtoOpen}
+        onClose={() => setVtoOpen(false)}
+        vtoSku={vtoSku}
+      />
     </div>
   );
 }

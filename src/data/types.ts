@@ -30,6 +30,8 @@ export interface Product {
   description: string;
   specs: { label: string; value: string }[];
   hasTryOn?: boolean;
+  /** Jeeliz GlassesDB SKU for virtual try-on. When set, the PDP renders a working VTO button. */
+  vtoSku?: string;
   // contact lens specific
   wearMode?: "Однодневные" | "Двухнедельные" | "Месячные";
   lensType?: string;

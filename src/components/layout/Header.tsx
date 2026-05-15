@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Search, User, Heart, ShoppingBag, Menu, MapPin, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
 
@@ -52,6 +52,9 @@ export function Header() {
   const { totals, open: openCart, saved } = useCart();
   const { count } = totals();
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Guard localStorage-derived state from SSR — prevents hydration mismatch.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   const [hovered, setHovered] = useState<string | null>(null);
 
   return (
@@ -155,7 +158,7 @@ export function Header() {
               </Link>
               <button className="p-2 hover:text-brand relative" aria-label="Отложенные">
                 <Heart className="h-5 w-5" />
-                {saved.length > 0 && (
+                {mounted && saved.length > 0 && (
                   <span className="absolute top-0 right-0 bg-brand text-brand-foreground text-[10px] rounded-full h-4 min-w-4 px-1 flex items-center justify-center">
                     {saved.length}
                   </span>
@@ -167,7 +170,7 @@ export function Header() {
                 aria-label="Корзина"
               >
                 <ShoppingBag className="h-5 w-5" />
-                {count > 0 && (
+                {mounted && count > 0 && (
                   <span className="absolute top-0 right-0 bg-brand text-brand-foreground text-[10px] rounded-full h-4 min-w-4 px-1 flex items-center justify-center">
                     {count}
                   </span>

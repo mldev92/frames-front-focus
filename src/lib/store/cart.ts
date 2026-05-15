@@ -18,7 +18,7 @@ interface CartState {
   isOpen: boolean;
   open: () => void;
   close: () => void;
-  add: (product: Product, opts?: { color?: string; qty?: number }) => void;
+  add: (product: Product, opts?: { color?: string; qty?: number; openDrawer?: boolean }) => void;
   remove: (slug: string, color?: string) => void;
   setQty: (slug: string, qty: number, color?: string) => void;
   clear: () => void;
@@ -37,6 +37,7 @@ export const useCart = create<CartState>()(
       add: (product, opts) => {
         const color = opts?.color;
         const qty = opts?.qty ?? 1;
+        const openDrawer = opts?.openDrawer ?? true;
         const existing = get().lines.find(
           (l) => l.slug === product.slug && l.color === color,
         );
@@ -45,7 +46,7 @@ export const useCart = create<CartState>()(
             lines: get().lines.map((l) =>
               l === existing ? { ...l, qty: l.qty + qty } : l,
             ),
-            isOpen: true,
+            isOpen: openDrawer,
           });
         } else {
           set({
@@ -61,7 +62,7 @@ export const useCart = create<CartState>()(
                 qty,
               },
             ],
-            isOpen: true,
+            isOpen: openDrawer,
           });
         }
       },
