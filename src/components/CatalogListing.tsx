@@ -772,34 +772,3 @@ function FilterSection({
   );
 }
 
-function SizeSlider({
-  label,
-  icon,
-  value,
-  onChange,
-  max,
-}: {
-  label: string;
-  icon: string;
-  value: [number, number];
-  onChange: (v: [number, number]) => void;
-  max: number;
-}) {
-  return (
-    <div className="mb-4">
-      <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-        <span className="text-base">{icon}</span>
-        <span>
-          {value[0]} — {value[1]} мм.
-        </span>
-      </div>
-      <Slider
-        min={1}
-        max={max}
-        step={1}
-        value={value}
-        onValueChange={(v) => onChange([v[0], v[1]] as [number, number])}
-      />
-    </div>
-  );
-}
