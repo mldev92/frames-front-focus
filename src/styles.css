@@ -35,6 +35,7 @@
 
   --color-surface: var(--surface);
   --color-surface-foreground: var(--surface-foreground);
+  --color-cream: var(--cream);
   --color-brand: var(--brand);
   --color-brand-foreground: var(--brand-foreground);
   --color-ink: var(--ink);
