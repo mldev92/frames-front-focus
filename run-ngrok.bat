@@ -1,0 +1,3 @@
+@echo off
+echo Starting ngrok tunnel for frames-front-focus (port 8080)...
+"C:\Users\stavo\PycharmProjects\Morse\johnasmessieai_11labs_outbound_calls\ngrok.exe" http 8080

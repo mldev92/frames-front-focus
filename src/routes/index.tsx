@@ -92,12 +92,6 @@ function HomePage() {
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-20">
         <div className="flex items-end justify-between mb-8">
           <h2 className="font-serif text-3xl lg:text-4xl">Каталог</h2>
-          <Link
-            to="/opravy"
-            className="hidden md:inline-flex items-center gap-1 text-sm hover:text-brand"
-          >
-            Все категории <ArrowRight className="h-4 w-4" />
-          </Link>
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
           {categories.map((c) => (
