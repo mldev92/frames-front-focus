@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Calendar, Eye, Glasses, Wrench, Truck, ShieldCheck, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowRight, Truck, ShieldCheck, RotateCcw, Sparkles } from "lucide-react";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { EditorialTriptych } from "@/components/EditorialTriptych";
 import { BrandPromiseBand } from "@/components/BrandPromiseBand";
@@ -31,7 +31,6 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-const SERVICE_ICONS = [Calendar, Eye, Glasses, Wrench];
 const SERVICE_IMAGES = [
   "/services1_online_appointment_doctor.png",
   "/services2_vision_diagnostics.png",
@@ -200,32 +199,28 @@ function HomePage() {
           </h2>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {SERVICE_LIST.map((s, i) => {
-            const Icon = SERVICE_ICONS[i];
-            return (
-              <Link
-                key={s.slug}
-                to="/uslugi/$slug"
-                params={{ slug: s.slug }}
-                className="group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md transition-shadow"
-              >
-                <div className="aspect-[4/3] overflow-hidden bg-cream">
-                  <img
-                    src={SERVICE_IMAGES[i]}
-                    alt={s.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
+          {SERVICE_LIST.map((s) => (
+            <Link
+              key={s.slug}
+              to="/uslugi/$slug"
+              params={{ slug: s.slug }}
+              className="group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md transition-shadow"
+            >
+              <div className="aspect-[4/3] overflow-hidden bg-cream">
+                <img
+                  src={SERVICE_IMAGES[SERVICE_LIST.findIndex((x) => x.slug === s.slug)]}
+                  alt={s.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+              <div className="p-5">
+                <div className="font-serif text-lg">{s.title}</div>
+                <div className="mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 group-hover:text-foreground">
+                  Подробнее <ArrowRight className="h-3 w-3" />
                 </div>
-                <div className="p-5">
-                  <Icon className="h-5 w-5 text-brand mb-3" />
-                  <div className="font-serif text-lg">{s.title}</div>
-                  <div className="mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 group-hover:text-foreground">
-                    Подробнее <ArrowRight className="h-3 w-3" />
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
@@ -233,7 +228,7 @@ function HomePage() {
       <section className="bg-cream">
         <div className="mx-auto max-w-7xl px-4 lg:px-8 py-20 grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-success mb-4">
+            <div className="text-xs uppercase tracking-[0.2em] text-brand mb-4">
               Контроль миопии
             </div>
             <h2 className="font-serif text-3xl lg:text-5xl leading-tight">
