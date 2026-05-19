@@ -55,19 +55,6 @@ export function Footer() {
               Сеть оптических салонов и интернет-магазин. Подбор очков и контактных линз с
               полным циклом услуг.
             </p>
-            <form className="mt-6 flex gap-2" onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="email"
-                placeholder="Ваш e-mail"
-                className="flex-1 bg-background border border-border rounded-sm px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-brand"
-              />
-              <button
-                type="submit"
-                className="bg-ink text-primary-foreground px-4 py-2 text-sm rounded-sm hover:opacity-90"
-              >
-                Подписаться
-              </button>
-            </form>
           </div>
 
           {COLS.map((col) => (
@@ -95,15 +82,15 @@ export function Footer() {
               sale-spb@optika100.com
             </a>
           </div>
-          <div className="flex gap-3">
-            <a href="#" aria-label="Instagram" className="hover:text-foreground">
-              <Instagram className="h-4 w-4" />
+          <div className="flex gap-4">
+            <a href="#" aria-label="Instagram" className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors">
+              <Instagram className="h-5 w-5" />
             </a>
-            <a href="#" aria-label="Telegram" className="hover:text-foreground">
-              <Send className="h-4 w-4" />
+            <a href="#" aria-label="Telegram" className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors">
+              <Send className="h-5 w-5" />
             </a>
-            <a href="#" aria-label="YouTube" className="hover:text-foreground">
-              <Youtube className="h-4 w-4" />
+            <a href="#" aria-label="YouTube" className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors">
+              <Youtube className="h-5 w-5" />
             </a>
           </div>
         </div>
