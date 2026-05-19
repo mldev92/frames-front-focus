@@ -69,6 +69,7 @@
 
   --surface: oklch(0.96 0.008 75);
   --surface-foreground: oklch(0.2 0.01 250);
+  --cream: oklch(0.965 0.015 85);
 
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.18 0.01 250);
