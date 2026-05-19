@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Calendar, Eye, Glasses, Wrench } from "lucide-react";
-import { ProductCard } from "@/components/ProductCard";
+import { ArrowRight, Calendar, Eye, Glasses, Wrench, Truck, ShieldCheck, RotateCcw, Sparkles } from "lucide-react";
+import { ProductCarousel } from "@/components/ProductCarousel";
+import { EditorialTriptych } from "@/components/EditorialTriptych";
+import { BrandPromiseBand } from "@/components/BrandPromiseBand";
 import { categories } from "@/data/categories";
 import { bestsellers, newArrivals } from "@/data/products";
 import { articles } from "@/data/articles";
@@ -23,6 +25,7 @@ export const Route = createFileRoute("/")({
         content:
           "Большой выбор оправ и линз, услуги клиники зрения, салоны в центре Санкт-Петербурга.",
       },
+      { property: "og:image", content: "/main_banner_v2.png" },
     ],
   }),
   component: HomePage,
@@ -42,10 +45,18 @@ const SERVICE_LIST = [
   { slug: "remont", title: "Ремонт очков" },
 ];
 
+const TRUST = [
+  { icon: Truck, t: "Бесплатная доставка от 5 000 ₽" },
+  { icon: ShieldCheck, t: "Гарантия 12 месяцев" },
+  { icon: RotateCcw, t: "Возврат в течение 14 дней" },
+  { icon: Sparkles, t: "Виртуальная примерка" },
+];
+
 function HomePage() {
   const hits = bestsellers();
   const news = newArrivals();
   const recent = articles.slice(0, 3);
+  const fourCats = categories.filter((c) => c.slug !== "aksessuary").slice(0, 4);
 
   return (
     <div>
@@ -54,129 +65,56 @@ function HomePage() {
         <img
           src="/main_banner_v2.png"
           alt="ОПТИКА 100% — оправы, очки и контактные линзы"
-          className="w-full h-auto max-h-[600px] lg:max-h-[700px] object-cover"
+          className="w-full h-auto max-h-[640px] object-cover"
         />
-        <div className="absolute inset-0 flex items-center bg-gradient-to-r from-foreground/50 to-transparent">
+        <div className="absolute inset-0 flex items-center bg-gradient-to-r from-foreground/45 via-foreground/15 to-transparent">
           <div className="mx-auto w-full max-w-7xl px-4 lg:px-8">
-            <div className="max-w-lg text-primary-foreground">
+            <div className="max-w-md text-primary-foreground">
               <div className="text-xs uppercase tracking-[0.2em] text-primary-foreground/80 mb-4">
                 Новая коллекция · 2025
               </div>
-              <h1 className="font-serif text-5xl lg:text-7xl leading-[1.05]">
+              <h1 className="font-serif text-4xl lg:text-6xl leading-[1.05]">
                 Очки, в которых хочется жить.
               </h1>
-              <p className="mt-6 text-lg text-primary-foreground/90 max-w-md">
-                Современные оправы, профессиональный подбор и линзы мировых брендов в
-                салонах ОПТИКА 100% и онлайн.
+              <p className="mt-5 text-base lg:text-lg text-primary-foreground/90 max-w-sm">
+                Современные оправы, профессиональный подбор и линзы мировых брендов.
               </p>
-              <div className="mt-8 flex flex-wrap gap-3">
+              <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   to="/opravy"
-                  className="inline-flex items-center gap-2 bg-white text-ink px-6 py-3 rounded-sm hover:opacity-90"
+                  className="inline-flex items-center gap-2 bg-background text-foreground rounded-full px-5 py-2.5 text-sm hover:opacity-90"
                 >
-                  Посмотреть оправы <ArrowRight className="h-4 w-4" />
+                  Подобрать оправу
                 </Link>
                 <Link
-                  to="/uslugi/priem-vracha"
-                  className="inline-flex items-center gap-2 border border-white text-white px-6 py-3 rounded-sm hover:bg-white/10"
+                  to="/solntsezashchitnye"
+                  className="inline-flex items-center gap-2 border border-primary-foreground/80 text-primary-foreground rounded-full px-5 py-2.5 text-sm hover:bg-primary-foreground/10"
                 >
-                  Записаться к врачу
+                  Солнцезащитные
                 </Link>
               </div>
             </div>
           </div>
         </div>
-      </section>
-
-      {/* CATEGORY TILES */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-20">
-        <div className="flex items-end justify-between mb-8">
-          <h2 className="font-serif text-3xl lg:text-4xl">Каталог</h2>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          {categories.map((c) => (
-            <a
-              key={c.slug}
-              href={c.href}
-              className="group relative aspect-[3/4] bg-surface rounded-sm overflow-hidden"
-            >
-              <img
-                src={c.image}
-                alt={c.title}
-                loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 to-transparent" />
-              <div className="absolute bottom-4 left-4 right-4 text-primary-foreground">
-                <div className="font-serif text-xl">{c.title}</div>
-                <div className="text-xs opacity-90 mt-1">{c.short}</div>
-              </div>
-            </a>
-          ))}
-        </div>
-      </section>
-
-      {/* BESTSELLERS */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-12">
-        <div className="flex items-end justify-between mb-8">
-          <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
-              Хиты продаж
-            </div>
-            <h2 className="font-serif text-3xl lg:text-4xl">Любимые модели сезона</h2>
-          </div>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-10">
-          {hits.slice(0, 4).map((p) => (
-            <ProductCard key={p.slug} product={p} />
-          ))}
-        </div>
-      </section>
-
-      {/* SERVICES */}
-      <section className="bg-surface mt-16">
-        <div className="mx-auto max-w-7xl px-4 lg:px-8 py-20">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <div className="text-xs uppercase tracking-[0.2em] text-brand mb-3">
-              Услуги клиники
-            </div>
-            <h2 className="font-serif text-3xl lg:text-4xl">
-              Комплексные услуги по подбору очков и контактных линз
-            </h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {SERVICE_LIST.map((s, i) => {
-              const Icon = SERVICE_ICONS[i];
+        {/* Trust strip */}
+        <div className="absolute left-0 right-0 bottom-0 bg-foreground/35 backdrop-blur-sm text-primary-foreground hidden md:block">
+          <div className="mx-auto max-w-7xl px-4 lg:px-8 py-3 grid grid-cols-4 gap-4 text-xs">
+            {TRUST.map((tr) => {
+              const I = tr.icon;
               return (
-                <Link
-                  key={s.slug}
-                  to="/uslugi/$slug"
-                  params={{ slug: s.slug }}
-                  className="relative rounded-sm overflow-hidden hover:shadow-md transition-shadow group aspect-[4/3]"
-                >
-                  <img
-                    src={SERVICE_IMAGES[i]}
-                    alt={s.title}
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/20 to-transparent" />
-                  <div className="relative z-10 p-6 h-full flex flex-col justify-end text-primary-foreground">
-                    <Icon className="h-7 w-7 text-primary-foreground/80 mb-3" />
-                    <div className="font-serif text-lg">{s.title}</div>
-                    <div className="mt-3 text-sm text-primary-foreground/70 inline-flex items-center gap-1 group-hover:text-primary-foreground">
-                      Подробнее <ArrowRight className="h-3 w-3" />
-                    </div>
-                  </div>
-                </Link>
+                <div key={tr.t} className="flex items-center gap-2 justify-center">
+                  <I className="h-4 w-4 opacity-90" />
+                  <span>{tr.t}</span>
+                </div>
               );
             })}
           </div>
         </div>
       </section>
 
-      {/* NEW ARRIVALS */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-20">
-        <div className="flex items-end justify-between mb-8">
+      {/* NEW ARRIVALS — carousel */}
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 pt-16 pb-10">
+        <div className="flex items-end justify-between mb-8 gap-4">
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
               Новинки
@@ -185,41 +123,135 @@ function HomePage() {
           </div>
           <Link
             to="/opravy"
-            className="hidden md:inline-flex items-center gap-1 text-sm hover:text-brand"
+            className="hidden sm:inline-flex items-center gap-2 border border-border rounded-full px-4 py-2 text-sm hover:border-foreground"
           >
-            Смотреть все <ArrowRight className="h-4 w-4" />
+            Смотреть все новинки
           </Link>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-5 gap-y-10">
-          {news.slice(0, 4).map((p) => (
-            <ProductCard key={p.slug} product={p} />
+        <ProductCarousel products={news} />
+      </section>
+
+      {/* EDITORIAL TRIPTYCH */}
+      <EditorialTriptych />
+
+      {/* CATEGORIES — 4 tiles, lighter */}
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16">
+        <div className="text-center max-w-2xl mx-auto mb-10">
+          <h2 className="font-serif text-3xl lg:text-4xl">Четыре способа купить</h2>
+          <p className="mt-3 text-muted-foreground">
+            Оправы, солнцезащитные, контактные линзы и услуги клиники — в одном месте.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {fourCats.map((c) => (
+            <a
+              key={c.slug}
+              href={c.href}
+              className="group relative aspect-[3/4] bg-cream rounded-2xl overflow-hidden"
+            >
+              <img
+                src={c.image}
+                alt={c.title}
+                loading="lazy"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+                <span className="inline-flex items-center bg-background text-foreground text-sm rounded-full px-4 py-2 shadow-sm whitespace-nowrap group-hover:bg-brand group-hover:text-brand-foreground transition-colors">
+                  {c.title}
+                </span>
+              </div>
+            </a>
           ))}
         </div>
       </section>
 
-      {/* EDITORIAL */}
-      <section className="bg-ink text-primary-foreground">
+      {/* BESTSELLERS — carousel */}
+      <section className="bg-cream">
+        <div className="mx-auto max-w-7xl px-4 lg:px-8 py-16">
+          <div className="flex items-end justify-between mb-8 gap-4">
+            <div>
+              <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
+                Хиты продаж
+              </div>
+              <h2 className="font-serif text-3xl lg:text-4xl">Любимые модели сезона</h2>
+            </div>
+            <Link
+              to="/opravy"
+              className="hidden sm:inline-flex items-center gap-2 border border-border rounded-full px-4 py-2 text-sm hover:border-foreground bg-background"
+            >
+              Смотреть все
+            </Link>
+          </div>
+          <ProductCarousel products={hits} />
+        </div>
+      </section>
+
+      {/* BRAND PROMISE BAND */}
+      <BrandPromiseBand />
+
+      {/* SERVICES — lighter, white cards */}
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-20">
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <div className="text-xs uppercase tracking-[0.2em] text-brand mb-3">
+            Услуги клиники
+          </div>
+          <h2 className="font-serif text-3xl lg:text-4xl">
+            Комплексные услуги по подбору очков и линз
+          </h2>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {SERVICE_LIST.map((s, i) => {
+            const Icon = SERVICE_ICONS[i];
+            return (
+              <Link
+                key={s.slug}
+                to="/uslugi/$slug"
+                params={{ slug: s.slug }}
+                className="group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md transition-shadow"
+              >
+                <div className="aspect-[4/3] overflow-hidden bg-cream">
+                  <img
+                    src={SERVICE_IMAGES[i]}
+                    alt={s.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="p-5">
+                  <Icon className="h-5 w-5 text-brand mb-3" />
+                  <div className="font-serif text-lg">{s.title}</div>
+                  <div className="mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 group-hover:text-foreground">
+                    Подробнее <ArrowRight className="h-3 w-3" />
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* EDITORIAL — myopia, lightened */}
+      <section className="bg-cream">
         <div className="mx-auto max-w-7xl px-4 lg:px-8 py-20 grid lg:grid-cols-2 gap-12 items-center">
           <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-brand mb-4">
+            <div className="text-xs uppercase tracking-[0.2em] text-success mb-4">
               Контроль миопии
             </div>
             <h2 className="font-serif text-3xl lg:text-5xl leading-tight">
               Замедляем прогрессирование близорукости у детей.
             </h2>
-            <p className="mt-6 text-base/relaxed text-primary-foreground/80 max-w-lg">
+            <p className="mt-6 text-base/relaxed text-muted-foreground max-w-lg">
               Линзы Stellest и MiSight 1-Day, профильный кабинет в нашей клинике,
               индивидуальная программа наблюдения.
             </p>
             <Link
               to="/uslugi/$slug"
               params={{ slug: "diagnostika" }}
-              className="mt-8 inline-flex items-center gap-2 bg-brand text-brand-foreground px-6 py-3 rounded-sm hover:opacity-90"
+              className="mt-8 inline-flex items-center gap-2 bg-foreground text-background rounded-full px-6 py-3 hover:opacity-90"
             >
               Записаться на диагностику <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
-          <div className="aspect-[4/3] bg-accent rounded-sm overflow-hidden">
+          <div className="aspect-[4/3] rounded-2xl overflow-hidden">
             <img
               src="/main_bottom_child_banner.png"
               alt="Кабинет контроля миопии"
@@ -232,7 +264,12 @@ function HomePage() {
       {/* JOURNAL */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-20">
         <div className="flex items-end justify-between mb-8">
-          <h2 className="font-serif text-3xl lg:text-4xl">Журнал</h2>
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
+              Журнал
+            </div>
+            <h2 className="font-serif text-3xl lg:text-4xl">Свежее в журнале</h2>
+          </div>
           <Link
             to="/zhurnal"
             className="text-sm hover:text-brand inline-flex items-center gap-1"
@@ -248,7 +285,7 @@ function HomePage() {
               params={{ slug: a.slug }}
               className="group block"
             >
-              <div className="aspect-[4/3] bg-surface rounded-sm overflow-hidden mb-4">
+              <div className="aspect-[4/3] bg-cream rounded-2xl overflow-hidden mb-4">
                 <img
                   src={a.cover}
                   alt={a.title}
@@ -256,10 +293,10 @@ function HomePage() {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
-              <div className="text-xs uppercase tracking-wider text-brand">
+              <span className="inline-block text-[11px] uppercase tracking-wider text-brand border border-brand/30 rounded-full px-2.5 py-0.5">
                 {a.category}
-              </div>
-              <h3 className="font-serif text-xl mt-2 group-hover:text-brand transition-colors">
+              </span>
+              <h3 className="font-serif text-xl mt-3 group-hover:text-brand transition-colors">
                 {a.title}
               </h3>
               <p className="text-sm text-muted-foreground mt-2">{a.excerpt}</p>
