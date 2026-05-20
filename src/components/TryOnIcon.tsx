@@ -30,11 +30,32 @@ export function TryOnBadge({
   className,
   label = "Примерить онлайн",
   onClick,
+  variant = "compact",
 }: {
   className?: string;
   label?: string;
   onClick?: (e?: React.MouseEvent) => void;
+  variant?: "compact" | "pill";
 }) {
+  if (variant === "pill") {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(
+          "group/tryon inline-flex items-center gap-2 bg-background/95 backdrop-blur-md rounded-full pl-1.5 pr-4 py-1.5 shadow-md border border-border/60 cursor-pointer hover:bg-foreground hover:text-background hover:border-foreground transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5",
+          className,
+        )}
+        title={label}
+      >
+        <span className="flex items-center justify-center h-7 w-7 rounded-full bg-brand text-brand-foreground transition-transform duration-300 group-hover/tryon:scale-110">
+          <TryOnIcon className="h-4 w-4" />
+        </span>
+        <span className="text-sm font-medium tracking-tight">{label}</span>
+      </button>
+    );
+  }
+
   return (
     <div
       role="button"
