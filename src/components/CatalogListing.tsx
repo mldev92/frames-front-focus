@@ -483,7 +483,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 lg:px-8 py-10">
+    <div className="w-full py-10" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
       <div className="mb-8">
         <h1 className="font-serif text-4xl lg:text-5xl">{title}</h1>
         {subtitle && <p className="mt-3 text-muted-foreground max-w-2xl">{subtitle}</p>}
