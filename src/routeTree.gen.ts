@@ -11,10 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ZhurnalRouteImport } from './routes/zhurnal'
 import { Route as UslugiRouteImport } from './routes/uslugi'
+import { Route as TinkoffRouteImport } from './routes/tinkoff'
 import { Route as SolntsezashchitnyeRouteImport } from './routes/solntsezashchitnye'
 import { Route as SalonyRouteImport } from './routes/salony'
 import { Route as OpravyRouteImport } from './routes/opravy'
 import { Route as ONasRouteImport } from './routes/o-nas'
+import { Route as LoyaltyRouteImport } from './routes/loyalty'
 import { Route as LinzyDlyaOchkovRouteImport } from './routes/linzy-dlya-ochkov'
 import { Route as KorzinaRouteImport } from './routes/korzina'
 import { Route as KontaktnyeLinzyRouteImport } from './routes/kontaktnye-linzy'
@@ -36,6 +38,11 @@ const UslugiRoute = UslugiRouteImport.update({
   path: '/uslugi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TinkoffRoute = TinkoffRouteImport.update({
+  id: '/tinkoff',
+  path: '/tinkoff',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SolntsezashchitnyeRoute = SolntsezashchitnyeRouteImport.update({
   id: '/solntsezashchitnye',
   path: '/solntsezashchitnye',
@@ -54,6 +61,11 @@ const OpravyRoute = OpravyRouteImport.update({
 const ONasRoute = ONasRouteImport.update({
   id: '/o-nas',
   path: '/o-nas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoyaltyRoute = LoyaltyRouteImport.update({
+  id: '/loyalty',
+  path: '/loyalty',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LinzyDlyaOchkovRoute = LinzyDlyaOchkovRouteImport.update({
@@ -115,10 +127,12 @@ export interface FileRoutesByFullPath {
   '/kontaktnye-linzy': typeof KontaktnyeLinzyRoute
   '/korzina': typeof KorzinaRoute
   '/linzy-dlya-ochkov': typeof LinzyDlyaOchkovRoute
+  '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
   '/opravy': typeof OpravyRoute
   '/salony': typeof SalonyRoute
   '/solntsezashchitnye': typeof SolntsezashchitnyeRoute
+  '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/zhurnal': typeof ZhurnalRouteWithChildren
   '/products/$slug': typeof ProductsSlugRoute
@@ -133,10 +147,12 @@ export interface FileRoutesByTo {
   '/kontaktnye-linzy': typeof KontaktnyeLinzyRoute
   '/korzina': typeof KorzinaRoute
   '/linzy-dlya-ochkov': typeof LinzyDlyaOchkovRoute
+  '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
   '/opravy': typeof OpravyRoute
   '/salony': typeof SalonyRoute
   '/solntsezashchitnye': typeof SolntsezashchitnyeRoute
+  '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/zhurnal': typeof ZhurnalRouteWithChildren
   '/products/$slug': typeof ProductsSlugRoute
@@ -152,10 +168,12 @@ export interface FileRoutesById {
   '/kontaktnye-linzy': typeof KontaktnyeLinzyRoute
   '/korzina': typeof KorzinaRoute
   '/linzy-dlya-ochkov': typeof LinzyDlyaOchkovRoute
+  '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
   '/opravy': typeof OpravyRoute
   '/salony': typeof SalonyRoute
   '/solntsezashchitnye': typeof SolntsezashchitnyeRoute
+  '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/zhurnal': typeof ZhurnalRouteWithChildren
   '/products/$slug': typeof ProductsSlugRoute
@@ -172,10 +190,12 @@ export interface FileRouteTypes {
     | '/kontaktnye-linzy'
     | '/korzina'
     | '/linzy-dlya-ochkov'
+    | '/loyalty'
     | '/o-nas'
     | '/opravy'
     | '/salony'
     | '/solntsezashchitnye'
+    | '/tinkoff'
     | '/uslugi'
     | '/zhurnal'
     | '/products/$slug'
@@ -190,10 +210,12 @@ export interface FileRouteTypes {
     | '/kontaktnye-linzy'
     | '/korzina'
     | '/linzy-dlya-ochkov'
+    | '/loyalty'
     | '/o-nas'
     | '/opravy'
     | '/salony'
     | '/solntsezashchitnye'
+    | '/tinkoff'
     | '/uslugi'
     | '/zhurnal'
     | '/products/$slug'
@@ -208,10 +230,12 @@ export interface FileRouteTypes {
     | '/kontaktnye-linzy'
     | '/korzina'
     | '/linzy-dlya-ochkov'
+    | '/loyalty'
     | '/o-nas'
     | '/opravy'
     | '/salony'
     | '/solntsezashchitnye'
+    | '/tinkoff'
     | '/uslugi'
     | '/zhurnal'
     | '/products/$slug'
@@ -227,10 +251,12 @@ export interface RootRouteChildren {
   KontaktnyeLinzyRoute: typeof KontaktnyeLinzyRoute
   KorzinaRoute: typeof KorzinaRoute
   LinzyDlyaOchkovRoute: typeof LinzyDlyaOchkovRoute
+  LoyaltyRoute: typeof LoyaltyRoute
   ONasRoute: typeof ONasRoute
   OpravyRoute: typeof OpravyRoute
   SalonyRoute: typeof SalonyRoute
   SolntsezashchitnyeRoute: typeof SolntsezashchitnyeRoute
+  TinkoffRoute: typeof TinkoffRoute
   UslugiRoute: typeof UslugiRouteWithChildren
   ZhurnalRoute: typeof ZhurnalRouteWithChildren
   ProductsSlugRoute: typeof ProductsSlugRoute
@@ -250,6 +276,13 @@ declare module '@tanstack/react-router' {
       path: '/uslugi'
       fullPath: '/uslugi'
       preLoaderRoute: typeof UslugiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tinkoff': {
+      id: '/tinkoff'
+      path: '/tinkoff'
+      fullPath: '/tinkoff'
+      preLoaderRoute: typeof TinkoffRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/solntsezashchitnye': {
@@ -278,6 +311,13 @@ declare module '@tanstack/react-router' {
       path: '/o-nas'
       fullPath: '/o-nas'
       preLoaderRoute: typeof ONasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loyalty': {
+      id: '/loyalty'
+      path: '/loyalty'
+      fullPath: '/loyalty'
+      preLoaderRoute: typeof LoyaltyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/linzy-dlya-ochkov': {
@@ -383,10 +423,12 @@ const rootRouteChildren: RootRouteChildren = {
   KontaktnyeLinzyRoute: KontaktnyeLinzyRoute,
   KorzinaRoute: KorzinaRoute,
   LinzyDlyaOchkovRoute: LinzyDlyaOchkovRoute,
+  LoyaltyRoute: LoyaltyRoute,
   ONasRoute: ONasRoute,
   OpravyRoute: OpravyRoute,
   SalonyRoute: SalonyRoute,
   SolntsezashchitnyeRoute: SolntsezashchitnyeRoute,
+  TinkoffRoute: TinkoffRoute,
   UslugiRoute: UslugiRouteWithChildren,
   ZhurnalRoute: ZhurnalRouteWithChildren,
   ProductsSlugRoute: ProductsSlugRoute,
@@ -394,3 +436,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

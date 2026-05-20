@@ -3,9 +3,12 @@ import { ArrowRight, Truck, ShieldCheck, RotateCcw, Sparkles } from "lucide-reac
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { EditorialTriptych } from "@/components/EditorialTriptych";
 import { BrandPromiseBand } from "@/components/BrandPromiseBand";
+import { PromoBanner } from "@/components/PromoBanner";
+import { PromoCards } from "@/components/PromoCards";
 import { categories } from "@/data/categories";
 import { bestsellers, newArrivals } from "@/data/products";
 import { articles } from "@/data/articles";
+import { promoBanner, promotions } from "@/data/promotions";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -187,6 +190,16 @@ function HomePage() {
 
       {/* BRAND PROMISE BAND */}
       <BrandPromiseBand />
+
+      {/* PROMOTIONS */}
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 space-y-8">
+        <div>
+          <div className="text-xs uppercase tracking-[0.2em] text-brand mb-3">Акции</div>
+          <h2 className="font-serif text-3xl lg:text-4xl">Специальные предложения</h2>
+        </div>
+        <PromoBanner data={promoBanner} />
+        <PromoCards promotions={promotions} />
+      </section>
 
       {/* SERVICES — lighter, white cards */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-20">

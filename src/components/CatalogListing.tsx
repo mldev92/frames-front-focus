@@ -22,113 +22,41 @@ interface ListingProps {
   facets?: FacetKey[];
 }
 
-// ── Frame shape icons (inline SVG) ───────────────────────────────────────────
+// ── Frame shape icons — 64×24 grid, stroke 1.5, round joins ─────────────────
 const ShapeIcon = ({ d }: { d: string }) => (
-  <svg viewBox="0 0 48 20" className="w-10 h-5" fill="none" stroke="currentColor" strokeWidth="1.4">
-    {d === "rect" && (
-      <>
-        <rect x="2" y="4" width="18" height="12" rx="2" />
-        <rect x="28" y="4" width="18" height="12" rx="2" />
-        <path d="M20 10h8" />
-      </>
-    )}
-    {d === "square" && (
-      <>
-        <rect x="2" y="3" width="18" height="14" />
-        <rect x="28" y="3" width="18" height="14" />
-        <path d="M20 10h8" />
-      </>
-    )}
-    {d === "round" && (
-      <>
-        <circle cx="11" cy="10" r="8" />
-        <circle cx="37" cy="10" r="8" />
-        <path d="M19 10h10" />
-      </>
-    )}
-    {d === "oval" && (
-      <>
-        <ellipse cx="11" cy="10" rx="9" ry="6" />
-        <ellipse cx="37" cy="10" rx="9" ry="6" />
-        <path d="M20 10h8" />
-      </>
-    )}
-    {d === "aviator" && (
-      <>
-        <path d="M2 6 Q11 18 20 8 Z" />
-        <path d="M28 8 Q37 18 46 6 Z" />
-        <path d="M20 8h8" />
-      </>
-    )}
-    {d === "cat" && (
-      <>
-        <path d="M2 12 Q4 4 14 5 Q22 6 20 12 Z" />
-        <path d="M28 12 Q26 6 34 5 Q44 4 46 12 Z" />
-        <path d="M20 9h8" />
-      </>
-    )}
-    {d === "browline" && (
-      <>
-        <path d="M2 6 H20 V14 H2 Z" fill="currentColor" fillOpacity=".15" />
-        <path d="M28 6 H46 V14 H28 Z" fill="currentColor" fillOpacity=".15" />
-        <path d="M2 6 H46" strokeWidth="2" />
-        <path d="M20 10h8" />
-      </>
-    )}
-    {d === "big" && (
-      <>
-        <rect x="1" y="2" width="20" height="16" rx="3" />
-        <rect x="27" y="2" width="20" height="16" rx="3" />
-        <path d="M21 10h6" />
-      </>
-    )}
-    {d === "narrow" && (
-      <>
-        <rect x="2" y="7" width="18" height="6" rx="1" />
-        <rect x="28" y="7" width="18" height="6" rx="1" />
-        <path d="M20 10h8" />
-      </>
-    )}
-    {d === "sport" && (
-      <>
-        <path d="M2 8 Q4 4 14 5 L22 7 Q24 10 22 13 L14 15 Q4 16 2 12 Z" />
-        <path d="M46 8 Q44 4 34 5 L26 7 Q24 10 26 13 L34 15 Q44 16 46 12 Z" />
-      </>
-    )}
-    {d === "mono" && (
-      <>
-        <rect x="3" y="4" width="42" height="12" rx="6" />
-        <path d="M24 4v12" />
-      </>
-    )}
-    {d === "mask" && (
-      <path d="M3 6 Q24 0 45 6 L45 14 Q24 20 3 14 Z" />
-    )}
-    {d === "clip" && (
-      <>
-        <rect x="2" y="4" width="18" height="12" rx="2" />
-        <rect x="28" y="4" width="18" height="12" rx="2" />
-        <path d="M5 2v2M43 2v2" />
-      </>
-    )}
+  <svg viewBox="0 0 64 24" className="w-16 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    {d === "rect" && (<><rect x="2" y="4" width="24" height="16" rx="4"/><rect x="38" y="4" width="24" height="16" rx="4"/><path d="M26 9 Q32 7 38 9"/></>)}
+    {d === "square" && (<><rect x="2" y="3" width="24" height="18" rx="1.5"/><rect x="38" y="3" width="24" height="18" rx="1.5"/><path d="M26 9 Q32 7 38 9"/></>)}
+    {d === "round" && (<><circle cx="13" cy="12" r="10"/><circle cx="51" cy="12" r="10"/><path d="M23 11 Q32 8 41 11"/></>)}
+    {d === "oval" && (<><ellipse cx="14" cy="12" rx="12" ry="8"/><ellipse cx="50" cy="12" rx="12" ry="8"/><path d="M26 11 Q32 8 38 11"/></>)}
+    {d === "aviator" && (<><path d="M3 6 Q3 4 5 4 L24 4 Q27 4 26 8 L23 18 Q22 21 18 21 L10 21 Q5 21 4 17 Z"/><path d="M61 6 Q61 4 59 4 L40 4 Q37 4 38 8 L41 18 Q42 21 46 21 L54 21 Q59 21 60 17 Z"/><path d="M26 8 Q32 6 38 8"/></>)}
+    {d === "cat" && (<><path d="M2 14 Q4 4 14 4 Q22 4 25 8 L27 12 Q26 18 18 18 L8 18 Q3 18 2 14 Z"/><path d="M62 14 Q60 4 50 4 Q42 4 39 8 L37 12 Q38 18 46 18 L56 18 Q61 18 62 14 Z"/><path d="M27 10 Q32 8 37 10"/></>)}
+    {d === "browline" && (<><path d="M2 4 L26 4 L26 9 L2 9 Z" fill="currentColor" stroke="none"/><path d="M38 4 L62 4 L62 9 L38 9 Z" fill="currentColor" stroke="none"/><path d="M2 9 Q2 20 12 20 L18 20 Q26 20 26 9"/><path d="M38 9 Q38 20 48 20 L54 20 Q62 20 62 9"/><path d="M26 9 Q32 7 38 9"/></>)}
+    {d === "wayfarer" && (<><path d="M3 5 L27 5 L24 18 Q23 20 20 20 L10 20 Q6 20 5 18 Z"/><path d="M61 5 L37 5 L40 18 Q41 20 44 20 L54 20 Q58 20 59 18 Z"/><path d="M27 8 Q32 6 37 8"/></>)}
+    {d === "big" && (<><rect x="1" y="2" width="27" height="20" rx="5"/><rect x="36" y="2" width="27" height="20" rx="5"/><path d="M28 9 Q32 7 36 9"/></>)}
+    {d === "narrow" && (<><rect x="2" y="9" width="24" height="6" rx="2"/><rect x="38" y="9" width="24" height="6" rx="2"/><path d="M26 11 Q32 9 38 11"/></>)}
+    {d === "sport" && (<><path d="M2 8 Q2 4 8 4 L24 4 Q28 4 28 10 L26 14 Q24 18 18 18 L8 18 Q2 18 2 12 Z"/><path d="M62 8 Q62 4 56 4 L40 4 Q36 4 36 10 L38 14 Q40 18 46 18 L56 18 Q62 18 62 12 Z"/><path d="M28 10 Q32 8 36 10"/></>)}
+    {d === "mono" && (<><path d="M4 8 Q4 4 10 4 L54 4 Q60 4 60 8 L60 16 Q60 20 54 20 L10 20 Q4 20 4 16 Z"/><path d="M32 7 L32 17" strokeDasharray="1.5 2" opacity="0.5"/></>)}
+    {d === "mask" && (<><path d="M3 8 Q32 2 61 8 L61 16 Q32 22 3 16 Z"/><path d="M3 13 Q32 17 61 13" opacity="0.3"/></>)}
+    {d === "clip" && (<><path d="M5 6 L5 2 M9 6 L9 2 M55 6 L55 2 M59 6 L59 2"/><rect x="2" y="6" width="24" height="14" rx="3"/><rect x="38" y="6" width="24" height="14" rx="3"/><path d="M26 11 Q32 9 38 11"/></>)}
   </svg>
 );
 
 const SHAPE_DEFS: { key: string; label: string; icon: string }[] = [
-  { key: "Прямоугольные", label: "прямоугольные", icon: "rect" },
-  { key: "Квадратные", label: "квадратные", icon: "square" },
-  { key: "Вэйфэрер", label: "вэйфэрер", icon: "browline" },
-  { key: "Большие", label: "большие", icon: "big" },
-  { key: "Овальные", label: "овальные", icon: "oval" },
-  { key: "Спортивные", label: "спортивные", icon: "sport" },
-  { key: "Авиаторы", label: "авиатор", icon: "aviator" },
-  { key: "Кошачий глаз", label: "кошачий глаз", icon: "cat" },
-  { key: "Круглые", label: "круглые", icon: "round" },
-  { key: "Броулайнеры", label: "броулайнеры", icon: "browline" },
-  { key: "Монолинза", label: "монолинза", icon: "mono" },
-  { key: "Узкие", label: "узкие", icon: "narrow" },
-  { key: "Клипоны", label: "клипоны", icon: "clip" },
-  { key: "Горнолыжные маски", label: "горнолыжные маски", icon: "mask" },
+  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect" },
+  { key: "Квадратные",    label: "Квадратные",    icon: "square" },
+  { key: "Круглые",       label: "Круглые",        icon: "round" },
+  { key: "Овальные",      label: "Овальные",       icon: "oval" },
+  { key: "Авиаторы",      label: "Авиаторы",       icon: "aviator" },
+  { key: "Кошачий глаз",  label: "Кошачий глаз",   icon: "cat" },
+  { key: "Броулайнеры",   label: "Броулайнеры",    icon: "browline" },
+  { key: "Вэйфэрер",      label: "Вэйфэрер",       icon: "wayfarer" },
+  { key: "Большие",       label: "Большие",         icon: "big" },
+  { key: "Узкие",         label: "Узкие",           icon: "narrow" },
+  { key: "Спортивные",    label: "Спортивные",      icon: "sport" },
+  { key: "Монолинза",     label: "Монолинза",       icon: "mono" },
+  { key: "Горнолыжные маски", label: "Маски",       icon: "mask" },
+  { key: "Клипоны",       label: "Клипоны",         icon: "clip" },
 ];
 
 const COLOR_SWATCHES: { name: string; hex: string }[] = [
@@ -199,7 +127,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         const num = parseInt(s.value, 10);
         if (!isNaN(num)) specMap[s.label] = num;
       }
-      const width = specMap["Ширина оправы"];
+      const width = specMap["Ширина окуляра"];
       const temple = specMap["Длина дужки"];
       if (width !== undefined && (width < sizeWidth[0] || width > sizeWidth[1])) return false;
       if (temple !== undefined && (temple < sizeTemple[0] || temple > sizeTemple[1])) return false;
@@ -247,11 +175,13 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
   const FilterContent = (
     <div className="text-sm">
       {/* Header */}
-      <div className="flex items-baseline justify-between pb-4">
-        <h2 className="font-serif text-2xl text-brand">Фильтры</h2>
+      <div className="flex items-center justify-between pb-4">
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground font-semibold">
+          Фильтры
+        </span>
         <button
           onClick={clearAll}
-          className="text-sm text-brand hover:underline"
+          className="text-[11px] font-mono uppercase tracking-[0.08em] text-muted-foreground hover:text-foreground transition-colors"
         >
           Сбросить
         </button>
@@ -265,7 +195,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Поиск..."
-          className="w-full bg-card border border-border rounded-md pl-9 pr-3 py-2 text-sm outline-none focus:border-brand"
+          className="w-full bg-background border border-border rounded-full pl-9 pr-3 py-2 text-sm outline-none focus:border-ink/50 transition-colors"
         />
       </div>
 
@@ -276,7 +206,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as typeof sort)}
-            className="w-full appearance-none bg-card border border-border rounded-md pl-3 pr-8 py-2 text-sm cursor-pointer outline-none focus:border-brand"
+            className="w-full appearance-none bg-card border border-border rounded-full pl-3 pr-8 py-2 text-sm cursor-pointer outline-none focus:border-ink/50"
           >
             <option value="featured">Популярные</option>
             <option value="price-asc">Сначала дешёвые</option>
@@ -298,19 +228,14 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   type="button"
                   onClick={() => toggle("shape", s.key)}
                   className={cn(
-                    "group relative flex flex-col items-center justify-center gap-2 rounded-md border bg-card px-2 py-4 text-center transition-all hover:border-foreground/40 hover:shadow-sm",
+                    "flex flex-col items-center justify-center gap-2 rounded-xl border px-2 py-3 text-center transition-all duration-150 hover:border-ink",
                     checked
-                      ? "border-brand ring-1 ring-brand"
-                      : "border-border",
+                      ? "border-ink bg-cream"
+                      : "border-border bg-card",
                   )}
                 >
-                  {checked && (
-                    <span className="absolute right-1.5 top-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-brand text-brand-foreground">
-                      <Check className="h-2.5 w-2.5" strokeWidth={3} />
-                    </span>
-                  )}
                   <ShapeIcon d={s.icon} />
-                  <span className="text-xs leading-tight first-letter:uppercase">
+                  <span className="text-[11px] leading-tight text-foreground/80">
                     {s.label}
                   </span>
                 </button>
@@ -323,7 +248,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       {/* Price */}
       <FilterSection title="Цена">
         <div className="flex items-center gap-2 mb-3">
-          <label className="flex-1 flex items-center gap-1 border border-border bg-card rounded-md px-3 py-2">
+          <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
             <span className="text-muted-foreground text-xs">₽</span>
             <input
               type="number"
@@ -332,7 +257,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
               className="w-full bg-transparent outline-none text-sm"
             />
           </label>
-          <label className="flex-1 flex items-center gap-1 border border-border bg-card rounded-md px-3 py-2">
+          <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
             <span className="text-muted-foreground text-xs">₽</span>
             <input
               type="number"
@@ -348,13 +273,13 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           step={100}
           value={price}
           onValueChange={(v) => setPrice([v[0], v[1]] as [number, number])}
-          className="[&_[role=slider]]:border-brand [&_[role=slider]]:bg-background [&>span:first-child]:bg-brand/20 [&_[data-slot=slider-range]]:bg-brand"
+          className="mx-2 [&_[role=slider]]:border-ink [&_[role=slider]]:bg-background [&>span:first-child]:bg-ink/10 [&_[data-slot=slider-range]]:bg-ink"
         />
       </FilterSection>
 
       {/* Color — compact swatch grid */}
       <FilterSection title="Цвет">
-        <div className="grid grid-cols-6 gap-2.5">
+        <div className="grid grid-cols-5 gap-2 py-1">
           {COLOR_SWATCHES.map((c) => {
             const sel = selectedColors.has(c.name);
             return (
@@ -371,8 +296,8 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   })
                 }
                 className={cn(
-                  "relative h-8 w-8 rounded-full border transition-all hover:scale-110",
-                  sel ? "ring-2 ring-brand ring-offset-2 ring-offset-background border-transparent" : "border-border",
+                  "relative w-full aspect-square rounded-full border transition-all hover:scale-105",
+                  sel ? "ring-2 ring-ink ring-offset-1 ring-offset-background border-transparent" : "border-border",
                 )}
                 style={{
                   background: c.hex,
@@ -404,7 +329,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   <span
                     className={cn(
                       "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
-                      checked ? "border-brand bg-brand text-brand-foreground" : "border-border bg-card group-hover:border-foreground/40",
+                      checked ? "border-ink bg-ink text-primary-foreground" : "border-border bg-card group-hover:border-foreground/40",
                     )}
                   >
                     {checked && <Check className="h-3 w-3" strokeWidth={3} />}
@@ -438,10 +363,10 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                 <span
                   className={cn(
                     "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-                    checked ? "border-brand" : "border-border group-hover:border-foreground/40",
+                    checked ? "border-ink" : "border-border group-hover:border-foreground/40",
                   )}
                 >
-                  {checked && <span className="h-2 w-2 rounded-full bg-brand" />}
+                  {checked && <span className="h-2 w-2 rounded-full bg-ink" />}
                 </span>
                 <input
                   type="radio"
@@ -472,7 +397,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition",
                     checked
-                      ? "border-brand bg-brand text-brand-foreground"
+                      ? "border-ink bg-ink text-primary-foreground"
                       : "border-border bg-card hover:border-foreground/50",
                   )}
                 >
@@ -524,7 +449,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                     <span
                       className={cn(
                         "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
-                        checked ? "border-brand bg-brand text-brand-foreground" : "border-border bg-card group-hover:border-foreground/40",
+                        checked ? "border-ink bg-ink text-primary-foreground" : "border-border bg-card group-hover:border-foreground/40",
                       )}
                     >
                       {checked && <Check className="h-3 w-3" strokeWidth={3} />}
@@ -549,7 +474,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         <button
           type="button"
           onClick={() => setMobileFilters(false)}
-          className="w-full bg-brand text-brand-foreground rounded-md py-3 text-sm font-medium hover:bg-brand/90 transition-colors"
+          className="w-full bg-ink text-primary-foreground rounded-full py-3 text-sm font-medium hover:opacity-90 transition-opacity"
         >
           Применить фильтры ({filtered.length})
         </button>
@@ -572,7 +497,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
               sidebarOpen ? "w-[260px] mr-10" : "w-0 mr-0",
             )}
           >
-            <div className="w-[260px] h-[calc(100vh-6rem)] overflow-y-auto pr-4">
+            <div className="w-[260px] h-[calc(100vh-6rem)] overflow-y-auto px-4">
               {FilterContent}
             </div>
           </div>
@@ -665,7 +590,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                 <button
                   key={facet + value}
                   onClick={() => toggle(facet, value)}
-                  className="inline-flex items-center gap-1 bg-surface border border-border text-xs px-2 py-1 rounded-sm hover:border-brand"
+                  className="inline-flex items-center gap-1 bg-cream border border-ink/20 text-xs px-3 py-1 rounded-full hover:border-ink transition-colors"
                 >
                   {value} <X className="h-3 w-3" />
                 </button>
@@ -704,12 +629,12 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
             </div>
             {FilterContent}
             <div className="sticky bottom-0 bg-background pt-4 flex gap-3">
-              <button onClick={clearAll} className="flex-1 border border-border py-3 rounded-sm">
+              <button onClick={clearAll} className="flex-1 border border-border py-3 rounded-full text-sm">
                 Сбросить
               </button>
               <button
                 onClick={() => setMobileFilters(false)}
-                className="flex-1 bg-ink text-primary-foreground py-3 rounded-sm"
+                className="flex-1 bg-ink text-primary-foreground py-3 rounded-full text-sm"
               >
                 Показать ({filtered.length})
               </button>
@@ -745,19 +670,17 @@ function FilterSection({
           titleClass,
         )}
       >
-        <span className="font-serif text-[15px] tracking-tight first-letter:uppercase">
+        <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
           {title}
         </span>
-        <span className="flex h-6 w-6 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors group-hover:border-foreground group-hover:text-foreground">
-          <ChevronDown
-            className={cn("h-3.5 w-3.5 transition-transform duration-200", open && "rotate-180")}
-          />
-        </span>
+        <ChevronDown
+          className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 shrink-0", open && "rotate-180")}
+        />
       </button>
       <div
         className={cn(
-          "overflow-hidden transition-all duration-300",
-          open ? "max-h-[2000px] mt-4 opacity-100" : "max-h-0 opacity-0",
+          "transition-all duration-300",
+          open ? "max-h-[2000px] mt-4 opacity-100 overflow-visible" : "max-h-0 opacity-0 overflow-hidden",
         )}
       >
         {children}

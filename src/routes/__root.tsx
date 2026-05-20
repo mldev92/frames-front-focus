@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
+import { MessengerFAB } from "@/components/MessengerFAB";
 
 function NotFoundComponent() {
   return (
@@ -92,7 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
       },
     ],
   }),
@@ -128,6 +129,7 @@ function RootComponent() {
         <Footer />
       </div>
       <CartDrawer />
+      <MessengerFAB />
       <Toaster position="bottom-right" />
     </QueryClientProvider>
   );

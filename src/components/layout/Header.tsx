@@ -59,9 +59,30 @@ export function Header() {
 
   return (
     <>
-      {/* Announcement bar */}
-      <div className="bg-ink text-primary-foreground text-xs py-2 px-4 text-center">
-        Бесплатная доставка по СПб от 5 000 ₽ · Гарантия на оправы 12 месяцев
+      {/* Utility bar */}
+      <div className="bg-ink text-primary-foreground text-xs py-2 px-4">
+        <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
+          <span className="flex items-center gap-1.5 opacity-80">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-7.6 8-13a8 8 0 1 0-16 0c0 5.4 8 13 8 13z"/><circle cx="12" cy="9" r="3"/></svg>
+            Санкт-Петербург · Бесплатная доставка от 5 000 ₽
+          </span>
+          <div className="flex items-center gap-5">
+            <button
+              onClick={() => document.dispatchEvent(new CustomEvent("open-callback"))}
+              className="opacity-70 hover:opacity-100 transition-opacity border-b border-dotted border-white/30 hover:border-white/70 pb-px"
+            >
+              Заказать звонок
+            </button>
+            <a
+              href="tel:+78121000000"
+              className="flex items-center gap-2 font-semibold text-[13px] px-3.5 py-1 rounded-full bg-white/10 border border-transparent hover:bg-white/15 hover:border-white/20 transition-all no-underline text-primary-foreground"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-success shadow-[0_0_0_0_oklch(0.75_0.18_150/0.6)] animate-[pulse-ring_2s_infinite]" />
+              +7 (812) 100-00-00
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.95.37 1.88.72 2.78a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.35 1.83.59 2.78.72A2 2 0 0 1 22 16.92z"/></svg>
+            </a>
+          </div>
+        </div>
       </div>
 
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur border-b border-border">

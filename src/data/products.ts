@@ -34,7 +34,7 @@ export const products: Product[] = [
       { label: "Конструкция", value: "Ободковая" },
       { label: "Длина дужки", value: "145 мм" },
       { label: "Ширина моста", value: "18 мм" },
-      { label: "Ширина оправы", value: "146 мм" },
+      { label: "Ширина окуляра", value: "146 мм" },
     ],
   },
   {
@@ -63,7 +63,7 @@ export const products: Product[] = [
       { label: "Конструкция", value: "Ободковая" },
       { label: "Длина дужки", value: "140 мм" },
       { label: "Ширина моста", value: "19 мм" },
-      { label: "Ширина оправы", value: "135 мм" },
+      { label: "Ширина окуляра", value: "135 мм" },
     ],
   },
   {
@@ -91,7 +91,7 @@ export const products: Product[] = [
       { label: "Конструкция", value: "Комбинированная" },
       { label: "Длина дужки", value: "145 мм" },
       { label: "Ширина моста", value: "18 мм" },
-      { label: "Ширина оправы", value: "140 мм" },
+      { label: "Ширина окуляра", value: "140 мм" },
     ],
   },
   {
@@ -120,7 +120,7 @@ export const products: Product[] = [
       { label: "Конструкция", value: "Ободковая" },
       { label: "Длина дужки", value: "140 мм" },
       { label: "Ширина моста", value: "18 мм" },
-      { label: "Ширина оправы", value: "138 мм" },
+      { label: "Ширина окуляра", value: "138 мм" },
     ],
   },
   {
@@ -149,7 +149,7 @@ export const products: Product[] = [
       { label: "Конструкция", value: "Ободковая" },
       { label: "Длина дужки", value: "135 мм" },
       { label: "Ширина моста", value: "20 мм" },
-      { label: "Ширина оправы", value: "128 мм" },
+      { label: "Ширина окуляра", value: "128 мм" },
     ],
   },
   {
@@ -177,7 +177,7 @@ export const products: Product[] = [
       { label: "Конструкция", value: "Ободковая" },
       { label: "Длина дужки", value: "145 мм" },
       { label: "Ширина моста", value: "16 мм" },
-      { label: "Ширина оправы", value: "142 мм" },
+      { label: "Ширина окуляра", value: "142 мм" },
     ],
   },
   {
@@ -204,7 +204,7 @@ export const products: Product[] = [
       { label: "Конструкция", value: "Ободковая" },
       { label: "Длина дужки", value: "140 мм" },
       { label: "Ширина моста", value: "17 мм" },
-      { label: "Ширина оправы", value: "136 мм" },
+      { label: "Ширина окуляра", value: "136 мм" },
     ],
   },
   {
@@ -228,7 +228,7 @@ export const products: Product[] = [
       { label: "Конструкция", value: "Ободковая" },
       { label: "Длина дужки", value: "145 мм" },
       { label: "Ширина моста", value: "19 мм" },
-      { label: "Ширина оправы", value: "144 мм" },
+      { label: "Ширина окуляра", value: "144 мм" },
     ],
   },
   {
@@ -253,7 +253,7 @@ export const products: Product[] = [
       { label: "Конструкция", value: "Ободковая" },
       { label: "Длина дужки", value: "135 мм" },
       { label: "Ширина моста", value: "18 мм" },
-      { label: "Ширина оправы", value: "130 мм" },
+      { label: "Ширина окуляра", value: "130 мм" },
     ],
   },
   {
@@ -277,7 +277,7 @@ export const products: Product[] = [
       { label: "Конструкция", value: "Комбинированная" },
       { label: "Длина дужки", value: "140 мм" },
       { label: "Ширина моста", value: "20 мм" },
-      { label: "Ширина оправы", value: "140 мм" },
+      { label: "Ширина окуляра", value: "140 мм" },
     ],
   },
   {
@@ -304,7 +304,7 @@ export const products: Product[] = [
       { label: "Конструкция", value: "Ободковая" },
       { label: "Длина дужки", value: "130 мм" },
       { label: "Ширина моста", value: "16 мм" },
-      { label: "Ширина оправы", value: "122 мм" },
+      { label: "Ширина окуляра", value: "122 мм" },
     ],
   },
 

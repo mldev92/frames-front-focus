@@ -39,6 +39,12 @@ function Cabinet() {
             </button>
           ))}
           <Link
+            to="/loyalty"
+            className="text-left px-4 py-2 rounded-sm whitespace-nowrap text-sm text-brand hover:bg-surface/60 no-underline"
+          >
+            Программа лояльности →
+          </Link>
+          <Link
             to="/"
             className="text-left px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
           >
