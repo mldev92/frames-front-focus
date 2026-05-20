@@ -495,7 +495,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
             className="hidden lg:block shrink-0 sticky top-4 self-start overflow-hidden transition-[width,margin-right] duration-300 ease-in-out"
             style={{ width: sidebarOpen ? "300px" : "0", marginRight: sidebarOpen ? "2.5rem" : "0" }}
           >
-            <div className="h-[calc(100vh-6rem)] overflow-y-auto px-5" style={{ width: "300px" }}>
+            <div className="h-[calc(100vh-6rem)] overflow-y-auto px-5" style={{ width: "300px", background: "red" }}>
               {FilterContent}
             </div>
           </div>
