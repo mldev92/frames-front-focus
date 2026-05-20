@@ -12,6 +12,9 @@ export default defineConfig({
   vite: {
     server: {
       allowedHosts: [".ngrok-free.app", "optika-new.p2print.site"],
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
     },
   },
   tanstackStart: {
