@@ -24,7 +24,7 @@ interface ListingProps {
 
 // ── Frame shape icons — 64×24 grid, stroke 1.5, round joins ─────────────────
 const ShapeIcon = ({ d }: { d: string }) => (
-  <svg viewBox="0 0 64 24" style={{ width: "88px", height: "32px" }} fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg viewBox="0 0 64 24" style={{ width: "112px", height: "42px" }} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     {d === "rect" && (<><rect x="2" y="4" width="24" height="16" rx="4"/><rect x="38" y="4" width="24" height="16" rx="4"/><path d="M26 9 Q32 7 38 9"/></>)}
     {d === "square" && (<><rect x="2" y="3" width="24" height="18" rx="1.5"/><rect x="38" y="3" width="24" height="18" rx="1.5"/><path d="M26 9 Q32 7 38 9"/></>)}
     {d === "round" && (<><circle cx="13" cy="12" r="10"/><circle cx="51" cy="12" r="10"/><path d="M23 11 Q32 8 41 11"/></>)}
@@ -228,14 +228,14 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   type="button"
                   onClick={() => toggle("shape", s.key)}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-2 rounded-xl border px-3 py-4 text-center transition-all duration-150 hover:border-ink",
+                    "flex flex-col items-center justify-center gap-2.5 rounded-xl border px-2 py-5 text-center transition-all duration-150 hover:border-ink",
                     checked
                       ? "border-ink bg-cream"
                       : "border-border bg-card",
                   )}
                 >
                   <ShapeIcon d={s.icon} />
-                  <span className="text-[11px] leading-tight text-foreground/80">
+                  <span className="text-[11px] leading-tight text-foreground/70 font-medium">
                     {s.label}
                   </span>
                 </button>
@@ -495,7 +495,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
             className="hidden lg:block shrink-0 sticky top-4 self-start overflow-hidden transition-[width,margin-right] duration-300 ease-in-out"
             style={{ width: sidebarOpen ? "300px" : "0", marginRight: sidebarOpen ? "2.5rem" : "0" }}
           >
-            <div className="h-[calc(100vh-6rem)] overflow-y-auto px-5" style={{ width: "300px", background: "red" }}>
+            <div className="h-[calc(100vh-6rem)] overflow-y-auto px-5" style={{ width: "300px" }}>
               {FilterContent}
             </div>
           </div>
