@@ -24,7 +24,7 @@ interface ListingProps {
 
 // ── Frame shape icons — 64×24 grid, stroke 1.5, round joins ─────────────────
 const ShapeIcon = ({ d }: { d: string }) => (
-  <svg viewBox="0 0 64 24" className="w-16 h-6" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+  <svg viewBox="0 0 64 24" className="w-[88px] h-8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
     {d === "rect" && (<><rect x="2" y="4" width="24" height="16" rx="4"/><rect x="38" y="4" width="24" height="16" rx="4"/><path d="M26 9 Q32 7 38 9"/></>)}
     {d === "square" && (<><rect x="2" y="3" width="24" height="18" rx="1.5"/><rect x="38" y="3" width="24" height="18" rx="1.5"/><path d="M26 9 Q32 7 38 9"/></>)}
     {d === "round" && (<><circle cx="13" cy="12" r="10"/><circle cx="51" cy="12" r="10"/><path d="M23 11 Q32 8 41 11"/></>)}
@@ -228,7 +228,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   type="button"
                   onClick={() => toggle("shape", s.key)}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-2 rounded-xl border px-2 py-3 text-center transition-all duration-150 hover:border-ink",
+                    "flex flex-col items-center justify-center gap-2 rounded-xl border px-3 py-4 text-center transition-all duration-150 hover:border-ink",
                     checked
                       ? "border-ink bg-cream"
                       : "border-border bg-card",
@@ -470,7 +470,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       )}
 
       {/* Apply button */}
-      <div className="sticky bottom-0 -mx-4 mt-4 bg-gradient-to-t from-background via-background to-transparent px-4 pb-2 pt-4">
+      <div className="sticky bottom-0 -mx-5 mt-4 bg-gradient-to-t from-background via-background to-transparent px-5 pb-2 pt-4">
         <button
           type="button"
           onClick={() => setMobileFilters(false)}
@@ -494,10 +494,10 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           <div
             className={cn(
               "hidden lg:block shrink-0 sticky top-4 self-start overflow-hidden transition-[width,margin-right] duration-300 ease-in-out",
-              sidebarOpen ? "w-[260px] mr-10" : "w-0 mr-0",
+              sidebarOpen ? "w-[300px] mr-10" : "w-0 mr-0",
             )}
           >
-            <div className="w-[260px] h-[calc(100vh-6rem)] overflow-y-auto px-4">
+            <div className="w-[300px] h-[calc(100vh-6rem)] overflow-y-auto px-5">
               {FilterContent}
             </div>
           </div>
