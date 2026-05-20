@@ -144,6 +144,7 @@ function ProductPage() {
                 className="max-w-[80%] max-h-[80%] object-contain"
               />
               <TryOnBadge
+                variant="pill"
                 className="absolute top-4 right-4"
                 onClick={() => setVtoOpen(true)}
               />
