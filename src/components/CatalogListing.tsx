@@ -227,8 +227,9 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   key={s.key}
                   type="button"
                   onClick={() => toggle("shape", s.key)}
+                  style={{ backgroundColor: checked ? undefined : "oklch(0.97 0.02 90)" }}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-2.5 rounded-xl border px-2 py-5 text-center transition-all duration-150 hover:border-ink bg-yellow-200",
+                    "flex flex-col items-center justify-center gap-2.5 rounded-xl border px-2 py-5 text-center transition-all duration-150 hover:border-ink",
                     checked
                       ? "border-ink bg-cream"
                       : "border-border bg-card",
