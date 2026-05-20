@@ -10,6 +10,7 @@ import { TryOnBadge, TryOnIcon } from "@/components/TryOnIcon";
 import { PrescriptionInput } from "@/components/PrescriptionInput";
 import { LensPurposeModal } from "@/components/LensPurposeModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
+import { TBankWidget } from "@/components/TBankWidget";
 import { Glasses } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -61,10 +62,15 @@ function ProductPage() {
   const specIcons: Record<string, string> = {
     "Длина дужки": "/icon_param_glasses_length.svg",
     "Ширина моста": "/icon_param_bridge_length.svg",
-    "Ширина оправы": "/icon_param_hinge_distance.svg",
+    "Ширина окуляра": "/icon_param_hinge_distance.svg",
   };
 
   const isLens = product.category === "kontaktnye-linzy";
+  const isMisight = product.slug.toLowerCase().includes("misight");
+  const showInstallment =
+    ((product.category === "opravy" || product.category === "linzy-dlya-ochkov") &&
+      product.price > 3500) ||
+    (product.category === "kontaktnye-linzy" && isMisight);
   const related = products
     .filter((p) => p.category === product.category && p.slug !== product.slug)
     .slice(0, 4);
@@ -206,6 +212,8 @@ function ProductPage() {
               </span>
             )}
           </div>
+
+          {showInstallment && <TBankWidget />}
 
           {/* Availability + Product Code */}
           <div className="mt-3 flex items-center gap-4 text-sm">
