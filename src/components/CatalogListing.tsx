@@ -24,7 +24,7 @@ interface ListingProps {
 
 // ── Frame shape icons — 64×24 grid, stroke 1.5, round joins ─────────────────
 const ShapeIcon = ({ d }: { d: string }) => (
-  <svg viewBox="0 0 64 24" style={{ width: "112px", height: "42px" }} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg viewBox="0 0 64 24" style={{ width: "100%", height: "auto", minHeight: "36px" }} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     {d === "rect" && (<><rect x="2" y="4" width="24" height="16" rx="4"/><rect x="38" y="4" width="24" height="16" rx="4"/><path d="M26 9 Q32 7 38 9"/></>)}
     {d === "square" && (<><rect x="2" y="3" width="24" height="18" rx="1.5"/><rect x="38" y="3" width="24" height="18" rx="1.5"/><path d="M26 9 Q32 7 38 9"/></>)}
     {d === "round" && (<><circle cx="13" cy="12" r="10"/><circle cx="51" cy="12" r="10"/><path d="M23 11 Q32 8 41 11"/></>)}
@@ -227,7 +227,6 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   key={s.key}
                   type="button"
                   onClick={() => toggle("shape", s.key)}
-                  style={{ backgroundColor: checked ? undefined : "oklch(0.97 0.02 90)" }}
                   className={cn(
                     "flex flex-col items-center justify-center gap-2.5 rounded-xl border px-2 py-5 text-center transition-all duration-150 hover:border-ink",
                     checked
@@ -471,7 +470,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       )}
 
       {/* Apply button */}
-      <div className="sticky bottom-0 -mx-5 mt-4 bg-gradient-to-t from-background via-background to-transparent px-5 pb-2 pt-4">
+      <div className="sticky bottom-0 -mx-3 mt-4 bg-gradient-to-t from-background via-background to-transparent px-3 pb-2 pt-4">
         <button
           type="button"
           onClick={() => setMobileFilters(false)}
@@ -496,7 +495,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
             className="hidden lg:block shrink-0 sticky top-4 self-start overflow-hidden transition-[width,margin-right] duration-300 ease-in-out"
             style={{ width: sidebarOpen ? "300px" : "0", marginRight: sidebarOpen ? "2.5rem" : "0" }}
           >
-            <div className="h-[calc(100vh-6rem)] overflow-y-auto px-5" style={{ width: "300px" }}>
+            <div className="h-[calc(100vh-6rem)] overflow-y-auto px-3" style={{ width: "300px" }}>
               {FilterContent}
             </div>
           </div>
