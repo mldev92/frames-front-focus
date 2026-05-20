@@ -1,69 +1,71 @@
-## Goal
+## Product page redesign — Warby Parker style with sticky purchase card
 
-Bring the homepage closer to the Warby Parker reference: lighter, airier, more editorial, with horizontal carousels, magazine-style triptychs, and a prominent benefits/insurance band.
+### Layout changes (`src/routes/products.$slug.tsx`)
 
-## Section-by-section changes to `src/routes/index.tsx`
+**1. Container: full-width like catalog**
+- Remove `mx-auto max-w-7xl` from the root wrapper.
+- Use `px-6 lg:px-10` for breathing room edge-to-edge.
 
-1. **Hero** — Rework current dark-overlay hero into a brighter lifestyle banner.
-   - Lighter gradient (only left ~40%, soft fade)
-   - Smaller, tighter headline; pill-shaped primary CTAs ("Подобрать оправу", "Каталог очков")
-   - Thin row of 4 trust signals overlaid at bottom: "Бесплатная доставка", "Гарантия 12 мес.", "Возврат 14 дней", "Примерка онлайн"
+**2. Three-column grid**
+Reference layout: thumbnail rail (left, narrow) + big gallery (center) + sticky purchase card (right, narrow).
 
-2. **New arrivals carousel** (replaces current grid)
-   - Horizontal scroll/snap row of product cards with arrow controls
-   - Card hover reveals "Примерить" pill + heart icon top-left
-   - Color swatches under the price
-   - "Смотреть все новинки" pill button in the section header (right)
+```text
+[thumbs 80px] [ gallery flex-1 ] [ purchase card ~380px ]
+```
 
-3. **Editorial triptych** (new) — 3 large image cards side by side
-   - "Дизайн из Италии · Tutto Collection", "Винтаж 90-х", "Спорт и активность"
-   - Each card has white pill CTA at the bottom-left, full-bleed image, rounded corners
+- Thumbnails move from a horizontal strip *below* the gallery to a vertical rail on the **left** of the gallery, stacked top-to-bottom (incl. the VTO icon as the last tile).
+- Gallery becomes the dominant central element on a soft grey/cream background card (`bg-surface`, rounded), with `Try on` pill in top-right corner of the gallery (matches reference).
+- Right column becomes the **sticky purchase card** — see below.
 
-4. **"Четыре способа купить" tiles** (replaces current categories block, keeps 5 cats → choose 4 most relevant)
-   - 4 equal portrait cards: Оправы с диоптриями · Солнцезащитные · Контактные линзы · Запись на проверку
-   - White pill labels, soft pastel backgrounds, no heavy dark overlay
-   - Centered section title above
+**3. Sticky purchase card (the key feature)**
+The right card stays fixed to the viewport while the user scrolls the long left content (tabs, specs, related), then "releases" when its container ends — exactly like the reference.
 
-5. **Bestsellers** — convert to same carousel pattern as New arrivals for consistency
+Implementation: pure CSS, no JS.
+- Wrap the right column with `<aside className="lg:sticky lg:top-24 lg:self-start h-fit">`.
+- `self-start` on the grid item + `sticky top-24` makes the card stick while the sibling column scrolls, and naturally unstick at the parent container's bottom.
+- Card visual: white background, rounded, subtle border + soft shadow, internal padding `p-6`, contains:
+  - Brand eyebrow + product name
+  - Price + installment line
+  - Color swatches (compact)
+  - Primary CTA "Подобрать линзы и купить" (full-width, brand color, prominent)
+  - Secondary: "Купить оправу без линз" (ghost)
+  - Heart save button (icon-only, top-right of card)
+  - Trust strip (compact 3-up: доставка / гарантия / возврат)
 
-6. **Brand promise band** (new, replaces current dark "контроль миопии" CTA block)
-   - Full-width brand-red band with centered headline "Подбор очков — это просто"
-   - Sub-line + 4 inline mini-steps (Выбор → Линзы → Примерка → Доставка)
-   - Single white pill CTA
+**4. Left column content reorder**
+Now that the purchase card moved right, the left column holds:
+- Gallery (with vertical thumbnail rail beside it)
+- Below gallery: long-form content that scrolls past the sticky card:
+  - "Что включено за {price}" feature list (NEW — mirrors reference: checkmark list of bundled benefits like "Однодневная доставка", "Бесплатная подгонка", "Защита от царапин 12 мес", etc.) — render from a static array in the same file.
+  - Specs table (existing, but as accordion section, not tab)
+  - "Как подобрать" (accordion)
+  - "Доставка и возврат" (accordion)
+  - "Нужен рецепт?" accordion containing the existing `PrescriptionInput`
+  - About the brand (accordion stub)
 
-7. **Services** — keep but lighten: remove dark gradient overlay, white card with image on top + title/CTA below (matches reference's clean tile style)
+Convert the current tabs into stacked accordion sections (reuse `@/components/ui/accordion`), which matches the reference exactly and makes the page tall enough for the sticky card to demonstrate its behavior.
 
-8. **Editorial split** (keep myopia/children section but restyle)
-   - Light cream background instead of black
-   - Serif headline left, image right with rounded corners
-   - Small green eyebrow text like reference's "We've got your eyes covered"
+**5. Prescription input placement**
+Currently always shown inline. Move it inside the "Нужен рецепт?" accordion so the main column stays scannable.
 
-9. **App / advisor section** (new, optional) — phone mockup left, text right
-   - "Подбор оправы у вас в кармане" + small CTA
-   - Skip if no phone asset; replace with salon locator teaser
+**6. Lens modal trigger**
+The "Подобрать линзы" inline button is removed — its job is taken by the primary CTA in the sticky card ("Подобрать линзы и купить"), which opens `LensPurposeModal` (or adds to cart for non-lens products).
 
-10. **Journal** — keep, but switch to 3-up with larger images, thinner type, subtle category chip
+**7. Related products section**
+Stays full-width below the grid, unchanged structurally.
 
-## Shared visual upgrades (`src/styles.css` + components)
+### What does NOT change
+- No data model changes.
+- No new routes, no backend changes.
+- `LensPurposeModal`, `PrescriptionInput`, `VirtualTryOnModal`, `TBankWidget`, `ProductCard` reused as-is.
+- Mobile: grid collapses to single column, purchase card becomes a normal block (no sticky on mobile — `lg:sticky` only).
 
-- Introduce a `--surface-cream` token (warm off-white) for alternating section backgrounds
-- Standardize CTA buttons to rounded-full pills (`rounded-full px-5 py-2.5`) — add a `Button` variant `pill`
-- Tighter type scale on hero (down from 7xl → 6xl) but more generous line-height
-- Use existing brand red sparingly — accents and one band only, not on every CTA
-- Larger image radius (`rounded-lg`) across cards for the modern editorial feel
+### Files touched
+- `src/routes/products.$slug.tsx` — full restructure of the JSX (logic preserved).
+- No new components required (accordion already exists at `src/components/ui/accordion.tsx`).
 
-## New small components
-
-- `src/components/ProductCarousel.tsx` — horizontal snap carousel with prev/next arrows, reused for New arrivals + Bestsellers
-- `src/components/EditorialTriptych.tsx` — 3-image side-by-side block with pill CTAs
-- `src/components/BrandPromiseBand.tsx` — full-width red band with 4 mini-steps
-
-## Out of scope
-
-- No new routes, no data model changes, no backend
-- Header/Footer untouched
-- Product card internals only get a light hover-pill addition (no behavior change)
-
-## Assets
-
-Reuse existing `/category_*_gemini.png`, `/services*.png`, `/main_banner_v2.png`, `/main_bottom_child_banner.png`. No new image generation required for the first pass; we can swap in generated lifestyle shots later if you want.
+### Visual polish
+- Gallery background: `bg-surface` rounded-lg, generous aspect-square area, image centered with `object-contain`.
+- Purchase card: white, `border border-border`, `shadow-sm`, `rounded-lg`.
+- Primary CTA: brand red, `rounded-full` pill (matches the modern pill style introduced on the homepage), large padding.
+- Vertical thumb rail: 64px wide tiles, 2px brand border when active.
