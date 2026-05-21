@@ -1,8 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { Search, User, Heart, ShoppingBag, Menu, MapPin, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
+
+const CITIES = ["Санкт-Петербург", "Новокузнецк", "Россия"] as const;
+type City = typeof CITIES[number];
 
 const NAV = [
   {
@@ -57,15 +60,90 @@ export function Header() {
   useEffect(() => setMounted(true), []);
   const [hovered, setHovered] = useState<string | null>(null);
 
+  const [city, setCity] = useState<City>("Санкт-Петербург");
+  const [cityOpen, setCityOpen] = useState(false);
+  const cityRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem("o100-city") as City | null;
+    if (stored && (CITIES as readonly string[]).includes(stored)) setCity(stored);
+  }, []);
+
+  useEffect(() => {
+    if (!cityOpen) return;
+    function onClickOutside(e: MouseEvent) {
+      if (cityRef.current && !cityRef.current.contains(e.target as Node)) {
+        setCityOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [cityOpen]);
+
+  function selectCity(c: City) {
+    setCity(c);
+    localStorage.setItem("o100-city", c);
+    setCityOpen(false);
+  }
+
   return (
     <>
       {/* Utility bar */}
       <div className="bg-ink text-primary-foreground text-xs py-2 px-4">
         <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
-          <span className="flex items-center gap-1.5 opacity-80">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-7.6 8-13a8 8 0 1 0-16 0c0 5.4 8 13 8 13z"/><circle cx="12" cy="9" r="3"/></svg>
-            Санкт-Петербург · Бесплатная доставка от 5 000 ₽
-          </span>
+          <div className="flex items-center gap-2">
+            {/* City selector */}
+            <div className="relative" ref={cityRef}>
+              <button
+                onClick={() => setCityOpen((v) => !v)}
+                className="flex items-center gap-1.5 opacity-80 hover:opacity-100 transition-opacity"
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 22s8-7.6 8-13a8 8 0 1 0-16 0c0 5.4 8 13 8 13z"/>
+                  <circle cx="12" cy="9" r="3"/>
+                </svg>
+                {city}
+                <svg
+                  width="9" height="9"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                  strokeLinecap="round" strokeLinejoin="round"
+                  style={{ transform: cityOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.15s ease" }}
+                >
+                  <polyline points="6 9 12 15 18 9"/>
+                </svg>
+              </button>
+              {cityOpen && (
+                <div
+                  className="absolute left-0 bg-ink border border-white/15 rounded shadow-xl z-50"
+                  style={{ top: "calc(100% + 6px)", minWidth: "180px" }}
+                >
+                  {CITIES.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => selectCity(c)}
+                      className={cn(
+                        "w-full text-left flex items-center gap-2 text-xs transition-colors hover:bg-white/10",
+                        c === city ? "opacity-100" : "opacity-55"
+                      )}
+                      style={{ padding: "8px 12px" }}
+                    >
+                      <svg
+                        width="9" height="9"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+                        strokeLinecap="round" strokeLinejoin="round"
+                        style={{ opacity: c === city ? 1 : 0, flexShrink: 0 }}
+                      >
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <span className="opacity-50">·</span>
+            <span className="opacity-70">Бесплатная доставка от 5 000 ₽</span>
+          </div>
           <div className="flex items-center gap-5">
             <button
               onClick={() => document.dispatchEvent(new CustomEvent("open-callback"))}
