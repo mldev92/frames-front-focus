@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Truck, ShieldCheck, RotateCcw, Sparkles } from "lucide-react";
+import { useState } from "react";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { EditorialTriptych } from "@/components/EditorialTriptych";
 import { BrandPromiseBand } from "@/components/BrandPromiseBand";
 import { PromoBanner } from "@/components/PromoBanner";
 import { PromoCards } from "@/components/PromoCards";
+import { AppointmentModal } from "@/components/AppointmentModal";
 import { categories } from "@/data/categories";
 import { bestsellers, newArrivals } from "@/data/products";
 import { articles } from "@/data/articles";
@@ -60,6 +62,7 @@ function HomePage() {
   const news = newArrivals();
   const recent = articles.slice(0, 3);
   const fourCats = categories.filter((c) => c.slug !== "aksessuary").slice(0, 4);
+  const [aptOpen, setAptOpen] = useState(false);
 
   return (
     <div>
@@ -216,8 +219,9 @@ function HomePage() {
           {SERVICE_LIST.map((s) => (
             <a
               key={s.slug}
-              href={serviceHref(s.slug)}
-              className="group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md transition-shadow"
+              href={s.slug === "priem-vracha" ? undefined : serviceHref(s.slug)}
+              onClick={s.slug === "priem-vracha" ? (e) => { e.preventDefault(); setAptOpen(true); } : undefined}
+              className="group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md transition-shadow cursor-pointer"
             >
               <div className="aspect-[4/3] overflow-hidden bg-cream">
                 <img
@@ -311,6 +315,8 @@ function HomePage() {
           ))}
         </div>
       </section>
+
+      <AppointmentModal open={aptOpen} onOpenChange={setAptOpen} />
     </div>
   );
 }
