@@ -288,8 +288,8 @@ function HomePage() {
           {recent.map((a) => (
             <Link
               key={a.slug}
-              to="/blog/$slug"
-              params={{ slug: a.slug }}
+              to="/blog/$category/$slug"
+              params={{ category: a.categorySlug, slug: a.slug }}
               className="group block"
             >
               <div className="aspect-[4/3] bg-cream rounded-2xl overflow-hidden mb-4">

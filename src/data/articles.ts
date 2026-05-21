@@ -2,93 +2,61 @@ import type { Article } from "./types";
 
 const ph = (seed: string) => `https://picsum.photos/seed/${seed}/1600/900`;
 
-export const articles: Article[] = [
-  {
-    slug: "kak-vybrat-opravu",
-    title: "Как выбрать оправу по форме лица",
-    excerpt: "Простой гид по подбору очков, который поможет не ошибиться.",
-    cover: "/main_journal_1.png",
-    date: "2025-04-12",
-    author: "Анна Соколова",
-    category: "Гид",
-    content: [
-      "Подбор оправы — это сочетание удобства, стиля и пропорций. Главное правило: форма оправы должна контрастировать с формой лица, но не повторять её.",
-      "Овальное лицо считается универсальным — подходят почти все оправы. Круглому лицу идут квадратные и геометрические формы. Для квадратного лица — округлые, мягкие линии.",
-      "Не забывайте про размер: ширина оправы должна совпадать с шириной лица в области висков, а нижний край не должен опускаться на щёки.",
-    ],
-  },
-  {
-    slug: "kontroli-miopii",
-    title: "Контроль миопии у детей: что важно знать",
-    excerpt: "Современные подходы к замедлению прогрессирования близорукости.",
-    cover: "/main_journal_2.png",
-    date: "2025-03-28",
-    author: "Иван Петров",
-    category: "Здоровье",
-    content: [
-      "Близорукость у детей развивается особенно активно в возрасте 7–14 лет. Современная оптика и линзы позволяют существенно замедлить этот процесс.",
-      "Линзы Stellest и MiSight 1-Day показали клиническую эффективность в исследованиях.",
-      "Важна и гигиена зрения: 20-20-20, прогулки на свежем воздухе, освещение.",
-    ],
-  },
-  {
-    slug: "uxod-za-linzami",
-    title: "Уход за контактными линзами",
-    excerpt: "5 правил, которые продлят жизнь линзам и сохранят здоровье глаз.",
-    cover: "/main_journal_3.png",
-    date: "2025-03-15",
-    author: "Мария Иванова",
-    category: "Линзы",
-    content: [
-      "Перед каждым касанием линз тщательно мойте руки.",
-      "Используйте только свежий многофункциональный раствор — не доливайте старый.",
-      "Меняйте контейнер каждые 1–3 месяца.",
-      "Не носите линзы дольше срока, указанного производителем.",
-      "При красноте, дискомфорте или снижении зрения — снимите линзы и обратитесь к врачу.",
-    ],
-  },
-  {
-    slug: "siniy-svet",
-    title: "Защита от синего света: миф или необходимость?",
-    excerpt: "Разбираемся, нужны ли вам очки для работы за компьютером.",
-    cover: ph("article-4"),
-    date: "2025-02-20",
-    author: "Анна Соколова",
-    category: "Технологии",
-    content: [
-      "Синий свет (380–500 нм) присутствует во всём видимом спектре, включая солнце. Экраны излучают его в 1000 раз меньше солнца.",
-      "Покрытия Blue Block и линзы ZEISS BlueGuard уменьшают усталость глаз при долгой работе.",
-      "Главные средства профилактики цифровой усталости — перерывы и достаточное освещение.",
-    ],
-  },
-  {
-    slug: "trendy-2025",
-    title: "Тренды оправ 2025",
-    excerpt: "Геометрия, прозрачные ацетаты и возвращение «учительских» оправ.",
-    cover: ph("article-5"),
-    date: "2025-02-02",
-    author: "Мария Иванова",
-    category: "Стиль",
-    content: [
-      "В 2025 году оправы становятся выразительными: смелая геометрия, цветной ацетат, металл с глубокой патиной.",
-      "Прозрачные оправы — must-have сезона.",
-      "Возвращаются крупные «академические» формы 70-х.",
-    ],
-  },
-  {
-    slug: "garantia-i-uhod",
-    title: "Гарантия и уход за очками",
-    excerpt: "Что покрывает гарантия и как ухаживать за оправой каждый день.",
-    cover: ph("article-6"),
-    date: "2025-01-18",
-    author: "Иван Петров",
-    category: "Сервис",
-    content: [
-      "На все оправы из нашего ассортимента действует гарантия 12 месяцев.",
-      "Храните очки в жёстком футляре, протирайте только микрофиброй с нейтральным средством.",
-      "Раз в полгода — бесплатная диагностика и подгонка в наших салонах.",
-    ],
-  },
+// Blog categories as published on optika100.com. The live site currently has a
+// single rubric — "Линзы для очков" at /blog/linzy-dlya-ochkov/.
+export const blogCategories: { slug: string; title: string }[] = [
+  { slug: "linzy-dlya-ochkov", title: "Линзы для очков" },
 ];
 
+const CATEGORY_SLUG = "linzy-dlya-ochkov";
+const CATEGORY_TITLE = "Линзы для очков";
+const AUTHORS = ["Анна Соколова", "Иван Петров", "Мария Иванова"];
+
+// slug / title / excerpt — slugs mirror the live optika100.com article URLs 1:1.
+// NOTE: article bodies below are placeholders; migrate the real copy from the
+// live site (/blog/linzy-dlya-ochkov/{slug}/) in a content pass.
+const RAW: [string, string, string][] = [
+  ["pokrytiya-linz-dlya-ochkov", "Покрытия очковых линз", "Какие покрытия защищают линзы и зачем они нужны."],
+  ["vidy-ochkovykh-linz", "Виды линз для очков", "Однофокальные, прогрессивные, офисные — как разобраться."],
+  ["asfericheskie-linzy-dlya-ochkov", "Асферические линзы для очков", "Тоньше, легче и с меньшими искажениями по краям."],
+  ["ofisnye-linzy", "Офисные линзы", "Комфорт зрения на средних и близких дистанциях в течение дня."],
+  ["individualnye-linzy-dlya-ochkov-s-tekhnologiey-free-form", "Индивидуальные линзы с технологией Free Form", "Линзы, рассчитанные под параметры конкретного человека."],
+  ["komu-nuzhny-linzy-dlya-ochkov-s-podderzhkoy-akkomodatsii-razgruzochnye-linzy", "Разгрузочные линзы с поддержкой аккомодации", "Кому подходят линзы, снижающие нагрузку на глаза."],
+  ["progressivnye-linzy", "Прогрессивные линзы", "Одни очки для дали, средней дистанции и чтения."],
+  ["kak-vybrat-progressivnye-linzy", "Как выбрать прогрессивные линзы", "На что обратить внимание при подборе прогрессивов."],
+  ["skolko-stoyat-progressivnye-ochki163", "Сколько стоят прогрессивные очки", "Из чего складывается цена мультифокальных очков."],
+  ["polyarizatsionnye-linzy-dlya-ochkov", "Поляризационные линзы для очков", "Защита от бликов для вождения и активного отдыха."],
+  ["perifocal-perifokal", "Перифокальные линзы (Perifocal)", "Линзы для контроля прогрессирования близорукости."],
+  ["linzy-dlya-ochkov-stellest", "Линзы для очков Stellest", "Технология замедления роста миопии у детей."],
+  ["miopiya-prichiny-oslozhneniya-korrektsiya", "Миопия: причины, осложнения, коррекция", "Почему развивается близорукость и как её корректируют."],
+  ["fotokhromnye-ochkovye-linzy", "Фотохромные очковые линзы", "Линзы, темнеющие на солнце и светлеющие в помещении."],
+  ["progressivnye-linzy-dlya-ochkov-varilux", "Прогрессивные линзы Varilux", "Флагманские прогрессивы Essilor для естественного зрения."],
+  ["linzy-dlya-ochkov-crizal-eyezen-zashchita-i-komfort-glaz-pri-rabote-s-ekranami", "Crizal Eyezen — комфорт при работе с экранами", "Линзы для тех, кто много времени проводит у монитора."],
+  ["essilor-experts-eksperty-sredi-optik", "Essilor Experts — эксперты среди оптик", "Что означает статус Essilor Experts для покупателя."],
+];
+
+export const articles: Article[] = RAW.map(([slug, title, excerpt], i) => ({
+  slug,
+  title,
+  excerpt,
+  cover: ph(`lens-article-${i + 1}`),
+  date: new Date(2025, 4, 1 - i * 9).toISOString().slice(0, 10),
+  author: AUTHORS[i % AUTHORS.length],
+  category: CATEGORY_TITLE,
+  categorySlug: CATEGORY_SLUG,
+  content: [
+    `${title}. Материал из журнала ОПТИКА 100%.`,
+    "Полный текст статьи переносится с действующего сайта optika100.com.",
+  ],
+}));
+
 export const getArticle = (slug: string) => articles.find((a) => a.slug === slug);
+
+export const getArticlesByCategory = (categorySlug: string) =>
+  articles.filter((a) => a.categorySlug === categorySlug);
+
+export const getBlogCategory = (slug: string) =>
+  blogCategories.find((c) => c.slug === slug);
+
+export const articleHref = (a: Pick<Article, "slug" | "categorySlug">) =>
+  `/blog/${a.categorySlug}/${a.slug}/`;

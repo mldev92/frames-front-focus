@@ -70,7 +70,10 @@ export interface Article {
   cover: string;
   date: string;
   author: string;
+  /** Display label for the category chip. */
   category: string;
+  /** Live URL segment: /blog/{categorySlug}/{slug}/ */
+  categorySlug: string;
   content: string[];
 }
 

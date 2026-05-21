@@ -28,8 +28,8 @@ function JournalIndex() {
         {articles.map((a) => (
           <Link
             key={a.slug}
-            to="/blog/$slug"
-            params={{ slug: a.slug }}
+            to="/blog/$category/$slug"
+            params={{ category: a.categorySlug, slug: a.slug }}
             className="group block"
           >
             <div className="aspect-[4/3] bg-surface rounded-sm overflow-hidden mb-4">

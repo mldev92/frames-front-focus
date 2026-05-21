@@ -24,8 +24,9 @@ import { Route as BasketRouteImport } from './routes/basket'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as UslugiSlugRouteImport } from './routes/uslugi.$slug'
 import { Route as Catalog_sCategoryRouteImport } from './routes/catalog_s.$category'
-import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as BlogCategoryRouteImport } from './routes/blog.$category'
 import { Route as Catalog_sCategorySlugRouteImport } from './routes/catalog_s.$category.$slug'
+import { Route as BlogCategorySlugRouteImport } from './routes/blog.$category.$slug'
 
 const UslugiRoute = UslugiRouteImport.update({
   id: '/uslugi',
@@ -102,15 +103,20 @@ const Catalog_sCategoryRoute = Catalog_sCategoryRouteImport.update({
   path: '/catalog_s/$category',
   getParentRoute: () => rootRouteImport,
 } as any)
-const BlogSlugRoute = BlogSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
+const BlogCategoryRoute = BlogCategoryRouteImport.update({
+  id: '/$category',
+  path: '/$category',
   getParentRoute: () => BlogRoute,
 } as any)
 const Catalog_sCategorySlugRoute = Catalog_sCategorySlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => Catalog_sCategoryRoute,
+} as any)
+const BlogCategorySlugRoute = BlogCategorySlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogCategoryRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -127,9 +133,10 @@ export interface FileRoutesByFullPath {
   '/remont-ochkov': typeof RemontOchkovRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
-  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
+  '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
 }
 export interface FileRoutesByTo {
@@ -146,9 +153,10 @@ export interface FileRoutesByTo {
   '/remont-ochkov': typeof RemontOchkovRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
-  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
+  '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
 }
 export interface FileRoutesById {
@@ -166,9 +174,10 @@ export interface FileRoutesById {
   '/remont-ochkov': typeof RemontOchkovRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
-  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
+  '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
 }
 export interface FileRouteTypes {
@@ -187,9 +196,10 @@ export interface FileRouteTypes {
     | '/remont-ochkov'
     | '/tinkoff'
     | '/uslugi'
-    | '/blog/$slug'
+    | '/blog/$category'
     | '/catalog_s/$category'
     | '/uslugi/$slug'
+    | '/blog/$category/$slug'
     | '/catalog_s/$category/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -206,9 +216,10 @@ export interface FileRouteTypes {
     | '/remont-ochkov'
     | '/tinkoff'
     | '/uslugi'
-    | '/blog/$slug'
+    | '/blog/$category'
     | '/catalog_s/$category'
     | '/uslugi/$slug'
+    | '/blog/$category/$slug'
     | '/catalog_s/$category/$slug'
   id:
     | '__root__'
@@ -225,9 +236,10 @@ export interface FileRouteTypes {
     | '/remont-ochkov'
     | '/tinkoff'
     | '/uslugi'
-    | '/blog/$slug'
+    | '/blog/$category'
     | '/catalog_s/$category'
     | '/uslugi/$slug'
+    | '/blog/$category/$slug'
     | '/catalog_s/$category/$slug'
   fileRoutesById: FileRoutesById
 }
@@ -355,11 +367,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Catalog_sCategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/blog/$slug': {
-      id: '/blog/$slug'
-      path: '/$slug'
-      fullPath: '/blog/$slug'
-      preLoaderRoute: typeof BlogSlugRouteImport
+    '/blog/$category': {
+      id: '/blog/$category'
+      path: '/$category'
+      fullPath: '/blog/$category'
+      preLoaderRoute: typeof BlogCategoryRouteImport
       parentRoute: typeof BlogRoute
     }
     '/catalog_s/$category/$slug': {
@@ -369,15 +381,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Catalog_sCategorySlugRouteImport
       parentRoute: typeof Catalog_sCategoryRoute
     }
+    '/blog/$category/$slug': {
+      id: '/blog/$category/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$category/$slug'
+      preLoaderRoute: typeof BlogCategorySlugRouteImport
+      parentRoute: typeof BlogCategoryRoute
+    }
   }
 }
 
+interface BlogCategoryRouteChildren {
+  BlogCategorySlugRoute: typeof BlogCategorySlugRoute
+}
+
+const BlogCategoryRouteChildren: BlogCategoryRouteChildren = {
+  BlogCategorySlugRoute: BlogCategorySlugRoute,
+}
+
+const BlogCategoryRouteWithChildren = BlogCategoryRoute._addFileChildren(
+  BlogCategoryRouteChildren,
+)
+
 interface BlogRouteChildren {
-  BlogSlugRoute: typeof BlogSlugRoute
+  BlogCategoryRoute: typeof BlogCategoryRouteWithChildren
 }
 
 const BlogRouteChildren: BlogRouteChildren = {
-  BlogSlugRoute: BlogSlugRoute,
+  BlogCategoryRoute: BlogCategoryRouteWithChildren,
 }
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)

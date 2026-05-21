@@ -32,8 +32,8 @@ const COLS = [
   {
     title: "Помощь",
     links: [
-      ["Доставка и оплата", "/blog/garantia-i-uhod/"],
-      ["Гарантия", "/blog/garantia-i-uhod/"],
+      ["Доставка и оплата", "/payment/"],
+      ["Гарантия", "/payment/"],
       ["Контакты", "/contacts/"],
     ],
   },

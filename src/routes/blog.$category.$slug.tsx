@@ -1,12 +1,12 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
-import { getArticle, articles } from "@/data/articles";
+import { getArticle, getArticlesByCategory } from "@/data/articles";
 import type { Article } from "@/data/types";
 
-export const Route = createFileRoute("/blog/$slug")({
+export const Route = createFileRoute("/blog/$category/$slug")({
   loader: ({ params }) => {
     const article = getArticle(params.slug);
-    if (!article) throw notFound();
+    if (!article || article.categorySlug !== params.category) throw notFound();
     return { article };
   },
   head: ({ loaderData }) => {
@@ -29,7 +29,9 @@ export const Route = createFileRoute("/blog/$slug")({
 function ArticlePage() {
   const data = Route.useLoaderData() as { article: Article };
   const { article } = data;
-  const more = articles.filter((a) => a.slug !== article.slug).slice(0, 3);
+  const more = getArticlesByCategory(article.categorySlug)
+    .filter((a) => a.slug !== article.slug)
+    .slice(0, 3);
 
   return (
     <article>
@@ -38,6 +40,14 @@ function ArticlePage() {
           <Link to="/" className="hover:text-foreground">Главная</Link>
           <ChevronRight className="h-3 w-3" />
           <Link to="/blog" className="hover:text-foreground">Журнал</Link>
+          <ChevronRight className="h-3 w-3" />
+          <Link
+            to="/blog/$category"
+            params={{ category: article.categorySlug }}
+            className="hover:text-foreground"
+          >
+            {article.category}
+          </Link>
         </nav>
         <div className="text-xs uppercase tracking-wider text-brand">
           {article.category}
@@ -71,8 +81,8 @@ function ArticlePage() {
             {more.map((a) => (
               <Link
                 key={a.slug}
-                to="/blog/$slug"
-                params={{ slug: a.slug }}
+                to="/blog/$category/$slug"
+                params={{ category: a.categorySlug, slug: a.slug }}
                 className="group block"
               >
                 <div className="aspect-[4/3] bg-background rounded-sm overflow-hidden mb-3">
