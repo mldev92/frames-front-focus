@@ -1,71 +1,36 @@
-## Product page redesign — Warby Parker style with sticky purchase card
+## Appointment modal — Premium redesign
 
-### Layout changes (`src/routes/products.$slug.tsx`)
+Rebuild `src/components/AppointmentModal.tsx` to match the chosen "Premium — soft cards" direction. Fix the layout overflow bug and replace the mechanical horizontal carousel with smooth cross-fade + slide transitions between steps.
 
-**1. Container: full-width like catalog**
-- Remove `mx-auto max-w-7xl` from the root wrapper.
-- Use `px-6 lg:px-10` for breathing room edge-to-edge.
+### Visual changes (all 3 steps)
 
-**2. Three-column grid**
-Reference layout: thumbnail rail (left, narrow) + big gallery (center) + sticky purchase card (right, narrow).
+- Modal shell: `max-w-[820px]`, `rounded-[2rem]`, soft warm shadow, `min-h-[580px]`, two-column flex (stacks on mobile).
+- **Left panel (320px)**: full-bleed step image with dark gradient overlay + subtle backdrop blur. Brand-red eyebrow "ОНЛАЙН-ЗАПИСЬ", Fraunces 3xl headline "Запись к врачу". Stepper: 36px circles — active = filled brand red with soft glow, completed = white with check, inactive = bordered at 40% opacity. Each step has its label plus a "Шаг 0X" caption. Background image cross-fades when the step changes.
+- **Right panel**: cream background, `p-10`, content centered at max-w-400, close (×) top-right.
+- **Inputs**: white cards with hairline border, `rounded-xl`, generous `py-4` height, brand-red leading icon, brand-tinted focus ring.
+- **Choice cards** (age / service): `rounded-[1.25rem]`, soft border, hover `-translate-y-1`, selected state = `bg-ink` with white text and a brand-red check icon in the top-right corner.
+- **Time grid (Step 2)**: 4-day columns, each slot is a pill with hover affordance; selected slot fills with ink.
+- **Primary CTA**: full-width pill `py-5 rounded-2xl`, brand red, soft red glow shadow, lifts on hover, arrow icon nudges right.
+- **Secondary "Назад"**: ghost pill with hairline border.
+- **Success state (Step 3)**: large brand-tinted check medallion, Fraunces "Запись принята!" headline, soft helper copy.
 
-```text
-[thumbs 80px] [ gallery flex-1 ] [ purchase card ~380px ]
-```
+### Motion
 
-- Thumbnails move from a horizontal strip *below* the gallery to a vertical rail on the **left** of the gallery, stacked top-to-bottom (incl. the VTO icon as the last tile).
-- Gallery becomes the dominant central element on a soft grey/cream background card (`bg-surface`, rounded), with `Try on` pill in top-right corner of the gallery (matches reference).
-- Right column becomes the **sticky purchase card** — see below.
+- Replace the `width: 300%` + `translateX` carousel with conditional rendering of the current step only.
+- Wrap the active step in a div keyed by `step` with `animate-in fade-in-0 slide-in-from-right-4 duration-400 ease-[var(--ease-editorial)]` going forward, and `slide-in-from-left-4` going back. Track direction with a small `direction` state.
+- Left-panel image swap stays as cross-fade (opacity transition on stacked `<img>` elements).
+- Stepper circle state changes animate with `transition-all duration-300`.
 
-**3. Sticky purchase card (the key feature)**
-The right card stays fixed to the viewport while the user scrolls the long left content (tabs, specs, related), then "releases" when its container ends — exactly like the reference.
+### Tokens
 
-Implementation: pure CSS, no JS.
-- Wrap the right column with `<aside className="lg:sticky lg:top-24 lg:self-start h-fit">`.
-- `self-start` on the grid item + `sticky top-24` makes the card stick while the sibling column scrolls, and naturally unstick at the parent container's bottom.
-- Card visual: white background, rounded, subtle border + soft shadow, internal padding `p-6`, contains:
-  - Brand eyebrow + product name
-  - Price + installment line
-  - Color swatches (compact)
-  - Primary CTA "Подобрать линзы и купить" (full-width, brand color, prominent)
-  - Secondary: "Купить оправу без линз" (ghost)
-  - Heart save button (icon-only, top-right of card)
-  - Trust strip (compact 3-up: доставка / гарантия / возврат)
+Use semantic classes from `src/styles.css` (`bg-background`, `bg-cream`, `bg-surface`, `text-foreground`, `text-brand`, `bg-brand`, `bg-ink`, `border-border`, `shadow-xl`, `font-serif`) instead of inline OKLCH literals so the modal stays themable and dark-mode-safe.
 
-**4. Left column content reorder**
-Now that the purchase card moved right, the left column holds:
-- Gallery (with vertical thumbnail rail beside it)
-- Below gallery: long-form content that scrolls past the sticky card:
-  - "Что включено за {price}" feature list (NEW — mirrors reference: checkmark list of bundled benefits like "Однодневная доставка", "Бесплатная подгонка", "Защита от царапин 12 мес", etc.) — render from a static array in the same file.
-  - Specs table (existing, but as accordion section, not tab)
-  - "Как подобрать" (accordion)
-  - "Доставка и возврат" (accordion)
-  - "Нужен рецепт?" accordion containing the existing `PrescriptionInput`
-  - About the brand (accordion stub)
+### Logic — unchanged
 
-Convert the current tabs into stacked accordion sections (reuse `@/components/ui/accordion`), which matches the reference exactly and makes the page tall enough for the sticky card to demonstrate its behavior.
-
-**5. Prescription input placement**
-Currently always shown inline. Move it inside the "Нужен рецепт?" accordion so the main column stays scannable.
-
-**6. Lens modal trigger**
-The "Подобрать линзы" inline button is removed — its job is taken by the primary CTA in the sticky card ("Подобрать линзы и купить"), which opens `LensPurposeModal` (or adds to cart for non-lens products).
-
-**7. Related products section**
-Stays full-width below the grid, unchanged structurally.
-
-### What does NOT change
-- No data model changes.
-- No new routes, no backend changes.
-- `LensPurposeModal`, `PrescriptionInput`, `VirtualTryOnModal`, `TBankWidget`, `ProductCard` reused as-is.
-- Mobile: grid collapses to single column, purchase card becomes a normal block (no sticky on mobile — `lg:sticky` only).
+All state, validation, salons/services/time-slot data, submit handler, reset-on-close, and Russian copy are preserved exactly. Only JSX/styling and the transition mechanism change. Props interface (`open`, `onOpenChange`) stays identical, so call sites in `src/routes/index.tsx` need no changes.
 
 ### Files touched
-- `src/routes/products.$slug.tsx` — full restructure of the JSX (logic preserved).
-- No new components required (accordion already exists at `src/components/ui/accordion.tsx`).
 
-### Visual polish
-- Gallery background: `bg-surface` rounded-lg, generous aspect-square area, image centered with `object-contain`.
-- Purchase card: white, `border border-border`, `shadow-sm`, `rounded-lg`.
-- Primary CTA: brand red, `rounded-full` pill (matches the modern pill style introduced on the homepage), large padding.
-- Vertical thumb rail: 64px wide tiles, 2px brand border when active.
+- `src/components/AppointmentModal.tsx` — full rewrite of the JSX and styling, same exports.
+
+No new dependencies (uses the already-installed `tw-animate-css`). No data, route, or backend changes.
