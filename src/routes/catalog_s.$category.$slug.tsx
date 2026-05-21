@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Heart, ChevronRight, Truck, ShieldCheck, RotateCcw, Check } from "lucide-react";
 import { toast } from "sonner";
 import { getProduct, products } from "@/data/products";
+import { catalogHref } from "@/data/categories";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { ProductCard } from "@/components/ProductCard";
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/products/$slug")({
+export const Route = createFileRoute("/catalog_s/$category/$slug")({
   loader: ({ params }) => {
     const product = getProduct(params.slug);
     if (!product) throw notFound();
@@ -43,9 +44,9 @@ export const Route = createFileRoute("/products/$slug")({
   notFoundComponent: () => (
     <div className="py-32 text-center">
       <h1 className="font-serif text-3xl">Товар не найден</h1>
-      <Link to="/opravy" className="text-brand mt-4 inline-block">
+      <a href="/catalog_s/opravy/" className="text-brand mt-4 inline-block">
         В каталог
-      </Link>
+      </a>
     </div>
   ),
 });
@@ -103,7 +104,10 @@ function ProductPage() {
       <nav className="text-xs text-muted-foreground mb-6 flex items-center gap-1">
         <Link to="/" className="hover:text-foreground">Главная</Link>
         <ChevronRight className="h-3 w-3" />
-        <a href={`/${product.category}`} className="hover:text-foreground capitalize">
+        <a
+          href={catalogHref(product.category)}
+          className="hover:text-foreground capitalize"
+        >
           {categoryName(product.category)}
         </a>
         <ChevronRight className="h-3 w-3" />

@@ -70,7 +70,7 @@ function AboutPage() {
           ))}
         </div>
         <Link
-          to="/salony"
+          to="/contacts"
           className="mt-10 inline-block bg-ink text-primary-foreground px-6 py-3 rounded-sm hover:opacity-90"
         >
           Адреса салонов

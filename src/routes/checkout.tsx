@@ -147,7 +147,7 @@ function Checkout() {
               </div>
             ))}
             {lines.length === 0 && (
-              <Link to="/opravy" className="text-brand text-sm">
+              <Link to="/catalog_s/$category" params={{ category: "opravy" }} className="text-brand text-sm">
                 Корзина пуста — в каталог
               </Link>
             )}

@@ -5,11 +5,11 @@ const COLS = [
   {
     title: "Каталог",
     links: [
-      ["Оправы", "/opravy"],
-      ["Солнцезащитные очки", "/solntsezashchitnye"],
-      ["Контактные линзы", "/kontaktnye-linzy"],
-      ["Линзы для очков", "/linzy-dlya-ochkov"],
-      ["Аксессуары", "/aksessuary"],
+      ["Оправы", "/catalog_s/opravy/"],
+      ["Солнцезащитные очки", "/catalog_s/solntsezashchitnye_ochki/"],
+      ["Контактные линзы", "/catalog_s/kontaktnye_linzy_/"],
+      ["Линзы для очков", "/catalog_s/linzy_dlya_ochkov/"],
+      ["Аксессуары", "/catalog_s/soputstvuyushchie_tovary/"],
     ],
   },
   {
@@ -25,16 +25,16 @@ const COLS = [
     title: "Компания",
     links: [
       ["О нас", "/o-nas"],
-      ["Салоны", "/salony"],
-      ["Журнал", "/zhurnal"],
+      ["Салоны", "/contacts/"],
+      ["Журнал", "/blog/"],
     ],
   },
   {
     title: "Помощь",
     links: [
-      ["Доставка и оплата", "/zhurnal/garantia-i-uhod"],
-      ["Гарантия", "/zhurnal/garantia-i-uhod"],
-      ["Контакты", "/salony"],
+      ["Доставка и оплата", "/blog/garantia-i-uhod/"],
+      ["Гарантия", "/blog/garantia-i-uhod/"],
+      ["Контакты", "/contacts/"],
     ],
   },
 ];

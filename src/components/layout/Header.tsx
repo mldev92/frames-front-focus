@@ -7,45 +7,45 @@ import { cn } from "@/lib/utils";
 const NAV = [
   {
     label: "Оправы",
-    href: "/opravy" as const,
+    href: "/catalog_s/opravy/",
     mega: {
       cols: [
         {
           title: "По форме",
           links: [
-            ["Прямоугольные", "/opravy?shape=Прямоугольные"],
-            ["Круглые", "/opravy?shape=Круглые"],
-            ["Авиаторы", "/opravy?shape=Авиаторы"],
-            ["Кошачий глаз", "/opravy?shape=Кошачий+глаз"],
-            ["Геометрические", "/opravy?shape=Геометрические"],
+            ["Прямоугольные", "/catalog_s/opravy/?shape=Прямоугольные"],
+            ["Круглые", "/catalog_s/opravy/?shape=Круглые"],
+            ["Авиаторы", "/catalog_s/opravy/?shape=Авиаторы"],
+            ["Кошачий глаз", "/catalog_s/opravy/?shape=Кошачий+глаз"],
+            ["Геометрические", "/catalog_s/opravy/?shape=Геометрические"],
           ],
         },
         {
           title: "По полу",
           links: [
-            ["Мужские", "/opravy?gender=Мужские"],
-            ["Женские", "/opravy?gender=Женские"],
-            ["Унисекс", "/opravy?gender=Унисекс"],
-            ["Детские", "/opravy?gender=Детские"],
+            ["Мужские", "/catalog_s/opravy/?gender=Мужские"],
+            ["Женские", "/catalog_s/opravy/?gender=Женские"],
+            ["Унисекс", "/catalog_s/opravy/?gender=Унисекс"],
+            ["Детские", "/catalog_s/opravy/?gender=Детские"],
           ],
         },
         {
           title: "По материалу",
           links: [
-            ["Ацетат", "/opravy?material=Ацетат"],
-            ["Титан", "/opravy?material=Титан"],
-            ["Металл", "/opravy?material=Металл"],
+            ["Ацетат", "/catalog_s/opravy/?material=Ацетат"],
+            ["Титан", "/catalog_s/opravy/?material=Титан"],
+            ["Металл", "/catalog_s/opravy/?material=Металл"],
           ],
         },
       ],
     },
   },
-  { label: "Солнцезащитные", href: "/solntsezashchitnye" as const },
-  { label: "Контактные линзы", href: "/kontaktnye-linzy" as const },
-  { label: "Линзы для очков", href: "/linzy-dlya-ochkov" as const },
-  { label: "Аксессуары", href: "/aksessuary" as const },
-  { label: "Услуги", href: "/uslugi" as const },
-  { label: "Салоны", href: "/salony" as const },
+  { label: "Солнцезащитные", href: "/catalog_s/solntsezashchitnye_ochki/" },
+  { label: "Контактные линзы", href: "/catalog_s/kontaktnye_linzy_/" },
+  { label: "Линзы для очков", href: "/catalog_s/linzy_dlya_ochkov/" },
+  { label: "Аксессуары", href: "/catalog_s/soputstvuyushchie_tovary/" },
+  { label: "Услуги", href: "/uslugi" },
+  { label: "Салоны", href: "/contacts/" },
 ];
 
 export function Header() {
@@ -116,13 +116,12 @@ export function Header() {
                   onMouseEnter={() => setHovered(item.href)}
                   className="py-5"
                 >
-                  <Link
-                    to={item.href}
+                  <a
+                    href={item.href}
                     className="hover:text-brand transition-colors"
-                    activeProps={{ className: "text-brand" }}
                   >
                     {item.label}
-                  </Link>
+                  </a>
                 </div>
               ))}
 
@@ -168,13 +167,13 @@ export function Header() {
                 <Search className="h-5 w-5" />
               </button>
               <Link
-                to="/salony"
+                to="/contacts"
                 className="hidden md:flex items-center gap-1 p-2 hover:text-brand text-sm"
               >
                 <MapPin className="h-4 w-4" />
                 <span>Салоны</span>
               </Link>
-              <Link to="/cabinet" className="p-2 hover:text-brand" aria-label="Кабинет">
+              <Link to="/personal" className="p-2 hover:text-brand" aria-label="Кабинет">
                 <User className="h-5 w-5" />
               </Link>
               <button className="p-2 hover:text-brand relative" aria-label="Отложенные">
@@ -231,14 +230,14 @@ export function Header() {
             </div>
             <nav className="flex flex-col gap-1">
               {NAV.map((item) => (
-                <Link
+                <a
                   key={item.href}
-                  to={item.href}
+                  href={item.href}
                   onClick={() => setMobileOpen(false)}
                   className="py-3 text-lg border-b border-border"
                 >
                   {item.label}
-                </Link>
+                </a>
               ))}
             </nav>
             <div className="mt-8 space-y-3 text-sm text-muted-foreground">

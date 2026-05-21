@@ -25,7 +25,7 @@ export function CartDrawer() {
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
             <div className="text-muted-foreground mb-4">Корзина пуста</div>
             <Link
-              to="/opravy"
+              to="/catalog_s/$category" params={{ category: "opravy" }}
               onClick={close}
               className="bg-ink text-primary-foreground px-5 py-2.5 rounded-sm text-sm hover:opacity-90"
             >
@@ -96,7 +96,7 @@ export function CartDrawer() {
                 Оформить заказ
               </Link>
               <Link
-                to="/korzina"
+                to="/basket"
                 onClick={close}
                 className="block text-center text-sm text-muted-foreground hover:text-foreground"
               >

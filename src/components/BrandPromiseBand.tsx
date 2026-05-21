@@ -32,7 +32,7 @@ export function BrandPromiseBand() {
         </div>
 
         <Link
-          to="/opravy"
+          to="/catalog_s/$category" params={{ category: "opravy" }}
           className="mt-10 inline-flex items-center gap-2 bg-background text-foreground rounded-full px-6 py-3 hover:opacity-90"
         >
           Перейти к подбору <ArrowRight className="h-4 w-4" />

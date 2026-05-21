@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { articles } from "@/data/articles";
 
-export const Route = createFileRoute("/zhurnal")({
+export const Route = createFileRoute("/blog")({
   head: () => ({
     meta: [
       { title: "Журнал · ОПТИКА 100%" },
@@ -28,7 +28,7 @@ function JournalIndex() {
         {articles.map((a) => (
           <Link
             key={a.slug}
-            to="/zhurnal/$slug"
+            to="/blog/$slug"
             params={{ slug: a.slug }}
             className="group block"
           >

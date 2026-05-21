@@ -3,7 +3,7 @@ import { MapPin, Phone, Clock } from "lucide-react";
 import { salons } from "@/data/salons";
 import { SalonMap } from "@/components/SalonMap";
 
-export const Route = createFileRoute("/salony")({
+export const Route = createFileRoute("/contacts")({
   head: () => ({
     meta: [
       { title: "Салоны ОПТИКА 100% в Санкт-Петербурге" },

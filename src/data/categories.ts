@@ -10,40 +10,59 @@ export interface CategoryInfo {
   image: string;
 }
 
+// Live optika100.com (Bitrix) URL segment <-> internal data category key.
+// The catalog lives under /catalog_s/{segment}/ on the production site.
+export const categoryToSegment: Record<Category, string> = {
+  opravy: "opravy",
+  solntsezashchitnye: "solntsezashchitnye_ochki",
+  "kontaktnye-linzy": "kontaktnye_linzy_",
+  "linzy-dlya-ochkov": "linzy_dlya_ochkov",
+  aksessuary: "soputstvuyushchie_tovary",
+};
+
+export const segmentToCategory: Record<string, Category> = Object.fromEntries(
+  Object.entries(categoryToSegment).map(([cat, seg]) => [seg, cat as Category]),
+) as Record<string, Category>;
+
+export const catalogHref = (category: Category) => `/catalog_s/${categoryToSegment[category]}/`;
+
+export const productHref = (category: Category, slug: string) =>
+  `/catalog_s/${categoryToSegment[category]}/${slug}/`;
+
 export const categories: CategoryInfo[] = [
   {
     slug: "opravy",
     title: "Оправы",
     short: "Современные модели для повседневной носки",
-    href: "/opravy",
+    href: catalogHref("opravy"),
     image: img("frames"),
   },
   {
     slug: "solntsezashchitnye",
     title: "Солнцезащитные очки",
     short: "Защита от UV и стиль на каждый день",
-    href: "/solntsezashchitnye",
+    href: catalogHref("solntsezashchitnye"),
     image: img("sunglasses"),
   },
   {
     slug: "kontaktnye-linzy",
     title: "Контактные линзы",
     short: "Однодневные, месячные, торические",
-    href: "/kontaktnye-linzy",
+    href: catalogHref("kontaktnye-linzy"),
     image: img("contact_lenses"),
   },
   {
     slug: "linzy-dlya-ochkov",
     title: "Линзы для очков",
     short: "ZEISS, Essilor, Hoya и другие",
-    href: "/linzy-dlya-ochkov",
+    href: catalogHref("linzy-dlya-ochkov"),
     image: img("spectacle_lenses"),
   },
   {
     slug: "aksessuary",
     title: "Аксессуары",
     short: "Футляры, цепочки, средства ухода",
-    href: "/aksessuary",
+    href: catalogHref("aksessuary"),
     image: img("accessories"),
   },
 ];

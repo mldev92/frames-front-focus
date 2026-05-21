@@ -9,30 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ZhurnalRouteImport } from './routes/zhurnal'
 import { Route as UslugiRouteImport } from './routes/uslugi'
 import { Route as TinkoffRouteImport } from './routes/tinkoff'
-import { Route as SolntsezashchitnyeRouteImport } from './routes/solntsezashchitnye'
-import { Route as SalonyRouteImport } from './routes/salony'
-import { Route as OpravyRouteImport } from './routes/opravy'
+import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as ONasRouteImport } from './routes/o-nas'
 import { Route as LoyaltyRouteImport } from './routes/loyalty'
-import { Route as LinzyDlyaOchkovRouteImport } from './routes/linzy-dlya-ochkov'
-import { Route as KorzinaRouteImport } from './routes/korzina'
-import { Route as KontaktnyeLinzyRouteImport } from './routes/kontaktnye-linzy'
+import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as CheckoutRouteImport } from './routes/checkout'
-import { Route as CabinetRouteImport } from './routes/cabinet'
-import { Route as AksessuaryRouteImport } from './routes/aksessuary'
+import { Route as BlogRouteImport } from './routes/blog'
+import { Route as BasketRouteImport } from './routes/basket'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ZhurnalSlugRouteImport } from './routes/zhurnal.$slug'
 import { Route as UslugiSlugRouteImport } from './routes/uslugi.$slug'
-import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
+import { Route as Catalog_sCategoryRouteImport } from './routes/catalog_s.$category'
+import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
+import { Route as Catalog_sCategorySlugRouteImport } from './routes/catalog_s.$category.$slug'
 
-const ZhurnalRoute = ZhurnalRouteImport.update({
-  id: '/zhurnal',
-  path: '/zhurnal',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const UslugiRoute = UslugiRouteImport.update({
   id: '/uslugi',
   path: '/uslugi',
@@ -43,19 +34,9 @@ const TinkoffRoute = TinkoffRouteImport.update({
   path: '/tinkoff',
   getParentRoute: () => rootRouteImport,
 } as any)
-const SolntsezashchitnyeRoute = SolntsezashchitnyeRouteImport.update({
-  id: '/solntsezashchitnye',
-  path: '/solntsezashchitnye',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SalonyRoute = SalonyRouteImport.update({
-  id: '/salony',
-  path: '/salony',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OpravyRoute = OpravyRouteImport.update({
-  id: '/opravy',
-  path: '/opravy',
+const PersonalRoute = PersonalRouteImport.update({
+  id: '/personal',
+  path: '/personal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ONasRoute = ONasRouteImport.update({
@@ -68,19 +49,9 @@ const LoyaltyRoute = LoyaltyRouteImport.update({
   path: '/loyalty',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LinzyDlyaOchkovRoute = LinzyDlyaOchkovRouteImport.update({
-  id: '/linzy-dlya-ochkov',
-  path: '/linzy-dlya-ochkov',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const KorzinaRoute = KorzinaRouteImport.update({
-  id: '/korzina',
-  path: '/korzina',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const KontaktnyeLinzyRoute = KontaktnyeLinzyRouteImport.update({
-  id: '/kontaktnye-linzy',
-  path: '/kontaktnye-linzy',
+const ContactsRoute = ContactsRouteImport.update({
+  id: '/contacts',
+  path: '/contacts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -88,14 +59,14 @@ const CheckoutRoute = CheckoutRouteImport.update({
   path: '/checkout',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CabinetRoute = CabinetRouteImport.update({
-  id: '/cabinet',
-  path: '/cabinet',
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AksessuaryRoute = AksessuaryRouteImport.update({
-  id: '/aksessuary',
-  path: '/aksessuary',
+const BasketRoute = BasketRouteImport.update({
+  id: '/basket',
+  path: '/basket',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -103,174 +74,143 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ZhurnalSlugRoute = ZhurnalSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => ZhurnalRoute,
-} as any)
 const UslugiSlugRoute = UslugiSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => UslugiRoute,
 } as any)
-const ProductsSlugRoute = ProductsSlugRouteImport.update({
-  id: '/products/$slug',
-  path: '/products/$slug',
+const Catalog_sCategoryRoute = Catalog_sCategoryRouteImport.update({
+  id: '/catalog_s/$category',
+  path: '/catalog_s/$category',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => BlogRoute,
+} as any)
+const Catalog_sCategorySlugRoute = Catalog_sCategorySlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => Catalog_sCategoryRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/aksessuary': typeof AksessuaryRoute
-  '/cabinet': typeof CabinetRoute
+  '/basket': typeof BasketRoute
+  '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
-  '/kontaktnye-linzy': typeof KontaktnyeLinzyRoute
-  '/korzina': typeof KorzinaRoute
-  '/linzy-dlya-ochkov': typeof LinzyDlyaOchkovRoute
+  '/contacts': typeof ContactsRoute
   '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
-  '/opravy': typeof OpravyRoute
-  '/salony': typeof SalonyRoute
-  '/solntsezashchitnye': typeof SolntsezashchitnyeRoute
+  '/personal': typeof PersonalRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
-  '/zhurnal': typeof ZhurnalRouteWithChildren
-  '/products/$slug': typeof ProductsSlugRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
-  '/zhurnal/$slug': typeof ZhurnalSlugRoute
+  '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/aksessuary': typeof AksessuaryRoute
-  '/cabinet': typeof CabinetRoute
+  '/basket': typeof BasketRoute
+  '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
-  '/kontaktnye-linzy': typeof KontaktnyeLinzyRoute
-  '/korzina': typeof KorzinaRoute
-  '/linzy-dlya-ochkov': typeof LinzyDlyaOchkovRoute
+  '/contacts': typeof ContactsRoute
   '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
-  '/opravy': typeof OpravyRoute
-  '/salony': typeof SalonyRoute
-  '/solntsezashchitnye': typeof SolntsezashchitnyeRoute
+  '/personal': typeof PersonalRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
-  '/zhurnal': typeof ZhurnalRouteWithChildren
-  '/products/$slug': typeof ProductsSlugRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
-  '/zhurnal/$slug': typeof ZhurnalSlugRoute
+  '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/aksessuary': typeof AksessuaryRoute
-  '/cabinet': typeof CabinetRoute
+  '/basket': typeof BasketRoute
+  '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
-  '/kontaktnye-linzy': typeof KontaktnyeLinzyRoute
-  '/korzina': typeof KorzinaRoute
-  '/linzy-dlya-ochkov': typeof LinzyDlyaOchkovRoute
+  '/contacts': typeof ContactsRoute
   '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
-  '/opravy': typeof OpravyRoute
-  '/salony': typeof SalonyRoute
-  '/solntsezashchitnye': typeof SolntsezashchitnyeRoute
+  '/personal': typeof PersonalRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
-  '/zhurnal': typeof ZhurnalRouteWithChildren
-  '/products/$slug': typeof ProductsSlugRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
-  '/zhurnal/$slug': typeof ZhurnalSlugRoute
+  '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/aksessuary'
-    | '/cabinet'
+    | '/basket'
+    | '/blog'
     | '/checkout'
-    | '/kontaktnye-linzy'
-    | '/korzina'
-    | '/linzy-dlya-ochkov'
+    | '/contacts'
     | '/loyalty'
     | '/o-nas'
-    | '/opravy'
-    | '/salony'
-    | '/solntsezashchitnye'
+    | '/personal'
     | '/tinkoff'
     | '/uslugi'
-    | '/zhurnal'
-    | '/products/$slug'
+    | '/blog/$slug'
+    | '/catalog_s/$category'
     | '/uslugi/$slug'
-    | '/zhurnal/$slug'
+    | '/catalog_s/$category/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/aksessuary'
-    | '/cabinet'
+    | '/basket'
+    | '/blog'
     | '/checkout'
-    | '/kontaktnye-linzy'
-    | '/korzina'
-    | '/linzy-dlya-ochkov'
+    | '/contacts'
     | '/loyalty'
     | '/o-nas'
-    | '/opravy'
-    | '/salony'
-    | '/solntsezashchitnye'
+    | '/personal'
     | '/tinkoff'
     | '/uslugi'
-    | '/zhurnal'
-    | '/products/$slug'
+    | '/blog/$slug'
+    | '/catalog_s/$category'
     | '/uslugi/$slug'
-    | '/zhurnal/$slug'
+    | '/catalog_s/$category/$slug'
   id:
     | '__root__'
     | '/'
-    | '/aksessuary'
-    | '/cabinet'
+    | '/basket'
+    | '/blog'
     | '/checkout'
-    | '/kontaktnye-linzy'
-    | '/korzina'
-    | '/linzy-dlya-ochkov'
+    | '/contacts'
     | '/loyalty'
     | '/o-nas'
-    | '/opravy'
-    | '/salony'
-    | '/solntsezashchitnye'
+    | '/personal'
     | '/tinkoff'
     | '/uslugi'
-    | '/zhurnal'
-    | '/products/$slug'
+    | '/blog/$slug'
+    | '/catalog_s/$category'
     | '/uslugi/$slug'
-    | '/zhurnal/$slug'
+    | '/catalog_s/$category/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AksessuaryRoute: typeof AksessuaryRoute
-  CabinetRoute: typeof CabinetRoute
+  BasketRoute: typeof BasketRoute
+  BlogRoute: typeof BlogRouteWithChildren
   CheckoutRoute: typeof CheckoutRoute
-  KontaktnyeLinzyRoute: typeof KontaktnyeLinzyRoute
-  KorzinaRoute: typeof KorzinaRoute
-  LinzyDlyaOchkovRoute: typeof LinzyDlyaOchkovRoute
+  ContactsRoute: typeof ContactsRoute
   LoyaltyRoute: typeof LoyaltyRoute
   ONasRoute: typeof ONasRoute
-  OpravyRoute: typeof OpravyRoute
-  SalonyRoute: typeof SalonyRoute
-  SolntsezashchitnyeRoute: typeof SolntsezashchitnyeRoute
+  PersonalRoute: typeof PersonalRoute
   TinkoffRoute: typeof TinkoffRoute
   UslugiRoute: typeof UslugiRouteWithChildren
-  ZhurnalRoute: typeof ZhurnalRouteWithChildren
-  ProductsSlugRoute: typeof ProductsSlugRoute
+  Catalog_sCategoryRoute: typeof Catalog_sCategoryRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/zhurnal': {
-      id: '/zhurnal'
-      path: '/zhurnal'
-      fullPath: '/zhurnal'
-      preLoaderRoute: typeof ZhurnalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/uslugi': {
       id: '/uslugi'
       path: '/uslugi'
@@ -285,25 +225,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TinkoffRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/solntsezashchitnye': {
-      id: '/solntsezashchitnye'
-      path: '/solntsezashchitnye'
-      fullPath: '/solntsezashchitnye'
-      preLoaderRoute: typeof SolntsezashchitnyeRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/salony': {
-      id: '/salony'
-      path: '/salony'
-      fullPath: '/salony'
-      preLoaderRoute: typeof SalonyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/opravy': {
-      id: '/opravy'
-      path: '/opravy'
-      fullPath: '/opravy'
-      preLoaderRoute: typeof OpravyRouteImport
+    '/personal': {
+      id: '/personal'
+      path: '/personal'
+      fullPath: '/personal'
+      preLoaderRoute: typeof PersonalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/o-nas': {
@@ -320,25 +246,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoyaltyRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/linzy-dlya-ochkov': {
-      id: '/linzy-dlya-ochkov'
-      path: '/linzy-dlya-ochkov'
-      fullPath: '/linzy-dlya-ochkov'
-      preLoaderRoute: typeof LinzyDlyaOchkovRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/korzina': {
-      id: '/korzina'
-      path: '/korzina'
-      fullPath: '/korzina'
-      preLoaderRoute: typeof KorzinaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/kontaktnye-linzy': {
-      id: '/kontaktnye-linzy'
-      path: '/kontaktnye-linzy'
-      fullPath: '/kontaktnye-linzy'
-      preLoaderRoute: typeof KontaktnyeLinzyRouteImport
+    '/contacts': {
+      id: '/contacts'
+      path: '/contacts'
+      fullPath: '/contacts'
+      preLoaderRoute: typeof ContactsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -348,18 +260,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/cabinet': {
-      id: '/cabinet'
-      path: '/cabinet'
-      fullPath: '/cabinet'
-      preLoaderRoute: typeof CabinetRouteImport
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/aksessuary': {
-      id: '/aksessuary'
-      path: '/aksessuary'
-      fullPath: '/aksessuary'
-      preLoaderRoute: typeof AksessuaryRouteImport
+    '/basket': {
+      id: '/basket'
+      path: '/basket'
+      fullPath: '/basket'
+      preLoaderRoute: typeof BasketRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -369,13 +281,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/zhurnal/$slug': {
-      id: '/zhurnal/$slug'
-      path: '/$slug'
-      fullPath: '/zhurnal/$slug'
-      preLoaderRoute: typeof ZhurnalSlugRouteImport
-      parentRoute: typeof ZhurnalRoute
-    }
     '/uslugi/$slug': {
       id: '/uslugi/$slug'
       path: '/$slug'
@@ -383,15 +288,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UslugiSlugRouteImport
       parentRoute: typeof UslugiRoute
     }
-    '/products/$slug': {
-      id: '/products/$slug'
-      path: '/products/$slug'
-      fullPath: '/products/$slug'
-      preLoaderRoute: typeof ProductsSlugRouteImport
+    '/catalog_s/$category': {
+      id: '/catalog_s/$category'
+      path: '/catalog_s/$category'
+      fullPath: '/catalog_s/$category'
+      preLoaderRoute: typeof Catalog_sCategoryRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
+      parentRoute: typeof BlogRoute
+    }
+    '/catalog_s/$category/$slug': {
+      id: '/catalog_s/$category/$slug'
+      path: '/$slug'
+      fullPath: '/catalog_s/$category/$slug'
+      preLoaderRoute: typeof Catalog_sCategorySlugRouteImport
+      parentRoute: typeof Catalog_sCategoryRoute
     }
   }
 }
+
+interface BlogRouteChildren {
+  BlogSlugRoute: typeof BlogSlugRoute
+}
+
+const BlogRouteChildren: BlogRouteChildren = {
+  BlogSlugRoute: BlogSlugRoute,
+}
+
+const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
 
 interface UslugiRouteChildren {
   UslugiSlugRoute: typeof UslugiSlugRoute
@@ -404,35 +333,40 @@ const UslugiRouteChildren: UslugiRouteChildren = {
 const UslugiRouteWithChildren =
   UslugiRoute._addFileChildren(UslugiRouteChildren)
 
-interface ZhurnalRouteChildren {
-  ZhurnalSlugRoute: typeof ZhurnalSlugRoute
+interface Catalog_sCategoryRouteChildren {
+  Catalog_sCategorySlugRoute: typeof Catalog_sCategorySlugRoute
 }
 
-const ZhurnalRouteChildren: ZhurnalRouteChildren = {
-  ZhurnalSlugRoute: ZhurnalSlugRoute,
+const Catalog_sCategoryRouteChildren: Catalog_sCategoryRouteChildren = {
+  Catalog_sCategorySlugRoute: Catalog_sCategorySlugRoute,
 }
 
-const ZhurnalRouteWithChildren =
-  ZhurnalRoute._addFileChildren(ZhurnalRouteChildren)
+const Catalog_sCategoryRouteWithChildren =
+  Catalog_sCategoryRoute._addFileChildren(Catalog_sCategoryRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AksessuaryRoute: AksessuaryRoute,
-  CabinetRoute: CabinetRoute,
+  BasketRoute: BasketRoute,
+  BlogRoute: BlogRouteWithChildren,
   CheckoutRoute: CheckoutRoute,
-  KontaktnyeLinzyRoute: KontaktnyeLinzyRoute,
-  KorzinaRoute: KorzinaRoute,
-  LinzyDlyaOchkovRoute: LinzyDlyaOchkovRoute,
+  ContactsRoute: ContactsRoute,
   LoyaltyRoute: LoyaltyRoute,
   ONasRoute: ONasRoute,
-  OpravyRoute: OpravyRoute,
-  SalonyRoute: SalonyRoute,
-  SolntsezashchitnyeRoute: SolntsezashchitnyeRoute,
+  PersonalRoute: PersonalRoute,
   TinkoffRoute: TinkoffRoute,
   UslugiRoute: UslugiRouteWithChildren,
-  ZhurnalRoute: ZhurnalRouteWithChildren,
-  ProductsSlugRoute: ProductsSlugRoute,
+  Catalog_sCategoryRoute: Catalog_sCategoryRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

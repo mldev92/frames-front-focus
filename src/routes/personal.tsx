@@ -3,7 +3,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useCart, formatPrice } from "@/lib/store/cart";
 
-export const Route = createFileRoute("/cabinet")({
+export const Route = createFileRoute("/personal")({
   head: () => ({
     meta: [
       { title: "Личный кабинет · ОПТИКА 100%" },

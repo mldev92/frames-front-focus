@@ -83,13 +83,13 @@ function HomePage() {
               </p>
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
-                  to="/opravy"
+                  to="/catalog_s/$category" params={{ category: "opravy" }}
                   className="inline-flex items-center gap-2 bg-background text-foreground rounded-full px-5 py-2.5 text-sm hover:opacity-90"
                 >
                   Подобрать оправу
                 </Link>
                 <Link
-                  to="/solntsezashchitnye"
+                  to="/catalog_s/$category" params={{ category: "solntsezashchitnye_ochki" }}
                   className="inline-flex items-center gap-2 border border-primary-foreground/80 text-primary-foreground rounded-full px-5 py-2.5 text-sm hover:bg-primary-foreground/10"
                 >
                   Солнцезащитные
@@ -124,7 +124,7 @@ function HomePage() {
             <h2 className="font-serif text-3xl lg:text-4xl">Только что в продаже</h2>
           </div>
           <Link
-            to="/opravy"
+            to="/catalog_s/$category" params={{ category: "opravy" }}
             className="hidden sm:inline-flex items-center gap-2 border border-border rounded-full px-4 py-2 text-sm hover:border-foreground"
           >
             Смотреть все новинки
@@ -178,7 +178,7 @@ function HomePage() {
               <h2 className="font-serif text-3xl lg:text-4xl">Любимые модели сезона</h2>
             </div>
             <Link
-              to="/opravy"
+              to="/catalog_s/$category" params={{ category: "opravy" }}
               className="hidden sm:inline-flex items-center gap-2 border border-border rounded-full px-4 py-2 text-sm hover:border-foreground bg-background"
             >
               Смотреть все
@@ -279,7 +279,7 @@ function HomePage() {
             <h2 className="font-serif text-3xl lg:text-4xl">Свежее в журнале</h2>
           </div>
           <Link
-            to="/zhurnal"
+            to="/blog"
             className="text-sm hover:text-brand inline-flex items-center gap-1"
           >
             Все статьи <ArrowRight className="h-4 w-4" />
@@ -289,7 +289,7 @@ function HomePage() {
           {recent.map((a) => (
             <Link
               key={a.slug}
-              to="/zhurnal/$slug"
+              to="/blog/$slug"
               params={{ slug: a.slug }}
               className="group block"
             >

@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCart, formatPrice } from "@/lib/store/cart";
+import { getProduct } from "@/data/products";
+import { categoryToSegment } from "@/data/categories";
 
-export const Route = createFileRoute("/korzina")({
+export const Route = createFileRoute("/basket")({
   head: () => ({
     meta: [
       { title: "Корзина · ОПТИКА 100%" },
@@ -24,7 +26,7 @@ function CartPage() {
           Загляните в каталог — у нас много новинок.
         </p>
         <Link
-          to="/opravy"
+          to="/catalog_s/$category" params={{ category: "opravy" }}
           className="mt-8 inline-block bg-ink text-primary-foreground px-6 py-3 rounded-sm hover:opacity-90"
         >
           В каталог
@@ -48,8 +50,11 @@ function CartPage() {
               <div className="flex-1">
                 <div className="text-xs text-muted-foreground">{l.brand}</div>
                 <Link
-                  to="/products/$slug"
-                  params={{ slug: l.slug }}
+                  to="/catalog_s/$category/$slug"
+                  params={{
+                    category: categoryToSegment[getProduct(l.slug)?.category ?? "opravy"],
+                    slug: l.slug,
+                  }}
                   className="font-medium hover:text-brand"
                 >
                   {l.name}

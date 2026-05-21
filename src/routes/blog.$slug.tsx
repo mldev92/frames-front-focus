@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { getArticle, articles } from "@/data/articles";
 import type { Article } from "@/data/types";
 
-export const Route = createFileRoute("/zhurnal/$slug")({
+export const Route = createFileRoute("/blog/$slug")({
   loader: ({ params }) => {
     const article = getArticle(params.slug);
     if (!article) throw notFound();
@@ -37,7 +37,7 @@ function ArticlePage() {
         <nav className="text-xs text-muted-foreground mb-4 flex items-center gap-1">
           <Link to="/" className="hover:text-foreground">Главная</Link>
           <ChevronRight className="h-3 w-3" />
-          <Link to="/zhurnal" className="hover:text-foreground">Журнал</Link>
+          <Link to="/blog" className="hover:text-foreground">Журнал</Link>
         </nav>
         <div className="text-xs uppercase tracking-wider text-brand">
           {article.category}
@@ -71,7 +71,7 @@ function ArticlePage() {
             {more.map((a) => (
               <Link
                 key={a.slug}
-                to="/zhurnal/$slug"
+                to="/blog/$slug"
                 params={{ slug: a.slug }}
                 className="group block"
               >

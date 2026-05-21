@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
+import { categoryToSegment } from "@/data/categories";
 import { TryOnBadge } from "@/components/TryOnIcon";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { cn } from "@/lib/utils";
@@ -20,8 +21,8 @@ export function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group/card">
       <Link
-        to="/products/$slug"
-        params={{ slug: product.slug }}
+        to="/catalog_s/$category/$slug"
+        params={{ category: categoryToSegment[product.category], slug: product.slug }}
         className="block relative aspect-square bg-white rounded-sm overflow-hidden"
       >
         <img
@@ -85,8 +86,8 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="mt-3 space-y-1.5">
         <div className="text-xs text-muted-foreground uppercase tracking-wider">{product.brand}</div>
         <Link
-          to="/products/$slug"
-          params={{ slug: product.slug }}
+          to="/catalog_s/$category/$slug"
+          params={{ category: categoryToSegment[product.category], slug: product.slug }}
           className="block text-base font-semibold leading-snug hover:text-brand transition-colors"
         >
           {product.name}

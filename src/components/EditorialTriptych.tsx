@@ -14,21 +14,21 @@ const TILES: Tile[] = [
     eyebrow: "Дизайн из Италии",
     title: "Коллекция Tutto",
     cta: "Смотреть коллекцию",
-    href: "/opravy",
+    href: "/catalog_s/opravy/",
   },
   {
     image: "/main2example.jpeg",
     eyebrow: "В стиле 90-х",
     title: "Винтажные оправы",
     cta: "К оправам",
-    href: "/opravy?shape=Круглые",
+    href: "/catalog_s/opravy/?shape=Круглые",
   },
   {
     image: "/main3example.jpeg",
     eyebrow: "Создано для движения",
     title: "Спорт и активность",
     cta: "Солнцезащитные",
-    href: "/solntsezashchitnye",
+    href: "/catalog_s/solntsezashchitnye_ochki/",
   },
 ];
 
