@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { salons } from "@/data/salons";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown, MapPin, ArrowRight, ArrowLeft, X } from "lucide-react";
+import { Check, ChevronDown, MapPin, ArrowRight, ArrowLeft } from "lucide-react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type AgeType = "adult" | "child";
@@ -182,16 +182,6 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
 
           {/* ── Right panel ────────────────────────────────────── */}
           <div className="flex-1 flex flex-col bg-cream min-w-0 relative">
-            {/* Close button */}
-            <button
-              type="button"
-              onClick={() => handleClose(false)}
-              className="absolute top-5 right-5 z-10 grid h-9 w-9 place-items-center rounded-full text-foreground/40 hover:text-foreground hover:bg-black/5 transition-colors"
-              aria-label="Закрыть"
-            >
-              <X className="h-4 w-4" />
-            </button>
-
             {/* Mobile mini-stepper */}
             <div className="md:hidden px-6 pt-6 pb-2">
               <div className="text-[10px] uppercase tracking-[0.18em] text-foreground/45 font-semibold">
