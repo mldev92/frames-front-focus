@@ -7,6 +7,15 @@ import { cn } from "@/lib/utils";
 const CITIES = ["Санкт-Петербург", "Новокузнецк", "Россия"] as const;
 type City = typeof CITIES[number];
 
+const PROMOS = [
+  { text: "ДО -40% НА СОЛНЦЕЗАЩИТНЫЕ ОЧКИ", href: "/catalog_s/solntsezashchitnye_ochki/filter/cml2_skidka-is-30-or-40/apply/" },
+  { text: "ПОДАРОК К ЛИНЗАМ STELLEST", href: "/stellest-katalog-s-linzami/" },
+  { text: "ОТЛИЧНЫЕ ЛИНЗЫ + КЭШБЭК 14%", href: "/catalog_s/kontaktnye_linzy_/filter/manufacturer-is-linzy-coopervision/apply/" },
+  { text: "КУПИТЕ 2 УПАКОВКИ ЛИНЗ ULTRAFLEX PREMIER И ПОЛУЧИТЕ СКЛАДНУЮ СУМКУ В ПОДАРОК", href: "/catalog_s/kontaktnye_linzy_/ultra_flex_premier_3_sht_/" },
+  { text: "ДЕТСКАЯ МИОПИЯ ПОД КОНТРОЛЕМ", href: "/pages/kabinet-profilaktiki-i-lecheniya-blizorukosti-miopii/" },
+  { text: "КУПИТЕ 2 УПАКОВКИ ЛИНЗ MISIGHT 1 DAY 90 И ПОЛУЧИТЕ 20 ЛИНЗ В ПОДАРОК + СКИДКУ 1000 р", href: "/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/" },
+] as const;
+
 const NAV = [
   {
     label: "Оправы",
@@ -86,6 +95,20 @@ export function Header() {
     setCityOpen(false);
   }
 
+  const [promoIdx, setPromoIdx] = useState(0);
+  const [promoVisible, setPromoVisible] = useState(true);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setPromoVisible(false);
+      setTimeout(() => {
+        setPromoIdx((i) => (i + 1) % PROMOS.length);
+        setPromoVisible(true);
+      }, 300);
+    }, 4000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <>
       {/* Utility bar */}
@@ -141,8 +164,22 @@ export function Header() {
                 </div>
               )}
             </div>
-            <span className="opacity-50">·</span>
-            <span className="opacity-70">Бесплатная доставка от 5 000 ₽</span>
+            <span className="opacity-40">·</span>
+            <a
+              href={PROMOS[promoIdx].href}
+              className="uppercase tracking-wide hover:opacity-100 transition-colors truncate"
+              style={{
+                opacity: promoVisible ? 0.75 : 0,
+                transition: "opacity 0.3s ease",
+                maxWidth: "420px",
+                display: "inline-block",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {PROMOS[promoIdx].text}
+            </a>
           </div>
           <div className="flex items-center gap-5">
             <button
