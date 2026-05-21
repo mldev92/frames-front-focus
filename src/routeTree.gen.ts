@@ -11,9 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UslugiRouteImport } from './routes/uslugi'
 import { Route as TinkoffRouteImport } from './routes/tinkoff'
+import { Route as RemontOchkovRouteImport } from './routes/remont-ochkov'
+import { Route as PodborOchkovRouteImport } from './routes/podbor-ochkov'
 import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as ONasRouteImport } from './routes/o-nas'
 import { Route as LoyaltyRouteImport } from './routes/loyalty'
+import { Route as KabinetDiagnostikiSpbRouteImport } from './routes/kabinet-diagnostiki-spb'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as BlogRouteImport } from './routes/blog'
@@ -34,6 +37,16 @@ const TinkoffRoute = TinkoffRouteImport.update({
   path: '/tinkoff',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RemontOchkovRoute = RemontOchkovRouteImport.update({
+  id: '/remont-ochkov',
+  path: '/remont-ochkov',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PodborOchkovRoute = PodborOchkovRouteImport.update({
+  id: '/podbor-ochkov',
+  path: '/podbor-ochkov',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PersonalRoute = PersonalRouteImport.update({
   id: '/personal',
   path: '/personal',
@@ -47,6 +60,11 @@ const ONasRoute = ONasRouteImport.update({
 const LoyaltyRoute = LoyaltyRouteImport.update({
   id: '/loyalty',
   path: '/loyalty',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KabinetDiagnostikiSpbRoute = KabinetDiagnostikiSpbRouteImport.update({
+  id: '/kabinet-diagnostiki-spb',
+  path: '/kabinet-diagnostiki-spb',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactsRoute = ContactsRouteImport.update({
@@ -101,9 +119,12 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
+  '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
   '/personal': typeof PersonalRoute
+  '/podbor-ochkov': typeof PodborOchkovRoute
+  '/remont-ochkov': typeof RemontOchkovRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -117,9 +138,12 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
+  '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
   '/personal': typeof PersonalRoute
+  '/podbor-ochkov': typeof PodborOchkovRoute
+  '/remont-ochkov': typeof RemontOchkovRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -134,9 +158,12 @@ export interface FileRoutesById {
   '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
+  '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
   '/personal': typeof PersonalRoute
+  '/podbor-ochkov': typeof PodborOchkovRoute
+  '/remont-ochkov': typeof RemontOchkovRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$slug': typeof BlogSlugRoute
@@ -152,9 +179,12 @@ export interface FileRouteTypes {
     | '/blog'
     | '/checkout'
     | '/contacts'
+    | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/o-nas'
     | '/personal'
+    | '/podbor-ochkov'
+    | '/remont-ochkov'
     | '/tinkoff'
     | '/uslugi'
     | '/blog/$slug'
@@ -168,9 +198,12 @@ export interface FileRouteTypes {
     | '/blog'
     | '/checkout'
     | '/contacts'
+    | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/o-nas'
     | '/personal'
+    | '/podbor-ochkov'
+    | '/remont-ochkov'
     | '/tinkoff'
     | '/uslugi'
     | '/blog/$slug'
@@ -184,9 +217,12 @@ export interface FileRouteTypes {
     | '/blog'
     | '/checkout'
     | '/contacts'
+    | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/o-nas'
     | '/personal'
+    | '/podbor-ochkov'
+    | '/remont-ochkov'
     | '/tinkoff'
     | '/uslugi'
     | '/blog/$slug'
@@ -201,9 +237,12 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRouteWithChildren
   CheckoutRoute: typeof CheckoutRoute
   ContactsRoute: typeof ContactsRoute
+  KabinetDiagnostikiSpbRoute: typeof KabinetDiagnostikiSpbRoute
   LoyaltyRoute: typeof LoyaltyRoute
   ONasRoute: typeof ONasRoute
   PersonalRoute: typeof PersonalRoute
+  PodborOchkovRoute: typeof PodborOchkovRoute
+  RemontOchkovRoute: typeof RemontOchkovRoute
   TinkoffRoute: typeof TinkoffRoute
   UslugiRoute: typeof UslugiRouteWithChildren
   Catalog_sCategoryRoute: typeof Catalog_sCategoryRouteWithChildren
@@ -225,6 +264,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TinkoffRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/remont-ochkov': {
+      id: '/remont-ochkov'
+      path: '/remont-ochkov'
+      fullPath: '/remont-ochkov'
+      preLoaderRoute: typeof RemontOchkovRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/podbor-ochkov': {
+      id: '/podbor-ochkov'
+      path: '/podbor-ochkov'
+      fullPath: '/podbor-ochkov'
+      preLoaderRoute: typeof PodborOchkovRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/personal': {
       id: '/personal'
       path: '/personal'
@@ -244,6 +297,13 @@ declare module '@tanstack/react-router' {
       path: '/loyalty'
       fullPath: '/loyalty'
       preLoaderRoute: typeof LoyaltyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kabinet-diagnostiki-spb': {
+      id: '/kabinet-diagnostiki-spb'
+      path: '/kabinet-diagnostiki-spb'
+      fullPath: '/kabinet-diagnostiki-spb'
+      preLoaderRoute: typeof KabinetDiagnostikiSpbRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contacts': {
@@ -350,9 +410,12 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRouteWithChildren,
   CheckoutRoute: CheckoutRoute,
   ContactsRoute: ContactsRoute,
+  KabinetDiagnostikiSpbRoute: KabinetDiagnostikiSpbRoute,
   LoyaltyRoute: LoyaltyRoute,
   ONasRoute: ONasRoute,
   PersonalRoute: PersonalRoute,
+  PodborOchkovRoute: PodborOchkovRoute,
+  RemontOchkovRoute: RemontOchkovRoute,
   TinkoffRoute: TinkoffRoute,
   UslugiRoute: UslugiRouteWithChildren,
   Catalog_sCategoryRoute: Catalog_sCategoryRouteWithChildren,

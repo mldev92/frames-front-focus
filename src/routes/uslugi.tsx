@@ -1,6 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import { services } from "@/data/services";
+import { services, serviceHref } from "@/data/services";
 
 export const Route = createFileRoute("/uslugi")({
   head: () => ({
@@ -38,10 +38,9 @@ function ServicesHub() {
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16">
         <div className="grid md:grid-cols-2 gap-8">
           {services.map((s) => (
-            <Link
+            <a
               key={s.slug}
-              to="/uslugi/$slug"
-              params={{ slug: s.slug }}
+              href={serviceHref(s.slug)}
               className="group block bg-surface rounded-sm overflow-hidden hover:shadow-lg transition-shadow"
             >
               <div className="aspect-[16/10] overflow-hidden">
@@ -63,7 +62,7 @@ function ServicesHub() {
                   </span>
                 </div>
               </div>
-            </Link>
+            </a>
           ))}
         </div>
       </section>

@@ -93,3 +93,13 @@ export const services: Service[] = [
 ];
 
 export const getService = (slug: string) => services.find((s) => s.slug === slug);
+
+// Live optika100.com service pages live at the top level (not under /uslugi/).
+// Services without a live counterpart fall back to /uslugi/{slug} (new pages).
+const serviceLiveHref: Record<string, string> = {
+  remont: "/remont-ochkov/",
+  "podbor-ochkov": "/podbor-ochkov/",
+  diagnostika: "/kabinet-diagnostiki-spb/",
+};
+
+export const serviceHref = (slug: string) => serviceLiveHref[slug] ?? `/uslugi/${slug}`;

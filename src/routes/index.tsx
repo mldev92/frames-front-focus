@@ -8,6 +8,7 @@ import { PromoCards } from "@/components/PromoCards";
 import { categories } from "@/data/categories";
 import { bestsellers, newArrivals } from "@/data/products";
 import { articles } from "@/data/articles";
+import { serviceHref } from "@/data/services";
 import { promoBanner, promotions } from "@/data/promotions";
 
 export const Route = createFileRoute("/")({
@@ -213,10 +214,9 @@ function HomePage() {
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {SERVICE_LIST.map((s) => (
-            <Link
+            <a
               key={s.slug}
-              to="/uslugi/$slug"
-              params={{ slug: s.slug }}
+              href={serviceHref(s.slug)}
               className="group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md transition-shadow"
             >
               <div className="aspect-[4/3] overflow-hidden bg-cream">
@@ -232,7 +232,7 @@ function HomePage() {
                   Подробнее <ArrowRight className="h-3 w-3" />
                 </div>
               </div>
-            </Link>
+            </a>
           ))}
         </div>
       </section>
@@ -251,13 +251,12 @@ function HomePage() {
               Линзы Stellest и MiSight 1-Day, профильный кабинет в нашей клинике,
               индивидуальная программа наблюдения.
             </p>
-            <Link
-              to="/uslugi/$slug"
-              params={{ slug: "diagnostika" }}
+            <a
+              href={serviceHref("diagnostika")}
               className="mt-8 inline-flex items-center gap-2 bg-foreground text-background rounded-full px-6 py-3 hover:opacity-90"
             >
               Записаться на диагностику <ArrowRight className="h-4 w-4" />
-            </Link>
+            </a>
           </div>
           <div className="aspect-[4/3] rounded-2xl overflow-hidden">
             <img
