@@ -11,9 +11,13 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UslugiRouteImport } from './routes/uslugi'
 import { Route as TinkoffRouteImport } from './routes/tinkoff'
+import { Route as SearchRouteImport } from './routes/search'
+import { Route as RequisitesRouteImport } from './routes/requisites'
 import { Route as RemontOchkovRouteImport } from './routes/remont-ochkov'
+import { Route as PolitikaKonfidentsialnostiRouteImport } from './routes/politika-konfidentsialnosti'
 import { Route as PodborOchkovRouteImport } from './routes/podbor-ochkov'
 import { Route as PersonalRouteImport } from './routes/personal'
+import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as ONasRouteImport } from './routes/o-nas'
 import { Route as LoyaltyRouteImport } from './routes/loyalty'
 import { Route as KabinetDiagnostikiSpbRouteImport } from './routes/kabinet-diagnostiki-spb'
@@ -38,11 +42,27 @@ const TinkoffRoute = TinkoffRouteImport.update({
   path: '/tinkoff',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SearchRoute = SearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequisitesRoute = RequisitesRouteImport.update({
+  id: '/requisites',
+  path: '/requisites',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RemontOchkovRoute = RemontOchkovRouteImport.update({
   id: '/remont-ochkov',
   path: '/remont-ochkov',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PolitikaKonfidentsialnostiRoute =
+  PolitikaKonfidentsialnostiRouteImport.update({
+    id: '/politika-konfidentsialnosti',
+    path: '/politika-konfidentsialnosti',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const PodborOchkovRoute = PodborOchkovRouteImport.update({
   id: '/podbor-ochkov',
   path: '/podbor-ochkov',
@@ -51,6 +71,11 @@ const PodborOchkovRoute = PodborOchkovRouteImport.update({
 const PersonalRoute = PersonalRouteImport.update({
   id: '/personal',
   path: '/personal',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentRoute = PaymentRouteImport.update({
+  id: '/payment',
+  path: '/payment',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ONasRoute = ONasRouteImport.update({
@@ -128,9 +153,13 @@ export interface FileRoutesByFullPath {
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
+  '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
   '/podbor-ochkov': typeof PodborOchkovRoute
+  '/politika-konfidentsialnosti': typeof PolitikaKonfidentsialnostiRoute
   '/remont-ochkov': typeof RemontOchkovRoute
+  '/requisites': typeof RequisitesRoute
+  '/search': typeof SearchRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$category': typeof BlogCategoryRouteWithChildren
@@ -148,9 +177,13 @@ export interface FileRoutesByTo {
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
+  '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
   '/podbor-ochkov': typeof PodborOchkovRoute
+  '/politika-konfidentsialnosti': typeof PolitikaKonfidentsialnostiRoute
   '/remont-ochkov': typeof RemontOchkovRoute
+  '/requisites': typeof RequisitesRoute
+  '/search': typeof SearchRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$category': typeof BlogCategoryRouteWithChildren
@@ -169,9 +202,13 @@ export interface FileRoutesById {
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/o-nas': typeof ONasRoute
+  '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
   '/podbor-ochkov': typeof PodborOchkovRoute
+  '/politika-konfidentsialnosti': typeof PolitikaKonfidentsialnostiRoute
   '/remont-ochkov': typeof RemontOchkovRoute
+  '/requisites': typeof RequisitesRoute
+  '/search': typeof SearchRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$category': typeof BlogCategoryRouteWithChildren
@@ -191,9 +228,13 @@ export interface FileRouteTypes {
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/o-nas'
+    | '/payment'
     | '/personal'
     | '/podbor-ochkov'
+    | '/politika-konfidentsialnosti'
     | '/remont-ochkov'
+    | '/requisites'
+    | '/search'
     | '/tinkoff'
     | '/uslugi'
     | '/blog/$category'
@@ -211,9 +252,13 @@ export interface FileRouteTypes {
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/o-nas'
+    | '/payment'
     | '/personal'
     | '/podbor-ochkov'
+    | '/politika-konfidentsialnosti'
     | '/remont-ochkov'
+    | '/requisites'
+    | '/search'
     | '/tinkoff'
     | '/uslugi'
     | '/blog/$category'
@@ -231,9 +276,13 @@ export interface FileRouteTypes {
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/o-nas'
+    | '/payment'
     | '/personal'
     | '/podbor-ochkov'
+    | '/politika-konfidentsialnosti'
     | '/remont-ochkov'
+    | '/requisites'
+    | '/search'
     | '/tinkoff'
     | '/uslugi'
     | '/blog/$category'
@@ -252,9 +301,13 @@ export interface RootRouteChildren {
   KabinetDiagnostikiSpbRoute: typeof KabinetDiagnostikiSpbRoute
   LoyaltyRoute: typeof LoyaltyRoute
   ONasRoute: typeof ONasRoute
+  PaymentRoute: typeof PaymentRoute
   PersonalRoute: typeof PersonalRoute
   PodborOchkovRoute: typeof PodborOchkovRoute
+  PolitikaKonfidentsialnostiRoute: typeof PolitikaKonfidentsialnostiRoute
   RemontOchkovRoute: typeof RemontOchkovRoute
+  RequisitesRoute: typeof RequisitesRoute
+  SearchRoute: typeof SearchRoute
   TinkoffRoute: typeof TinkoffRoute
   UslugiRoute: typeof UslugiRouteWithChildren
   Catalog_sCategoryRoute: typeof Catalog_sCategoryRouteWithChildren
@@ -276,11 +329,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TinkoffRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/search': {
+      id: '/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/requisites': {
+      id: '/requisites'
+      path: '/requisites'
+      fullPath: '/requisites'
+      preLoaderRoute: typeof RequisitesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/remont-ochkov': {
       id: '/remont-ochkov'
       path: '/remont-ochkov'
       fullPath: '/remont-ochkov'
       preLoaderRoute: typeof RemontOchkovRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/politika-konfidentsialnosti': {
+      id: '/politika-konfidentsialnosti'
+      path: '/politika-konfidentsialnosti'
+      fullPath: '/politika-konfidentsialnosti'
+      preLoaderRoute: typeof PolitikaKonfidentsialnostiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/podbor-ochkov': {
@@ -295,6 +369,13 @@ declare module '@tanstack/react-router' {
       path: '/personal'
       fullPath: '/personal'
       preLoaderRoute: typeof PersonalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment': {
+      id: '/payment'
+      path: '/payment'
+      fullPath: '/payment'
+      preLoaderRoute: typeof PaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/o-nas': {
@@ -444,9 +525,13 @@ const rootRouteChildren: RootRouteChildren = {
   KabinetDiagnostikiSpbRoute: KabinetDiagnostikiSpbRoute,
   LoyaltyRoute: LoyaltyRoute,
   ONasRoute: ONasRoute,
+  PaymentRoute: PaymentRoute,
   PersonalRoute: PersonalRoute,
   PodborOchkovRoute: PodborOchkovRoute,
+  PolitikaKonfidentsialnostiRoute: PolitikaKonfidentsialnostiRoute,
   RemontOchkovRoute: RemontOchkovRoute,
+  RequisitesRoute: RequisitesRoute,
+  SearchRoute: SearchRoute,
   TinkoffRoute: TinkoffRoute,
   UslugiRoute: UslugiRouteWithChildren,
   Catalog_sCategoryRoute: Catalog_sCategoryRouteWithChildren,

@@ -35,6 +35,8 @@ const COLS = [
       ["Доставка и оплата", "/payment/"],
       ["Гарантия", "/payment/"],
       ["Контакты", "/contacts/"],
+      ["Политика конфиденциальности", "/politika-konfidentsialnosti/"],
+      ["Реквизиты", "/requisites/"],
     ],
   },
 ];

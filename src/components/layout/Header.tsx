@@ -163,9 +163,14 @@ export function Header() {
 
             {/* Right icons */}
             <div className="flex items-center gap-2 shrink-0">
-              <button className="p-2 hover:text-brand" aria-label="Поиск">
+              <Link
+                to="/search"
+                search={{ q: "" }}
+                className="p-2 hover:text-brand"
+                aria-label="Поиск"
+              >
                 <Search className="h-5 w-5" />
-              </button>
+              </Link>
               <Link
                 to="/contacts"
                 className="hidden md:flex items-center gap-1 p-2 hover:text-brand text-sm"
