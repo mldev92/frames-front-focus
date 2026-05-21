@@ -1,6 +1,4 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
-import { CatalogListing } from "@/components/CatalogListing";
-import { getByCategory } from "@/data/products";
+import { createFileRoute, Outlet, notFound } from "@tanstack/react-router";
 import { segmentToCategory } from "@/data/categories";
 import type { Category } from "@/data/types";
 
@@ -22,7 +20,7 @@ interface CatalogConfig {
   metaDescription: string;
 }
 
-const config: Record<Category, CatalogConfig> = {
+export const catalogConfig: Record<Category, CatalogConfig> = {
   opravy: {
     title: "Оправы",
     subtitle:
@@ -67,36 +65,12 @@ const config: Record<Category, CatalogConfig> = {
   },
 };
 
+// Layout-only route — validates category and renders child (index or PDP)
 export const Route = createFileRoute("/catalog_s/$category")({
   loader: ({ params }) => {
     const category = segmentToCategory[params.category];
     if (!category) throw notFound();
     return { category };
   },
-  head: ({ loaderData }) => {
-    if (!loaderData) return { meta: [{ title: "Каталог · ОПТИКА 100%" }] };
-    const c = config[loaderData.category];
-    return {
-      meta: [
-        { title: c.metaTitle },
-        { name: "description", content: c.metaDescription },
-        { property: "og:title", content: c.metaTitle },
-        { property: "og:description", content: c.metaDescription },
-      ],
-    };
-  },
-  component: CatalogPage,
+  component: () => <Outlet />,
 });
-
-function CatalogPage() {
-  const { category } = Route.useLoaderData() as { category: Category };
-  const c = config[category];
-  return (
-    <CatalogListing
-      title={c.title}
-      subtitle={c.subtitle}
-      products={getByCategory(category)}
-      facets={c.facets}
-    />
-  );
-}

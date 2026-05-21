@@ -29,6 +29,8 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as UslugiSlugRouteImport } from './routes/uslugi.$slug'
 import { Route as Catalog_sCategoryRouteImport } from './routes/catalog_s.$category'
 import { Route as BlogCategoryRouteImport } from './routes/blog.$category'
+import { Route as Catalog_sCategoryIndexRouteImport } from './routes/catalog_s.$category.index'
+import { Route as BlogCategoryIndexRouteImport } from './routes/blog.$category.index'
 import { Route as Catalog_sCategorySlugRouteImport } from './routes/catalog_s.$category.$slug'
 import { Route as BlogCategorySlugRouteImport } from './routes/blog.$category.$slug'
 
@@ -133,6 +135,16 @@ const BlogCategoryRoute = BlogCategoryRouteImport.update({
   path: '/$category',
   getParentRoute: () => BlogRoute,
 } as any)
+const Catalog_sCategoryIndexRoute = Catalog_sCategoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => Catalog_sCategoryRoute,
+} as any)
+const BlogCategoryIndexRoute = BlogCategoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogCategoryRoute,
+} as any)
 const Catalog_sCategorySlugRoute = Catalog_sCategorySlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -167,6 +179,8 @@ export interface FileRoutesByFullPath {
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
+  '/blog/$category/': typeof BlogCategoryIndexRoute
+  '/catalog_s/$category/': typeof Catalog_sCategoryIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -186,11 +200,11 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
-  '/blog/$category': typeof BlogCategoryRouteWithChildren
-  '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
+  '/blog/$category': typeof BlogCategoryIndexRoute
+  '/catalog_s/$category': typeof Catalog_sCategoryIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -216,6 +230,8 @@ export interface FileRoutesById {
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
+  '/blog/$category/': typeof BlogCategoryIndexRoute
+  '/catalog_s/$category/': typeof Catalog_sCategoryIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -242,6 +258,8 @@ export interface FileRouteTypes {
     | '/uslugi/$slug'
     | '/blog/$category/$slug'
     | '/catalog_s/$category/$slug'
+    | '/blog/$category/'
+    | '/catalog_s/$category/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -261,11 +279,11 @@ export interface FileRouteTypes {
     | '/search'
     | '/tinkoff'
     | '/uslugi'
-    | '/blog/$category'
-    | '/catalog_s/$category'
     | '/uslugi/$slug'
     | '/blog/$category/$slug'
     | '/catalog_s/$category/$slug'
+    | '/blog/$category'
+    | '/catalog_s/$category'
   id:
     | '__root__'
     | '/'
@@ -290,6 +308,8 @@ export interface FileRouteTypes {
     | '/uslugi/$slug'
     | '/blog/$category/$slug'
     | '/catalog_s/$category/$slug'
+    | '/blog/$category/'
+    | '/catalog_s/$category/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -455,6 +475,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogCategoryRouteImport
       parentRoute: typeof BlogRoute
     }
+    '/catalog_s/$category/': {
+      id: '/catalog_s/$category/'
+      path: '/'
+      fullPath: '/catalog_s/$category/'
+      preLoaderRoute: typeof Catalog_sCategoryIndexRouteImport
+      parentRoute: typeof Catalog_sCategoryRoute
+    }
+    '/blog/$category/': {
+      id: '/blog/$category/'
+      path: '/'
+      fullPath: '/blog/$category/'
+      preLoaderRoute: typeof BlogCategoryIndexRouteImport
+      parentRoute: typeof BlogCategoryRoute
+    }
     '/catalog_s/$category/$slug': {
       id: '/catalog_s/$category/$slug'
       path: '/$slug'
@@ -474,10 +508,12 @@ declare module '@tanstack/react-router' {
 
 interface BlogCategoryRouteChildren {
   BlogCategorySlugRoute: typeof BlogCategorySlugRoute
+  BlogCategoryIndexRoute: typeof BlogCategoryIndexRoute
 }
 
 const BlogCategoryRouteChildren: BlogCategoryRouteChildren = {
   BlogCategorySlugRoute: BlogCategorySlugRoute,
+  BlogCategoryIndexRoute: BlogCategoryIndexRoute,
 }
 
 const BlogCategoryRouteWithChildren = BlogCategoryRoute._addFileChildren(
@@ -507,10 +543,12 @@ const UslugiRouteWithChildren =
 
 interface Catalog_sCategoryRouteChildren {
   Catalog_sCategorySlugRoute: typeof Catalog_sCategorySlugRoute
+  Catalog_sCategoryIndexRoute: typeof Catalog_sCategoryIndexRoute
 }
 
 const Catalog_sCategoryRouteChildren: Catalog_sCategoryRouteChildren = {
   Catalog_sCategorySlugRoute: Catalog_sCategorySlugRoute,
+  Catalog_sCategoryIndexRoute: Catalog_sCategoryIndexRoute,
 }
 
 const Catalog_sCategoryRouteWithChildren =
