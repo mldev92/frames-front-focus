@@ -1,6 +1,6 @@
 import type { Category } from "./types";
 
-const img = (name: string) => `/category_${name}_gemini.png`;
+const img = (name: string) => `/category_${name}_v3.png`;
 
 export interface CategoryInfo {
   slug: Category;
@@ -49,14 +49,14 @@ export const categories: CategoryInfo[] = [
     title: "Контактные линзы",
     short: "Однодневные, месячные, торические",
     href: catalogHref("kontaktnye-linzy"),
-    image: img("contact_lenses"),
+    image: img("cont_lenses"),
   },
   {
     slug: "linzy-dlya-ochkov",
     title: "Линзы для очков",
     short: "ZEISS, Essilor, Hoya и другие",
     href: catalogHref("linzy-dlya-ochkov"),
-    image: img("spectacle_lenses"),
+    image: img("eyeglass_lenses"),
   },
   {
     slug: "aksessuary",
