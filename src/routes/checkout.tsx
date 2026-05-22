@@ -31,15 +31,14 @@ export const Route = createFileRoute("/checkout")({
 const CITIES = ["Москва", "Санкт-Петербург", "Кемерово", "Новокузнецк"];
 
 const DELIVERY_OPTIONS = [
-  { label: "Самовывоз из салона", sub: "Выберите адрес в следующем шаге", price: "Бесплатно", free: true },
+  { label: "Самовывоз из салона", sub: "«Оптика 100%» · ул. Кирочная, 17, Санкт-Петербург (м. Чернышевская)", price: "Бесплатно", free: true },
   { label: "Курьер по СПб", sub: "Доставка в течение 1-2 дней", price: "от 350 ₽", free: false },
   { label: "Почта России / СДЭК", sub: "5-10 рабочих дней", price: "по тарифу", free: false },
 ];
 
 const PAYMENT_OPTIONS = [
-  { label: "Банковская карта онлайн", sub: "Visa, MasterCard, МИР. Безопасная оплата." },
-  { label: "Оплата при получении", sub: "Наличными или картой при получении заказа." },
-  { label: "СБП (Система быстрых платежей)", sub: "Оплата через мобильный банк по QR-коду." },
+  { label: "Наличными или по карте при выдаче", sub: "Оплата в момент получения товара в салоне." },
+  { label: "Т-Рассрочка", sub: "Рассрочка от Т-Банка — без переплат, до 12 месяцев." },
 ];
 
 function Checkout() {
@@ -52,7 +51,7 @@ function Checkout() {
   const [citySearch, setCitySearch] = useState("");
   const [delivery, setDelivery] = useState("Самовывоз из салона");
   const [address, setAddress] = useState("");
-  const [payment, setPayment] = useState("Банковская карта онлайн");
+  const [payment, setPayment] = useState("Наличными или по карте при выдаче");
   const [promoVisible, setPromoVisible] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [agreed, setAgreed] = useState(false);
