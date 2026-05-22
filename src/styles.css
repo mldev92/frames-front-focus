@@ -214,6 +214,32 @@
 }
 .animate-ken-burns { animation: ken-burns 16s ease-out forwards; }
 
+@keyframes hero-gradient-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes hero-particle-float {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.3; }
+  50%      { transform: translateY(-30px) scale(1.1); opacity: 0.6; }
+}
+
+.hero-gradient-bg {
+  background: linear-gradient(135deg, #2d0a0e 0%, #4a1a1a 25%, #3d1f1a 50%, #2a1520 75%, #1a0508 100%);
+  background-size: 200% 200%;
+  animation: hero-gradient-shift 12s ease infinite;
+}
+
+.hero-particle-el {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,180,120,0.25) 0%, transparent 70%);
+  filter: blur(20px);
+  animation: hero-particle-float 6s ease-in-out infinite;
+  pointer-events: none;
+}
+
 @keyframes draw-line {
   0%   { transform: scaleX(0); }
   100% { transform: scaleX(1); }
@@ -239,6 +265,8 @@
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal.is-visible { opacity: 1; transform: none; transition: none; }
   .animate-ken-burns, .animate-flip { animation: none !important; }
+  .hero-gradient-bg { animation: none !important; }
+  .hero-particle-el { animation: none !important; }
 }
 
 @layer base {

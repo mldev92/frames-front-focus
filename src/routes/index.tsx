@@ -1,15 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Truck, ShieldCheck, Sparkles } from "lucide-react";
-
-function TBankIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} width="100" height="110" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M10 10H90V60C90 78 70 95 50 102C30 95 10 78 10 60V10Z" fill="currentColor"/>
-      <path d="M35 34H65V43H54V76C59 76 60 77 60 80H40C40 77 41 76 46 76V43H35V34Z" fill="#2D3033"/>
-    </svg>
-  );
-}
+import { ArrowRight } from "lucide-react";
 import { useState } from "react";
+import { ProductCard } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { EditorialTriptych } from "@/components/EditorialTriptych";
 import { BrandPromiseBand } from "@/components/BrandPromiseBand";
@@ -42,7 +34,7 @@ export const Route = createFileRoute("/")({
         content:
           "Большой выбор оправ и линз, услуги клиники зрения, салоны в центре Санкт-Петербурга.",
       },
-      { property: "og:image", content: "/main_banner_v2.png" },
+      { property: "og:image", content: "/main_banner_22_05.jpg" },
     ],
   }),
   component: HomePage,
@@ -61,12 +53,14 @@ const SERVICE_LIST = [
   { slug: "remont", title: "Ремонт очков" },
 ];
 
-const TRUST = [
-  { icon: Truck, t: "Бесплатная доставка от 5 000 ₽" },
-  { icon: ShieldCheck, t: "Гарантия 12 месяцев" },
-  { icon: TBankIcon, t: "Рассрочка 0-0-3 от Т-Банка" },
-  { icon: Sparkles, t: "Виртуальная примерка" },
+const HERO_PARTICLES = [
+  { style: { width: '300px', height: '300px', top: '10%', left: '5%', animationDelay: '0s', animationDuration: '7s' } },
+  { style: { width: '200px', height: '200px', top: '60%', left: '15%', animationDelay: '2s', animationDuration: '8s' } },
+  { style: { width: '250px', height: '250px', top: '20%', right: '10%', animationDelay: '1s', animationDuration: '6s' } },
+  { style: { width: '180px', height: '180px', top: '70%', right: '20%', animationDelay: '3s', animationDuration: '9s' } },
+  { style: { width: '220px', height: '220px', top: '40%', left: '50%', animationDelay: '4s', animationDuration: '7.5s' } },
 ];
+
 
 function HomePage() {
   const hits = bestsellers();
@@ -78,106 +72,143 @@ function HomePage() {
   return (
     <div>
       {/* HERO */}
-      <section className="relative w-full">
-        <img
-          src="/main_banner_v2.png"
-          alt="ОПТИКА 100% — оправы, очки и контактные линзы"
-          className="w-full h-auto max-h-[640px] object-cover animate-ken-burns"
-        />
-        <div className="absolute inset-0 flex items-center bg-gradient-to-r from-foreground/45 via-foreground/15 to-transparent">
-          <div className="mx-auto w-full max-w-7xl px-4 lg:px-8">
-            <div className="max-w-md text-primary-foreground">
-              <div className="text-xs uppercase tracking-[0.2em] text-primary-foreground/80 mb-4">
-                Новая коллекция · 2025
+      <section className="relative w-full overflow-hidden" style={{ minHeight: '90vh' }}>
+        <div className="hero-gradient-bg absolute inset-0" />
+        {HERO_PARTICLES.map((p, i) => (
+          <div key={i} className="hero-particle-el" style={p.style} />
+        ))}
+
+        <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8 grid lg:grid-cols-2 gap-12 items-center" style={{ minHeight: '90vh', paddingTop: '80px', paddingBottom: '80px' }}>
+          <div>
+            <span className="text-xs uppercase tracking-[0.2em]" style={{ color: 'rgba(255,200,170,0.8)' }}>
+              Новая коллекция · Лето 2026
+            </span>
+            <h1 className="font-serif text-4xl lg:text-6xl leading-[1.05] text-primary-foreground" style={{ marginTop: '16px' }}>
+              Очки,<br /><em>в которых<br />хочется жить.</em>
+            </h1>
+            <p className="mt-5 text-base lg:text-lg max-w-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
+              Более 11&nbsp;000 оправ от 120 брендов. Ручная подгонка в&nbsp;наших салонах в&nbsp;Санкт-Петербурге и&nbsp;Новокузнецке.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                to="/catalog_s/$category" params={{ category: "opravy" }}
+                className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm hover:opacity-90"
+                style={{ background: '#fff', color: '#1a0508' }}
+              >
+                Подобрать оправу
+              </Link>
+              <button
+                className="inline-flex items-center gap-2 border border-primary-foreground/80 text-primary-foreground rounded-full px-5 py-2.5 text-sm hover:bg-primary-foreground/10 bg-transparent cursor-pointer"
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" style={{ width: '18px', height: '18px' }}>
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                  <circle cx="12" cy="13" r="4" />
+                </svg>
+                Виртуальная примерка
+              </button>
+            </div>
+            <div className="mt-8 flex gap-8 text-primary-foreground" style={{ fontSize: '13px' }}>
+              <div>
+                <strong>11 000+</strong>
+                <br />
+                <span style={{ opacity: 0.7 }}>оправ от 120 брендов</span>
               </div>
-              <h1 className="font-serif text-4xl lg:text-6xl leading-[1.05]">
-                Очки, в которых хочется жить.
-              </h1>
-              <p className="mt-5 text-base lg:text-lg text-primary-foreground/90 max-w-sm">
-                Современные оправы, профессиональный подбор и линзы мировых брендов.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link
-                  to="/catalog_s/$category" params={{ category: "opravy" }}
-                  className="inline-flex items-center gap-2 bg-background text-foreground rounded-full px-5 py-2.5 text-sm hover:opacity-90"
-                >
-                  Подобрать оправу
-                </Link>
-                <Link
-                  to="/catalog_s/$category" params={{ category: "solntsezashchitnye_ochki" }}
-                  className="inline-flex items-center gap-2 border border-primary-foreground/80 text-primary-foreground rounded-full px-5 py-2.5 text-sm hover:bg-primary-foreground/10"
-                >
-                  Солнцезащитные
-                </Link>
+              <div>
+                <strong>2 города</strong>
+                <br />
+                <span style={{ opacity: 0.7 }}>СПб · Новокузнецк</span>
+              </div>
+              <div>
+                <strong>4.9 ★</strong>
+                <br />
+                <span style={{ opacity: 0.7 }}>1 840 отзывов</span>
               </div>
             </div>
           </div>
-        </div>
-        {/* Trust strip */}
-        <div className="absolute left-0 right-0 bottom-0 bg-foreground/35 backdrop-blur-sm text-primary-foreground hidden md:block">
-          <div className="mx-auto max-w-7xl px-4 lg:px-8 py-3 grid grid-cols-4 gap-4 text-xs">
-            {TRUST.map((tr) => {
-              const I = tr.icon;
-              return (
-                <div key={tr.t} className="flex items-center gap-2 justify-center">
-                  <I className="h-4 w-4 opacity-90" />
-                  <span>{tr.t}</span>
-                </div>
-              );
-            })}
+
+          <div className="relative flex items-center justify-center">
+            <div className="absolute rounded-full" style={{
+              width: '80%', height: '80%',
+              background: 'radial-gradient(circle, rgba(180,80,40,0.3) 0%, transparent 70%)',
+              filter: 'blur(60px)',
+            }} />
+            <div className="relative rounded-2xl overflow-hidden" style={{
+              border: '2px solid rgba(255,255,255,0.15)',
+              maxWidth: '520px',
+            }}>
+              <img
+                src="/main_banner_22_05.jpg"
+                alt="Семья играет в настольную игру — только ребёнок в очках, все увлечены игрой"
+                className="w-full h-auto"
+              />
+            </div>
+            <div className="absolute" style={{ bottom: '-20px', right: '-20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+              {Array.from({ length: 9 }).map((_, i) => (
+                <span key={i} style={{
+                  width: '6px', height: '6px', borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.25)', display: 'block',
+                }} />
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* NEW ARRIVALS — carousel */}
+      {/* NEW ARRIVALS — grid */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 pt-16 pb-10">
         <Reveal className="flex items-end justify-between mb-8 gap-4">
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
-              Новинки
+              Каталог
             </div>
             <h2 className="font-serif text-3xl lg:text-4xl">Только что в продаже</h2>
           </div>
           <Link
             to="/catalog_s/$category" params={{ category: "opravy" }}
-            className="hidden sm:inline-flex items-center gap-2 border border-border rounded-full px-4 py-2 text-sm hover:border-foreground"
+            className="hidden sm:inline-flex items-center gap-1 text-sm hover:text-brand"
           >
-            Смотреть все новинки
+            Смотреть все <span style={{ marginLeft: '4px' }}>→</span>
           </Link>
         </Reveal>
         <Reveal delay={120}>
-          <ProductCarousel products={news} />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            {news.slice(0, 4).map((p) => (
+              <ProductCard key={p.slug} product={p} />
+            ))}
+          </div>
         </Reveal>
       </section>
 
       {/* EDITORIAL TRIPTYCH */}
       <EditorialTriptych />
 
-      {/* CATEGORIES — 4 tiles, lighter */}
+      {/* CATEGORIES — dark gradient + SVG icons */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16">
         <Reveal className="text-center max-w-2xl mx-auto mb-10">
           <h2 className="font-serif text-3xl lg:text-4xl">Четыре способа купить</h2>
-          <p className="mt-3 text-muted-foreground">
-            Оправы, солнцезащитные, контактные линзы и услуги клиники — в одном месте.
-          </p>
         </Reveal>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {fourCats.map((c, i) => (
             <Reveal key={c.slug} delay={i * 80}>
               <a
                 href={c.href}
-                className="group relative aspect-[3/4] bg-cream rounded-2xl overflow-hidden block"
+                className="group relative aspect-[3/4] rounded-2xl overflow-hidden block"
+                style={{
+                  background: 'linear-gradient(160deg, #3d1f1a 0%, #2d0a0e 50%, #1a0508 100%)',
+                }}
               >
                 <img
                   src={c.image}
-                  alt={c.title}
+                  alt=""
                   loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  style={{ opacity: 0.2 }}
                 />
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                  <span className="inline-flex items-center bg-background text-foreground text-sm rounded-full px-4 py-2 shadow-sm whitespace-nowrap group-hover:bg-brand group-hover:text-brand-foreground transition-colors">
-                    {c.title}
-                  </span>
+                <div className="absolute inset-0" style={{
+                  background: 'linear-gradient(to bottom, transparent 0%, rgba(26,5,8,0.6) 100%)',
+                }} />
+                <div className="relative z-10 flex flex-col items-center justify-end h-full text-primary-foreground" style={{ paddingBottom: '24px' }}>
+                  <span className="text-sm font-medium">{c.title}</span>
                 </div>
               </a>
             </Reveal>

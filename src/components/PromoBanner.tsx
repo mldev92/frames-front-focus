@@ -48,7 +48,7 @@ export function PromoBanner({ data }: Props) {
     <section className="relative rounded-3xl overflow-hidden min-h-[340px] grid sm:grid-cols-[1.1fr_1fr] gap-0 group">
       {/* Photo background */}
       <img
-        src="/main2example.jpeg"
+        src="/promo_banner_22_05.jpg"
         alt=""
         loading="lazy"
         className="absolute inset-0 h-full w-full object-cover transition-transform duration-[1400ms] ease-out group-hover:scale-105"
