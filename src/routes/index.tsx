@@ -98,7 +98,7 @@ function HomePage() {
         .hero-photo-dots{position:absolute!important;top:-16px!important;right:-16px!important;display:grid!important;grid-template-columns:repeat(3,6px)!important;gap:6px!important;opacity:.25!important}
         .hero-photo-dots span{width:6px!important;height:6px!important;border-radius:50%!important;background:rgba(255,200,170,.6)!important}
       `}</style>
-      <section className="relative w-full min-h-[620px] lg:min-h-[700px] overflow-hidden grid lg:grid-cols-2 items-center" style={{ padding: 'clamp(48px, 8vw, 80px) clamp(24px, 5vw, 64px)' }}>
+      <section className="relative w-full min-h-[620px] lg:min-h-[700px] overflow-hidden flex items-center" style={{ padding: 'clamp(48px, 8vw, 80px) clamp(24px, 5vw, 64px)' }}>
         {/* Animated gradient background */}
         <div className="hero-bg" />
         {/* Bokeh particles */}
@@ -108,7 +108,18 @@ function HomePage() {
         <div className="hero-particle" />
         <div className="hero-particle" />
 
-        {/* Text content */}
+        {/* Full-size banner image */}
+        <div className="absolute inset-0 z-[1]">
+          <img
+            src="/main_banner_22_05.jpg"
+            alt=""
+            className="w-full h-full object-cover"
+          />
+          {/* Gradient overlay — darker on left for text readability */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(26,5,8,0.92) 0%, rgba(26,5,8,0.55) 45%, rgba(26,5,8,0.25) 100%)' }} />
+        </div>
+
+        {/* Text content overlaid */}
         <div className="hero-content">
           <span className="hero-eyebrow">Новая коллекция · Лето 2026</span>
           <h1 className="hero-h1">Очки,<br /><em>в которых<br />хочется жить.</em></h1>
@@ -138,24 +149,6 @@ function HomePage() {
             <div><strong>11 000+</strong><span>оправ от 120 брендов</span></div>
             <div><strong>2 города</strong><span>СПб · Новокузнецк</span></div>
             <div><strong>4.9 ★</strong><span>1 840 отзывов</span></div>
-          </div>
-        </div>
-
-        {/* Hero photo */}
-        <div className="hero-visual">
-          <div className="hero-photo-wrap">
-            <div className="hero-photo-glow" />
-            <div className="hero-photo-frame">
-              <img
-                src="/main_banner_22_05.jpg"
-                alt="Семья играет в настольную игру"
-              />
-            </div>
-            <div className="hero-photo-dots">
-              <span /><span /><span />
-              <span /><span /><span />
-              <span /><span /><span />
-            </div>
           </div>
         </div>
       </section>
