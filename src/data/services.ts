@@ -33,7 +33,7 @@ export const services: Service[] = [
       "Комплексная диагностика зрения с использованием авторефрактометра, тонометра и щелевой лампы.",
     price: "от 2 800 ₽",
     duration: "60 минут",
-    image: "https://optika100.com/images/proverka-zreniya/izmenenie_davleniya.jpg",
+    image: "/izmenenie_davleniya.jpg",
     includes: [
       "Авторефрактометрия",
       "Измерение внутриглазного давления",
