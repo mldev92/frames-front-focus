@@ -396,6 +396,7 @@ export function SalonsSection() {
                 metro
                 metroName="Чернышевская"
                 imageLabel="фото салона СПб"
+                imageSrc="/salon_kirochnaya.jpg"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="5.0"
