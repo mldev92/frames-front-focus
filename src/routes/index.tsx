@@ -9,7 +9,7 @@ import { PromoCards } from "@/components/PromoCards";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { Reveal } from "@/components/Reveal";
 import { SalonsSection } from "@/components/SalonsSection";
-import { categories } from "@/data/categories";
+import { categories, productHref } from "@/data/categories";
 import { bestsellers, newArrivals } from "@/data/products";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
@@ -52,15 +52,6 @@ const SERVICE_LIST = [
   { slug: "remont", title: "Ремонт очков" },
 ];
 
-const HERO_PARTICLES = [
-  { style: { width: '300px', height: '300px', top: '10%', left: '5%', animationDelay: '0s', animationDuration: '7s' } },
-  { style: { width: '200px', height: '200px', top: '60%', left: '15%', animationDelay: '2s', animationDuration: '8s' } },
-  { style: { width: '250px', height: '250px', top: '20%', right: '10%', animationDelay: '1s', animationDuration: '6s' } },
-  { style: { width: '180px', height: '180px', top: '70%', right: '20%', animationDelay: '3s', animationDuration: '9s' } },
-  { style: { width: '220px', height: '220px', top: '40%', left: '50%', animationDelay: '4s', animationDuration: '7.5s' } },
-];
-
-
 function HomePage() {
   const hits = bestsellers();
   const news = newArrivals();
@@ -71,86 +62,63 @@ function HomePage() {
   return (
     <div>
       {/* HERO */}
-      <section className="relative w-full overflow-hidden">
-        <div className="absolute inset-0" style={{
-          background: 'linear-gradient(135deg, #2d0a0e 0%, #4a1a1a 25%, #3d1f1a 50%, #2a1520 75%, #1a0508 100%)',
-          backgroundSize: '200% 200%',
-          animation: 'hero-gradient-shift 12s ease infinite',
-        }} />
-        {HERO_PARTICLES.map((p, i) => (
-          <div key={i} style={{
-            ...p.style,
-            position: 'absolute',
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255,180,120,0.25) 0%, transparent 70%)',
-            filter: 'blur(20px)',
-            animation: 'hero-particle-float 6s ease-in-out infinite',
-            pointerEvents: 'none' as const,
-          }} />
-        ))}
+      <section className="relative w-full min-h-[620px] lg:min-h-[700px] overflow-hidden grid lg:grid-cols-2 items-center" style={{ padding: 'clamp(48px, 8vw, 80px) clamp(24px, 5vw, 64px)' }}>
+        {/* Animated gradient background */}
+        <div className="hero-bg" />
+        {/* Bokeh particles */}
+        <div className="hero-particle" />
+        <div className="hero-particle" />
+        <div className="hero-particle" />
+        <div className="hero-particle" />
+        <div className="hero-particle" />
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8 grid lg:grid-cols-2 gap-12 items-center" style={{ paddingTop: '80px', paddingBottom: '80px' }}>
-          <div>
-            <span className="text-xs uppercase tracking-[0.2em]" style={{ color: 'rgba(255,200,170,0.8)' }}>
-              Новая коллекция · Лето 2026
-            </span>
-            <h1 className="font-serif text-4xl lg:text-6xl leading-[1.05] text-primary-foreground" style={{ marginTop: '16px' }}>
-              Очки,<br /><em>в которых<br />хочется жить.</em>
-            </h1>
-            <p className="mt-5 text-base lg:text-lg max-w-sm" style={{ color: 'rgba(255,255,255,0.85)' }}>
-              Более 11&nbsp;000 оправ от 120 брендов. Ручная подгонка в&nbsp;наших салонах в&nbsp;Санкт-Петербурге и&nbsp;Новокузнецке.
-            </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                to="/catalog_s/$category" params={{ category: "opravy" }}
-                className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm hover:opacity-90"
-                style={{ background: '#fff', color: '#1a0508' }}
-              >
-                Подобрать оправу
-              </Link>
-              <button
-                className="inline-flex items-center gap-2 border border-primary-foreground/80 text-primary-foreground rounded-full px-5 py-2.5 text-sm hover:bg-primary-foreground/10 bg-transparent cursor-pointer"
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" style={{ width: '18px', height: '18px' }}>
-                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
-                  <circle cx="12" cy="13" r="4" />
-                </svg>
-                Виртуальная примерка
-              </button>
-            </div>
-            <div className="mt-8 flex gap-8 text-primary-foreground" style={{ fontSize: '13px' }}>
-              <div>
-                <strong>11 000+</strong>
-                <br />
-                <span style={{ opacity: 0.7 }}>оправ от 120 брендов</span>
-              </div>
-              <div>
-                <strong>2 города</strong>
-                <br />
-                <span style={{ opacity: 0.7 }}>СПб · Новокузнецк</span>
-              </div>
-              <div>
-                <strong>4.9 ★</strong>
-                <br />
-                <span style={{ opacity: 0.7 }}>1 840 отзывов</span>
-              </div>
-            </div>
+        {/* Text content */}
+        <div className="hero-content">
+          <span className="hero-eyebrow">Новая коллекция · Лето 2026</span>
+          <h1 className="hero-h1">Очки,<br /><em>в которых<br />хочется жить.</em></h1>
+          <p className="hero-lead">Более 11&nbsp;000 оправ от 120 брендов. Ручная подгонка в&nbsp;наших салонах в&nbsp;Санкт-Петербурге и&nbsp;Новокузнецке.</p>
+          <div className="hero-ctas">
+            <Link
+              to="/catalog_s/$category" params={{ category: "opravy" }}
+              className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold hover:opacity-90 transition-opacity"
+              style={{ background: '#fff', color: '#1a0508' }}
+            >
+              Подобрать оправу
+            </Link>
+            <button
+              className="inline-flex items-center gap-2 border rounded-full px-7 py-3.5 text-sm font-semibold transition-colors cursor-pointer bg-transparent"
+              style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.35)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.6)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.35)'; }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" style={{ width: '18px', height: '18px' }}>
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+              Виртуальная примерка
+            </button>
           </div>
+          <div className="hero-stats">
+            <div><strong>11 000+</strong><span>оправ от 120 брендов</span></div>
+            <div><strong>2 города</strong><span>СПб · Новокузнецк</span></div>
+            <div><strong>4.9 ★</strong><span>1 840 отзывов</span></div>
+          </div>
+        </div>
 
-          <div className="relative flex items-center justify-center">
-            <div className="absolute rounded-full" style={{
-              width: '80%', height: '80%',
-              background: 'radial-gradient(circle, rgba(180,80,40,0.3) 0%, transparent 70%)',
-              filter: 'blur(60px)',
-            }} />
-            <div className="relative rounded-2xl" style={{
-              border: '2px solid rgba(255,255,255,0.15)',
-            }}>
+        {/* Hero photo */}
+        <div className="hero-visual">
+          <div className="hero-photo-wrap">
+            <div className="hero-photo-glow" />
+            <div className="hero-photo-frame">
               <img
                 src="/main_banner_22_05.jpg"
-                alt="Семья играет в настольную игру — только ребёнок в очках, все увлечены игрой"
-                className="w-[150%] max-w-none h-auto -translate-x-1/6 rounded-2xl"
+                alt="Семья играет в настольную игру"
               />
+            </div>
+            <div className="hero-photo-dots">
+              <span /><span /><span />
+              <span /><span /><span />
+              <span /><span /><span />
             </div>
           </div>
         </div>
@@ -176,7 +144,7 @@ function HomePage() {
         <Reveal delay={120}>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
             {news.slice(0, 4).map((p) => (
-              <a key={p.slug} href={`/catalog_s/opravy/${p.slug}/`} className="group block" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <a key={p.slug} href={productHref(p.category, p.slug)} className="group block" style={{ textDecoration: 'none', color: 'inherit' }}>
                 <div className="aspect-square bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
                   <img
                     src={p.images[0]}
