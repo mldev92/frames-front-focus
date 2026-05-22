@@ -228,10 +228,10 @@ function HomePage() {
                   alt=""
                   loading="lazy"
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  style={{ opacity: 0.2 }}
+                  style={{ opacity: 0.55 }}
                 />
                 <div className="absolute inset-0" style={{
-                  background: 'linear-gradient(to bottom, transparent 0%, rgba(26,5,8,0.6) 100%)',
+                  background: 'linear-gradient(to bottom, transparent 0%, rgba(26,5,8,0.25) 100%)',
                 }} />
                 <div className="relative z-10 flex flex-col items-center justify-end h-full text-primary-foreground" style={{ paddingBottom: '24px' }}>
                   <span className="text-sm font-medium">{c.title}</span>
