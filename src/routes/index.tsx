@@ -181,7 +181,7 @@ function HomePage() {
                     padding: '16px',
                     background: 'var(--color-surface)',
                     border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-lg, 16px)',
+                    borderRadius: '20px',
                     textDecoration: 'none', color: 'inherit',
                     transition: '220ms var(--ease-editorial, cubic-bezier(0.22, 1, 0.36, 1))',
                     cursor: 'pointer',
@@ -197,7 +197,7 @@ function HomePage() {
                 >
                   {/* Photo */}
                   <div style={{
-                    background: '#fff', borderRadius: 'var(--radius-md, 12px)',
+                    background: '#fff', borderRadius: '12px',
                     height: '180px', display: 'grid', placeItems: 'center',
                     overflow: 'hidden',
                   }}>
