@@ -56,7 +56,6 @@ const NAV = [
   { label: "Контактные линзы", href: "/catalog_s/kontaktnye_linzy_/" },
   { label: "Линзы для очков", href: "/catalog_s/linzy_dlya_ochkov/" },
   { label: "Аксессуары", href: "/catalog_s/soputstvuyushchie_tovary/" },
-  { label: "Услуги", href: "/uslugi" },
   { label: "Салоны", href: "/contacts/" },
 ];
 
