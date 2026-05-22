@@ -668,7 +668,7 @@ function FilterSection({
   useEffect(() => {
     if (isFirst.current) { isFirst.current = false; return; }
     if (open && bodyRef.current) {
-      const t = setTimeout(() => bodyRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 150);
+      const t = setTimeout(() => bodyRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 320);
       return () => clearTimeout(t);
     }
   }, [open]);
