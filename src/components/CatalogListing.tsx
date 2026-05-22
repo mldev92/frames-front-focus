@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
@@ -662,6 +662,17 @@ function FilterSection({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const bodyRef = useRef<HTMLDivElement>(null);
+  const isFirst = useRef(true);
+
+  useEffect(() => {
+    if (isFirst.current) { isFirst.current = false; return; }
+    if (open && bodyRef.current) {
+      const t = setTimeout(() => bodyRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 150);
+      return () => clearTimeout(t);
+    }
+  }, [open]);
+
   return (
     <div className={cn("py-5", !noBorder && "border-t border-border")}>
       <button
@@ -680,6 +691,7 @@ function FilterSection({
         />
       </button>
       <div
+        ref={bodyRef}
         className={cn(
           "transition-all duration-300",
           open ? "max-h-[2000px] mt-4 opacity-100 overflow-visible" : "max-h-0 opacity-0 overflow-hidden",
