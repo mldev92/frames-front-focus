@@ -185,6 +185,7 @@ interface SalonCardProps {
   metro?: boolean;
   metroName?: string;
   imageLabel: string;
+  imageSrc?: string;
   yandexScore: string;
   yandexStars: number;
   twogisScore: string;
@@ -201,6 +202,7 @@ const SalonCard = ({
   metro,
   metroName,
   imageLabel,
+  imageSrc,
   yandexScore,
   yandexStars,
   twogisScore,
@@ -228,7 +230,16 @@ const SalonCard = ({
         position: "relative",
       }}
     >
-      <ImagePlaceholder label={imageLabel} />
+      {imageSrc ? (
+        <img
+          src={imageSrc}
+          alt={name}
+          loading="lazy"
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+      ) : (
+        <ImagePlaceholder label={imageLabel} />
+      )}
       <StatusBadge />
     </div>
     <div
@@ -407,6 +418,7 @@ export function SalonsSection() {
                 addressNote="Заводской район · ост. Рынок"
                 hours="Ежедневно с 9:30 до 19:30"
                 imageLabel="фото · ул. Тореза"
+                imageSrc="/salon_toreza.jpg"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="4.8"
@@ -418,6 +430,7 @@ export function SalonsSection() {
                 addressNote="Новобайдаевский район"
                 hours="Ежедневно с 9:30 до 19:00"
                 imageLabel="фото · пр. Шахтёров"
+                imageSrc="/salon_shahterov.jpg"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="5.0"
@@ -428,6 +441,7 @@ export function SalonsSection() {
                 addressNote="Центральный район · Дом Быта, отдельный вход с левого торца"
                 hours="Ежедневно с 9:30 до 19:30"
                 imageLabel="фото · пр. Бардина"
+                imageSrc="/salon_bardina.jpg"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="4.8"
@@ -439,6 +453,7 @@ export function SalonsSection() {
                 addressNote="Новоильинский район · ост. Роддом"
                 hours="Ежедневно с 9:30 до 19:30"
                 imageLabel="фото · пр. Запсибовцев"
+                imageSrc="/salon_zabsibov.jpg"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="4.8"
