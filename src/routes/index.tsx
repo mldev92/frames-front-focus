@@ -116,7 +116,7 @@ function HomePage() {
             className="w-full h-full object-cover"
           />
           {/* Gradient overlay — darker on left for text readability */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(26,5,8,0.92) 0%, rgba(26,5,8,0.55) 45%, rgba(26,5,8,0.25) 100%)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(26,5,8,0.75) 0%, rgba(26,5,8,0.35) 45%, rgba(26,5,8,0.08) 100%)' }} />
         </div>
 
         {/* Text content overlaid */}
