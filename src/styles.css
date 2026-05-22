@@ -238,7 +238,7 @@
 }
 @keyframes heroPhotoFloat {
   0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
+  50%      { transform: translateY(-12px); }
 }
 @keyframes glowRing {
   0%   { background-position: 0% 0%; opacity: 0.6; }
@@ -253,23 +253,23 @@
 /* Hero background — animated gradient */
 .hero-bg {
   position: absolute; inset: 0; z-index: 0;
-  background: linear-gradient(135deg, #1a0508 0%, #3d1218 35%, #5c2028 65%, #2a0d12 100%);
+  background: linear-gradient(135deg, #1a0508 0%, #4e1820 30%, #6e2835 60%, #2a0d12 100%);
   background-size: 250% 250%;
-  animation: heroGradient 16s ease infinite;
+  animation: heroGradient 10s ease infinite;
 }
 .hero-bg::before {
   content: ''; position: absolute;
   width: 700px; height: 700px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(220,80,60,0.12) 0%, transparent 65%);
+  background: radial-gradient(circle, rgba(220,80,60,0.18) 0%, transparent 60%);
   top: -150px; right: -100px;
-  animation: glowDrift 10s ease-in-out infinite;
+  animation: glowDrift 7s ease-in-out infinite;
 }
 .hero-bg::after {
   content: ''; position: absolute;
   width: 500px; height: 500px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,180,140,0.08) 0%, transparent 60%);
+  background: radial-gradient(circle, rgba(255,180,140,0.12) 0%, transparent 55%);
   bottom: -100px; left: 10%;
-  animation: glowDrift 14s ease-in-out infinite reverse;
+  animation: glowDrift 9s ease-in-out infinite reverse;
 }
 
 /* Bokeh particles */
@@ -322,7 +322,7 @@
 .hero-photo-frame {
   position: relative; border-radius: 24px; overflow: hidden;
   box-shadow: 0 20px 60px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06);
-  animation: heroPhotoFloat 6s ease-in-out infinite;
+  animation: heroPhotoFloat 4s ease-in-out infinite;
 }
 .hero-photo-frame img { width: 100%; height: auto; display: block; }
 .hero-photo-frame::after {
@@ -332,10 +332,10 @@
 }
 .hero-photo-glow {
   position: absolute; inset: -4px; border-radius: 28px; z-index: -1;
-  background: linear-gradient(135deg, rgba(220,80,60,0.3), rgba(255,180,140,0.15), rgba(220,80,60,0.2));
+  background: linear-gradient(135deg, rgba(220,80,60,0.35), rgba(255,180,140,0.2), rgba(220,80,60,0.25));
   background-size: 200% 200%;
-  animation: glowRing 4s ease-in-out infinite;
-  filter: blur(8px);
+  animation: glowRing 3s ease-in-out infinite;
+  filter: blur(10px);
 }
 .hero-photo-dots {
   position: absolute; top: -16px; right: -16px;
