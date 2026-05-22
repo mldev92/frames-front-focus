@@ -149,7 +149,7 @@ function HomePage() {
               <img
                 src="/main_banner_22_05.jpg"
                 alt="Семья играет в настольную игру — только ребёнок в очках, все увлечены игрой"
-                className="w-full h-auto"
+                className="w-[150%] max-w-none h-auto"
               />
             </div>
             <div className="absolute" style={{ bottom: '-20px', right: '-20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
