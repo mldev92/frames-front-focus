@@ -143,22 +143,14 @@ function HomePage() {
               background: 'radial-gradient(circle, rgba(180,80,40,0.3) 0%, transparent 70%)',
               filter: 'blur(60px)',
             }} />
-            <div className="relative rounded-2xl overflow-hidden" style={{
+            <div className="relative rounded-2xl" style={{
               border: '2px solid rgba(255,255,255,0.15)',
             }}>
               <img
                 src="/main_banner_22_05.jpg"
                 alt="Семья играет в настольную игру — только ребёнок в очках, все увлечены игрой"
-                className="w-[150%] max-w-none h-auto -translate-x-1/6"
+                className="w-[150%] max-w-none h-auto -translate-x-1/6 rounded-2xl"
               />
-            </div>
-            <div className="absolute" style={{ bottom: '-20px', right: '-20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-              {Array.from({ length: 9 }).map((_, i) => (
-                <span key={i} style={{
-                  width: '6px', height: '6px', borderRadius: '50%',
-                  background: 'rgba(255,255,255,0.25)', display: 'block',
-                }} />
-              ))}
             </div>
           </div>
         </div>
