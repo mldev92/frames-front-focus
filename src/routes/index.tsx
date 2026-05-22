@@ -1,5 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Truck, ShieldCheck, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowRight, Truck, ShieldCheck, Sparkles } from "lucide-react";
+
+function TBankIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} width="100" height="110" viewBox="0 0 100 110" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M10 10H90V60C90 78 70 95 50 102C30 95 10 78 10 60V10Z" fill="currentColor"/>
+      <path d="M35 34H65V43H54V76C59 76 60 77 60 80H40C40 77 41 76 46 76V43H35V34Z" fill="white"/>
+    </svg>
+  );
+}
 import { useState } from "react";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { EditorialTriptych } from "@/components/EditorialTriptych";
@@ -55,7 +64,7 @@ const SERVICE_LIST = [
 const TRUST = [
   { icon: Truck, t: "Бесплатная доставка от 5 000 ₽" },
   { icon: ShieldCheck, t: "Гарантия 12 месяцев" },
-  { icon: RotateCcw, t: "Возврат в течение 14 дней" },
+  { icon: TBankIcon, t: "Рассрочка 0-0-3 от Т-Банка" },
   { icon: Sparkles, t: "Виртуальная примерка" },
 ];
 
