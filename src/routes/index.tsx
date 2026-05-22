@@ -33,7 +33,7 @@ export const Route = createFileRoute("/")({
         content:
           "Большой выбор оправ и линз, услуги клиники зрения, салоны в центре Санкт-Петербурга.",
       },
-      { property: "og:image", content: "/main_banner_22_05.jpg" },
+      { property: "og:image", content: "/main_banner_v4.jpg" },
     ],
   }),
   component: HomePage,
@@ -112,7 +112,7 @@ function HomePage() {
         {/* Full-size banner image */}
         <div className="absolute inset-0 z-[1]">
           <img
-            src="/main_banner_22_05.jpg"
+            src="/main_banner_v4.jpg"
             alt=""
             className="w-full h-full object-cover"
           />
