@@ -42,13 +42,14 @@ const ShapeIcon = ({ d }: { d: string }) => (
   </svg>
 );
 
-const SHAPE_DEFS: { key: string; label: string; icon: string }[] = [
-  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect" },
-  { key: "Квадратные",    label: "Квадратные",    icon: "square" },
-  { key: "Круглые",       label: "Круглые",        icon: "round" },
-  { key: "Овальные",      label: "Овальные",       icon: "oval" },
-  { key: "Авиаторы",      label: "Авиаторы",       icon: "aviator" },
-  { key: "Кошачий глаз",  label: "Кошачий глаз",   icon: "cat" },
+const SHAPE_DEFS: { key: string; label: string; icon: string; img?: string }[] = [
+  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect",    img: "/rectangle.png" },
+  { key: "Квадратные",    label: "Квадратные",    icon: "square",  img: "/square.png" },
+  { key: "Круглые",       label: "Круглые",        icon: "round",   img: "/round.png" },
+  { key: "Овальные",      label: "Овальные",       icon: "oval",    img: "/Anselm - Oval.png" },
+  { key: "Авиаторы",      label: "Авиаторы",       icon: "aviator", img: "/aviator.png" },
+  { key: "Кошачий глаз",  label: "Кошачий глаз",   icon: "cat",     img: "/cat-eye.png" },
+  { key: "Геометрические",label: "Геометрические", icon: "rect",    img: "/Geometric.webp" },
   { key: "Броулайнеры",   label: "Броулайнеры",    icon: "browline" },
   { key: "Вэйфэрер",      label: "Вэйфэрер",       icon: "wayfarer" },
   { key: "Большие",       label: "Большие",         icon: "big" },
@@ -234,7 +235,10 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                       : "border-border bg-card",
                   )}
                 >
-                  <ShapeIcon d={s.icon} />
+                  {s.img
+                    ? <img src={s.img} alt={s.label} style={{ width: "100%", height: 36, objectFit: "contain" }} />
+                    : <ShapeIcon d={s.icon} />
+                  }
                   <span className="text-[11px] leading-tight text-foreground/70 font-medium">
                     {s.label}
                   </span>
