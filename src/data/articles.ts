@@ -35,11 +35,17 @@ const RAW: [string, string, string][] = [
   ["essilor-experts-eksperty-sredi-optik", "Essilor Experts — эксперты среди оптик", "Что означает статус Essilor Experts для покупателя."],
 ];
 
+const LOCAL_COVERS: Record<number, string> = {
+  0: "/blog_pokrytie.jpg",
+  1: "/blog_vidy_linz.jpg",
+  2: "/blog_asphericheskie.jpg",
+};
+
 export const articles: Article[] = RAW.map(([slug, title, excerpt], i) => ({
   slug,
   title,
   excerpt,
-  cover: ph(`lens-article-${i + 1}`),
+  cover: LOCAL_COVERS[i] ?? ph(`lens-article-${i + 1}`),
   date: new Date(2025, 4, 1 - i * 9).toISOString().slice(0, 10),
   author: AUTHORS[i % AUTHORS.length],
   category: CATEGORY_TITLE,
