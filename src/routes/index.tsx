@@ -263,7 +263,7 @@ function HomePage() {
                 href={c.href}
                 className="group relative aspect-[3/4] rounded-2xl overflow-hidden block"
                 style={{
-                  background: 'linear-gradient(160deg, #3d1f1a 0%, #2d0a0e 50%, #1a0508 100%)',
+                  background: 'linear-gradient(160deg, #f5ede8 0%, #e8ddd5 50%, #dfd0c4 100%)',
                 }}
               >
                 <img
@@ -271,12 +271,12 @@ function HomePage() {
                   alt=""
                   loading="lazy"
                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  style={{ opacity: 0.55 }}
+                  style={{ opacity: 0.85 }}
                 />
                 <div className="absolute inset-0" style={{
-                  background: 'linear-gradient(to bottom, transparent 0%, rgba(26,5,8,0.25) 100%)',
+                  background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.15) 100%)',
                 }} />
-                <div className="relative z-10 flex flex-col items-center justify-end h-full text-primary-foreground" style={{ paddingBottom: '24px' }}>
+                <div className="relative z-10 flex flex-col items-center justify-end h-full" style={{ paddingBottom: '24px', color: 'var(--color-foreground)' }}>
                   <span className="text-sm font-medium">{c.title}</span>
                 </div>
               </a>
