@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
-import { ProductCard } from "@/components/ProductCard";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { EditorialTriptych } from "@/components/EditorialTriptych";
 import { BrandPromiseBand } from "@/components/BrandPromiseBand";
@@ -72,13 +71,25 @@ function HomePage() {
   return (
     <div>
       {/* HERO */}
-      <section className="relative w-full overflow-hidden" style={{ minHeight: '90vh' }}>
-        <div className="hero-gradient-bg absolute inset-0" />
+      <section className="relative w-full overflow-hidden">
+        <div className="absolute inset-0" style={{
+          background: 'linear-gradient(135deg, #2d0a0e 0%, #4a1a1a 25%, #3d1f1a 50%, #2a1520 75%, #1a0508 100%)',
+          backgroundSize: '200% 200%',
+          animation: 'hero-gradient-shift 12s ease infinite',
+        }} />
         {HERO_PARTICLES.map((p, i) => (
-          <div key={i} className="hero-particle-el" style={p.style} />
+          <div key={i} style={{
+            ...p.style,
+            position: 'absolute',
+            borderRadius: '50%',
+            background: 'radial-gradient(circle, rgba(255,180,120,0.25) 0%, transparent 70%)',
+            filter: 'blur(20px)',
+            animation: 'hero-particle-float 6s ease-in-out infinite',
+            pointerEvents: 'none' as const,
+          }} />
         ))}
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8 grid lg:grid-cols-2 gap-12 items-center" style={{ minHeight: '90vh', paddingTop: '80px', paddingBottom: '80px' }}>
+        <div className="relative z-10 mx-auto max-w-7xl px-4 lg:px-8 grid lg:grid-cols-2 gap-12 items-center" style={{ paddingTop: '80px', paddingBottom: '80px' }}>
           <div>
             <span className="text-xs uppercase tracking-[0.2em]" style={{ color: 'rgba(255,200,170,0.8)' }}>
               Новая коллекция · Лето 2026
@@ -134,7 +145,6 @@ function HomePage() {
             }} />
             <div className="relative rounded-2xl overflow-hidden" style={{
               border: '2px solid rgba(255,255,255,0.15)',
-              maxWidth: '520px',
             }}>
               <img
                 src="/main_banner_22_05.jpg"
@@ -163,17 +173,33 @@ function HomePage() {
             </div>
             <h2 className="font-serif text-3xl lg:text-4xl">Только что в продаже</h2>
           </div>
-          <Link
-            to="/catalog_s/$category" params={{ category: "opravy" }}
-            className="hidden sm:inline-flex items-center gap-1 text-sm hover:text-brand"
+          <a
+            href="/catalog_s/opravy/"
+            className="hidden sm:inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+            style={{ textDecoration: 'none' }}
           >
-            Смотреть все <span style={{ marginLeft: '4px' }}>→</span>
-          </Link>
+            Смотреть все →
+          </a>
         </Reveal>
         <Reveal delay={120}>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
             {news.slice(0, 4).map((p) => (
-              <ProductCard key={p.slug} product={p} />
+              <a key={p.slug} href={`/catalog_s/opravy/${p.slug}/`} className="group block" style={{ textDecoration: 'none', color: 'inherit' }}>
+                <div className="aspect-square bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
+                  <img
+                    src={p.images[0]}
+                    alt={p.name}
+                    loading="lazy"
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <div className="text-xs text-muted-foreground uppercase tracking-wider" style={{ marginTop: '12px' }}>{p.brand}</div>
+                <div className="text-sm font-medium" style={{ marginTop: '4px' }}>{p.name}</div>
+                <div className="flex items-center justify-between" style={{ marginTop: '8px' }}>
+                  <span className="text-sm font-semibold">₽ {p.price.toLocaleString('ru-RU')}</span>
+                  <span className="text-xs" style={{ color: '#2a9d5c' }}>● В наличии</span>
+                </div>
+              </a>
             ))}
           </div>
         </Reveal>
