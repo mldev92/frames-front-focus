@@ -286,13 +286,7 @@ export function Header() {
               >
                 <Search className="h-5 w-5" />
               </Link>
-              <Link
-                to="/contacts"
-                className="hidden md:flex items-center gap-1 p-2 hover:text-brand text-sm"
-              >
-                <MapPin className="h-4 w-4" />
-                <span>Салоны</span>
-              </Link>
+
               <Link to="/personal" className="p-2 hover:text-brand" aria-label="Кабинет">
                 <User className="h-5 w-5" />
               </Link>
