@@ -7,6 +7,7 @@ import { BrandPromiseBand } from "@/components/BrandPromiseBand";
 import { PromoBanner } from "@/components/PromoBanner";
 import { PromoCards } from "@/components/PromoCards";
 import { AppointmentModal } from "@/components/AppointmentModal";
+import { SalonsSection } from "@/components/SalonsSection";
 import { categories } from "@/data/categories";
 import { bestsellers, newArrivals } from "@/data/products";
 import { articles } from "@/data/articles";
@@ -271,6 +272,8 @@ function HomePage() {
           </div>
         </div>
       </section>
+
+      <SalonsSection />
 
       {/* JOURNAL */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-20">
