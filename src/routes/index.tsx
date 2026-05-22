@@ -154,45 +154,98 @@ function HomePage() {
         </div>
       </section>
 
-      {/* NEW ARRIVALS — grid */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 pt-16 pb-10">
-        <Reveal className="flex items-end justify-between mb-8 gap-4">
-          <div>
-            <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
-              Каталог
+      {/* NEW ARRIVALS — grid (reference product-card style) */}
+      <section style={{ padding: '72px 0' }}>
+        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+          <Reveal className="flex justify-between items-end mb-9">
+            <div>
+              <span style={{ fontFamily: 'var(--font-serif)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-muted-foreground)' }}>Каталог</span>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, fontSize: '32px', lineHeight: '1.15', marginTop: '4px' }}>Только что в продаже</h2>
             </div>
-            <h2 className="font-serif text-3xl lg:text-4xl">Только что в продаже</h2>
-          </div>
-          <a
-            href="/catalog_s/opravy/"
-            className="hidden sm:inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-            style={{ textDecoration: 'none' }}
-          >
-            Смотреть все →
-          </a>
-        </Reveal>
-        <Reveal delay={120}>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-            {news.slice(0, 4).map((p) => (
-              <a key={p.slug} href={productHref(p.category, p.slug)} className="group block" style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div className="aspect-square bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid rgba(0,0,0,0.06)' }}>
-                  <img
-                    src={p.images[0]}
-                    alt={p.name}
-                    loading="lazy"
-                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-                <div className="text-xs text-muted-foreground uppercase tracking-wider" style={{ marginTop: '12px' }}>{p.brand}</div>
-                <div className="text-sm font-medium" style={{ marginTop: '4px' }}>{p.name}</div>
-                <div className="flex items-center justify-between" style={{ marginTop: '8px' }}>
-                  <span className="text-sm font-semibold">₽ {p.price.toLocaleString('ru-RU')}</span>
-                  <span className="text-xs" style={{ color: '#2a9d5c' }}>● В наличии</span>
-                </div>
-              </a>
-            ))}
-          </div>
-        </Reveal>
+            <a
+              href="/catalog_s/opravy/"
+              className="hidden sm:inline-flex items-center gap-1 text-sm font-medium hover:opacity-80"
+              style={{ textDecoration: 'none', color: 'var(--color-brand)' }}
+            >
+              Смотреть все →
+            </a>
+          </Reveal>
+          <Reveal delay={120}>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {news.slice(0, 4).map((p) => (
+                <a
+                  key={p.slug}
+                  href={productHref(p.category, p.slug)}
+                  style={{
+                    display: 'flex', flexDirection: 'column', gap: '10px',
+                    padding: '16px',
+                    background: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-lg, 16px)',
+                    textDecoration: 'none', color: 'inherit',
+                    transition: '220ms var(--ease-editorial, cubic-bezier(0.22, 1, 0.36, 1))',
+                    cursor: 'pointer',
+                  }}
+                  onMouseEnter={e => {
+                    (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)';
+                    (e.currentTarget as HTMLElement).style.boxShadow = 'var(--shadow-md)';
+                  }}
+                  onMouseLeave={e => {
+                    (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+                    (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                  }}
+                >
+                  {/* Photo */}
+                  <div style={{
+                    background: '#fff', borderRadius: 'var(--radius-md, 12px)',
+                    height: '180px', display: 'grid', placeItems: 'center',
+                    overflow: 'hidden',
+                  }}>
+                    {p.images[0] && !p.images[0].startsWith('ph(') ? (
+                      <img
+                        src={p.images[0]}
+                        alt={p.name}
+                        loading="lazy"
+                        style={{ maxHeight: '160px', objectFit: 'contain' }}
+                      />
+                    ) : (
+                      <div style={{
+                        width: '100%', height: '100%',
+                        background: 'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0,0,0,0.02) 8px, rgba(0,0,0,0.02) 16px)',
+                        display: 'grid', placeItems: 'center',
+                        color: 'var(--color-muted-foreground)',
+                        fontSize: '11px', fontFamily: 'monospace',
+                      }}>
+                        product photo<br />оправа
+                      </div>
+                    )}
+                  </div>
+                  {/* Brand */}
+                  <div style={{ fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-muted-foreground)' }}>
+                    {p.brand}
+                  </div>
+                  {/* Name */}
+                  <div style={{ fontSize: '15px', fontWeight: 600, lineHeight: '1.3', color: 'var(--color-foreground)' }}>
+                    {p.name}
+                  </div>
+                  {/* Foot */}
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+                    paddingTop: '10px', borderTop: '1px solid var(--color-border)',
+                    marginTop: 'auto',
+                  }}>
+                    <span style={{ fontSize: '18px', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+                      ₽ {p.price.toLocaleString('ru-RU')}
+                    </span>
+                    <span style={{ fontSize: '12px', color: 'var(--color-success)' }}>
+                      ● В наличии
+                    </span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </Reveal>
+        </div>
       </section>
 
       {/* EDITORIAL TRIPTYCH */}
