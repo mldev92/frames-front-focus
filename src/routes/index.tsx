@@ -70,6 +70,7 @@ function HomePage() {
         @keyframes _hPF{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
         @keyframes _gR{0%,100%{opacity:.6;background-position:0% 0%}50%{opacity:1;background-position:100% 100%}}
         @keyframes _fU{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes _light{0%,100%{opacity:1;background-position:0% 50%}33%{opacity:.85;background-position:30% 50%}66%{opacity:.95;background-position:60% 50%}}
         .hero-bg{position:absolute!important;inset:0!important;z-index:0!important;background:linear-gradient(135deg,#1a0508 0%,#3d1218 35%,#5c2028 65%,#2a0d12 100%)!important;background-size:250% 250%!important;animation:_hG 16s ease infinite!important}
         .hero-bg::before{content:''!important;position:absolute!important;width:700px!important;height:700px!important;border-radius:50%!important;background:radial-gradient(circle,rgba(220,80,60,.12) 0%,transparent 65%)!important;top:-150px!important;right:-100px!important;animation:_gD 10s ease-in-out infinite!important}
         .hero-bg::after{content:''!important;position:absolute!important;width:500px!important;height:500px!important;border-radius:50%!important;background:radial-gradient(circle,rgba(255,180,140,.08) 0%,transparent 60%)!important;bottom:-100px!important;left:10%!important;animation:_gD 14s ease-in-out infinite reverse!important}
@@ -116,7 +117,7 @@ function HomePage() {
             className="w-full h-full object-cover"
           />
           {/* Gradient overlay — darker on left for text readability */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(26,5,8,0.75) 0%, rgba(26,5,8,0.35) 45%, rgba(26,5,8,0.08) 100%)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(26,5,8,0.75) 0%, rgba(26,5,8,0.35) 45%, rgba(26,5,8,0.08) 100%)', backgroundSize: '200% 100%', animation: '_light 8s ease-in-out infinite' }} />
         </div>
 
         {/* Text content overlaid */}
