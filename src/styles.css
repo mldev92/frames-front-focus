@@ -208,6 +208,39 @@
   100% { box-shadow: 0 0 0 0 oklch(0.75 0.18 150 / 0); }
 }
 
+@keyframes ken-burns {
+  0%   { transform: scale(1) translate3d(0,0,0); }
+  100% { transform: scale(1.06) translate3d(-1%, -1%, 0); }
+}
+.animate-ken-burns { animation: ken-burns 16s ease-out forwards; }
+
+@keyframes draw-line {
+  0%   { transform: scaleX(0); }
+  100% { transform: scaleX(1); }
+}
+
+@keyframes flip-digit {
+  0%   { transform: rotateX(-90deg); opacity: 0; }
+  100% { transform: rotateX(0); opacity: 1; }
+}
+.animate-flip { animation: flip-digit 360ms ease-out; transform-origin: top; }
+
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 700ms ease-out, transform 700ms ease-out;
+  will-change: opacity, transform;
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal.is-visible { opacity: 1; transform: none; transition: none; }
+  .animate-ken-burns, .animate-flip { animation: none !important; }
+}
+
 @layer base {
   * {
     border-color: var(--color-border);

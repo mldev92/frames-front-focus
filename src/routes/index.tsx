@@ -7,6 +7,7 @@ import { BrandPromiseBand } from "@/components/BrandPromiseBand";
 import { PromoBanner } from "@/components/PromoBanner";
 import { PromoCards } from "@/components/PromoCards";
 import { AppointmentModal } from "@/components/AppointmentModal";
+import { Reveal } from "@/components/Reveal";
 import { SalonsSection } from "@/components/SalonsSection";
 import { categories } from "@/data/categories";
 import { bestsellers, newArrivals } from "@/data/products";
@@ -72,7 +73,7 @@ function HomePage() {
         <img
           src="/main_banner_v2.png"
           alt="ОПТИКА 100% — оправы, очки и контактные линзы"
-          className="w-full h-auto max-h-[640px] object-cover"
+          className="w-full h-auto max-h-[640px] object-cover animate-ken-burns"
         />
         <div className="absolute inset-0 flex items-center bg-gradient-to-r from-foreground/45 via-foreground/15 to-transparent">
           <div className="mx-auto w-full max-w-7xl px-4 lg:px-8">
@@ -121,7 +122,7 @@ function HomePage() {
 
       {/* NEW ARRIVALS — carousel */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 pt-16 pb-10">
-        <div className="flex items-end justify-between mb-8 gap-4">
+        <Reveal className="flex items-end justify-between mb-8 gap-4">
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
               Новинки
@@ -134,8 +135,10 @@ function HomePage() {
           >
             Смотреть все новинки
           </Link>
-        </div>
-        <ProductCarousel products={news} />
+        </Reveal>
+        <Reveal delay={120}>
+          <ProductCarousel products={news} />
+        </Reveal>
       </section>
 
       {/* EDITORIAL TRIPTYCH */}
@@ -143,31 +146,32 @@ function HomePage() {
 
       {/* CATEGORIES — 4 tiles, lighter */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16">
-        <div className="text-center max-w-2xl mx-auto mb-10">
+        <Reveal className="text-center max-w-2xl mx-auto mb-10">
           <h2 className="font-serif text-3xl lg:text-4xl">Четыре способа купить</h2>
           <p className="mt-3 text-muted-foreground">
             Оправы, солнцезащитные, контактные линзы и услуги клиники — в одном месте.
           </p>
-        </div>
+        </Reveal>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {fourCats.map((c) => (
-            <a
-              key={c.slug}
-              href={c.href}
-              className="group relative aspect-[3/4] bg-cream rounded-2xl overflow-hidden"
-            >
-              <img
-                src={c.image}
-                alt={c.title}
-                loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-                <span className="inline-flex items-center bg-background text-foreground text-sm rounded-full px-4 py-2 shadow-sm whitespace-nowrap group-hover:bg-brand group-hover:text-brand-foreground transition-colors">
-                  {c.title}
-                </span>
-              </div>
-            </a>
+          {fourCats.map((c, i) => (
+            <Reveal key={c.slug} delay={i * 80}>
+              <a
+                href={c.href}
+                className="group relative aspect-[3/4] bg-cream rounded-2xl overflow-hidden block"
+              >
+                <img
+                  src={c.image}
+                  alt={c.title}
+                  loading="lazy"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+                  <span className="inline-flex items-center bg-background text-foreground text-sm rounded-full px-4 py-2 shadow-sm whitespace-nowrap group-hover:bg-brand group-hover:text-brand-foreground transition-colors">
+                    {c.title}
+                  </span>
+                </div>
+              </a>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -175,7 +179,7 @@ function HomePage() {
       {/* BESTSELLERS — carousel */}
       <section className="bg-cream">
         <div className="mx-auto max-w-7xl px-4 lg:px-8 py-16">
-          <div className="flex items-end justify-between mb-8 gap-4">
+          <Reveal className="flex items-end justify-between mb-8 gap-4">
             <div>
               <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
                 Хиты продаж
@@ -188,8 +192,10 @@ function HomePage() {
             >
               Смотреть все
             </Link>
-          </div>
-          <ProductCarousel products={hits} />
+          </Reveal>
+          <Reveal delay={120}>
+            <ProductCarousel products={hits} />
+          </Reveal>
         </div>
       </section>
 
@@ -198,46 +204,53 @@ function HomePage() {
 
       {/* PROMOTIONS */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 space-y-8">
-        <div>
-          <div className="text-xs uppercase tracking-[0.2em] text-brand mb-3">Акции</div>
-          <h2 className="font-serif text-3xl lg:text-4xl">Специальные предложения</h2>
-        </div>
-        <PromoBanner data={promoBanner} />
-        <PromoCards promotions={promotions} />
+        <Reveal className="flex items-end justify-between gap-4">
+          <div>
+            <div className="text-xs uppercase tracking-[0.2em] text-brand mb-3">Акции</div>
+            <h2 className="font-serif text-3xl lg:text-4xl">Специальные предложения</h2>
+          </div>
+        </Reveal>
+        <Reveal delay={100}>
+          <PromoBanner data={promoBanner} />
+        </Reveal>
+        <Reveal delay={160}>
+          <PromoCards promotions={promotions} />
+        </Reveal>
       </section>
 
       {/* SERVICES — lighter, white cards */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-20">
-        <div className="text-center max-w-2xl mx-auto mb-12">
+        <Reveal className="text-center max-w-2xl mx-auto mb-12">
           <div className="text-xs uppercase tracking-[0.2em] text-brand mb-3">
             Услуги клиники
           </div>
           <h2 className="font-serif text-3xl lg:text-4xl">
             Комплексные услуги по подбору очков и линз
           </h2>
-        </div>
+        </Reveal>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {SERVICE_LIST.map((s) => (
-            <a
-              key={s.slug}
-              href={s.slug === "priem-vracha" ? undefined : serviceHref(s.slug)}
-              onClick={s.slug === "priem-vracha" ? (e) => { e.preventDefault(); setAptOpen(true); } : undefined}
-              className="group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md transition-shadow cursor-pointer"
-            >
-              <div className="aspect-[4/3] overflow-hidden bg-cream">
-                <img
-                  src={SERVICE_IMAGES[SERVICE_LIST.findIndex((x) => x.slug === s.slug)]}
-                  alt={s.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <div className="p-5">
-                <div className="font-serif text-lg">{s.title}</div>
-                <div className="mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 group-hover:text-foreground">
-                  Подробнее <ArrowRight className="h-3 w-3" />
+          {SERVICE_LIST.map((s, i) => (
+            <Reveal key={s.slug} delay={i * 80}>
+              <a
+                href={s.slug === "priem-vracha" ? undefined : serviceHref(s.slug)}
+                onClick={s.slug === "priem-vracha" ? (e) => { e.preventDefault(); setAptOpen(true); } : undefined}
+                className="group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+              >
+                <div className="aspect-[4/3] overflow-hidden bg-cream">
+                  <img
+                    src={SERVICE_IMAGES[SERVICE_LIST.findIndex((x) => x.slug === s.slug)]}
+                    alt={s.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
                 </div>
-              </div>
-            </a>
+                <div className="p-5">
+                  <div className="font-serif text-lg">{s.title}</div>
+                  <div className="mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 group-hover:text-foreground">
+                    Подробнее <ArrowRight className="h-3 w-3" />
+                  </div>
+                </div>
+              </a>
+            </Reveal>
           ))}
         </div>
       </section>
@@ -245,7 +258,7 @@ function HomePage() {
       {/* EDITORIAL — myopia, lightened */}
       <section className="bg-cream">
         <div className="mx-auto max-w-7xl px-4 lg:px-8 py-20 grid lg:grid-cols-2 gap-12 items-center">
-          <div>
+          <Reveal>
             <div className="text-xs uppercase tracking-[0.2em] text-brand mb-4">
               Контроль миопии
             </div>
@@ -262,14 +275,14 @@ function HomePage() {
             >
               Записаться на диагностику <ArrowRight className="h-4 w-4" />
             </a>
-          </div>
-          <div className="aspect-[4/3] rounded-2xl overflow-hidden">
+          </Reveal>
+          <Reveal delay={140} className="aspect-[4/3] rounded-2xl overflow-hidden">
             <img
               src="/main_bottom_child_banner.png"
               alt="Кабинет контроля миопии"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
             />
-          </div>
+          </Reveal>
         </div>
       </section>
 
@@ -277,7 +290,7 @@ function HomePage() {
 
       {/* JOURNAL */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-20">
-        <div className="flex items-end justify-between mb-8">
+        <Reveal className="flex items-end justify-between mb-8">
           <div>
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
               Журнал
@@ -290,31 +303,32 @@ function HomePage() {
           >
             Все статьи <ArrowRight className="h-4 w-4" />
           </Link>
-        </div>
+        </Reveal>
         <div className="grid md:grid-cols-3 gap-8">
-          {recent.map((a) => (
-            <Link
-              key={a.slug}
-              to="/blog/$category/$slug"
-              params={{ category: a.categorySlug, slug: a.slug }}
-              className="group block"
-            >
-              <div className="aspect-[4/3] bg-cream rounded-2xl overflow-hidden mb-4">
-                <img
-                  src={a.cover}
-                  alt={a.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-              <span className="inline-block text-[11px] uppercase tracking-wider text-brand border border-brand/30 rounded-full px-2.5 py-0.5">
-                {a.category}
-              </span>
-              <h3 className="font-serif text-xl mt-3 group-hover:text-brand transition-colors">
-                {a.title}
-              </h3>
-              <p className="text-sm text-muted-foreground mt-2">{a.excerpt}</p>
-            </Link>
+          {recent.map((a, i) => (
+            <Reveal key={a.slug} delay={i * 100}>
+              <Link
+                to="/blog/$category/$slug"
+                params={{ category: a.categorySlug, slug: a.slug }}
+                className="group block"
+              >
+                <div className="aspect-[4/3] bg-cream rounded-2xl overflow-hidden mb-4">
+                  <img
+                    src={a.cover}
+                    alt={a.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+                <span className="inline-block text-[11px] uppercase tracking-wider text-brand border border-brand/30 rounded-full px-2.5 py-0.5">
+                  {a.category}
+                </span>
+                <h3 className="font-serif text-xl mt-3 group-hover:text-brand transition-colors">
+                  {a.title}
+                </h3>
+                <p className="text-sm text-muted-foreground mt-2">{a.excerpt}</p>
+              </Link>
+            </Reveal>
           ))}
         </div>
       </section>
