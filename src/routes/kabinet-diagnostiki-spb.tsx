@@ -1,6 +1,8 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { serviceHref, services } from "@/data/services";
+import { AppointmentModal } from "@/components/AppointmentModal";
 
 const others = services.filter((s) => s.slug !== "diagnostika");
 
@@ -17,19 +19,23 @@ function CheckIcon({ size = 5 }: { size?: number }) {
   );
 }
 
-function BrandBtn({ href, children }: { href: string; children: React.ReactNode }) {
+function BrandBtn({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
   return (
-    <a
-      href={href}
+    <button
+      type="button"
+      onClick={onClick}
       className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm hover:opacity-90"
       style={{ backgroundColor: "var(--brand)", color: "var(--brand-foreground)" }}
     >
       {children}
-    </a>
+    </button>
   );
 }
 
 function KabinetDiagnostikiPage() {
+  const [aptOpen, setAptOpen] = useState(false);
+  const openApt = () => setAptOpen(true);
+
   return (
     <div>
       {/* HERO */}
@@ -102,7 +108,7 @@ function KabinetDiagnostikiPage() {
                   Если потребуется дополнительная консультация или коррекция, пациенту предложат дальнейшие шаги в ближайшее время.
                 </p>
               </div>
-              <BrandBtn href="#booking">Записаться на консультацию</BrandBtn>
+              <BrandBtn onClick={openApt}>Записаться на консультацию</BrandBtn>
             </div>
           </div>
         </div>
@@ -125,7 +131,7 @@ function KabinetDiagnostikiPage() {
               </p>
             </div>
             <div className="mt-8">
-              <BrandBtn href="#booking">Записаться на обследование</BrandBtn>
+              <BrandBtn onClick={openApt}>Записаться на обследование</BrandBtn>
             </div>
           </div>
           <div className="aspect-[4/3] bg-accent rounded-2xl overflow-hidden">
@@ -172,12 +178,13 @@ function KabinetDiagnostikiPage() {
                   По итогам приема формируются индивидуальные рекомендации и план дальнейших действий — от наблюдения до аппаратного лечения или подбора коррекции.
                 </p>
               </div>
-              <a
-                href="#booking"
-                className="mt-8 inline-flex items-center gap-2 border border-foreground rounded-full px-6 py-3 text-sm hover:bg-foreground hover:text-primary-foreground transition-colors"
+              <button
+                type="button"
+                onClick={openApt}
+                className="mt-8 inline-flex items-center gap-2 border border-foreground rounded-full px-6 py-3 text-sm hover:bg-foreground hover:text-primary-foreground transition-colors cursor-pointer"
               >
                 Записаться на консультацию
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -207,7 +214,7 @@ function KabinetDiagnostikiPage() {
               </p>
             </div>
             <div className="mt-8">
-              <BrandBtn href="#booking">Записаться на подбор коррекции</BrandBtn>
+              <BrandBtn onClick={openApt}>Записаться на подбор коррекции</BrandBtn>
             </div>
           </div>
         </div>
@@ -285,7 +292,7 @@ function KabinetDiagnostikiPage() {
           <p className="text-lg leading-relaxed mb-6">
             После диагностики вы получаете чёткое понимание состояния глаз и вариантов дальнейших действий — от очковой коррекции до подбора линз или наблюдения.
           </p>
-          <BrandBtn href="#booking">Записаться на диагностику</BrandBtn>
+          <BrandBtn onClick={openApt}>Записаться на диагностику</BrandBtn>
         </div>
       </section>
 
@@ -333,6 +340,8 @@ function KabinetDiagnostikiPage() {
           ))}
         </div>
       </section>
+
+      <AppointmentModal open={aptOpen} onOpenChange={setAptOpen} />
     </div>
   );
 }
