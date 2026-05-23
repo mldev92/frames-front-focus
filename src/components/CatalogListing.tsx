@@ -167,6 +167,29 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
   const [styleTag, setStyleTag] = useState<string>("Все стили");
   const STYLE_TAGS = ["Все стили", "Современные", "Минимализм", "Винтаж", "Бохо", "Индастриал", "Скандинавские"];
 
+  // ── Extra filter state (category-specific) ────────────────────────────────
+  const extras = categoryKey ? CATEGORY_EXTRAS[categoryKey] : [];
+  const vis = categoryKey ? CATEGORY_VISIBILITY[categoryKey] : { shape: true, color: true, material: true, gender: true, style: true, availability: true, brand: true };
+
+  const [discount, setDiscount] = useState<number>(0);
+  const [ranges, setRanges] = useState<Record<string, [number, number]>>({});
+  const [extraChecks, setExtraChecks] = useState<Record<string, Set<string>>>({});
+
+  const getRange = (key: string, min: number, max: number): [number, number] =>
+    ranges[key] ?? [min, max];
+  const setRange = (key: string, value: [number, number]) =>
+    setRanges((p) => ({ ...p, [key]: value }));
+  const toggleExtra = (key: string, val: string) => {
+    setExtraChecks((prev) => {
+      const next = { ...prev };
+      const set = new Set(next[key] ?? []);
+      if (set.has(val)) set.delete(val);
+      else set.add(val);
+      next[key] = set;
+      return next;
+    });
+  };
+
   const facetCounts = useMemo(() => {
     const out: Record<string, Record<string, number>> = {};
     for (const f of facets) {
