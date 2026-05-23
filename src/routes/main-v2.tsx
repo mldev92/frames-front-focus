@@ -287,7 +287,7 @@ function MainV2Page() {
          ───────────────────────────────────────────────────────────── */}
       <section
         className="relative w-full"
-        style={{ background: "#FBF9F7" }}
+        style={{ background: "var(--background)" }}
       >
         <div
           className="mx-auto max-w-7xl"
