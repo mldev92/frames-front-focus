@@ -206,7 +206,7 @@ function MainV2Page() {
                 style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.10)" }}
               >
                 <img
-                  src="/main_banner_v4.jpg"
+                  src="/new_main_banner.png"
                   alt=""
                   className="w-full h-full object-cover"
                   style={{ objectPosition: "right center" }}
