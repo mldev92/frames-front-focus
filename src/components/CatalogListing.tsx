@@ -599,8 +599,103 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
         </FilterSection>
       )}
 
-      {/* Apply button */}
-      <div className="sticky bottom-0 -mx-3 mt-4 bg-gradient-to-t from-background via-background to-transparent px-3 pb-2 pt-4">
+      {/* Category-specific extra filters */}
+      {extras.map((block) => {
+        if (block.kind === "discount") {
+          return (
+            <FilterSection key="discount" title="Скидка, %" defaultOpen={false}>
+              <div className="flex items-center justify-between mb-3 text-xs text-muted-foreground">
+                <span>от {discount}%</span>
+                <span>до 100%</span>
+              </div>
+              <Slider
+                min={0}
+                max={100}
+                step={5}
+                value={[discount]}
+                onValueChange={(v) => setDiscount(v[0] ?? 0)}
+                className="mx-2 [&_[role=slider]]:border-ink [&_[role=slider]]:bg-background [&>span:first-child]:bg-ink/10 [&_[data-slot=slider-range]]:bg-ink"
+              />
+            </FilterSection>
+          );
+        }
+        if (block.kind === "range") {
+          const v = getRange(block.key, block.min, block.max);
+          return (
+            <FilterSection key={block.key} title={block.title} defaultOpen={false}>
+              <div className="flex items-center gap-2 mb-3">
+                <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
+                  <input
+                    type="number"
+                    step={block.step}
+                    value={v[0]}
+                    onChange={(e) => setRange(block.key, [Number(e.target.value), v[1]])}
+                    className="w-full bg-transparent outline-none text-sm"
+                  />
+                  {block.unit && <span className="text-muted-foreground text-xs">{block.unit}</span>}
+                </label>
+                <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
+                  <input
+                    type="number"
+                    step={block.step}
+                    value={v[1]}
+                    onChange={(e) => setRange(block.key, [v[0], Number(e.target.value)])}
+                    className="w-full bg-transparent outline-none text-sm"
+                  />
+                  {block.unit && <span className="text-muted-foreground text-xs">{block.unit}</span>}
+                </label>
+              </div>
+              <Slider
+                min={block.min}
+                max={block.max}
+                step={block.step}
+                value={v}
+                onValueChange={(vv) => setRange(block.key, [vv[0], vv[1]] as [number, number])}
+                className="mx-2 [&_[role=slider]]:border-ink [&_[role=slider]]:bg-background [&>span:first-child]:bg-ink/10 [&_[data-slot=slider-range]]:bg-ink"
+              />
+            </FilterSection>
+          );
+        }
+        // checkbox
+        return (
+          <FilterSection key={block.key} title={block.title} defaultOpen={false}>
+            <div className="space-y-2">
+              {block.options.map((opt) => {
+                const checked = extraChecks[block.key]?.has(opt) ?? false;
+                return (
+                  <label
+                    key={opt}
+                    className="flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors"
+                    style={{ borderRadius: "4px", padding: "2px 4px", margin: "0 -4px" }}
+                  >
+                    <span
+                      className={cn(
+                        "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
+                        checked ? "border-ink bg-ink text-primary-foreground" : "border-border bg-card group-hover:border-foreground/40",
+                      )}
+                    >
+                      {checked && <Check className="h-3 w-3" strokeWidth={3} />}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleExtra(block.key, opt)}
+                      className="sr-only"
+                    />
+                    <span className="flex-1 text-sm">{opt}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </FilterSection>
+        );
+      })}
+
+      {/* Bottom spacer so the last section is never clipped by sticky Apply on mobile */}
+      <div aria-hidden className="h-20 lg:h-4" />
+
+      {/* Apply button — mobile only (desktop sidebar has no sticky CTA) */}
+      <div className="lg:hidden sticky bottom-0 -mx-3 mt-4 bg-gradient-to-t from-background via-background to-transparent px-3 pb-2 pt-4">
         <button
           type="button"
           onClick={() => setMobileFilters(false)}
