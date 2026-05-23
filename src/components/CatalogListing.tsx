@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, memo } from "react";
+import { useMemo, useState } from "react";
 import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
@@ -153,9 +153,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
     return list;
   }, [products, active, sort, price, tryOn, selectedColors, sizeWidth, sizeTemple, availability, searchQuery]);
 
-  const hasFacet = (k: FacetKey) => facets.includes(k);
-
-  const toggleFilter = useCallback((facet: string, value: string) => {
+  const toggle = (facet: string, value: string) => {
     setActive((prev) => {
       const next = { ...prev };
       const set = new Set(next[facet] ?? []);
@@ -164,7 +162,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       next[facet] = set;
       return next;
     });
-  }, []);
+  };
 
   const clearAll = () => {
     setActive({});
@@ -180,7 +178,9 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
     for (const v of set) activeChips.push({ facet: k, value: v });
   }
 
-  const FilterContent = useMemo(() => (
+  const hasFacet = (k: FacetKey) => facets.includes(k);
+
+  const FilterContent = (
     <div className="text-sm">
       {/* Header */}
       <div className="flex items-center justify-between pb-4">
@@ -237,7 +237,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
       {/* Frame shape — tile grid */}
       {hasFacet("shape") && (
-        <FilterSection key="shape" title="Форма">
+        <FilterSection title="Форма">
           <div className="grid grid-cols-2 gap-2">
             {SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]).map((s) => {
               const checked = active.shape?.has(s.key) ?? false;
@@ -245,7 +245,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                 <button
                   key={s.key}
                   type="button"
-                  onClick={() => toggleFilter("shape", s.key)}
+                  onClick={() => toggle("shape", s.key)}
                   className={cn(
                     "flex flex-col items-center justify-center gap-2.5 rounded-xl border px-2 py-5 text-center transition-all hover:border-ink hover:-translate-y-0.5 hover:shadow-sm",
                     checked
@@ -268,11 +268,8 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         </FilterSection>
       )}
 
-      {/* Price — always visible */}
-      <div style={{ paddingTop: '20px', paddingBottom: '20px', borderTop: '1px solid var(--color-border)' }}>
-        <span className="font-serif text-[13px] font-normal tracking-normal text-foreground/70 block mb-4">
-          Цена
-        </span>
+      {/* Price */}
+      <FilterSection title="Цена">
         <div className="flex items-center gap-2 mb-3">
           <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
             <span className="text-muted-foreground text-xs">₽</span>
@@ -301,10 +298,10 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           onValueChange={(v) => setPrice([v[0], v[1]] as [number, number])}
           className="mx-2 [&_[role=slider]]:border-ink [&_[role=slider]]:bg-background [&>span:first-child]:bg-ink/10 [&_[data-slot=slider-range]]:bg-ink"
         />
-      </div>
+      </FilterSection>
 
       {/* Color — compact swatch grid */}
-      <FilterSection key="color" title="Цвет">
+      <FilterSection title="Цвет">
         <div className="grid grid-cols-5 gap-2 py-1">
           {COLOR_SWATCHES.map((c) => {
             const sel = selectedColors.has(c.name);
@@ -354,7 +351,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
       {/* Material — checkbox list */}
       {hasFacet("material") && (
-        <FilterSection key="material" title="Материал">
+        <FilterSection title="Материал">
           <div className="space-y-2">
             {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
               const checked = active.material?.has(m) ?? false;
@@ -375,7 +372,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   <input
                     type="checkbox"
                     checked={checked}
-                    onChange={() => toggleFilter("material", m)}
+                    onChange={() => toggle("material", m)}
                     className="sr-only"
                   />
                   <span className="flex-1 text-sm first-letter:uppercase">{m.toLowerCase()}</span>
@@ -387,11 +384,8 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         </FilterSection>
       )}
 
-      {/* Availability — always visible, no collapse */}
-      <div style={{ paddingTop: '20px', paddingBottom: '20px', borderTop: '1px solid var(--color-border)' }}>
-        <span className="font-serif text-[13px] font-normal tracking-normal text-foreground/70 block mb-4">
-          Наличие
-        </span>
+      {/* Availability — radios */}
+      <FilterSection title="Наличие">
         <div className="space-y-2">
           {([
             ["all", "Все", products.length],
@@ -422,11 +416,11 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
             );
           })}
         </div>
-      </div>
+      </FilterSection>
 
       {/* Gender pills (kept) */}
       {hasFacet("gender") && (
-        <FilterSection key="gender" title="Пол">
+        <FilterSection title="Пол">
           <div className="flex flex-wrap gap-2">
             {Object.entries(facetCounts.gender ?? {}).map(([g, c]) => {
               const checked = active.gender?.has(g) ?? false;
@@ -434,7 +428,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                 <button
                   key={g}
                   type="button"
-                  onClick={() => toggleFilter("gender", g)}
+                  onClick={() => toggle("gender", g)}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition-all",
                     checked
@@ -455,7 +449,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       )}
 
       {/* Style — pills */}
-      <FilterSection key="style" title="Стиль">
+      <FilterSection title="Стиль">
         <div className="flex flex-wrap gap-2">
           {STYLE_TAGS.map((s) => {
             const checked = styleTag === s;
@@ -481,7 +475,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
       {/* Brands */}
       {hasFacet("brand") && (
-        <FilterSection key="brand" title="Бренды" defaultOpen={false}>
+        <FilterSection title="Бренды" defaultOpen={false}>
           <div className="max-h-72 overflow-y-auto pr-1 space-y-2">
             {Object.entries(facetCounts.brand ?? {})
               .sort(([a], [b]) => a.localeCompare(b))
@@ -500,7 +494,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                     <input
                       type="checkbox"
                       checked={checked}
-                      onChange={() => toggleFilter("brand", b)}
+                      onChange={() => toggle("brand", b)}
                       className="sr-only"
                     />
                     <span className="flex-1 text-sm">{b}</span>
@@ -511,8 +505,20 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           </div>
         </FilterSection>
       )}
+
+      {/* Apply button */}
+      <div className="sticky bottom-0 -mx-3 mt-4 bg-gradient-to-t from-background via-background to-transparent px-3 pb-2 pt-4">
+        <button
+          type="button"
+          onClick={() => setMobileFilters(false)}
+          className="w-full bg-ink text-primary-foreground rounded-full py-3 text-sm font-medium hover:-translate-y-0.5 hover:shadow-md transition-all"
+          style={{ transitionDuration: 'var(--duration-snap)' }}
+        >
+          Применить фильтры ({filtered.length})
+        </button>
+      </div>
     </div>
-  ), [active, facetCounts, sort, price, selectedColors, availability, styleTag, searchQuery, hasFacet, SHAPE_DEFS, STYLE_TAGS, products.length, toggleFilter, clearAll, setSort, setPrice, setSearchQuery, setAvailability, setStyleTag, setSelectedColors]);
+  );
 
   return (
     <div className="w-full py-10" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
@@ -527,7 +533,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
             className="hidden lg:block shrink-0 sticky top-4 self-start overflow-hidden transition-[width,margin-right] duration-300 ease-in-out"
             style={{ width: sidebarOpen ? "300px" : "0", marginRight: sidebarOpen ? "2.5rem" : "0" }}
           >
-            <div className="h-[calc(100vh-6rem)] px-3" style={{ width: "300px", paddingRight: "24px", overflowY: "scroll", overflowAnchor: "none", scrollBehavior: "auto" }}>
+            <div className="h-[calc(100vh-6rem)] overflow-y-auto px-3" style={{ width: "300px", scrollbarGutter: "stable", paddingRight: "24px" }}>
               {FilterContent}
             </div>
           </div>
@@ -629,7 +635,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
               {activeChips.map(({ facet, value }) => (
                 <button
                   key={facet + value}
-                  onClick={() => toggleFilter(facet, value)}
+                  onClick={() => toggle(facet, value)}
                   className="inline-flex items-center gap-1 bg-cream border border-ink/20 text-xs px-3 py-1 rounded-full hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all"
                   style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
                 >
@@ -696,7 +702,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
   );
 }
 
-const FilterSection = memo(function FilterSection({
+function FilterSection({
   title,
   defaultOpen = true,
   children,
@@ -725,14 +731,18 @@ const FilterSection = memo(function FilterSection({
       </button>
       <div
         style={{
-          display: open ? 'block' : 'none',
+          display: 'grid',
+          gridTemplateRows: open ? '1fr' : '0fr',
+          transition: 'grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
-        <div style={{ paddingTop: '16px' }}>
-          {children}
+        <div style={{ overflow: 'hidden', minHeight: 0 }}>
+          <div style={{ paddingTop: '16px' }}>
+            {children}
+          </div>
         </div>
       </div>
     </div>
   );
-});
+}
 
