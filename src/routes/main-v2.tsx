@@ -31,10 +31,30 @@ export const Route = createFileRoute("/main-v2")({
 });
 
 const HERO_SERVICES = [
-  { slug: "priem-vracha", title: "Запись к врачу", Icon: Stethoscope },
-  { slug: "podbor-ochkov", title: "Подбор оправ", Icon: Glasses },
-  { slug: "diagnostika", title: "Диагностика зрения", Icon: Eye },
-  { slug: "remont", title: "Ремонт очков", Icon: Wrench },
+  {
+    slug: "priem-vracha",
+    title: "Запись к врачу",
+    subtitle: "Онлайн в 2 клика",
+    Icon: Stethoscope,
+  },
+  {
+    slug: "podbor-ochkov",
+    title: "Подбор оправ",
+    subtitle: "С учётом черт лица",
+    Icon: Glasses,
+  },
+  {
+    slug: "diagnostika",
+    title: "Диагностика зрения",
+    subtitle: "Полное обследование",
+    Icon: Eye,
+  },
+  {
+    slug: "remont",
+    title: "Ремонт очков",
+    subtitle: "Свой сервис-центр",
+    Icon: Wrench,
+  },
 ] as const;
 
 const HERO_STATS = [
@@ -116,19 +136,44 @@ function MainV2Page() {
   return (
     <div>
       {/* ─────────────────────────────────────────────────────────────
-          1. HERO — cream, two-column, with inline service strip
+          1. HERO — full-bleed banner, text overlaid on left
          ───────────────────────────────────────────────────────────── */}
       <section
-        className="relative w-full bg-cream overflow-hidden"
+        className="relative w-full overflow-hidden"
         style={{
-          padding:
-            "clamp(48px, 8vw, 80px) clamp(24px, 5vw, 64px)",
+          minHeight: "clamp(440px, 56vw, 680px)",
         }}
       >
-        <div className="mx-auto max-w-7xl">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            {/* Left — text */}
-            <Reveal>
+        {/* Full-bleed banner photo */}
+        <img
+          src="/new_main_banner.png"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: "right center", zIndex: 0 }}
+        />
+        {/* Soft left-side wash so text stays legible on any crop */}
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(245,239,231,0.92) 0%, rgba(245,239,231,0.78) 30%, rgba(245,239,231,0.35) 55%, rgba(245,239,231,0) 75%)",
+            zIndex: 1,
+          }}
+        />
+
+        {/* Text content overlay */}
+        <div
+          className="relative mx-auto max-w-7xl flex items-center"
+          style={{
+            zIndex: 2,
+            minHeight: "clamp(440px, 56vw, 680px)",
+            padding:
+              "clamp(48px, 8vw, 96px) clamp(24px, 5vw, 64px)",
+          }}
+        >
+          <Reveal>
+            <div style={{ maxWidth: 520 }}>
               <span
                 className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
                 style={{ color: "var(--brand)" }}
@@ -185,7 +230,10 @@ function MainV2Page() {
               >
                 {HERO_STATS.map((s) => (
                   <div key={s.label} className="flex flex-col gap-1">
-                    <strong className="font-serif text-foreground" style={{ fontSize: 20 }}>
+                    <strong
+                      className="font-serif text-foreground"
+                      style={{ fontSize: 20 }}
+                    >
                       {s.value}
                     </strong>
                     <span
@@ -197,55 +245,67 @@ function MainV2Page() {
                   </div>
                 ))}
               </div>
-            </Reveal>
+            </div>
+          </Reveal>
+        </div>
+      </section>
 
-            {/* Right — portrait */}
-            <Reveal delay={120}>
-              <div
-                className="relative aspect-[4/5] rounded-3xl overflow-hidden"
-                style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.10)" }}
-              >
-                <img
-                  src="/new_main_banner.png"
-                  alt=""
-                  className="w-full h-full object-cover"
-                  style={{ objectPosition: "right center" }}
-                />
-              </div>
-            </Reveal>
-          </div>
-
-          {/* Service shortcut strip */}
-          <Reveal delay={220}>
-            <div className="mt-12 lg:mt-16 grid grid-cols-2 lg:grid-cols-4 gap-3">
-              {HERO_SERVICES.map(({ slug, title, Icon }) => {
+      {/* ─────────────────────────────────────────────────────────────
+          1b. SERVICE STRIP — separate white section, 4 icon cards
+         ───────────────────────────────────────────────────────────── */}
+      <section
+        className="relative w-full"
+        style={{ background: "var(--background)" }}
+      >
+        <div
+          className="mx-auto max-w-7xl"
+          style={{
+            padding: "clamp(28px, 4vw, 48px) clamp(24px, 5vw, 64px)",
+          }}
+        >
+          <Reveal>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+              {HERO_SERVICES.map(({ slug, title, subtitle, Icon }) => {
                 const inner = (
                   <>
                     <span
                       className="flex items-center justify-center rounded-full shrink-0"
                       style={{
-                        width: 40,
-                        height: 40,
-                        background: "oklch(0.96 0.025 28)",
-                        color: "var(--brand)",
+                        width: 44,
+                        height: 44,
+                        background: "var(--brand)",
+                        color: "var(--brand-foreground)",
+                        boxShadow:
+                          "0 6px 16px -6px rgba(180, 40, 30, 0.45)",
                       }}
                     >
-                      <Icon size={18} strokeWidth={1.75} />
+                      <Icon size={20} strokeWidth={2} />
                     </span>
-                    <span className="text-sm font-medium text-foreground leading-tight">
-                      {title}
-                    </span>
+                    <div className="flex flex-col">
+                      <span
+                        className="font-medium text-foreground leading-tight"
+                        style={{ fontSize: 15 }}
+                      >
+                        {title}
+                      </span>
+                      <span
+                        className="text-muted-foreground leading-tight"
+                        style={{ fontSize: 12.5, marginTop: 3 }}
+                      >
+                        {subtitle}
+                      </span>
+                    </div>
                   </>
                 );
                 const className =
-                  "flex items-center gap-3 rounded-2xl bg-background border border-border px-4 py-3 hover:-translate-y-0.5 hover:shadow-sm transition-all duration-200 text-left w-full";
+                  "flex items-center gap-3.5 text-left w-full hover:-translate-y-0.5 transition-transform duration-200";
                 if (slug === "priem-vracha") {
                   return (
                     <button
                       key={slug}
                       type="button"
                       onClick={() => setAptOpen(true)}
-                      className={`${className} cursor-pointer`}
+                      className={`${className} bg-transparent border-0 cursor-pointer p-0`}
                     >
                       {inner}
                     </button>
@@ -260,6 +320,16 @@ function MainV2Page() {
             </div>
           </Reveal>
         </div>
+        {/* Divider under the strip */}
+        <div
+          aria-hidden
+          className="mx-auto max-w-7xl"
+          style={{
+            height: 1,
+            background: "var(--border)",
+            opacity: 0.6,
+          }}
+        />
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
