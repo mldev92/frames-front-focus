@@ -368,8 +368,7 @@ function MainV2Page() {
           2. CATEGORIES — Подберите свои идеальные очки (1:1 with screenshot)
          ───────────────────────────────────────────────────────────── */}
       <section
-        className="bg-cream"
-        style={{ padding: "clamp(56px, 7vw, 96px) 0" }}
+        style={{ background: "#FAF9F7", padding: "clamp(56px, 7vw, 96px) 0" }}
       >
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           {/* Header row: eyebrow + H2 on left, "See all" link on right */}
@@ -459,8 +458,7 @@ function MainV2Page() {
           3. POPULAR MODELS — Хиты продаж (cream bg, header w/ nav arrows)
          ───────────────────────────────────────────────────────────── */}
       <section
-        className="bg-cream"
-        style={{ padding: "clamp(56px, 7vw, 96px) 0" }}
+        style={{ background: "#FAF9F7", padding: "clamp(56px, 7vw, 96px) 0" }}
       >
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <MainV2HitsCarousel products={hits} />
