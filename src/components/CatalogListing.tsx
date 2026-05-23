@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
-import type { Product } from "@/data/types";
+import type { Product, Category } from "@/data/types";
 import { cn } from "@/lib/utils";
 
 type FacetKey =
@@ -20,6 +20,7 @@ interface ListingProps {
   subtitle?: string;
   products: Product[];
   facets?: FacetKey[];
+  categoryKey?: Category;
 }
 
 // ── Frame shape icons — 64×24 grid, stroke 1.5, round joins ─────────────────
@@ -84,7 +85,67 @@ const COLOR_SWATCHES: { name: string; hex: string }[] = [
 ];
 
 
-export function CatalogListing({ title, subtitle, products, facets = [] }: ListingProps) {
+// ── Per-category extra filter configs ───────────────────────────────────────
+type ExtraBlock =
+  | { kind: "checkbox"; key: string; title: string; options: string[] }
+  | { kind: "range"; key: string; title: string; min: number; max: number; step: number; unit?: string }
+  | { kind: "discount"; title?: string };
+
+const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
+  opravy: [
+    { kind: "discount" },
+    { kind: "checkbox", key: "construction", title: "Конструкция", options: ["Втулки/винты", "Ободок", "Полуободок/Леска"] },
+    { kind: "range", key: "templeLength", title: "Длина заушника", min: 120, max: 160, step: 1, unit: "мм" },
+    { kind: "range", key: "bridgeWidth", title: "Ширина переносицы", min: 12, max: 24, step: 1, unit: "мм" },
+    { kind: "range", key: "rimWidth", title: "Ширина ободка", min: 40, max: 62, step: 1, unit: "мм" },
+  ],
+  solntsezashchitnye: [
+    { kind: "discount" },
+    { kind: "checkbox", key: "construction", title: "Конструкция", options: ["Втулки/винты", "Ободок", "Полуободок/Леска"] },
+    { kind: "range", key: "templeLength", title: "Длина заушника", min: 120, max: 160, step: 1, unit: "мм" },
+    { kind: "range", key: "bridgeWidth", title: "Ширина переносицы", min: 12, max: 24, step: 1, unit: "мм" },
+    { kind: "range", key: "rimWidth", title: "Ширина ободка", min: 40, max: 62, step: 1, unit: "мм" },
+  ],
+  "kontaktnye-linzy": [
+    { kind: "discount" },
+    { kind: "checkbox", key: "design", title: "Дизайн", options: ["Асферический", "Сферический", "Торические"] },
+    { kind: "range", key: "sphere", title: "Оптическая сила (сфера)", min: -20, max: 15, step: 0.25, unit: "D" },
+    { kind: "range", key: "cylinder", title: "Оптическая сила цилиндра", min: -5.75, max: -0.75, step: 0.25, unit: "D" },
+    { kind: "range", key: "axis", title: "Ось", min: 10, max: 180, step: 10, unit: "°" },
+    { kind: "checkbox", key: "addition", title: "Аддидация", options: ["Low (+0.75…+1.25)", "Med (+1.50…+2.00)", "High (+2.25…+2.50)"] },
+    { kind: "checkbox", key: "wearMode", title: "Режим ношения", options: ["Гибкий", "Дневной"] },
+    { kind: "checkbox", key: "replacement", title: "Замена через", options: ["1 день", "2 недели", "1 месяц", "3 месяца"] },
+    { kind: "range", key: "baseCurve", title: "Радиус кривизны", min: 8.0, max: 9.2, step: 0.1, unit: "мм" },
+  ],
+  "linzy-dlya-ochkov": [
+    { kind: "discount" },
+    { kind: "checkbox", key: "lensClass", title: "Тип линзы", options: ["Однофокальные", "Офисные", "Прогрессивные", "Бифокальные"] },
+    { kind: "checkbox", key: "lensTypeBrand", title: "Тип", options: ["Crizal", "Stellest", "Eyezen", "Varilux", "MiyoSmart"] },
+    { kind: "checkbox", key: "material", title: "Материал", options: ["Полимер", "Поликарбонат", "Trivex", "Стекло"] },
+    { kind: "checkbox", key: "thickness", title: "Толщина линзы", options: ["1.50", "1.56", "1.60", "1.67", "1.74"] },
+    { kind: "checkbox", key: "lensDesign", title: "Дизайн линзы", options: ["Сферический", "Асферический", "Двойной асферический"] },
+    { kind: "range", key: "lightTransmission", title: "Светопропускание", min: 0, max: 100, step: 5, unit: "%" },
+    { kind: "checkbox", key: "photochromicColor", title: "Цвет фотохрома", options: ["Серый", "Коричневый", "Зелёный"] },
+    { kind: "range", key: "sphere", title: "Оптическая сила (сфера)", min: -20, max: 15, step: 0.25, unit: "D" },
+    { kind: "checkbox", key: "astigmatic", title: "Астигматическая", options: ["Да", "Нет"] },
+    { kind: "range", key: "cylinder", title: "Цилиндр", min: -6, max: 0, step: 0.25, unit: "D" },
+    { kind: "range", key: "prism", title: "Призма", min: 0, max: 10, step: 0.5, unit: "Δ" },
+    { kind: "range", key: "pd", title: "Межзрачковое расстояние / PD", min: 50, max: 80, step: 1, unit: "мм" },
+    { kind: "checkbox", key: "purpose", title: "Назначение", options: ["Детские линзы", "Для вождения", "Для работы за ПК", "Для чтения", "Универсальные"] },
+    { kind: "checkbox", key: "sunLens", title: "Солнцезащитная линза", options: ["Да", "Нет"] },
+  ],
+  aksessuary: [],
+};
+
+const CATEGORY_VISIBILITY: Record<Category, { shape: boolean; color: boolean; material: boolean; gender: boolean; style: boolean; availability: boolean; brand: boolean }> = {
+  opravy:               { shape: true,  color: true,  material: true,  gender: true,  style: true,  availability: true,  brand: true },
+  solntsezashchitnye:   { shape: true,  color: true,  material: true,  gender: true,  style: true,  availability: true,  brand: true },
+  "kontaktnye-linzy":   { shape: false, color: false, material: false, gender: false, style: false, availability: true,  brand: true },
+  "linzy-dlya-ochkov":  { shape: false, color: false, material: false, gender: false, style: false, availability: true,  brand: true },
+  aksessuary:           { shape: false, color: false, material: false, gender: false, style: false, availability: false, brand: true },
+};
+
+export function CatalogListing({ title, subtitle, products, facets = [], categoryKey }: ListingProps) {
   const [active, setActive] = useState<Record<string, Set<string>>>({});
   const [sort, setSort] = useState<"featured" | "price-asc" | "price-desc">("featured");
   const [mobileFilters, setMobileFilters] = useState(false);
@@ -105,6 +166,29 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
   const [availability, setAvailability] = useState<"all" | "in" | "out">("all");
   const [styleTag, setStyleTag] = useState<string>("Все стили");
   const STYLE_TAGS = ["Все стили", "Современные", "Минимализм", "Винтаж", "Бохо", "Индастриал", "Скандинавские"];
+
+  // ── Extra filter state (category-specific) ────────────────────────────────
+  const extras = categoryKey ? CATEGORY_EXTRAS[categoryKey] : [];
+  const vis = categoryKey ? CATEGORY_VISIBILITY[categoryKey] : { shape: true, color: true, material: true, gender: true, style: true, availability: true, brand: true };
+
+  const [discount, setDiscount] = useState<number>(0);
+  const [ranges, setRanges] = useState<Record<string, [number, number]>>({});
+  const [extraChecks, setExtraChecks] = useState<Record<string, Set<string>>>({});
+
+  const getRange = (key: string, min: number, max: number): [number, number] =>
+    ranges[key] ?? [min, max];
+  const setRange = (key: string, value: [number, number]) =>
+    setRanges((p) => ({ ...p, [key]: value }));
+  const toggleExtra = (key: string, val: string) => {
+    setExtraChecks((prev) => {
+      const next = { ...prev };
+      const set = new Set(next[key] ?? []);
+      if (set.has(val)) set.delete(val);
+      else set.add(val);
+      next[key] = set;
+      return next;
+    });
+  };
 
   const facetCounts = useMemo(() => {
     const out: Record<string, Record<string, number>> = {};
@@ -171,6 +255,9 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
     setTryOn(false);
     setAvailability("all");
     setSearchQuery("");
+    setDiscount(0);
+    setRanges({});
+    setExtraChecks({});
   };
 
   const activeChips: { facet: string; value: string }[] = [];
@@ -236,7 +323,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       </div>
 
       {/* Frame shape — tile grid */}
-      {hasFacet("shape") && (
+      {vis.shape && hasFacet("shape") && (
         <FilterSection title="Форма">
           <div className="grid grid-cols-2 gap-2">
             {SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]).map((s) => {
@@ -301,6 +388,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       </FilterSection>
 
       {/* Color — compact swatch grid */}
+      {vis.color && (
       <FilterSection title="Цвет">
         <div className="grid grid-cols-5 gap-2 py-1">
           {COLOR_SWATCHES.map((c) => {
@@ -348,9 +436,10 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           })}
         </div>
       </FilterSection>
+      )}
 
       {/* Material — checkbox list */}
-      {hasFacet("material") && (
+      {vis.material && hasFacet("material") && (
         <FilterSection title="Материал">
           <div className="space-y-2">
             {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
@@ -385,6 +474,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       )}
 
       {/* Availability — radios */}
+      {vis.availability && (
       <FilterSection title="Наличие">
         <div className="space-y-2">
           {([
@@ -417,9 +507,10 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           })}
         </div>
       </FilterSection>
+      )}
 
       {/* Gender pills (kept) */}
-      {hasFacet("gender") && (
+      {vis.gender && hasFacet("gender") && (
         <FilterSection title="Пол">
           <div className="flex flex-wrap gap-2">
             {Object.entries(facetCounts.gender ?? {}).map(([g, c]) => {
@@ -449,6 +540,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       )}
 
       {/* Style — pills */}
+      {vis.style && (
       <FilterSection title="Стиль">
         <div className="flex flex-wrap gap-2">
           {STYLE_TAGS.map((s) => {
@@ -472,9 +564,10 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           })}
         </div>
       </FilterSection>
+      )}
 
       {/* Brands */}
-      {hasFacet("brand") && (
+      {vis.brand && hasFacet("brand") && (
         <FilterSection title="Бренды" defaultOpen={false}>
           <div className="max-h-72 overflow-y-auto pr-1 space-y-2">
             {Object.entries(facetCounts.brand ?? {})
@@ -506,8 +599,103 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         </FilterSection>
       )}
 
-      {/* Apply button */}
-      <div className="sticky bottom-0 -mx-3 mt-4 bg-gradient-to-t from-background via-background to-transparent px-3 pb-2 pt-4">
+      {/* Category-specific extra filters */}
+      {extras.map((block) => {
+        if (block.kind === "discount") {
+          return (
+            <FilterSection key="discount" title="Скидка, %" defaultOpen={false}>
+              <div className="flex items-center justify-between mb-3 text-xs text-muted-foreground">
+                <span>от {discount}%</span>
+                <span>до 100%</span>
+              </div>
+              <Slider
+                min={0}
+                max={100}
+                step={5}
+                value={[discount]}
+                onValueChange={(v) => setDiscount(v[0] ?? 0)}
+                className="mx-2 [&_[role=slider]]:border-ink [&_[role=slider]]:bg-background [&>span:first-child]:bg-ink/10 [&_[data-slot=slider-range]]:bg-ink"
+              />
+            </FilterSection>
+          );
+        }
+        if (block.kind === "range") {
+          const v = getRange(block.key, block.min, block.max);
+          return (
+            <FilterSection key={block.key} title={block.title} defaultOpen={false}>
+              <div className="flex items-center gap-2 mb-3">
+                <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
+                  <input
+                    type="number"
+                    step={block.step}
+                    value={v[0]}
+                    onChange={(e) => setRange(block.key, [Number(e.target.value), v[1]])}
+                    className="w-full bg-transparent outline-none text-sm"
+                  />
+                  {block.unit && <span className="text-muted-foreground text-xs">{block.unit}</span>}
+                </label>
+                <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
+                  <input
+                    type="number"
+                    step={block.step}
+                    value={v[1]}
+                    onChange={(e) => setRange(block.key, [v[0], Number(e.target.value)])}
+                    className="w-full bg-transparent outline-none text-sm"
+                  />
+                  {block.unit && <span className="text-muted-foreground text-xs">{block.unit}</span>}
+                </label>
+              </div>
+              <Slider
+                min={block.min}
+                max={block.max}
+                step={block.step}
+                value={v}
+                onValueChange={(vv) => setRange(block.key, [vv[0], vv[1]] as [number, number])}
+                className="mx-2 [&_[role=slider]]:border-ink [&_[role=slider]]:bg-background [&>span:first-child]:bg-ink/10 [&_[data-slot=slider-range]]:bg-ink"
+              />
+            </FilterSection>
+          );
+        }
+        // checkbox
+        return (
+          <FilterSection key={block.key} title={block.title} defaultOpen={false}>
+            <div className="space-y-2">
+              {block.options.map((opt) => {
+                const checked = extraChecks[block.key]?.has(opt) ?? false;
+                return (
+                  <label
+                    key={opt}
+                    className="flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors"
+                    style={{ borderRadius: "4px", padding: "2px 4px", margin: "0 -4px" }}
+                  >
+                    <span
+                      className={cn(
+                        "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
+                        checked ? "border-ink bg-ink text-primary-foreground" : "border-border bg-card group-hover:border-foreground/40",
+                      )}
+                    >
+                      {checked && <Check className="h-3 w-3" strokeWidth={3} />}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleExtra(block.key, opt)}
+                      className="sr-only"
+                    />
+                    <span className="flex-1 text-sm">{opt}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </FilterSection>
+        );
+      })}
+
+      {/* Bottom spacer so the last section is never clipped by sticky Apply on mobile */}
+      <div aria-hidden className="h-20 lg:h-4" />
+
+      {/* Apply button — mobile only (desktop sidebar has no sticky CTA) */}
+      <div className="lg:hidden sticky bottom-0 -mx-3 mt-4 bg-gradient-to-t from-background via-background to-transparent px-3 pb-2 pt-4">
         <button
           type="button"
           onClick={() => setMobileFilters(false)}
@@ -714,12 +902,21 @@ function FilterSection({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  // After the open transition finishes we drop overflow:hidden so popovers,
+  // sliders, and tooltips inside the section are not clipped.
+  const [overflowVisible, setOverflowVisible] = useState(defaultOpen);
 
   return (
     <div style={{ paddingTop: '20px', paddingBottom: '20px', borderTop: '1px solid var(--color-border)' }}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          setOpen((v) => {
+            const next = !v;
+            if (!next) setOverflowVisible(false);
+            return next;
+          });
+        }}
         className="w-full flex items-center justify-between text-left group"
       >
         <span className="font-serif text-[13px] font-normal tracking-normal text-foreground/70">
@@ -733,10 +930,14 @@ function FilterSection({
         style={{
           display: 'grid',
           gridTemplateRows: open ? '1fr' : '0fr',
-          transition: 'grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+          opacity: open ? 1 : 0,
+          transition: 'grid-template-rows 220ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms ease-out',
+        }}
+        onTransitionEnd={(e) => {
+          if (e.propertyName === 'grid-template-rows' && open) setOverflowVisible(true);
         }}
       >
-        <div style={{ overflow: 'hidden', minHeight: 0 }}>
+        <div style={{ overflow: open && overflowVisible ? 'visible' : 'hidden', minHeight: 0 }}>
           <div style={{ paddingTop: '16px' }}>
             {children}
           </div>
