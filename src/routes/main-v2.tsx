@@ -94,36 +94,46 @@ const SERVICE_LIST = [
   { slug: "remont", title: "Ремонт очков" },
 ];
 
-// Asymmetric category grid cells. The red sunglasses promo spans both rows
-// on desktop; everything else is a 1×1 image-overlay tile.
+// Asymmetric category grid cells. Layout (desktop):
+//   ┌────────────┬───────────────────────┐
+//   │            │  Солнцезащитные       │  (wide top-right)
+//   │  Женские   ├───────────┬───────────┤
+//   │  оправы    │  Мужские  │  Детские  │
+//   │            │  оправы   │  очки     │
+//   └────────────┴───────────┴───────────┘
+// `titlePos: "top" | "bottom"` controls text placement inside the tile.
 const CAT_CELLS = [
   {
     slug: "opravy-zhenskie",
     title: "Женские оправы",
-    eyebrow: "Категория",
+    subtitle: "Более 1500 моделей",
     image: "/new_categories_1.png",
     href: catalogHref("opravy"),
+    titlePos: "bottom" as const,
+  },
+  {
+    slug: "solntsezashchitnye",
+    title: "Солнцезащитные очки",
+    subtitle: "Новые коллекции 2024",
+    image: "/new_categories_2.png",
+    href: catalogHref("solntsezashchitnye"),
+    titlePos: "top" as const,
   },
   {
     slug: "opravy-muzhskie",
     title: "Мужские оправы",
-    eyebrow: "Категория",
-    image: "/new_categories_2.png",
-    href: catalogHref("opravy"),
-  },
-  {
-    slug: "detskie-opravy",
-    title: "Детские оправы",
-    eyebrow: "Категория",
+    subtitle: "Более 1200 моделей",
     image: "/new_categories_3.png",
     href: catalogHref("opravy"),
+    titlePos: "bottom" as const,
   },
   {
-    slug: "kontaktnye-linzy",
-    title: "Контактные линзы",
-    eyebrow: "Категория",
+    slug: "detskie-ochki",
+    title: "Детские очки",
+    subtitle: "Для заботы о будущем",
     image: "/new_categories_4.png",
-    href: catalogHref("kontaktnye-linzy"),
+    href: catalogHref("opravy"),
+    titlePos: "bottom" as const,
   },
 ];
 
@@ -333,134 +343,93 @@ function MainV2Page() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. CATEGORIES — asymmetric grid with red sunglasses promo
+          2. CATEGORIES — Подберите свои идеальные очки (1:1 with screenshot)
          ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20">
-        <Reveal className="text-center max-w-2xl mx-auto mb-10">
-          <div
-            className="text-[11px] uppercase tracking-[0.2em] mb-3"
-            style={{ color: "var(--brand)" }}
-          >
-            Категории
-          </div>
-          <h2 className="font-serif text-3xl lg:text-4xl">
-            Подберите свои идеальные очки
-          </h2>
-        </Reveal>
+      <section
+        className="bg-cream"
+        style={{ padding: "clamp(56px, 7vw, 96px) 0" }}
+      >
+        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+          {/* Header row: eyebrow + H2 on left, "See all" link on right */}
+          <Reveal className="flex items-end justify-between gap-4 mb-8 lg:mb-10">
+            <div>
+              <div
+                className="text-[11px] uppercase tracking-[0.22em] mb-3"
+                style={{ color: "var(--brand)" }}
+              >
+                Категории
+              </div>
+              <h2
+                className="font-serif text-foreground"
+                style={{
+                  fontSize: "clamp(28px, 3.6vw, 44px)",
+                  lineHeight: 1.1,
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                Подберите свои идеальные очки
+              </h2>
+            </div>
+            <Link
+              to="/catalog_s/$category"
+              params={{ category: "opravy" }}
+              className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium"
+              style={{ color: "var(--brand)" }}
+            >
+              Смотреть все категории <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Reveal>
 
-        <div
-          className="grid gap-4"
-          style={{
-            gridTemplateColumns: "repeat(1, minmax(0, 1fr))",
-          }}
-        >
-          <div
-            className="grid gap-4 lg:gap-4"
-            style={{
-              gridTemplateColumns: "1fr",
-            }}
-          />
-          {/* Render two parallel column-tracks via CSS grid on desktop */}
+          {/* Grid layout per screenshot: tall left + wide top-right + 2 bottom-right tiles */}
           <style>{`
-            .o100-cat-grid{display:grid;gap:16px;grid-template-columns:1fr}
+            .o100-cat-grid{
+              display:grid;
+              gap:16px;
+              grid-template-columns:1fr;
+              grid-auto-rows:280px;
+            }
             @media (min-width:1024px){
               .o100-cat-grid{
-                grid-template-columns:repeat(3,minmax(0,1fr));
-                grid-template-rows:repeat(2,1fr);
-                grid-auto-flow:dense;
-                min-height:520px;
+                grid-template-columns:1.15fr 0.95fr 0.95fr;
+                grid-template-rows:repeat(2, 1fr);
+                grid-template-areas:
+                  "women  sun     sun"
+                  "women  men     kids";
+                grid-auto-rows:initial;
+                min-height:600px;
               }
-              .o100-cat-redcell{grid-column:3 / span 1;grid-row:1 / span 2}
+              .o100-cat-area-women{grid-area:women}
+              .o100-cat-area-sun{grid-area:sun}
+              .o100-cat-area-men{grid-area:men}
+              .o100-cat-area-kids{grid-area:kids}
             }
           `}</style>
-        </div>
+          <div className="o100-cat-grid">
+            <Reveal className="o100-cat-area-women">
+              <CategoryTile cell={CAT_CELLS[0]} />
+            </Reveal>
+            <Reveal delay={80} className="o100-cat-area-sun">
+              <CategoryTile cell={CAT_CELLS[1]} />
+            </Reveal>
+            <Reveal delay={160} className="o100-cat-area-men">
+              <CategoryTile cell={CAT_CELLS[2]} />
+            </Reveal>
+            <Reveal delay={240} className="o100-cat-area-kids">
+              <CategoryTile cell={CAT_CELLS[3]} />
+            </Reveal>
+          </div>
 
-        <div className="o100-cat-grid">
-          {/* Cell A — Женские оправы */}
-          <Reveal>
-            <CategoryTile cell={CAT_CELLS[0]} />
-          </Reveal>
-
-          {/* Cell B — Мужские оправы */}
-          <Reveal delay={80}>
-            <CategoryTile cell={CAT_CELLS[1]} />
-          </Reveal>
-
-          {/* Cell C — RED sunglasses promo (spans both rows on desktop) */}
-          <Reveal delay={160} className="o100-cat-redcell">
-            <a
-              href={catalogHref("solntsezashchitnye")}
-              className="group relative block h-full overflow-hidden rounded-2xl"
-              style={{
-                background: "var(--brand)",
-                color: "var(--brand-foreground)",
-                minHeight: 320,
-              }}
+          {/* Mobile "see all" link */}
+          <div className="mt-6 sm:hidden">
+            <Link
+              to="/catalog_s/$category"
+              params={{ category: "opravy" }}
+              className="inline-flex items-center gap-1.5 text-sm font-medium"
+              style={{ color: "var(--brand)" }}
             >
-              <img
-                src="/categ_sunglasses_v4.png"
-                alt=""
-                className="absolute pointer-events-none transition-transform duration-700 group-hover:scale-105"
-                style={{
-                  right: -30,
-                  bottom: -20,
-                  width: "70%",
-                  opacity: 0.55,
-                  filter: "drop-shadow(0 10px 24px rgba(0,0,0,0.25))",
-                }}
-              />
-              <div
-                className="absolute"
-                style={{
-                  top: 28,
-                  left: 28,
-                  right: 28,
-                  zIndex: 1,
-                }}
-              >
-                <div
-                  className="text-[11px] uppercase tracking-[0.2em] mb-3"
-                  style={{ opacity: 0.85 }}
-                >
-                  Хиты сезона
-                </div>
-                <h3
-                  className="font-serif"
-                  style={{
-                    fontSize: "clamp(26px, 3vw, 38px)",
-                    lineHeight: 1.05,
-                    marginBottom: 12,
-                  }}
-                >
-                  Солнцезащитные очки
-                </h3>
-                <p style={{ fontSize: 14, lineHeight: 1.5, opacity: 0.9, maxWidth: 320 }}>
-                  Защита от UV и стиль на каждый день — от 120 брендов.
-                </p>
-              </div>
-              <span
-                className="absolute inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-medium"
-                style={{
-                  left: 28,
-                  bottom: 28,
-                  background: "var(--background)",
-                  color: "var(--foreground)",
-                }}
-              >
-                Смотреть <ArrowRight className="h-4 w-4" />
-              </span>
-            </a>
-          </Reveal>
-
-          {/* Cell D — Детские оправы */}
-          <Reveal delay={240}>
-            <CategoryTile cell={CAT_CELLS[2]} />
-          </Reveal>
-
-          {/* Cell E — Контактные линзы */}
-          <Reveal delay={320}>
-            <CategoryTile cell={CAT_CELLS[3]} />
-          </Reveal>
+              Смотреть все категории <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -795,11 +764,16 @@ function CategoryTile({
 }: {
   cell: (typeof CAT_CELLS)[number];
 }) {
+  const isTop = cell.titlePos === "top";
+  // Gradient direction depends on text position so the dark wash is
+  // always behind the text (top-anchored vs bottom-anchored).
+  const gradient = isTop
+    ? "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0) 70%)"
+    : "linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 100%)";
   return (
     <a
       href={cell.href}
-      className="group relative block rounded-2xl overflow-hidden bg-cream hover:-translate-y-1 transition-transform duration-300 h-full"
-      style={{ minHeight: 240 }}
+      className="group relative block rounded-2xl overflow-hidden bg-cream hover:-translate-y-1 transition-transform duration-300 h-full w-full"
     >
       <img
         src={cell.image}
@@ -809,27 +783,47 @@ function CategoryTile({
       />
       <div
         className="absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.55) 100%)",
-        }}
+        style={{ background: gradient }}
       />
       <div
         className="absolute"
-        style={{ left: 20, right: 20, bottom: 20, color: "#fff" }}
+        style={{
+          left: "clamp(20px, 2.4vw, 32px)",
+          right: "clamp(20px, 2.4vw, 32px)",
+          [isTop ? "top" : "bottom"]: "clamp(20px, 2.4vw, 32px)",
+          color: "#fff",
+        }}
       >
-        <div
-          className="text-[11px] uppercase tracking-[0.15em] mb-2"
-          style={{ opacity: 0.9 }}
+        <h3
+          className="font-serif leading-tight"
+          style={{
+            fontSize: "clamp(22px, 2.4vw, 32px)",
+            letterSpacing: "-0.005em",
+            marginBottom: 6,
+          }}
         >
-          {cell.eyebrow}
-        </div>
-        <div className="font-serif text-xl leading-tight mb-3">{cell.title}</div>
+          {cell.title}
+        </h3>
+        <p
+          style={{
+            fontSize: 14,
+            lineHeight: 1.4,
+            opacity: 0.88,
+            marginBottom: 18,
+          }}
+        >
+          {cell.subtitle}
+        </p>
         <span
-          className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm group-hover:bg-brand group-hover:text-brand-foreground transition-colors"
-          style={{ background: "var(--background)", color: "var(--foreground)" }}
+          className="inline-flex items-center gap-1.5 rounded-full text-sm font-medium transition-colors"
+          style={{
+            border: "1px solid rgba(255,255,255,0.85)",
+            color: "#fff",
+            padding: "8px 18px",
+            background: "transparent",
+          }}
         >
-          Смотреть <ArrowRight className="h-3.5 w-3.5" />
+          Смотреть
         </span>
       </div>
     </a>
