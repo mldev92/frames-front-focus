@@ -160,7 +160,7 @@ function HomePage() {
           <Reveal className="flex justify-between items-end mb-9">
             <div>
               <span style={{ fontFamily: 'var(--font-serif)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-muted-foreground)' }}>Каталог</span>
-              <h2 style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, fontSize: '32px', lineHeight: '1.15', marginTop: '4px' }}>Только что в продаже</h2>
+              <h2 style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, fontSize: '32px', lineHeight: '1.15', marginTop: '4px' }}>Только что купили</h2>
             </div>
             <a
               href="/catalog_s/opravy/"
