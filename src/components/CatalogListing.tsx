@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback, memo, useRef, useEffect } from "react";
 import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
@@ -702,7 +702,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
   );
 }
 
-function FilterSection({
+const FilterSection = memo(function FilterSection({
   title,
   defaultOpen = true,
   children,
@@ -714,6 +714,9 @@ function FilterSection({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const prevOpen = useRef(defaultOpen);
+  const animating = prevOpen.current !== open;
+  useEffect(() => { prevOpen.current = open; }, [open]);
 
   return (
     <div style={{ paddingTop: '20px', paddingBottom: '20px', borderTop: '1px solid var(--color-border)' }}>
@@ -733,7 +736,7 @@ function FilterSection({
         style={{
           display: 'grid',
           gridTemplateRows: open ? '1fr' : '0fr',
-          transition: 'grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: animating ? 'grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
         }}
       >
         <div style={{ overflow: 'hidden', minHeight: 0 }}>
@@ -744,5 +747,5 @@ function FilterSection({
       </div>
     </div>
   );
-}
+});
 
