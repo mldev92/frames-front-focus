@@ -85,7 +85,67 @@ const COLOR_SWATCHES: { name: string; hex: string }[] = [
 ];
 
 
-export function CatalogListing({ title, subtitle, products, facets = [] }: ListingProps) {
+// ── Per-category extra filter configs ───────────────────────────────────────
+type ExtraBlock =
+  | { kind: "checkbox"; key: string; title: string; options: string[] }
+  | { kind: "range"; key: string; title: string; min: number; max: number; step: number; unit?: string }
+  | { kind: "discount"; title?: string };
+
+const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
+  opravy: [
+    { kind: "discount" },
+    { kind: "checkbox", key: "construction", title: "Конструкция", options: ["Втулки/винты", "Ободок", "Полуободок/Леска"] },
+    { kind: "range", key: "templeLength", title: "Длина заушника", min: 120, max: 160, step: 1, unit: "мм" },
+    { kind: "range", key: "bridgeWidth", title: "Ширина переносицы", min: 12, max: 24, step: 1, unit: "мм" },
+    { kind: "range", key: "rimWidth", title: "Ширина ободка", min: 40, max: 62, step: 1, unit: "мм" },
+  ],
+  solntsezashchitnye: [
+    { kind: "discount" },
+    { kind: "checkbox", key: "construction", title: "Конструкция", options: ["Втулки/винты", "Ободок", "Полуободок/Леска"] },
+    { kind: "range", key: "templeLength", title: "Длина заушника", min: 120, max: 160, step: 1, unit: "мм" },
+    { kind: "range", key: "bridgeWidth", title: "Ширина переносицы", min: 12, max: 24, step: 1, unit: "мм" },
+    { kind: "range", key: "rimWidth", title: "Ширина ободка", min: 40, max: 62, step: 1, unit: "мм" },
+  ],
+  "kontaktnye-linzy": [
+    { kind: "discount" },
+    { kind: "checkbox", key: "design", title: "Дизайн", options: ["Асферический", "Сферический", "Торические"] },
+    { kind: "range", key: "sphere", title: "Оптическая сила (сфера)", min: -20, max: 15, step: 0.25, unit: "D" },
+    { kind: "range", key: "cylinder", title: "Оптическая сила цилиндра", min: -5.75, max: -0.75, step: 0.25, unit: "D" },
+    { kind: "range", key: "axis", title: "Ось", min: 10, max: 180, step: 10, unit: "°" },
+    { kind: "checkbox", key: "addition", title: "Аддидация", options: ["Low (+0.75…+1.25)", "Med (+1.50…+2.00)", "High (+2.25…+2.50)"] },
+    { kind: "checkbox", key: "wearMode", title: "Режим ношения", options: ["Гибкий", "Дневной"] },
+    { kind: "checkbox", key: "replacement", title: "Замена через", options: ["1 день", "2 недели", "1 месяц", "3 месяца"] },
+    { kind: "range", key: "baseCurve", title: "Радиус кривизны", min: 8.0, max: 9.2, step: 0.1, unit: "мм" },
+  ],
+  "linzy-dlya-ochkov": [
+    { kind: "discount" },
+    { kind: "checkbox", key: "lensClass", title: "Тип линзы", options: ["Однофокальные", "Офисные", "Прогрессивные", "Бифокальные"] },
+    { kind: "checkbox", key: "lensTypeBrand", title: "Тип", options: ["Crizal", "Stellest", "Eyezen", "Varilux", "MiyoSmart"] },
+    { kind: "checkbox", key: "material", title: "Материал", options: ["Полимер", "Поликарбонат", "Trivex", "Стекло"] },
+    { kind: "checkbox", key: "thickness", title: "Толщина линзы", options: ["1.50", "1.56", "1.60", "1.67", "1.74"] },
+    { kind: "checkbox", key: "lensDesign", title: "Дизайн линзы", options: ["Сферический", "Асферический", "Двойной асферический"] },
+    { kind: "range", key: "lightTransmission", title: "Светопропускание", min: 0, max: 100, step: 5, unit: "%" },
+    { kind: "checkbox", key: "photochromicColor", title: "Цвет фотохрома", options: ["Серый", "Коричневый", "Зелёный"] },
+    { kind: "range", key: "sphere", title: "Оптическая сила (сфера)", min: -20, max: 15, step: 0.25, unit: "D" },
+    { kind: "checkbox", key: "astigmatic", title: "Астигматическая", options: ["Да", "Нет"] },
+    { kind: "range", key: "cylinder", title: "Цилиндр", min: -6, max: 0, step: 0.25, unit: "D" },
+    { kind: "range", key: "prism", title: "Призма", min: 0, max: 10, step: 0.5, unit: "Δ" },
+    { kind: "range", key: "pd", title: "Межзрачковое расстояние / PD", min: 50, max: 80, step: 1, unit: "мм" },
+    { kind: "checkbox", key: "purpose", title: "Назначение", options: ["Детские линзы", "Для вождения", "Для работы за ПК", "Для чтения", "Универсальные"] },
+    { kind: "checkbox", key: "sunLens", title: "Солнцезащитная линза", options: ["Да", "Нет"] },
+  ],
+  aksessuary: [],
+};
+
+const CATEGORY_VISIBILITY: Record<Category, { shape: boolean; color: boolean; material: boolean; gender: boolean; style: boolean; availability: boolean; brand: boolean }> = {
+  opravy:               { shape: true,  color: true,  material: true,  gender: true,  style: true,  availability: true,  brand: true },
+  solntsezashchitnye:   { shape: true,  color: true,  material: true,  gender: true,  style: true,  availability: true,  brand: true },
+  "kontaktnye-linzy":   { shape: false, color: false, material: false, gender: false, style: false, availability: true,  brand: true },
+  "linzy-dlya-ochkov":  { shape: false, color: false, material: false, gender: false, style: false, availability: true,  brand: true },
+  aksessuary:           { shape: false, color: false, material: false, gender: false, style: false, availability: false, brand: true },
+};
+
+export function CatalogListing({ title, subtitle, products, facets = [], categoryKey }: ListingProps) {
   const [active, setActive] = useState<Record<string, Set<string>>>({});
   const [sort, setSort] = useState<"featured" | "price-asc" | "price-desc">("featured");
   const [mobileFilters, setMobileFilters] = useState(false);
