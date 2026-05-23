@@ -817,20 +817,22 @@ function MainV2ProductCard({ product }: { product: Product }) {
       : product.name;
 
   return (
-    <div className="group/card flex flex-col h-full">
+    <div
+      className="group/card flex flex-col h-full overflow-hidden"
+      style={{
+        background: "var(--background)",
+        borderRadius: 16,
+        boxShadow:
+          "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)",
+      }}
+    >
       <Link
         to="/catalog_s/$category/$slug"
         params={{
           category: categoryToSegment[product.category],
           slug: product.slug,
         }}
-        className="relative block aspect-square overflow-hidden"
-        style={{
-          background: "var(--background)",
-          borderRadius: 16,
-          boxShadow:
-            "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)",
-        }}
+        className="relative block aspect-square"
         aria-label={displayName}
       >
         <img
@@ -862,7 +864,10 @@ function MainV2ProductCard({ product }: { product: Product }) {
         </button>
       </Link>
 
-      <div className="mt-4 flex flex-col gap-2 px-1">
+      <div
+        className="flex flex-col gap-2"
+        style={{ padding: "18px 20px 22px" }}
+      >
         <Link
           to="/catalog_s/$category/$slug"
           params={{
@@ -874,7 +879,10 @@ function MainV2ProductCard({ product }: { product: Product }) {
         >
           {displayName}
         </Link>
-        <div className="text-foreground" style={{ fontSize: 15, fontWeight: 600 }}>
+        <div
+          className="text-foreground"
+          style={{ fontSize: 15, fontWeight: 600 }}
+        >
           {formatPrice(product.price)}
         </div>
         {dots.length > 0 && (
@@ -920,7 +928,13 @@ function MainV2HitsCarousel({ products }: { products: Product[] }) {
     el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
   };
   const navBtn =
-    "flex items-center justify-center rounded-full border border-border bg-background hover:bg-cream hover:border-foreground transition-colors";
+    "flex items-center justify-center rounded-full bg-background transition-colors hover:bg-brand hover:text-brand-foreground";
+  const navBtnStyle = {
+    width: 40,
+    height: 40,
+    border: "1.5px solid var(--brand)",
+    color: "var(--brand)",
+  } as const;
 
   return (
     <div>
@@ -958,7 +972,7 @@ function MainV2HitsCarousel({ products }: { products: Product[] }) {
               onClick={() => scrollBy(-1)}
               aria-label="Назад"
               className={navBtn}
-              style={{ width: 40, height: 40 }}
+              style={navBtnStyle}
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -967,7 +981,7 @@ function MainV2HitsCarousel({ products }: { products: Product[] }) {
               onClick={() => scrollBy(1)}
               aria-label="Вперёд"
               className={navBtn}
-              style={{ width: 40, height: 40 }}
+              style={navBtnStyle}
             >
               <ChevronRight className="h-4 w-4" />
             </button>
