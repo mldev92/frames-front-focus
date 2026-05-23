@@ -323,7 +323,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
       </div>
 
       {/* Frame shape — tile grid */}
-      {hasFacet("shape") && (
+      {vis.shape && hasFacet("shape") && (
         <FilterSection title="Форма">
           <div className="grid grid-cols-2 gap-2">
             {SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]).map((s) => {
@@ -388,6 +388,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
       </FilterSection>
 
       {/* Color — compact swatch grid */}
+      {vis.color && (
       <FilterSection title="Цвет">
         <div className="grid grid-cols-5 gap-2 py-1">
           {COLOR_SWATCHES.map((c) => {
@@ -435,9 +436,10 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
           })}
         </div>
       </FilterSection>
+      )}
 
       {/* Material — checkbox list */}
-      {hasFacet("material") && (
+      {vis.material && hasFacet("material") && (
         <FilterSection title="Материал">
           <div className="space-y-2">
             {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
@@ -472,6 +474,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
       )}
 
       {/* Availability — radios */}
+      {vis.availability && (
       <FilterSection title="Наличие">
         <div className="space-y-2">
           {([
@@ -504,9 +507,10 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
           })}
         </div>
       </FilterSection>
+      )}
 
       {/* Gender pills (kept) */}
-      {hasFacet("gender") && (
+      {vis.gender && hasFacet("gender") && (
         <FilterSection title="Пол">
           <div className="flex flex-wrap gap-2">
             {Object.entries(facetCounts.gender ?? {}).map(([g, c]) => {
@@ -536,6 +540,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
       )}
 
       {/* Style — pills */}
+      {vis.style && (
       <FilterSection title="Стиль">
         <div className="flex flex-wrap gap-2">
           {STYLE_TAGS.map((s) => {
@@ -559,9 +564,10 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
           })}
         </div>
       </FilterSection>
+      )}
 
       {/* Brands */}
-      {hasFacet("brand") && (
+      {vis.brand && hasFacet("brand") && (
         <FilterSection title="Бренды" defaultOpen={false}>
           <div className="max-h-72 overflow-y-auto pr-1 space-y-2">
             {Object.entries(facetCounts.brand ?? {})
