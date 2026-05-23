@@ -254,30 +254,28 @@ function HomePage() {
       {/* CATEGORIES — dark gradient + SVG icons */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16">
         <Reveal className="text-center max-w-2xl mx-auto mb-10">
-          <h2 className="font-serif text-3xl lg:text-4xl">Четыре способа купить</h2>
+          <h2 className="font-serif text-3xl lg:text-4xl">Категории</h2>
         </Reveal>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {fourCats.map((c, i) => (
             <Reveal key={c.slug} delay={i * 80}>
               <a
                 href={c.href}
-                className="group relative aspect-[3/4] rounded-2xl overflow-hidden block"
-                style={{
-                  background: 'linear-gradient(160deg, #f5ede8 0%, #e8ddd5 50%, #dfd0c4 100%)',
-                }}
+                className="group relative aspect-[3/4] rounded-2xl overflow-hidden block bg-cream"
               >
                 <img
                   src={c.image}
                   alt=""
                   loading="lazy"
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  style={{ opacity: 0.85 }}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700"
                 />
-                <div className="absolute inset-0" style={{
-                  background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.15) 100%)',
-                }} />
-                <div className="relative z-10 flex flex-col items-center justify-end h-full" style={{ paddingBottom: '24px', color: 'var(--color-foreground)' }}>
-                  <span className="text-sm font-medium">{c.title}</span>
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-foreground/10 to-transparent" />
+                <div className="absolute bottom-5 left-5 right-5 text-primary-foreground">
+                  <div className="text-xs uppercase tracking-[0.15em] opacity-90 mb-2">{c.short}</div>
+                  <div className="font-serif text-xl leading-tight mb-4">{c.title}</div>
+                  <span className="inline-flex items-center bg-background text-foreground text-sm rounded-full px-4 py-2 group-hover:bg-brand group-hover:text-brand-foreground transition-colors">
+                    Смотреть →
+                  </span>
                 </div>
               </a>
             </Reveal>
