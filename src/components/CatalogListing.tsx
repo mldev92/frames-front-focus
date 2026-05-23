@@ -268,8 +268,11 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         </FilterSection>
       )}
 
-      {/* Price */}
-      <FilterSection key="price" title="Цена">
+      {/* Price — always visible */}
+      <div style={{ paddingTop: '20px', paddingBottom: '20px', borderTop: '1px solid var(--color-border)' }}>
+        <span className="font-serif text-[13px] font-normal tracking-normal text-foreground/70 block mb-4">
+          Цена
+        </span>
         <div className="flex items-center gap-2 mb-3">
           <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
             <span className="text-muted-foreground text-xs">₽</span>
@@ -298,7 +301,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           onValueChange={(v) => setPrice([v[0], v[1]] as [number, number])}
           className="mx-2 [&_[role=slider]]:border-ink [&_[role=slider]]:bg-background [&>span:first-child]:bg-ink/10 [&_[data-slot=slider-range]]:bg-ink"
         />
-      </FilterSection>
+      </div>
 
       {/* Color — compact swatch grid */}
       <FilterSection key="color" title="Цвет">
@@ -384,8 +387,11 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         </FilterSection>
       )}
 
-      {/* Availability — radios */}
-      <FilterSection key="availability" title="Наличие">
+      {/* Availability — always visible, no collapse */}
+      <div style={{ paddingTop: '20px', paddingBottom: '20px', borderTop: '1px solid var(--color-border)' }}>
+        <span className="font-serif text-[13px] font-normal tracking-normal text-foreground/70 block mb-4">
+          Наличие
+        </span>
         <div className="space-y-2">
           {([
             ["all", "Все", products.length],
@@ -416,7 +422,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
             );
           })}
         </div>
-      </FilterSection>
+      </div>
 
       {/* Gender pills (kept) */}
       {hasFacet("gender") && (
