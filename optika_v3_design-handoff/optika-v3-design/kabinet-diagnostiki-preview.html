@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Диагностика зрения в Санкт-Петербурге · ОПТИКА 100%</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background: oklch(0.985 0.004 80);
+      --foreground: oklch(0.18 0.01 250);
+      --surface: oklch(0.96 0.008 75);
+      --cream: oklch(0.965 0.015 85);
+      --card: oklch(1 0 0);
+      --ink: oklch(0.18 0.01 250);
+      --brand: oklch(0.55 0.18 28);
+      --brand-foreground: oklch(0.985 0.004 80);
+      --muted-foreground: oklch(0.5 0.015 250);
+      --border: oklch(0.9 0.008 80);
+      --accent: oklch(0.92 0.012 70);
+    }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      -webkit-font-smoothing: antialiased;
+    }
+    
+    .font-serif {
+      font-family: 'Fraunces', Georgia, serif;
+      letter-spacing: -0.01em;
+    }
+    
+    .text-brand { color: var(--brand); }
+    .bg-surface { background-color: var(--surface); }
+    .bg-cream { background-color: var(--cream); }
+    .bg-ink { background-color: var(--ink); }
+    .text-primary-foreground { color: var(--brand-foreground); }
+    .text-muted-foreground { color: var(--muted-foreground); }
+    .border-brand { border-color: var(--brand); }
+    .border-border { border-color: var(--border); }
+    .bg-accent { background-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div>
+    <!-- HERO -->
+    <section class="bg-surface">
+      <div class="mx-auto max-w-7xl px-4 lg:px-8 py-12 grid lg:grid-cols-2 gap-10 items-center">
+        <div>
+          <nav class="text-xs text-muted-foreground mb-4 flex items-center gap-1">
+            <a href="/" class="hover:text-foreground">Главная</a>
+            <span>›</span>
+            <a href="/uslugi" class="hover:text-foreground">Услуги</a>
+            <span>›</span>
+            <span>Диагностика зрения</span>
+          </nav>
+          <div class="text-xs uppercase tracking-widest text-brand mb-3">Кабинет диагностики</div>
+          <h1 class="font-serif text-4xl lg:text-5xl leading-tight">Диагностика зрения</h1>
+          <p class="mt-5 text-base leading-relaxed">
+            Диагностика зрения — это профессиональное изучение зрения, проводящееся по одному состояния зрительной системы с целью выявления различных нарушений и заболеваний глаз. Включает проверку остроты зрения, определение рефракции (близорукость, дальнозоркость, астигматизм), осмотр структур глаза с помощью специального оборудования, измерение внутриглазного давления и другие процедуры. Результаты позволяют подобрать оптимальную коррекцию (очки, контактные линзы), выявить ранние признаки глазных заболеваний (глаукома, катаракта, патологии сетчатки) и направить к профильному специалисту при необходимости.
+          </p>
+        </div>
+        <div class="aspect-[4/3] bg-accent rounded-2xl overflow-hidden">
+          <img
+            src="https://optika100.com/images/proverka-zreniya/izmenenie_davleniya.jpg"
+            alt="Диагностика зрения в Оптика 100%"
+            class="w-full h-full object-cover"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- INTRO -->
+    <section class="mx-auto max-w-7xl px-4 lg:px-8 py-16">
+      <div class="max-w-4xl">
+        <p class="text-muted-foreground leading-relaxed">
+          Такая диагностика важна потому что многие глазные болезни протекают бессимптомно на ранних стадиях, и именно превентивные обследования помогают сохранить зрение и предотвратить серьёзные осложнения. Регулярная проверка зрения рекомендуется раз в 1-2 года для взрослых, а для детей, людей старше 40 лет и пациентов с хроническими заболеваниями (диабет, гипертония) — чаще.
+        </p>
+      </div>
+    </section>
+
+    <!-- PROCEDURES -->
+    <section class="bg-surface">
+      <div class="mx-auto max-w-7xl px-4 lg:px-8 py-16">
+        <div class="mb-12">
+          <h2 class="font-serif text-3xl lg:text-4xl mb-4">Какие процедуры проводятся?</h2>
+          <p class="text-muted-foreground leading-relaxed max-w-3xl">
+            Диагностика зрения проводится с помощью современного офтальмологического оборудования. Она позволяет объективно оценить функции зрительной системы, выявить скрытые нарушения и подобрать оптимальную коррекцию. Ниже — перечень основных процедур и их клиническое значение.
+          </p>
+        </div>
+
+        <div class="space-y-16">
+          <!-- Procedure 1 -->
+          <div class="grid lg:grid-cols-[380px_1fr] gap-8 items-start">
+            <div class="aspect-[4/3] bg-accent rounded-2xl overflow-hidden">
+              <img
+                src="https://optika100.com/images/proverka-zreniya/konsultaciya_oftalmologa.jpg"
+                alt="Авторефрактометрия"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <h3 class="font-serif text-xl mb-3">Авторефрактометрия (объективное определение рефракции)</h3>
+              <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Измерение оптической силы глаза с помощью авторефрактометра.</p>
+              <div class="space-y-3">
+                <div class="text-sm font-medium">В рамках обследования выполняется:</div>
+                <ul class="space-y-2 text-sm text-muted-foreground">
+                  <li class="flex gap-3">
+                    <svg class="w-4 h-4 text-brand shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    Выявление близорукости (миопии), дальнозоркости (гиперметропии), астигматизма
+                  </li>
+                  <li class="flex gap-3">
+                    <svg class="w-4 h-4 text-brand shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    Определение степени рефракционных нарушений
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Procedure 2 -->
+          <div class="grid lg:grid-cols-[380px_1fr] gap-8 items-start">
+            <div class="aspect-[4/3] bg-accent rounded-2xl overflow-hidden">
+              <img
+                src="https://optika100.com/images/proverka-zreniya/podbor_linz.jpg"
+                alt="Биомикроскопия"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <h3 class="font-serif text-xl mb-3">Биомикроскопия переднего отрезка глаза (щелевая лампа)</h3>
+              <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Детальный осмотр структур глаза под микроскопом.</p>
+              <div class="space-y-3">
+                <div class="text-sm font-medium">В рамках обследования выполняется:</div>
+                <ul class="space-y-2 text-sm text-muted-foreground">
+                  <li class="flex gap-3">
+                    <svg class="w-4 h-4 text-brand shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    Оценка состояния век, конъюнктивы, роговицы, радужки, хрусталика
+                  </li>
+                  <li class="flex gap-3">
+                    <svg class="w-4 h-4 text-brand shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    Выявление воспалительных процессов, катаракты, дистрофических изменений
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Procedure 3 -->
+          <div class="grid lg:grid-cols-[380px_1fr] gap-8 items-start">
+            <div class="aspect-[4/3] bg-accent rounded-2xl overflow-hidden">
+              <img
+                src="https://optika100.com/images/proverka-zreniya/izmenenie_davleniya.jpg"
+                alt="Тонометрия"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <div>
+              <h3 class="font-serif text-xl mb-3">Тонометрия (измерение внутриглазного давления — ВГД)</h3>
+              <p class="text-sm text-muted-foreground mb-4 leading-relaxed">Бесконтактное измерение давления внутри глаза.</p>
+              <div class="space-y-3">
+                <div class="text-sm font-medium">В рамках обследования выполняется:</div>
+                <ul class="space-y-2 text-sm text-muted-foreground">
+                  <li class="flex gap-3">
+                    <svg class="w-4 h-4 text-brand shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    Скрининг глаукомы — заболевания, которое может привести к слепоте
+                  </li>
+                  <li class="flex gap-3">
+                    <svg class="w-4 h-4 text-brand shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    Контроль ВГД у пациентов с глаукомой или в группе риска
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONSULTATION -->
+    <section class="mx-auto max-w-7xl px-4 lg:px-8 py-16">
+      <h2 class="font-serif text-3xl mb-6">Консультация оптометриста или офтальмолога</h2>
+      <p class="text-muted-foreground leading-relaxed mb-8 max-w-4xl">
+        Комплексное обследование зрения включает не только объективные измерения на приборах, но и консультацию квалифицированного специалиста — оптометриста или врача-офтальмолога. Именно специалист интерпретирует полученные данные, учитывает жалобы пациента, анамнез, образ жизни и профессиональные особенности, чтобы поставить точный диагноз и дать индивидуальные рекомендации.
+      </p>
+
+      <div class="bg-cream border-l-4 border-brand p-6 rounded-sm max-w-4xl">
+        <h3 class="font-serif text-lg mb-3">Важно!</h3>
+        <p class="text-sm text-muted-foreground leading-relaxed">
+          Консультация врача — это не просто «выписать рецепт». Это анализ всей картины в целом: от оптических параметров глаза до состояния глазного дна и риска развития патологий. Ранее выявление глаукомы, начальной катаракты или дистрофии сетчатки может предотвратить потерю зрения в будущем.
+        </p>
+      </div>
+    </section>
+
+    <!-- MYOPIA CONTROL -->
+    <section class="bg-surface">
+      <div class="mx-auto max-w-7xl px-4 lg:px-8 py-16">
+        <div class="max-w-4xl">
+          <h2 class="font-serif text-3xl lg:text-4xl mb-4">Кабинет профилактики и лечения близорукости (миопии) у детей</h2>
+          <p class="text-muted-foreground leading-relaxed mb-6">
+            Детская близорукость — распространённая проблема: по статистике, каждый третий ребёнок школьного возраста имеет миопию. Чем раньше она появляется, тем быстрее прогрессирует, и к совершеннолетию может достичь высоких степеней (-6.0 D и более), увеличивая риск осложнений.
+          </p>
+
+          <div class="bg-cream border-l-4 border-brand p-6 rounded-sm">
+            <h3 class="font-serif text-lg mb-3">Помните!</h3>
+            <p class="text-sm text-muted-foreground leading-relaxed">
+              Раннее начало контроля миопии — ключ к сохранению здоровья глаз ребёнка на всю жизнь.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DRY EYE -->
+    <section class="mx-auto max-w-7xl px-4 lg:px-8 py-16">
+      <div class="max-w-4xl">
+        <h2 class="font-serif text-3xl lg:text-4xl mb-4">Диагностика и лечение синдрома «сухого глаза»</h2>
+        <p class="text-muted-foreground leading-relaxed">
+          Синдром «сухого глаза» (ССГ) — нарушение стабильности слёзной плёнки, вызывающее дискомфорт, покраснение, ощущение песка в глазах. Особенно актуально для пользователей компьютеров, носителей контактных линз, людей в возрасте 40+.
+        </p>
+      </div>
+    </section>
+
+    <!-- WHY CHOOSE US -->
+    <section class="bg-surface">
+      <div class="mx-auto max-w-7xl px-4 lg:px-8 py-16">
+        <h2 class="font-serif text-3xl lg:text-4xl mb-12 text-center">Почему стоит проводить диагностику зрения у нас?</h2>
+        <div class="grid md:grid-cols-2 gap-8 mb-12">
+          <div class="bg-white p-6 rounded-2xl">
+            <h3 class="font-serif text-lg mb-3">Современное оборудование</h3>
+            <p class="text-sm text-muted-foreground leading-relaxed">Авторефрактометр, щелевая лампа, бесконтактный тонометр, кератометр — всё в одном кабинете.</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl">
+            <h3 class="font-serif text-lg mb-3">Тонометрия и биометрия — только в СПб</h3>
+            <p class="text-sm text-muted-foreground leading-relaxed">Измерение внутриглазного давления и параметров глаза доступно только в нашем петербургском салоне.</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl">
+            <h3 class="font-serif text-lg mb-3">Комплексный подход</h3>
+            <p class="text-sm text-muted-foreground leading-relaxed">Диагностика + консультация + подбор коррекции за один визит — не нужно ходить по нескольким местам.</p>
+          </div>
+          <div class="bg-white p-6 rounded-2xl">
+            <h3 class="font-serif text-lg mb-3">Опытные специалисты</h3>
+            <p class="text-sm text-muted-foreground leading-relaxed">Наши оптометристы и офтальмологи регулярно проходят обучение и повышают квалификацию.</p>
+          </div>
+        </div>
+
+        <div class="text-center">
+          <a href="#booking" class="inline-flex items-center gap-2 bg-ink text-primary-foreground rounded-full px-8 py-3 text-sm hover:opacity-90 mb-4">
+            Записаться на диагностику
+          </a>
+          <div class="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>г. Санкт-Петербург, ул. Кирочная, 17 (м. Чернышевская)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

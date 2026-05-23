@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Секция «Наши салоны» · ОПТИКА 100%</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --background: oklch(0.985 0.004 80);
+      --foreground: oklch(0.18 0.01 250);
+      --surface: oklch(0.96 0.008 75);
+      --cream: oklch(0.965 0.015 85);
+      --card: oklch(1 0 0);
+      --ink: oklch(0.18 0.01 250);
+      --brand: oklch(0.55 0.18 28);
+      --brand-hover: oklch(0.50 0.18 28);
+      --brand-50: oklch(0.97 0.018 28);
+      --brand-100: oklch(0.94 0.038 28);
+      --brand-foreground: oklch(0.985 0.004 80);
+      --muted-foreground: oklch(0.5 0.015 250);
+      --border: oklch(0.9 0.008 80);
+      --accent: oklch(0.92 0.012 70);
+      --success: oklch(0.65 0.15 150);
+      --shadow-sm: 0 1px 2px oklch(0.22 0.02 60 / 0.05), 0 2px 6px oklch(0.22 0.02 60 / 0.04);
+      --shadow-md: 0 2px 4px oklch(0.22 0.02 60 / 0.045), 0 8px 20px oklch(0.22 0.02 60 / 0.06);
+      --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+      --duration-flow: 360ms;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-xs: 8px;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: var(--background);
+      color: var(--foreground);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+    }
+
+    .font-serif {
+      font-family: 'Fraunces', Georgia, serif;
+      letter-spacing: -0.01em;
+    }
+
+    /* ─── SECTION WRAPPER ─── */
+    .salons-section {
+      padding: 80px 32px 96px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    /* ─── SECTION HEADER ─── */
+    .salons-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 44px;
+      flex-wrap: wrap;
+    }
+
+    .salons-header-left {
+      max-width: 560px;
+    }
+
+    .salons-eyebrow {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--brand);
+      margin-bottom: 16px;
+      font-weight: 600;
+    }
+
+    .salons-title {
+      font-size: clamp(32px, 4.5vw, 48px);
+      font-weight: 400;
+      line-height: 1.1;
+      margin-bottom: 14px;
+    }
+
+    .salons-subtitle {
+      font-size: 16px;
+      color: var(--muted-foreground);
+      line-height: 1.6;
+    }
+
+    /* ─── CITY TABS ─── */
+    .city-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .city-tab {
+      padding: 10px 22px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all var(--duration-flow) var(--ease-editorial);
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--foreground);
+      font-family: inherit;
+    }
+    .city-tab:hover { background: var(--surface); }
+    .city-tab.active {
+      background: var(--foreground);
+      color: var(--background);
+      border-color: var(--foreground);
+    }
+
+    /* ─── CITY SECTION ANIMATION ─── */
+    .city-content {
+      display: none;
+      animation: fadeUp 0.45s var(--ease-editorial) both;
+    }
+    .city-content.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── SALON GRID ─── */
+    .salons-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    @media (max-width: 860px) {
+      .salons-layout { grid-template-columns: 1fr; }
+    }
+
+    /* ─── SALON CARD ─── */
+    .salon-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition:
+        box-shadow var(--duration-flow) var(--ease-editorial),
+        border-color var(--duration-flow) var(--ease-editorial);
+      display: flex;
+      flex-direction: column;
+    }
+    .salon-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: oklch(0.82 0.01 80);
+    }
+
+    /* Image area */
+    .salon-card-img {
+      aspect-ratio: 16 / 9;
+      background: var(--surface);
+      overflow: hidden;
+      position: relative;
+    }
+    .salon-card-img-placeholder {
+      width: 100%;
+      height: 100%;
+      background:
+        repeating-linear-gradient(
+          -45deg,
+          transparent,
+          transparent 8px,
+          oklch(0.935 0.008 80) 8px,
+          oklch(0.935 0.008 80) 9px
+        );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .salon-card-img-placeholder span {
+      font-size: 11px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: var(--muted-foreground);
+      background: var(--surface);
+      padding: 3px 10px;
+      border-radius: 4px;
+    }
+    .salon-card-img-placeholder svg {
+      color: var(--muted-foreground);
+      opacity: 0.5;
+    }
+
+    /* Status badge on image */
+    .salon-status {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .salon-status.open {
+      background: oklch(0.95 0.05 150 / 0.9);
+      color: oklch(0.3 0.1 150);
+    }
+    .salon-status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Card body */
+    .salon-card-body {
+      padding: 24px 24px 28px;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .salon-card-name {
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1.35;
+      margin-bottom: 6px;
+    }
+
+    .salon-card-address-note {
+      font-size: 13px;
+      color: var(--muted-foreground);
+      margin-bottom: 14px;
+      line-height: 1.45;
+    }
+
+    /* Info rows */
+    .salon-card-info {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .salon-info-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--muted-foreground);
+    }
+    .salon-info-row svg {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    /* Metro badge */
+    .metro-badge {
+      display: inline-flex;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: oklch(0.55 0.2 28);
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .metro-badge span {
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    /* Ratings row */
+    .salon-card-ratings {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 18px;
+      border-top: 1px solid var(--border);
+    }
+
+    .rating-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 12px;
+      border-radius: var(--radius-xs);
+      background: var(--surface);
+      font-size: 13px;
+      transition: background 0.2s;
+    }
+    .rating-badge:hover {
+      background: var(--accent);
+    }
+
+    .rating-badge-icon {
+      display: inline-flex;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .rating-badge-icon.yandex { background: oklch(0.55 0.2 28); }
+    .rating-badge-icon.twogis { background: oklch(0.55 0.16 150); }
+    .rating-badge-icon span {
+      color: white;
+      font-size: 8px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+    }
+    .rating-badge-icon svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .rating-score {
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    .rating-stars {
+      color: oklch(0.78 0.16 85);
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+    .rating-stars .empty { color: var(--border); }
+
+    .rating-source {
+      font-size: 11px;
+      color: var(--muted-foreground);
+    }
+
+    /* ─── MAP PLACEHOLDER ─── */
+    .map-row {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      height: 240px;
+      position: relative;
+      margin-bottom: 32px;
+      transition: box-shadow var(--duration-flow) var(--ease-editorial);
+    }
+    .map-row:hover {
+      box-shadow: var(--shadow-sm);
+    }
+    .map-placeholder-inner {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 8px;
+      color: var(--muted-foreground);
+    }
+    .map-placeholder-inner svg { opacity: 0.5; }
+    .map-placeholder-inner .map-label {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .map-placeholder-inner .map-hint {
+      font-size: 12px;
+      opacity: 0.6;
+    }
+
+    /* ─── CTA ROW ─── */
+    .salons-cta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .salons-cta-hint {
+      font-size: 15px;
+      color: var(--muted-foreground);
+      line-height: 1.6;
+    }
+    .salons-cta-hint strong {
+      color: var(--foreground);
+      font-weight: 600;
+    }
+
+    .salons-cta-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 26px;
+      background: var(--brand);
+      color: var(--brand-foreground);
+      border: none;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-brand:hover { background: var(--brand-hover); }
+    .btn-brand:active { transform: scale(0.97); }
+    .btn-brand svg { width: 18px; height: 18px; }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 26px;
+      background: none;
+      color: var(--foreground);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-outline:hover {
+      background: var(--surface);
+      border-color: oklch(0.82 0.01 80);
+    }
+    .btn-outline svg { width: 18px; height: 18px; }
+
+    /* ─── SINGLE SALON (SPB variant) ─── */
+    .salon-card-wide {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    @media (max-width: 860px) {
+      .salon-card-wide {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .salon-card-wide .salon-card-img {
+      aspect-ratio: auto;
+      min-height: 280px;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 640px) {
+      .salons-section { padding: 56px 20px 64px; }
+      .salons-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+      .salon-card-body { padding: 20px 20px 24px; }
+      .salon-card-name { font-size: 16px; }
+      .salons-cta-row { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════
+       HOMEPAGE SECTION: Наши салоны
+       ═══════════════════════════════════════════════ -->
+  <section class="salons-section">
+
+    <!-- Header -->
+    <div class="salons-header">
+      <div class="salons-header-left">
+        <p class="salons-eyebrow">ОПТИКА 100%</p>
+        <h2 class="salons-title font-serif">Наши салоны</h2>
+        <p class="salons-subtitle">Приходите на диагностику зрения и подбор очков в удобный для&nbsp;вас салон.</p>
+      </div>
+      <div class="city-tabs">
+        <button class="city-tab active" onclick="switchCity('spb', this)">Санкт-Петербург</button>
+        <button class="city-tab" onclick="switchCity('nk', this)">Новокузнецк</button>
+      </div>
+    </div>
+
+    <!-- ══════ Санкт-Петербург ══════ -->
+    <div id="city-spb" class="city-content active">
+
+      <!-- Map -->
+      <div class="map-row">
+        <div class="map-placeholder-inner">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span class="map-label">Яндекс Карта · Санкт-Петербург</span>
+          <span class="map-hint">Вставьте iframe Яндекс.Карт</span>
+        </div>
+      </div>
+
+      <!-- Salon card — SPB (wide single card) -->
+      <div class="salons-layout" style="grid-template-columns: 1fr;">
+        <div class="salon-card salon-card-wide">
+          <div class="salon-card-img">
+            <div class="salon-card-img-placeholder">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              <span>фото салона СПб</span>
+            </div>
+            <div class="salon-status open">
+              <div class="salon-status-dot"></div>
+              Открыто
+            </div>
+          </div>
+          <div class="salon-card-body">
+            <h3 class="salon-card-name">Салон оптики на ул. Кирочная, 17</h3>
+            <p class="salon-card-address-note">Центр города, рядом с метро Чернышевская</p>
+
+            <div class="salon-card-info">
+              <div class="salon-info-row">
+                <span class="metro-badge"><span>М</span></span>
+                <span style="color: var(--foreground); font-weight: 500;">Чернышевская</span>
+              </div>
+              <div class="salon-info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Ежедневно с 10:00 до 20:00</span>
+              </div>
+              <div class="salon-info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <span style="color: var(--foreground); font-weight: 500;">8-800-351-2185</span>
+              </div>
+            </div>
+
+            <div class="salon-card-ratings">
+              <div class="rating-badge">
+                <div class="rating-badge-icon yandex">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" fill="white"/><circle cx="12" cy="10" r="3" fill="oklch(0.55 0.2 28)"/></svg>
+                </div>
+                <span class="rating-score">5.0</span>
+                <span class="rating-stars">★★★★★</span>
+                <span class="rating-source">Яндекс</span>
+              </div>
+              <div class="rating-badge">
+                <div class="rating-badge-icon twogis">
+                  <span>2G</span>
+                </div>
+                <span class="rating-score">5.0</span>
+                <span class="rating-stars">★★★★★</span>
+                <span class="rating-source">2ГИС</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════ Новокузнецк ══════ -->
+    <div id="city-nk" class="city-content">
+
+      <!-- Map -->
+      <div class="map-row">
+        <div class="map-placeholder-inner">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span class="map-label">Яндекс Карта · Новокузнецк</span>
+          <span class="map-hint">Вставьте iframe Яндекс.Карт</span>
+        </div>
+      </div>
+
+      <!-- Salon cards — Novokuznetsk (2-column grid) -->
+      <div class="salons-layout">
+
+        <!-- Salon 1 -->
+        <div class="salon-card">
+          <div class="salon-card-img">
+            <div class="salon-card-img-placeholder">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              <span>фото · ул. Тореза</span>
+            </div>
+            <div class="salon-status open">
+              <div class="salon-status-dot"></div>
+              Открыто
+            </div>
+          </div>
+          <div class="salon-card-body">
+            <h3 class="salon-card-name">ул. Тореза, 32</h3>
+            <p class="salon-card-address-note">Заводской район · ост. Рынок</p>
+
+            <div class="salon-card-info">
+              <div class="salon-info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Ежедневно с 9:30 до 19:30</span>
+              </div>
+            </div>
+
+            <div class="salon-card-ratings">
+              <div class="rating-badge">
+                <div class="rating-badge-icon yandex">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" fill="white"/><circle cx="12" cy="10" r="3" fill="oklch(0.55 0.2 28)"/></svg>
+                </div>
+                <span class="rating-score">5.0</span>
+                <span class="rating-stars">★★★★★</span>
+              </div>
+              <div class="rating-badge">
+                <div class="rating-badge-icon twogis">
+                  <span>2G</span>
+                </div>
+                <span class="rating-score">4.8</span>
+                <span class="rating-stars">★★★★<span class="empty">★</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Salon 2 -->
+        <div class="salon-card">
+          <div class="salon-card-img">
+            <div class="salon-card-img-placeholder">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              <span>фото · пр. Шахтёров</span>
+            </div>
+            <div class="salon-status open">
+              <div class="salon-status-dot"></div>
+              Открыто
+            </div>
+          </div>
+          <div class="salon-card-body">
+            <h3 class="salon-card-name">пр. Шахтёров, 12</h3>
+            <p class="salon-card-address-note">Новобайдаевский район</p>
+
+            <div class="salon-card-info">
+              <div class="salon-info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Ежедневно с 9:30 до 19:00</span>
+              </div>
+            </div>
+
+            <div class="salon-card-ratings">
+              <div class="rating-badge">
+                <div class="rating-badge-icon yandex">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" fill="white"/><circle cx="12" cy="10" r="3" fill="oklch(0.55 0.2 28)"/></svg>
+                </div>
+                <span class="rating-score">5.0</span>
+                <span class="rating-stars">★★★★★</span>
+              </div>
+              <div class="rating-badge">
+                <div class="rating-badge-icon twogis">
+                  <span>2G</span>
+                </div>
+                <span class="rating-score">5.0</span>
+                <span class="rating-stars">★★★★★</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Salon 3 -->
+        <div class="salon-card">
+          <div class="salon-card-img">
+            <div class="salon-card-img-placeholder">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              <span>фото · пр. Бардина</span>
+            </div>
+            <div class="salon-status open">
+              <div class="salon-status-dot"></div>
+              Открыто
+            </div>
+          </div>
+          <div class="salon-card-body">
+            <h3 class="salon-card-name">пр. Бардина, 42</h3>
+            <p class="salon-card-address-note">Центральный район · Дом Быта, отдельный вход с левого торца</p>
+
+            <div class="salon-card-info">
+              <div class="salon-info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Ежедневно с 9:30 до 19:30</span>
+              </div>
+            </div>
+
+            <div class="salon-card-ratings">
+              <div class="rating-badge">
+                <div class="rating-badge-icon yandex">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" fill="white"/><circle cx="12" cy="10" r="3" fill="oklch(0.55 0.2 28)"/></svg>
+                </div>
+                <span class="rating-score">5.0</span>
+                <span class="rating-stars">★★★★★</span>
+              </div>
+              <div class="rating-badge">
+                <div class="rating-badge-icon twogis">
+                  <span>2G</span>
+                </div>
+                <span class="rating-score">4.8</span>
+                <span class="rating-stars">★★★★<span class="empty">★</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Salon 4 -->
+        <div class="salon-card">
+          <div class="salon-card-img">
+            <div class="salon-card-img-placeholder">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              <span>фото · пр. Запсибовцев</span>
+            </div>
+            <div class="salon-status open">
+              <div class="salon-status-dot"></div>
+              Открыто
+            </div>
+          </div>
+          <div class="salon-card-body">
+            <h3 class="salon-card-name">пр. Запсибовцев, 37</h3>
+            <p class="salon-card-address-note">Новоильинский район · ост. Роддом</p>
+
+            <div class="salon-card-info">
+              <div class="salon-info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>Ежедневно с 9:30 до 19:30</span>
+              </div>
+            </div>
+
+            <div class="salon-card-ratings">
+              <div class="rating-badge">
+                <div class="rating-badge-icon yandex">
+                  <svg viewBox="0 0 24 24" fill="none"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" fill="white"/><circle cx="12" cy="10" r="3" fill="oklch(0.55 0.2 28)"/></svg>
+                </div>
+                <span class="rating-score">5.0</span>
+                <span class="rating-stars">★★★★★</span>
+              </div>
+              <div class="rating-badge">
+                <div class="rating-badge-icon twogis">
+                  <span>2G</span>
+                </div>
+                <span class="rating-score">4.8</span>
+                <span class="rating-stars">★★★★<span class="empty">★</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- CTA row -->
+    <div class="salons-cta-row">
+      <p class="salons-cta-hint"><strong>5 салонов</strong> в 2 городах · Диагностика зрения бесплатно при заказе очков</p>
+      <div class="salons-cta-buttons">
+        <a href="tel:88003512185" class="btn-brand">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Позвонить
+        </a>
+        <a href="#" class="btn-outline">
+          Все контакты
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+
+  </section>
+
+  <script>
+    function switchCity(cityId, btn) {
+      document.querySelectorAll('.city-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+
+      document.querySelectorAll('.city-content').forEach(s => {
+        s.classList.remove('active');
+        s.style.animation = 'none';
+      });
+
+      const target = document.getElementById('city-' + cityId);
+      requestAnimationFrame(() => {
+        target.style.animation = '';
+        target.classList.add('active');
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+/* ──────────────────────────────────────────────────────────
+   Optika100 Design System — Colors & Type Tokens
+   Generated from uploads/colors.json + typography.json + spacing.json
+
+   Two themes:
+     [data-theme="dark"]   — editorial dark-mode commerce (DEFAULT — matches uploaded tokens)
+     [data-theme="light"]  — Warby-Parker-faithful light editorial
+
+   Activate by setting data-theme on <html> or <body>:
+     <html data-theme="light">   or   document.documentElement.dataset.theme = 'dark'
+
+   The TOGGLE is the design opinion: Optika100 launches dark, but the
+   light theme exists as an opt-in for daytime reading and accessibility.
+   ────────────────────────────────────────────────────────── */
+
+/* ── 1. Webfonts ───────────────────────────────────────────
+   The uploaded design system specifies two custom fonts:
+     - fontAbcSocial  → headings + UI (sans, geometric)
+     - fontIvoryLl    → body + caption (humanist serif/grotesque)
+   We don't have the original .woff2 files, so we substitute with
+   the closest free-licensable equivalents on Google Fonts.
+   FLAG: replace these once original ttfs are supplied.
+   ──────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+@font-face {
+  font-family: 'AvantGarde';
+  src: url('fonts/AvantGarde.woff2') format('woff2'),
+       url('fonts/AvantGarde.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── 2. Default theme = dark (preserves backward compat for any
+       artifact that didn't set data-theme) ─────────────────── */
+:root,
+[data-theme="dark"] {
+  /* Surface */
+  --o100-bg:            #121212;
+  --o100-surface:       #071a24;
+  --o100-surface-2:     #0d2230;   /* nested surface (modal-on-surface) */
+
+  /* Foreground */
+  --o100-fg:            #ffffff;
+  --o100-fg-soft:       #c1c6c8;
+  --o100-fg-muted:      #3a434c;
+
+  /* Brand accent */
+  --o100-info:          #1050d0;
+  --o100-info-deep:     #072369;
+  --o100-info-soft:     rgba(16, 80, 208, 0.18);  /* focus ring */
+
+  /* Chrome (inverted action surface) */
+  --o100-chrome:        #ffffff;     /* primary button BG on dark */
+  --o100-chrome-fg:     #121212;     /* primary button TEXT on dark */
+  --o100-chrome-hover:  #e1e5e6;
+
+  /* Lines */
+  --o100-line:          #1f2a32;
+  --o100-line-strong:   #2c3a45;
+
+  /* Status */
+  --o100-success:       #2eb872;
+  --o100-warning:       #e0a13a;
+  --o100-danger:        #e0533a;
+
+  /* Overlays */
+  --o100-overlay:       rgba(0, 0, 0, 0.40);
+  --o100-overlay-bg:    rgba(18, 18, 18, 0.80);
+
+  /* Elevation */
+  --o100-shadow-flat:     0 0 0 0 rgba(0,0,0,0);
+  --o100-shadow-raised:   0 0 0 2px rgba(255,255,255,0.04), 0 0 0 3px rgba(65,75,86,0.18);
+  --o100-shadow-floating: 0 4px 12px rgba(0,0,0,0.30), 0 1px 4px rgba(0,0,0,0.18);
+
+  /* Photo plate (where product imagery sits) */
+  --o100-photo-bg:      #ffffff;
+}
+
+/* ── 3. Light theme — Warby-Parker-faithful ────────────────
+   White page, near-black type, blue accent retained. Subtle
+   warm-grey card surfaces. Hairlines are dark on light.
+   ──────────────────────────────────────────────────────── */
+[data-theme="light"] {
+  --o100-bg:            #ffffff;
+  --o100-surface:       #f7f6f3;     /* warm off-white card */
+  --o100-surface-2:     #efede7;
+
+  --o100-fg:            #121212;
+  --o100-fg-soft:       #3a434c;
+  --o100-fg-muted:      #6b7480;
+
+  --o100-info:          #1050d0;
+  --o100-info-deep:     #072369;
+  --o100-info-soft:     rgba(16, 80, 208, 0.12);
+
+  /* Chrome inverts: primary button is now near-black on light */
+  --o100-chrome:        #121212;
+  --o100-chrome-fg:     #ffffff;
+  --o100-chrome-hover:  #2c3a45;
+
+  --o100-line:          #e6e4de;
+  --o100-line-strong:   #c8c5bc;
+
+  --o100-success:       #1f8f50;
+  --o100-warning:       #b67708;
+  --o100-danger:        #c2392c;
+
+  --o100-overlay:       rgba(18, 18, 18, 0.40);
+  --o100-overlay-bg:    rgba(255, 255, 255, 0.86);
+
+  --o100-shadow-flat:     0 0 0 0 rgba(0,0,0,0);
+  --o100-shadow-raised:   0 1px 0 rgba(18,18,18,0.04), 0 0 0 1px rgba(18,18,18,0.06);
+  --o100-shadow-floating: 0 4px 12px rgba(18,18,18,0.10), 0 1px 4px rgba(18,18,18,0.06);
+
+  --o100-photo-bg:      #f7f6f3;
+}
+
+/* ── 4. Tokens that don't change between themes ────────── */
+:root {
+  --o100-font-display:  'DM Sans', 'AvantGarde', 'Helvetica Neue', Arial, sans-serif;
+  --o100-font-body:     'Cormorant Garamond', 'Iowan Old Style', Georgia, serif;
+  --o100-font-mono:     'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+
+  --o100-fs-h1:         48px;
+  --o100-fs-h2:         32px;
+  --o100-fs-h3:         24px;
+  --o100-fs-body:       16px;
+  --o100-fs-caption:    12px;
+  --o100-fs-eyebrow:    11px;
+
+  --o100-fw-regular:    400;
+  --o100-fw-medium:     500;
+  --o100-fw-semi:       600;
+  --o100-fw-bold:       700;
+
+  --o100-lh-heading:    1.2;
+  --o100-lh-body:       1.5;
+  --o100-lh-loose:      1.7;
+
+  --o100-tracking-tight: -0.01em;
+  --o100-tracking-wide:  0.08em;
+
+  --o100-space-1:   4px;
+  --o100-space-2:   8px;
+  --o100-space-3:   10px;
+  --o100-space-4:   12px;
+  --o100-space-5:   16px;
+  --o100-space-6:   18px;
+  --o100-space-7:   20px;
+  --o100-space-8:   24px;
+  --o100-space-9:   48px;
+  --o100-space-10:  170px;
+
+  --o100-r-sm:      4px;
+  --o100-r-md:      16px;
+  --o100-r-lg:      20px;
+  --o100-r-pill:    36px;
+  --o100-r-full:    100px;
+
+  --o100-ease:          cubic-bezier(.2,.7,.2,1);
+  --o100-dur-fast:      120ms;
+  --o100-dur-normal:    220ms;
+  --o100-dur-slow:      400ms;
+
+  --o100-container:     1280px;
+  --o100-content:       760px;
+  --o100-header-h:      72px;
+}
+
+/* Theme transition — smooth swap */
+html, body, * {
+  transition: background-color var(--o100-dur-normal) var(--o100-ease),
+              color var(--o100-dur-normal) var(--o100-ease),
+              border-color var(--o100-dur-normal) var(--o100-ease);
+}
+
+/* ── 5. Semantic role styles ─────────────────────────────── */
+.o100-h1 { font-family: var(--o100-font-display); font-size: var(--o100-fs-h1); font-weight: var(--o100-fw-bold); line-height: var(--o100-lh-heading); letter-spacing: var(--o100-tracking-tight); color: var(--o100-fg); margin: 0; }
+.o100-h2 { font-family: var(--o100-font-display); font-size: var(--o100-fs-h2); font-weight: var(--o100-fw-semi);  line-height: var(--o100-lh-heading); letter-spacing: var(--o100-tracking-tight); color: var(--o100-fg); margin: 0; }
+.o100-h3 { font-family: var(--o100-font-display); font-size: var(--o100-fs-h3); font-weight: var(--o100-fw-semi);  line-height: var(--o100-lh-heading); color: var(--o100-fg); margin: 0; }
+.o100-body    { font-family: var(--o100-font-body);    font-size: var(--o100-fs-body);    line-height: var(--o100-lh-body);  color: var(--o100-fg-soft); }
+.o100-caption { font-family: var(--o100-font-body);    font-size: var(--o100-fs-caption); line-height: var(--o100-lh-body);  color: var(--o100-fg-muted); }
+.o100-eyebrow { font-family: var(--o100-font-display); font-size: var(--o100-fs-eyebrow); font-weight: var(--o100-fw-semi); line-height: 1; letter-spacing: var(--o100-tracking-wide); text-transform: uppercase; color: var(--o100-fg-muted); }
