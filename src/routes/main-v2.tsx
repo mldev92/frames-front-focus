@@ -134,7 +134,7 @@ const CAT_CELLS = [
     slug: "opravy-muzhskie",
     title: "Мужские оправы",
     subtitle: "Более 1200 моделей",
-    image: "/new_categories_3.png",
+    image: "/new_categories_4.png",
     href: catalogHref("opravy"),
     titlePos: "bottom" as const,
   },
@@ -142,7 +142,7 @@ const CAT_CELLS = [
     slug: "detskie-ochki",
     title: "Детские очки",
     subtitle: "Для заботы о будущем",
-    image: "/new_categories_4.png",
+    image: "/new_categories_3.png",
     href: catalogHref("opravy"),
     titlePos: "bottom" as const,
   },
@@ -424,10 +424,10 @@ function MainV2Page() {
               <CategoryTile cell={CAT_CELLS[1]} />
             </Reveal>
             <Reveal delay={160} className="o100-cat-area-men">
-              <CategoryTile cell={CAT_CELLS[3]} />
+              <CategoryTile cell={CAT_CELLS[2]} />
             </Reveal>
             <Reveal delay={240} className="o100-cat-area-kids">
-              <CategoryTile cell={CAT_CELLS[2]} />
+              <CategoryTile cell={CAT_CELLS[3]} />
             </Reveal>
           </div>
 
