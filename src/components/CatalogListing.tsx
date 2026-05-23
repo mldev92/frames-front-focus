@@ -177,14 +177,23 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
     <div className="text-sm">
       {/* Header */}
       <div className="flex items-center justify-between pb-4">
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground font-semibold">
+        <span className="font-serif text-[13px] font-normal tracking-normal text-foreground/70">
           Фильтры
         </span>
         <button
           onClick={clearAll}
-          className="text-[11px] font-mono uppercase tracking-[0.08em] text-muted-foreground hover:text-foreground transition-colors"
+          className="group/reset relative text-[11.5px] font-sans font-medium text-muted-foreground hover:text-foreground transition-colors"
+          style={{ letterSpacing: '0.04em' }}
         >
-          Сбросить
+          <span>Сбросить</span>
+          <span
+            className="absolute left-0 bottom-0 h-px bg-current max-w-0 group-hover/reset:max-w-full transition-all"
+            style={{
+              transitionDuration: 'var(--duration-snap)',
+              transitionTimingFunction: 'var(--ease-editorial)',
+              width: '100%',
+            }}
+          />
         </button>
       </div>
 
@@ -196,7 +205,9 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Поиск..."
-          className="w-full bg-background border border-border rounded-full pl-9 pr-3 py-2 text-sm outline-none focus:border-ink/50 transition-colors"
+          className="w-full bg-background border border-border rounded-full pl-9 pr-3 py-2 text-sm outline-none focus:border-ink/50 transition-all"
+          onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 3px oklch(0.18 0.01 250 / 0.08)'; }}
+          onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
         />
       </div>
 
@@ -229,11 +240,12 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   type="button"
                   onClick={() => toggle("shape", s.key)}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-2.5 rounded-xl border px-2 py-5 text-center transition-all duration-150 hover:border-ink",
+                    "flex flex-col items-center justify-center gap-2.5 rounded-xl border px-2 py-5 text-center transition-all hover:border-ink hover:-translate-y-0.5 hover:shadow-sm",
                     checked
-                      ? "border-ink bg-cream"
+                      ? "border-ink bg-cream shadow-xs"
                       : "border-border bg-card",
                   )}
+                  style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
                 >
                   {s.img
                     ? <img src={s.img} alt={s.label} style={{ width: "100%", height: 36, objectFit: "contain" }} />
@@ -312,8 +324,19 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                         ? c.hex
                         : undefined,
                   backgroundSize: c.hex === "transparent" ? "8px 8px" : undefined,
+                  transform: sel ? 'scale(1.05)' : undefined,
+                  transitionDuration: 'var(--duration-snap)',
+                  transitionTimingFunction: 'var(--ease-editorial)',
                 }}
-              />
+              >
+                {sel && (
+                  <Check
+                    className="absolute inset-0 m-auto h-3 w-3"
+                    strokeWidth={3}
+                    style={{ color: ['transparent', '#f5f5f0', '#f5f0e8', '#ffd700', '#fce4ec', '#fff'].includes(c.hex) ? '#1a1a1a' : '#f5f5f0' }}
+                  />
+                )}
+              </button>
             );
           })}
         </div>
@@ -328,7 +351,8 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
               return (
                 <label
                   key={m}
-                  className="flex items-center gap-2.5 cursor-pointer group py-0.5"
+                  className="flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors"
+                  style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px' }}
                 >
                   <span
                     className={cn(
@@ -363,7 +387,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           ] as const).map(([val, label, count]) => {
             const checked = availability === val;
             return (
-              <label key={val} className="flex items-center gap-2.5 cursor-pointer group py-0.5">
+              <label key={val} className="flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors" style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px' }}>
                 <span
                   className={cn(
                     "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
@@ -399,11 +423,12 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   type="button"
                   onClick={() => toggle("gender", g)}
                   className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition",
+                    "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition-all",
                     checked
                       ? "border-ink bg-ink text-primary-foreground"
-                      : "border-border bg-card hover:border-foreground/50",
+                      : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
                   )}
+                  style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
                 >
                   <span className="first-letter:uppercase">{g.toLowerCase()}</span>
                   <span className={cn("text-[10px]", checked ? "opacity-80" : "text-muted-foreground")}>
@@ -427,11 +452,12 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                 type="button"
                 onClick={() => setStyleTag(s)}
                 className={cn(
-                  "inline-flex items-center rounded-full border px-3.5 py-1.5 text-xs transition",
+                  "inline-flex items-center rounded-full border px-3.5 py-1.5 text-xs transition-all",
                   checked
                     ? "border-brand bg-brand text-brand-foreground"
-                    : "border-border bg-card hover:border-foreground/50",
+                    : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
                 )}
+                style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
               >
                 {s}
               </button>
@@ -449,7 +475,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
               .map(([b, c]) => {
                 const checked = active.brand?.has(b) ?? false;
                 return (
-                  <label key={b} className="flex items-center gap-2.5 cursor-pointer group py-0.5">
+                  <label key={b} className="flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors" style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px' }}>
                     <span
                       className={cn(
                         "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
@@ -478,7 +504,8 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         <button
           type="button"
           onClick={() => setMobileFilters(false)}
-          className="w-full bg-ink text-primary-foreground rounded-full py-3 text-sm font-medium hover:opacity-90 transition-opacity"
+          className="w-full bg-ink text-primary-foreground rounded-full py-3 text-sm font-medium hover:-translate-y-0.5 hover:shadow-md transition-all"
+          style={{ transitionDuration: 'var(--duration-snap)' }}
         >
           Применить фильтры ({filtered.length})
         </button>
@@ -512,9 +539,19 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
               <>
                 <button
                   onClick={() => setSidebarOpen((v) => !v)}
-                  className="hidden lg:flex items-center gap-1.5 text-sm font-medium hover:text-brand transition-colors shrink-0"
+                  className="group/toggle hidden lg:flex items-center gap-1.5 text-sm font-medium hover:text-brand transition-colors shrink-0"
                 >
-                  {sidebarOpen ? "← Скрыть фильтры" : "Показать фильтры →"}
+                  {sidebarOpen ? (
+                    <>
+                      <span className="inline-block transition-transform" style={{ transitionDuration: 'var(--duration-snap)' }}>←</span>
+                      <span>Скрыть фильтры</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Показать фильтры</span>
+                      <span className="inline-block transition-transform" style={{ transitionDuration: 'var(--duration-snap)' }}>→</span>
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={() => setMobileFilters(true)}
@@ -592,7 +629,8 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                 <button
                   key={facet + value}
                   onClick={() => toggle(facet, value)}
-                  className="inline-flex items-center gap-1 bg-cream border border-ink/20 text-xs px-3 py-1 rounded-full hover:border-ink transition-colors"
+                  className="inline-flex items-center gap-1 bg-cream border border-ink/20 text-xs px-3 py-1 rounded-full hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all"
+                  style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
                 >
                   {value} <X className="h-3 w-3" />
                 </button>
@@ -631,12 +669,13 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
             </div>
             {FilterContent}
             <div className="sticky bottom-0 bg-background pt-4 flex gap-3">
-              <button onClick={clearAll} className="flex-1 border border-border py-3 rounded-full text-sm">
+              <button onClick={clearAll} className="flex-1 border border-border py-3 rounded-full text-sm hover:border-ink hover:bg-surface transition-all" style={{ transitionDuration: 'var(--duration-snap)' }}>
                 Сбросить
               </button>
               <button
                 onClick={() => setMobileFilters(false)}
-                className="flex-1 bg-ink text-primary-foreground py-3 rounded-full text-sm"
+                className="flex-1 bg-ink text-primary-foreground py-3 rounded-full text-sm hover:-translate-y-0.5 hover:shadow-md transition-all"
+                style={{ transitionDuration: 'var(--duration-snap)' }}
               >
                 Показать ({filtered.length})
               </button>
@@ -683,19 +722,23 @@ function FilterSection({
           titleClass,
         )}
       >
-        <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <span className="font-serif text-[13px] font-normal tracking-normal text-foreground/70">
           {title}
         </span>
         <ChevronDown
-          className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 shrink-0", open && "rotate-180")}
+          className={cn("h-4 w-4 text-foreground/40 group-hover:text-foreground/70 transition-transform duration-200 shrink-0", open && "rotate-180")}
         />
       </button>
       <div
         ref={bodyRef}
         className={cn(
-          "transition-all duration-300",
+          "transition-all",
           open ? "max-h-[2000px] mt-4 opacity-100 overflow-visible" : "max-h-0 opacity-0 overflow-hidden",
         )}
+        style={{
+          transitionTimingFunction: open ? 'var(--ease-editorial)' : 'var(--ease-standard)',
+          transitionDuration: open ? 'var(--duration-flow)' : 'var(--duration-snap)',
+        }}
       >
         {children}
       </div>
