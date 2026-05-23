@@ -146,7 +146,7 @@ const paymentBadges = (
   </div>
 );
 
-function MapPlaceholder({ city }: { city: string }) {
+function MapPlaceholder({ city, imageSrc }: { city: string; imageSrc?: string }) {
   return (
     <div style={{
       height: 340,
@@ -157,20 +157,28 @@ function MapPlaceholder({ city }: { city: string }) {
       marginBottom: 40,
       position: "relative",
     }}>
-      <div style={{
-        position: "absolute",
-        inset: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column",
-        gap: 8,
-        color: "var(--muted-foreground)",
-      }}>
-        <MapPinIcon size={40} />
-        <span style={{ fontSize: 14 }}>Яндекс Карта · {city}</span>
-        <span style={{ fontSize: 12, opacity: 0.6 }}>Вставьте iframe Яндекс.Карт</span>
-      </div>
+      {imageSrc ? (
+        <img
+          src={imageSrc}
+          alt={`Карта · ${city}`}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+      ) : (
+        <div style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column",
+          gap: 8,
+          color: "var(--muted-foreground)",
+        }}>
+          <MapPinIcon size={40} />
+          <span style={{ fontSize: 14 }}>Яндекс Карта · {city}</span>
+          <span style={{ fontSize: 12, opacity: 0.6 }}>Вставьте iframe Яндекс.Карт</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -360,7 +368,7 @@ function ContactsPage() {
         {/* SPB */}
         {city === "spb" && (
           <div>
-            <MapPlaceholder city="Санкт-Петербург" />
+            <MapPlaceholder city="Санкт-Петербург" imageSrc="/map_template.png" />
             <SalonCard
               address="Салон оптики в Санкт-Петербурге, ул. Кирочная, 17"
               metro="Чернышевская"
