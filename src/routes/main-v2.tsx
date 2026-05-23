@@ -352,16 +352,7 @@ function MainV2Page() {
             </div>
           </Reveal>
         </div>
-        {/* Divider under the strip */}
-        <div
-          aria-hidden
-          className="mx-auto max-w-7xl"
-          style={{
-            height: 1,
-            background: "var(--border)",
-            opacity: 0.6,
-          }}
-        />
+
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
