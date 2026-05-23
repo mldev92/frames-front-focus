@@ -1,7 +1,5 @@
 import type { Category } from "./types";
 
-const img = (name: string) => `/category_${name}_v3.png`;
-
 export interface CategoryInfo {
   slug: Category;
   title: string;
@@ -35,34 +33,34 @@ export const categories: CategoryInfo[] = [
     title: "Оправы",
     short: "Современные модели для повседневной носки",
     href: catalogHref("opravy"),
-    image: img("frames"),
+    image: "/categ_frames_v4.png",
   },
   {
     slug: "solntsezashchitnye",
     title: "Солнцезащитные очки",
     short: "Защита от UV и стиль на каждый день",
     href: catalogHref("solntsezashchitnye"),
-    image: img("sunglasses"),
+    image: "/categ_sunglasses_v4.png",
   },
   {
     slug: "kontaktnye-linzy",
     title: "Контактные линзы",
     short: "Однодневные, месячные, торические",
     href: catalogHref("kontaktnye-linzy"),
-    image: img("cont_lenses"),
+    image: "/categ_contact_lens_v4.png",
   },
   {
     slug: "linzy-dlya-ochkov",
     title: "Линзы для очков",
     short: "ZEISS, Essilor, Hoya и другие",
     href: catalogHref("linzy-dlya-ochkov"),
-    image: img("eyeglass_lenses"),
+    image: "/categ_glasses_lens_v4.png",
   },
   {
     slug: "aksessuary",
     title: "Аксессуары",
     short: "Футляры, цепочки, средства ухода",
     href: catalogHref("aksessuary"),
-    image: img("accessories"),
+    image: "/category_accessories_v3.png",
   },
 ];
