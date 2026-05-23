@@ -255,6 +255,9 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
     setTryOn(false);
     setAvailability("all");
     setSearchQuery("");
+    setDiscount(0);
+    setRanges({});
+    setExtraChecks({});
   };
 
   const activeChips: { facet: string; value: string }[] = [];
