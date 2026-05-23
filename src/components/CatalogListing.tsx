@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, memo, useRef, useEffect } from "react";
+import { useMemo, useState, useCallback, memo } from "react";
 import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
@@ -153,7 +153,9 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
     return list;
   }, [products, active, sort, price, tryOn, selectedColors, sizeWidth, sizeTemple, availability, searchQuery]);
 
-  const toggle = (facet: string, value: string) => {
+  const hasFacet = (k: FacetKey) => facets.includes(k);
+
+  const toggleFilter = useCallback((facet: string, value: string) => {
     setActive((prev) => {
       const next = { ...prev };
       const set = new Set(next[facet] ?? []);
@@ -162,7 +164,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       next[facet] = set;
       return next;
     });
-  };
+  }, []);
 
   const clearAll = () => {
     setActive({});
@@ -178,9 +180,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
     for (const v of set) activeChips.push({ facet: k, value: v });
   }
 
-  const hasFacet = (k: FacetKey) => facets.includes(k);
-
-  const FilterContent = (
+  const FilterContent = useMemo(() => (
     <div className="text-sm">
       {/* Header */}
       <div className="flex items-center justify-between pb-4">
@@ -245,7 +245,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                 <button
                   key={s.key}
                   type="button"
-                  onClick={() => toggle("shape", s.key)}
+                  onClick={() => toggleFilter("shape", s.key)}
                   className={cn(
                     "flex flex-col items-center justify-center gap-2.5 rounded-xl border px-2 py-5 text-center transition-all hover:border-ink hover:-translate-y-0.5 hover:shadow-sm",
                     checked
@@ -372,7 +372,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                   <input
                     type="checkbox"
                     checked={checked}
-                    onChange={() => toggle("material", m)}
+                    onChange={() => toggleFilter("material", m)}
                     className="sr-only"
                   />
                   <span className="flex-1 text-sm first-letter:uppercase">{m.toLowerCase()}</span>
@@ -428,7 +428,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                 <button
                   key={g}
                   type="button"
-                  onClick={() => toggle("gender", g)}
+                  onClick={() => toggleFilter("gender", g)}
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition-all",
                     checked
@@ -494,7 +494,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
                     <input
                       type="checkbox"
                       checked={checked}
-                      onChange={() => toggle("brand", b)}
+                      onChange={() => toggleFilter("brand", b)}
                       className="sr-only"
                     />
                     <span className="flex-1 text-sm">{b}</span>
@@ -505,20 +505,8 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           </div>
         </FilterSection>
       )}
-
-      {/* Apply button */}
-      <div className="sticky bottom-0 -mx-3 mt-4 bg-gradient-to-t from-background via-background to-transparent px-3 pb-2 pt-4">
-        <button
-          type="button"
-          onClick={() => setMobileFilters(false)}
-          className="w-full bg-ink text-primary-foreground rounded-full py-3 text-sm font-medium hover:-translate-y-0.5 hover:shadow-md transition-all"
-          style={{ transitionDuration: 'var(--duration-snap)' }}
-        >
-          Применить фильтры ({filtered.length})
-        </button>
-      </div>
     </div>
-  );
+  ), [active, facetCounts, sort, price, selectedColors, availability, styleTag, searchQuery, hasFacet, SHAPE_DEFS, STYLE_TAGS, products.length, toggleFilter, clearAll, setSort, setPrice, setSearchQuery, setAvailability, setStyleTag, setSelectedColors]);
 
   return (
     <div className="w-full py-10" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
@@ -635,7 +623,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
               {activeChips.map(({ facet, value }) => (
                 <button
                   key={facet + value}
-                  onClick={() => toggle(facet, value)}
+                  onClick={() => toggleFilter(facet, value)}
                   className="inline-flex items-center gap-1 bg-cream border border-ink/20 text-xs px-3 py-1 rounded-full hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all"
                   style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
                 >
@@ -714,9 +702,6 @@ const FilterSection = memo(function FilterSection({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const prevOpen = useRef(defaultOpen);
-  const animating = prevOpen.current !== open;
-  useEffect(() => { prevOpen.current = open; }, [open]);
 
   return (
     <div style={{ paddingTop: '20px', paddingBottom: '20px', borderTop: '1px solid var(--color-border)' }}>
@@ -734,15 +719,11 @@ const FilterSection = memo(function FilterSection({
       </button>
       <div
         style={{
-          display: 'grid',
-          gridTemplateRows: open ? '1fr' : '0fr',
-          transition: animating ? 'grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
+          display: open ? 'block' : 'none',
         }}
       >
-        <div style={{ overflow: 'hidden', minHeight: 0 }}>
-          <div style={{ paddingTop: '16px' }}>
-            {children}
-          </div>
+        <div style={{ paddingTop: '16px' }}>
+          {children}
         </div>
       </div>
     </div>
