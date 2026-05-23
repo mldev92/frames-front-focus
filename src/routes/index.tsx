@@ -164,7 +164,7 @@ function HomePage() {
             <Reveal key={c.slug} delay={i * 80}>
               <a
                 href={c.href}
-                className="group relative aspect-[3/4] rounded-2xl overflow-hidden block bg-cream"
+                className="group relative aspect-[3/4] rounded-2xl overflow-hidden block bg-cream hover:shadow-md hover:-translate-y-1 transition-all duration-300"
               >
                 <img
                   src={c.image}
