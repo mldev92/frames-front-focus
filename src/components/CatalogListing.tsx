@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
@@ -704,8 +704,6 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
 function FilterSection({
   title,
-  titleClass,
-  noBorder,
   defaultOpen = true,
   children,
 }: {
@@ -716,26 +714,13 @@ function FilterSection({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
-  const bodyRef = useRef<HTMLDivElement>(null);
-  const isFirst = useRef(true);
-
-  useEffect(() => {
-    if (isFirst.current) { isFirst.current = false; return; }
-    if (open && bodyRef.current) {
-      const t = setTimeout(() => bodyRef.current?.scrollIntoView({ behavior: "smooth", block: "end" }), 320);
-      return () => clearTimeout(t);
-    }
-  }, [open]);
 
   return (
-    <div className={cn("py-5", !noBorder && "border-t border-border")}>
+    <div style={{ paddingTop: '20px', paddingBottom: '20px', borderTop: '1px solid var(--color-border)' }}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className={cn(
-          "w-full flex items-center justify-between text-left group",
-          titleClass,
-        )}
+        className="w-full flex items-center justify-between text-left group"
       >
         <span className="font-serif text-[13px] font-normal tracking-normal text-foreground/70">
           {title}
@@ -745,17 +730,17 @@ function FilterSection({
         />
       </button>
       <div
-        ref={bodyRef}
-        className={cn(
-          "transition-all",
-          open ? "max-h-[2000px] mt-4 opacity-100 overflow-visible" : "max-h-0 opacity-0 overflow-hidden",
-        )}
         style={{
-          transitionTimingFunction: open ? 'var(--ease-editorial)' : 'var(--ease-standard)',
-          transitionDuration: open ? 'var(--duration-flow)' : 'var(--duration-snap)',
+          display: 'grid',
+          gridTemplateRows: open ? '1fr' : '0fr',
+          transition: 'grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1)',
         }}
       >
-        {children}
+        <div style={{ overflow: 'hidden', minHeight: 0 }}>
+          <div style={{ paddingTop: '16px' }}>
+            {children}
+          </div>
+        </div>
       </div>
     </div>
   );
