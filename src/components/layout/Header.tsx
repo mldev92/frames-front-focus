@@ -8,13 +8,13 @@ const CITIES = ["Санкт-Петербург", "Новокузнецк", "Ро
 type City = typeof CITIES[number];
 
 const PROMOS = [
-  { text: "ДО -40% НА СОЛНЦЕЗАЩИТНЫЕ ОЧКИ", href: "/catalog_s/solntsezashchitnye_ochki/filter/cml2_skidka-is-30-or-40/apply/" },
-  { text: "ПОДАРОК К ЛИНЗАМ STELLEST", href: "/stellest-katalog-s-linzami/" },
-  { text: "ОТЛИЧНЫЕ ЛИНЗЫ + КЭШБЭК 14%", href: "/catalog_s/kontaktnye_linzy_/filter/manufacturer-is-linzy-coopervision/apply/" },
-  { text: "КУПИТЕ 2 УПАКОВКИ ЛИНЗ ULTRAFLEX PREMIER И ПОЛУЧИТЕ СКЛАДНУЮ СУМКУ В ПОДАРОК", href: "/catalog_s/kontaktnye_linzy_/ultra_flex_premier_3_sht_/" },
-  { text: "ДЕТСКАЯ МИОПИЯ ПОД КОНТРОЛЕМ", href: "/pages/kabinet-profilaktiki-i-lecheniya-blizorukosti-miopii/" },
-  { text: "КУПИТЕ 2 УПАКОВКИ ЛИНЗ MISIGHT 1 DAY 90 И ПОЛУЧИТЕ 20 ЛИНЗ В ПОДАРОК + СКИДКУ 1000 р", href: "/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/" },
-] as const;
+  { text: "ДО -40% НА СОЛНЦЕЗАЩИТНЫЕ ОЧКИ", href: "/catalog_s/opravy/vysota-oversize-crystal" },
+  { text: "ПОДАРОК К ЛИНЗАМ STELLEST", href: "/catalog_s/opravy/vysota-oversize-crystal" },
+  { text: "ОТЛИЧНЫЕ ЛИНЗЫ + КЭШБЭК 14%", href: "/catalog_s/opravy/vysota-oversize-crystal" },
+  { text: "КУПИТЕ 2 УПАКОВКИ ЛИНЗ ULTRAFLEX PREMIER И ПОЛУЧИТЕ СКЛАДНУЮ СУМКУ В ПОДАРОК", href: "/catalog_s/opravy/vysota-oversize-crystal" },
+  { text: "ДЕТСКАЯ МИОПИЯ ПОД КОНТРОЛЕМ", href: "/catalog_s/opravy/vysota-oversize-crystal" },
+  { text: "КУПИТЕ 2 УПАКОВКИ ЛИНЗ MISIGHT 1 DAY 90 И ПОЛУЧИТЕ 20 ЛИНЗ В ПОДАРОК + СКИДКУ 1000 р", href: "/catalog_s/opravy/vysota-oversize-crystal" },
+];
 
 const NAV = [
   {
