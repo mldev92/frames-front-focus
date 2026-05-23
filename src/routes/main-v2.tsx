@@ -1,24 +1,30 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   ArrowRight,
+  ChevronLeft,
+  ChevronRight,
   Stethoscope,
   Eye,
   Glasses,
   Wrench,
+  Heart,
+  GraduationCap,
+  Microscope,
   ShieldCheck,
-  Truck,
-  Award,
+  HeartHandshake,
 } from "lucide-react";
-import { ProductCarousel } from "@/components/ProductCarousel";
 import { SalonsSection } from "@/components/SalonsSection";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
+import { TryOnIcon } from "@/components/TryOnIcon";
 import { Reveal } from "@/components/Reveal";
-import { catalogHref } from "@/data/categories";
+import { catalogHref, categoryToSegment } from "@/data/categories";
 import { bestsellers } from "@/data/products";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
+import { useCart, formatPrice } from "@/lib/store/cart";
+import type { Product } from "@/data/types";
 
 export const Route = createFileRoute("/main-v2")({
   head: () => ({
@@ -63,21 +69,26 @@ const HERO_STATS = [
   { value: "4.9 ★", label: "1 840 отзывов" },
 ];
 
-const PROMISES = [
+const TRUST_REASONS = [
+  {
+    Icon: GraduationCap,
+    title: "Опыт и экспертиза",
+    text: "Более 10 лет помогаем видеть лучше.",
+  },
+  {
+    Icon: Microscope,
+    title: "Современное оборудование",
+    text: "Диагностика на оборудовании премиум-класса.",
+  },
   {
     Icon: ShieldCheck,
-    title: "Гарантия 2 года",
-    text: "Бесплатная замена при заводском браке.",
+    title: "Гарантия качества",
+    text: "Оригинальные линзы и оправы с гарантией.",
   },
   {
-    Icon: Truck,
-    title: "Доставка по РФ",
-    text: "Бесплатно по СПб от 5 000 ₽.",
-  },
-  {
-    Icon: Award,
-    title: "Сервис в подарок",
-    text: "Подбор, подгонка и чистка — без доплат.",
+    Icon: HeartHandshake,
+    title: "Сервис на высоте",
+    text: "Индивидуальный подход и забота о каждом клиенте.",
   },
 ];
 
@@ -228,8 +239,19 @@ function MainV2Page() {
                 <button
                   type="button"
                   onClick={() => setVtoOpen(true)}
-                  className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold border border-foreground text-foreground bg-transparent hover:bg-foreground hover:text-background transition-colors cursor-pointer"
+                  className="group inline-flex items-center gap-2.5 rounded-full px-6 py-3.5 text-sm font-semibold border border-foreground text-foreground bg-transparent hover:bg-foreground hover:text-background transition-colors cursor-pointer"
                 >
+                  <span
+                    className="flex items-center justify-center rounded-full transition-colors"
+                    style={{
+                      width: 26,
+                      height: 26,
+                      background: "var(--brand)",
+                      color: "var(--brand-foreground)",
+                    }}
+                  >
+                    <TryOnIcon className="h-3.5 w-3.5" />
+                  </span>
                   Виртуальная примерка
                 </button>
               </div>
@@ -434,68 +456,95 @@ function MainV2Page() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          3. POPULAR MODELS — carousel
+          3. POPULAR MODELS — Хиты продаж (cream bg, header w/ nav arrows)
          ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20">
-        <Reveal className="flex items-end justify-between mb-8 gap-4">
-          <div>
-            <div
-              className="text-[11px] uppercase tracking-[0.2em] mb-2"
-              style={{ color: "var(--brand)" }}
-            >
-              Хиты сезона
-            </div>
-            <h2 className="font-serif text-3xl lg:text-4xl">
-              Популярные модели
-            </h2>
-          </div>
-          <Link
-            to="/catalog_s/$category"
-            params={{ category: "opravy" }}
-            className="hidden sm:inline-flex items-center gap-2 border border-border rounded-full px-4 py-2 text-sm hover:border-foreground bg-background"
-          >
-            Смотреть все <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Reveal>
-        <Reveal delay={120}>
-          <ProductCarousel products={hits} />
-        </Reveal>
+      <section
+        className="bg-cream"
+        style={{ padding: "clamp(56px, 7vw, 96px) 0" }}
+      >
+        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+          <MainV2HitsCarousel products={hits} />
+        </div>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          4. BRAND PROMISE — 3 flat benefit cards
+          4. WHY TRUST US — Почему нам доверяют (2-col: heading | 4 reasons)
          ───────────────────────────────────────────────────────────── */}
-      <section className="bg-cream">
-        <div className="mx-auto max-w-7xl px-4 lg:px-8 py-14">
-          <div className="grid sm:grid-cols-3 gap-5">
-            {PROMISES.map(({ Icon, title, text }, i) => (
-              <Reveal key={title} delay={i * 80}>
-                <div className="flex items-start gap-4 rounded-2xl bg-background border border-border p-5 h-full">
-                  <span
-                    className="flex items-center justify-center rounded-full shrink-0"
-                    style={{
-                      width: 44,
-                      height: 44,
-                      background: "oklch(0.96 0.025 28)",
-                      color: "var(--brand)",
-                    }}
-                  >
-                    <Icon size={22} strokeWidth={1.75} />
-                  </span>
-                  <div>
-                    <div className="font-serif text-lg leading-tight">
-                      {title}
-                    </div>
-                    <p
-                      className="text-muted-foreground"
-                      style={{ fontSize: 13.5, marginTop: 4, lineHeight: 1.5 }}
-                    >
-                      {text}
-                    </p>
-                  </div>
+      <section
+        className="bg-cream"
+        style={{ padding: "clamp(56px, 7vw, 96px) 0" }}
+      >
+        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+          <div
+            className="grid gap-10 lg:gap-14"
+            style={{ gridTemplateColumns: "1fr" }}
+          >
+            <style>{`
+              .o100-trust-grid{display:grid;gap:40px;grid-template-columns:1fr}
+              @media (min-width:1024px){
+                .o100-trust-grid{grid-template-columns:1fr 1.6fr;gap:64px;align-items:start}
+              }
+              .o100-trust-items{display:grid;gap:32px;grid-template-columns:1fr 1fr}
+              @media (min-width:768px){
+                .o100-trust-items{grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}
+              }
+            `}</style>
+            <div className="o100-trust-grid">
+              {/* Left — heading */}
+              <Reveal>
+                <div
+                  className="text-[11px] uppercase tracking-[0.22em] mb-4"
+                  style={{ color: "var(--brand)" }}
+                >
+                  Почему нам доверяют
                 </div>
+                <h2
+                  className="font-serif text-foreground"
+                  style={{
+                    fontSize: "clamp(28px, 3.4vw, 42px)",
+                    lineHeight: 1.1,
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  Профессионализм.
+                  <br />
+                  Качество. Забота.
+                </h2>
               </Reveal>
-            ))}
+
+              {/* Right — 4 reasons */}
+              <div className="o100-trust-items">
+                {TRUST_REASONS.map(({ Icon, title, text }, i) => (
+                  <Reveal key={title} delay={i * 90}>
+                    <div className="flex flex-col">
+                      <span
+                        className="flex items-center justify-center rounded-full mb-4"
+                        style={{
+                          width: 48,
+                          height: 48,
+                          border: "1.5px solid var(--brand)",
+                          color: "var(--brand)",
+                        }}
+                      >
+                        <Icon size={22} strokeWidth={1.6} />
+                      </span>
+                      <div
+                        className="font-medium text-foreground"
+                        style={{ fontSize: 15, marginBottom: 8, lineHeight: 1.3 }}
+                      >
+                        {title}
+                      </div>
+                      <p
+                        className="text-muted-foreground"
+                        style={{ fontSize: 13, lineHeight: 1.5 }}
+                      >
+                        {text}
+                      </p>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -755,6 +804,203 @@ function MainV2Page() {
         onClose={() => setVtoOpen(false)}
         vtoSku="rayban_aviator_or_vertFlash"
       />
+    </div>
+  );
+}
+
+/**
+ * Local product card for main-v2. Differs from the shared `ProductCard`:
+ *   – Heart icon (favorite) is always visible top-right, red outline.
+ *   – No try-on badge overlay (the page surfaces VTO via the hero CTA / promo banner).
+ *   – Simpler price + color-dots row, no brand caption.
+ *   – White card with rounded corners that sit on the cream background.
+ */
+function MainV2ProductCard({ product }: { product: Product }) {
+  const { toggleSaved, saved } = useCart();
+  const isSaved = saved.includes(product.slug);
+  const dots = product.colors?.slice(0, 4) ?? [];
+  const extra = (product.colors?.length ?? 0) - dots.length;
+
+  // Compose display name: prefer brand prefix when set (e.g. "Ray-Ban RX 7159"),
+  // else fall back to product.name alone.
+  const displayName =
+    product.brand && !product.name.toLowerCase().includes(product.brand.toLowerCase())
+      ? `${product.brand} ${product.name}`
+      : product.name;
+
+  return (
+    <div className="group/card flex flex-col h-full">
+      <Link
+        to="/catalog_s/$category/$slug"
+        params={{
+          category: categoryToSegment[product.category],
+          slug: product.slug,
+        }}
+        className="relative block aspect-square overflow-hidden"
+        style={{
+          background: "var(--background)",
+          borderRadius: 16,
+          boxShadow:
+            "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)",
+        }}
+        aria-label={displayName}
+      >
+        <img
+          src={product.images[0]}
+          alt={displayName}
+          loading="lazy"
+          className="absolute inset-0 w-full h-full object-contain p-7 transition-transform duration-500 group-hover/card:scale-[1.04]"
+        />
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            toggleSaved(product.slug);
+          }}
+          className="absolute top-3 right-3 flex items-center justify-center rounded-full transition-colors"
+          style={{
+            width: 36,
+            height: 36,
+            background: "transparent",
+            color: "var(--brand)",
+          }}
+          aria-label="В избранное"
+        >
+          <Heart
+            className="h-5 w-5"
+            strokeWidth={1.75}
+            fill={isSaved ? "var(--brand)" : "none"}
+          />
+        </button>
+      </Link>
+
+      <div className="mt-4 flex flex-col gap-2 px-1">
+        <Link
+          to="/catalog_s/$category/$slug"
+          params={{
+            category: categoryToSegment[product.category],
+            slug: product.slug,
+          }}
+          className="text-sm text-foreground hover:text-brand transition-colors"
+          style={{ lineHeight: 1.3 }}
+        >
+          {displayName}
+        </Link>
+        <div className="text-foreground" style={{ fontSize: 15, fontWeight: 600 }}>
+          {formatPrice(product.price)}
+        </div>
+        {dots.length > 0 && (
+          <div className="flex items-center gap-1.5 mt-0.5">
+            {dots.map((c) => (
+              <span
+                key={c.name}
+                className="inline-block rounded-full"
+                style={{
+                  width: 12,
+                  height: 12,
+                  background: c.hex,
+                  border:
+                    "1px solid color-mix(in oklch, var(--foreground) 10%, transparent)",
+                }}
+                title={c.name}
+              />
+            ))}
+            {extra > 0 && (
+              <span
+                className="text-muted-foreground"
+                style={{ fontSize: 11, marginLeft: 2 }}
+              >
+                +{extra}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Carousel wrapper for main-v2 Popular Models. Header row places nav arrows
+ * inline with the "Смотреть все" link, per the design screenshot.
+ */
+function MainV2HitsCarousel({ products }: { products: Product[] }) {
+  const scroller = useRef<HTMLDivElement>(null);
+  const scrollBy = (dir: 1 | -1) => {
+    const el = scroller.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
+  };
+  const navBtn =
+    "flex items-center justify-center rounded-full border border-border bg-background hover:bg-cream hover:border-foreground transition-colors";
+
+  return (
+    <div>
+      <Reveal className="flex items-end justify-between gap-4 mb-8 lg:mb-10">
+        <div>
+          <div
+            className="text-[11px] uppercase tracking-[0.22em] mb-3"
+            style={{ color: "var(--brand)" }}
+          >
+            Хиты продаж
+          </div>
+          <h2
+            className="font-serif text-foreground"
+            style={{
+              fontSize: "clamp(28px, 3.4vw, 42px)",
+              lineHeight: 1.1,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Популярные модели
+          </h2>
+        </div>
+        <div className="flex items-center gap-4">
+          <Link
+            to="/catalog_s/$category"
+            params={{ category: "opravy" }}
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium"
+            style={{ color: "var(--brand)" }}
+          >
+            Смотреть все <ArrowRight className="h-4 w-4" />
+          </Link>
+          <div className="hidden md:flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scrollBy(-1)}
+              aria-label="Назад"
+              className={navBtn}
+              style={{ width: 40, height: 40 }}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollBy(1)}
+              aria-label="Вперёд"
+              className={navBtn}
+              style={{ width: 40, height: 40 }}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </Reveal>
+      <Reveal delay={120}>
+        <div
+          ref={scroller}
+          className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 -mx-4 px-4 lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {products.map((p) => (
+            <div
+              key={p.slug}
+              className="snap-start shrink-0 w-[70%] sm:w-[42%] md:w-[31%] lg:w-[23.5%]"
+            >
+              <MainV2ProductCard product={p} />
+            </div>
+          ))}
+        </div>
+      </Reveal>
     </div>
   );
 }
