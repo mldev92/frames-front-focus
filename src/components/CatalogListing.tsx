@@ -237,7 +237,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
       {/* Frame shape — tile grid */}
       {hasFacet("shape") && (
-        <FilterSection title="Форма">
+        <FilterSection key="shape" title="Форма">
           <div className="grid grid-cols-2 gap-2">
             {SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]).map((s) => {
               const checked = active.shape?.has(s.key) ?? false;
@@ -269,7 +269,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       )}
 
       {/* Price */}
-      <FilterSection title="Цена">
+      <FilterSection key="price" title="Цена">
         <div className="flex items-center gap-2 mb-3">
           <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
             <span className="text-muted-foreground text-xs">₽</span>
@@ -301,7 +301,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       </FilterSection>
 
       {/* Color — compact swatch grid */}
-      <FilterSection title="Цвет">
+      <FilterSection key="color" title="Цвет">
         <div className="grid grid-cols-5 gap-2 py-1">
           {COLOR_SWATCHES.map((c) => {
             const sel = selectedColors.has(c.name);
@@ -351,7 +351,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
       {/* Material — checkbox list */}
       {hasFacet("material") && (
-        <FilterSection title="Материал">
+        <FilterSection key="material" title="Материал">
           <div className="space-y-2">
             {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
               const checked = active.material?.has(m) ?? false;
@@ -385,7 +385,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       )}
 
       {/* Availability — radios */}
-      <FilterSection title="Наличие">
+      <FilterSection key="availability" title="Наличие">
         <div className="space-y-2">
           {([
             ["all", "Все", products.length],
@@ -420,7 +420,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
       {/* Gender pills (kept) */}
       {hasFacet("gender") && (
-        <FilterSection title="Пол">
+        <FilterSection key="gender" title="Пол">
           <div className="flex flex-wrap gap-2">
             {Object.entries(facetCounts.gender ?? {}).map(([g, c]) => {
               const checked = active.gender?.has(g) ?? false;
@@ -449,7 +449,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
       )}
 
       {/* Style — pills */}
-      <FilterSection title="Стиль">
+      <FilterSection key="style" title="Стиль">
         <div className="flex flex-wrap gap-2">
           {STYLE_TAGS.map((s) => {
             const checked = styleTag === s;
@@ -475,7 +475,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
       {/* Brands */}
       {hasFacet("brand") && (
-        <FilterSection title="Бренды" defaultOpen={false}>
+        <FilterSection key="brand" title="Бренды" defaultOpen={false}>
           <div className="max-h-72 overflow-y-auto pr-1 space-y-2">
             {Object.entries(facetCounts.brand ?? {})
               .sort(([a], [b]) => a.localeCompare(b))
