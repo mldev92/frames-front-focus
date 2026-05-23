@@ -35,6 +35,7 @@ function CatalogPage() {
       subtitle={c.subtitle}
       products={getByCategory(category)}
       facets={c.facets}
+      categoryKey={category}
     />
   );
 }
