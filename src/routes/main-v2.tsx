@@ -469,8 +469,7 @@ function MainV2Page() {
           4. WHY TRUST US — Почему нам доверяют (2-col: heading | 4 reasons)
          ───────────────────────────────────────────────────────────── */}
       <section
-        className="bg-cream"
-        style={{ padding: "clamp(56px, 7vw, 96px) 0" }}
+        style={{ background: "#F7F4EE", padding: "clamp(56px, 7vw, 96px) 0" }}
       >
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div
@@ -550,7 +549,7 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           5. PAIRED BANNERS — child myopia + virtual try-on promo
          ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20">
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "#FBFAF8" }}>
         <div className="grid lg:grid-cols-2 gap-6 items-stretch">
           {/* Left — child myopia */}
           <Reveal>
@@ -683,7 +682,7 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           6. SERVICES — 4 photo cards
          ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20">
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "#FBFAF8" }}>
         <Reveal className="text-center max-w-2xl mx-auto mb-12">
           <div
             className="text-[11px] uppercase tracking-[0.2em] mb-3"
@@ -749,7 +748,7 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           8. JOURNAL — Полезные статьи
          ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20">
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "#FBFAF8" }}>
         <Reveal className="flex items-end justify-between mb-8 gap-4">
           <div>
             <div

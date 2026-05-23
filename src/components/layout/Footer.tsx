@@ -43,7 +43,7 @@ const COLS = [
 
 export function Footer() {
   return (
-    <footer className="bg-surface mt-24 pt-16 pb-8 border-t border-border">
+    <footer className="mt-24 pt-16 pb-8 border-t border-border" style={{ background: "#FFFEFE" }}>
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 mb-12">
           <div className="col-span-2">

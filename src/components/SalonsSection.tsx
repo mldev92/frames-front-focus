@@ -327,7 +327,7 @@ export function SalonsSection() {
         }
       `}</style>
 
-      <section style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 32px 96px" }}>
+      <section style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 32px 96px", background: "#FBFAF8" }}>
 
         {/* Header */}
         <div
