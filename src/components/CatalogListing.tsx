@@ -445,10 +445,15 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
             {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
               const checked = active.material?.has(m) ?? false;
               return (
-                <label
+                <button
                   key={m}
-                  className="flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors"
-                  style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px' }}
+                  type="button"
+                  role="checkbox"
+                  aria-checked={checked}
+                  onClick={(e) => { e.preventDefault(); toggle("material", m); }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
+                  style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px', background: 'none', border: 'none' }}
                 >
                   <span
                     className={cn(
@@ -458,15 +463,9 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                   >
                     {checked && <Check className="h-3 w-3" strokeWidth={3} />}
                   </span>
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => toggle("material", m)}
-                    className="sr-only"
-                  />
                   <span className="flex-1 text-sm first-letter:uppercase">{m.toLowerCase()}</span>
                   <span className="text-xs text-muted-foreground">({c})</span>
-                </label>
+                </button>
               );
             })}
           </div>
@@ -577,7 +576,16 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
               .map(([b, c]) => {
                 const checked = active.brand?.has(b) ?? false;
                 return (
-                  <label key={b} className="flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors" style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px' }}>
+                  <button
+                    key={b}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={checked}
+                    onClick={(e) => { e.preventDefault(); toggle("brand", b); }}
+                    onMouseDown={(e) => e.preventDefault()}
+                    className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
+                    style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px', background: 'none', border: 'none' }}
+                  >
                     <span
                       className={cn(
                         "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
@@ -586,15 +594,9 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                     >
                       {checked && <Check className="h-3 w-3" strokeWidth={3} />}
                     </span>
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggle("brand", b)}
-                      className="sr-only"
-                    />
                     <span className="flex-1 text-sm">{b}</span>
                     <span className="text-xs text-muted-foreground">({c})</span>
-                  </label>
+                  </button>
                 );
               })}
           </div>
@@ -665,10 +667,15 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
               {block.options.map((opt) => {
                 const checked = extraChecks[block.key]?.has(opt) ?? false;
                 return (
-                  <label
+                  <button
                     key={opt}
-                    className="flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors"
-                    style={{ borderRadius: "4px", padding: "2px 4px", margin: "0 -4px" }}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={checked}
+                    onClick={(e) => { e.preventDefault(); toggleExtra(block.key, opt); }}
+                    onMouseDown={(e) => e.preventDefault()}
+                    className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
+                    style={{ borderRadius: "4px", padding: "2px 4px", margin: "0 -4px", background: 'none', border: 'none' }}
                   >
                     <span
                       className={cn(
@@ -678,14 +685,8 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                     >
                       {checked && <Check className="h-3 w-3" strokeWidth={3} />}
                     </span>
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => toggleExtra(block.key, opt)}
-                      className="sr-only"
-                    />
                     <span className="flex-1 text-sm">{opt}</span>
-                  </label>
+                  </button>
                 );
               })}
             </div>
