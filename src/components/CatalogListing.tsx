@@ -324,7 +324,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
 
       {/* Frame shape — tile grid */}
       {vis.shape && hasFacet("shape") && (
-        <FilterSection title="Форма">
+        <FilterSection key="shape" title="Форма">
           <div className="grid grid-cols-2 gap-2">
             {SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]).map((s) => {
               const checked = active.shape?.has(s.key) ?? false;
@@ -356,7 +356,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
       )}
 
       {/* Price */}
-      <FilterSection title="Цена">
+      <FilterSection key="price" title="Цена">
         <div className="flex items-center gap-2 mb-3">
           <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
             <span className="text-muted-foreground text-xs">₽</span>
@@ -389,7 +389,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
 
       {/* Color — compact swatch grid */}
       {vis.color && (
-      <FilterSection title="Цвет">
+      <FilterSection key="color" title="Цвет">
         <div className="grid grid-cols-5 gap-2 py-1">
           {COLOR_SWATCHES.map((c) => {
             const sel = selectedColors.has(c.name);
@@ -440,7 +440,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
 
       {/* Material — checkbox list */}
       {vis.material && hasFacet("material") && (
-        <FilterSection title="Материал">
+        <FilterSection key="material" title="Материал">
           <div className="space-y-2">
             {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
               const checked = active.material?.has(m) ?? false;
@@ -475,8 +475,8 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
 
       {/* Availability — radios */}
       {vis.availability && (
-      <FilterSection title="Наличие">
-        <div className="space-y-2">
+      <FilterSection key="availability" title="Наличие">
+        <div className="space-y-2" role="radiogroup" aria-label="Наличие">
           {([
             ["all", "Все", products.length],
             ["in", "В наличии", products.length],
@@ -484,7 +484,16 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
           ] as const).map(([val, label, count]) => {
             const checked = availability === val;
             return (
-              <label key={val} className="flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors" style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px' }}>
+              <button
+                key={val}
+                type="button"
+                role="radio"
+                aria-checked={checked}
+                onClick={(e) => { e.preventDefault(); setAvailability(val); }}
+                onMouseDown={(e) => e.preventDefault()}
+                className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
+                style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px', background: 'none', border: 'none' }}
+              >
                 <span
                   className={cn(
                     "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
@@ -493,16 +502,9 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                 >
                   {checked && <span className="h-2 w-2 rounded-full bg-ink" />}
                 </span>
-                <input
-                  type="radio"
-                  name="availability"
-                  checked={checked}
-                  onChange={() => setAvailability(val)}
-                  className="sr-only"
-                />
                 <span className="flex-1 text-sm">{label}</span>
                 <span className="text-xs text-muted-foreground">({count})</span>
-              </label>
+              </button>
             );
           })}
         </div>
@@ -511,7 +513,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
 
       {/* Gender pills (kept) */}
       {vis.gender && hasFacet("gender") && (
-        <FilterSection title="Пол">
+        <FilterSection key="gender" title="Пол">
           <div className="flex flex-wrap gap-2">
             {Object.entries(facetCounts.gender ?? {}).map(([g, c]) => {
               const checked = active.gender?.has(g) ?? false;
@@ -541,7 +543,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
 
       {/* Style — pills */}
       {vis.style && (
-      <FilterSection title="Стиль">
+      <FilterSection key="style" title="Стиль">
         <div className="flex flex-wrap gap-2">
           {STYLE_TAGS.map((s) => {
             const checked = styleTag === s;
@@ -568,7 +570,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
 
       {/* Brands */}
       {vis.brand && hasFacet("brand") && (
-        <FilterSection title="Бренды" defaultOpen={false}>
+        <FilterSection key="brand" title="Бренды" defaultOpen={false}>
           <div className="max-h-72 overflow-y-auto pr-1 space-y-2">
             {Object.entries(facetCounts.brand ?? {})
               .sort(([a], [b]) => a.localeCompare(b))
