@@ -101,6 +101,10 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
 
   const [sizeWidth] = useState<[number, number]>([1, 165]);
   const [sizeTemple] = useState<[number, number]>([1, 178]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [availability, setAvailability] = useState<"all" | "in" | "out">("all");
+  const [styleTag, setStyleTag] = useState<string>("Все стили");
+  const STYLE_TAGS = ["Все стили", "Современные", "Минимализм", "Винтаж", "Бохо", "Индастриал", "Скандинавские"];
 
   const facetCounts = useMemo(() => {
     const out: Record<string, Record<string, number>> = {};
@@ -119,9 +123,15 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
     let list = products.filter((p) => {
       if (p.price < price[0] || p.price > price[1]) return false;
       if (tryOn && !p.hasTryOn) return false;
+      if (availability === "out") return false;
       if (selectedColors.size > 0) {
         const names = (p.colors ?? []).map((c) => c.name);
         if (!names.some((n) => selectedColors.has(n))) return false;
+      }
+      if (searchQuery.trim()) {
+        const q = searchQuery.trim().toLowerCase();
+        const haystack = `${p.name} ${p.brand} ${p.description ?? ""}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
       }
       const specMap: Record<string, number> = {};
       for (const s of p.specs) {
@@ -141,7 +151,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
     if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
     if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
     return list;
-  }, [products, active, sort, price, tryOn, selectedColors, sizeWidth, sizeTemple]);
+  }, [products, active, sort, price, tryOn, selectedColors, sizeWidth, sizeTemple, availability, searchQuery]);
 
   const toggle = (facet: string, value: string) => {
     setActive((prev) => {
@@ -159,6 +169,8 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
     setSelectedColors(new Set());
     setPrice([priceBounds.min, priceBounds.max]);
     setTryOn(false);
+    setAvailability("all");
+    setSearchQuery("");
   };
 
   const activeChips: { facet: string; value: string }[] = [];
@@ -167,11 +179,6 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
   }
 
   const hasFacet = (k: FacetKey) => facets.includes(k);
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [availability, setAvailability] = useState<"all" | "in" | "out">("all");
-  const [styleTag, setStyleTag] = useState<string>("Все стили");
-  const STYLE_TAGS = ["Все стили", "Современные", "Минимализм", "Винтаж", "Бохо", "Индастриал", "Скандинавские"];
 
   const FilterContent = (
     <div className="text-sm">
@@ -520,7 +527,7 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
         {subtitle && <p className="mt-3 text-muted-foreground max-w-2xl">{subtitle}</p>}
       </div>
 
-      <div className="lg:flex lg:items-start">
+      <div className="lg:flex lg:items-start" style={{ minHeight: '80vh' }}>
         {facets.length > 0 && (
           <div
             className="hidden lg:block shrink-0 sticky top-4 self-start overflow-hidden transition-[width,margin-right] duration-300 ease-in-out"
@@ -639,8 +646,16 @@ export function CatalogListing({ title, subtitle, products, facets = [] }: Listi
           )}
 
           {filtered.length === 0 ? (
-            <div className="py-16 text-center text-muted-foreground">
-              Ничего не найдено. Попробуйте изменить фильтры.
+            <div className="py-20 text-center">
+              <div className="font-serif text-2xl text-foreground/60 mb-3">Ничего не найдено</div>
+              <p className="text-sm text-muted-foreground mb-6">Попробуйте изменить параметры фильтрации</p>
+              <button
+                onClick={clearAll}
+                className="inline-flex items-center gap-2 border border-border rounded-full px-5 py-2.5 text-sm hover:border-ink hover:bg-surface transition-all"
+                style={{ transitionDuration: 'var(--duration-snap)' }}
+              >
+                Сбросить все фильтры
+              </button>
             </div>
           ) : (
             <div className={cn("grid gap-x-5 gap-y-10", gridCols === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3")}>
