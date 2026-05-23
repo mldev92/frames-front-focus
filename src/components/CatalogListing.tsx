@@ -902,12 +902,21 @@ function FilterSection({
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  // After the open transition finishes we drop overflow:hidden so popovers,
+  // sliders, and tooltips inside the section are not clipped.
+  const [overflowVisible, setOverflowVisible] = useState(defaultOpen);
 
   return (
     <div style={{ paddingTop: '20px', paddingBottom: '20px', borderTop: '1px solid var(--color-border)' }}>
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          setOpen((v) => {
+            const next = !v;
+            if (!next) setOverflowVisible(false);
+            return next;
+          });
+        }}
         className="w-full flex items-center justify-between text-left group"
       >
         <span className="font-serif text-[13px] font-normal tracking-normal text-foreground/70">
@@ -921,10 +930,14 @@ function FilterSection({
         style={{
           display: 'grid',
           gridTemplateRows: open ? '1fr' : '0fr',
-          transition: 'grid-template-rows 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+          opacity: open ? 1 : 0,
+          transition: 'grid-template-rows 220ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms ease-out',
+        }}
+        onTransitionEnd={(e) => {
+          if (e.propertyName === 'grid-template-rows' && open) setOverflowVisible(true);
         }}
       >
-        <div style={{ overflow: 'hidden', minHeight: 0 }}>
+        <div style={{ overflow: open && overflowVisible ? 'visible' : 'hidden', minHeight: 0 }}>
           <div style={{ paddingTop: '16px' }}>
             {children}
           </div>
