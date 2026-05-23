@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
-import type { Product } from "@/data/types";
+import type { Product, Category } from "@/data/types";
 import { cn } from "@/lib/utils";
 
 type FacetKey =
@@ -20,6 +20,7 @@ interface ListingProps {
   subtitle?: string;
   products: Product[];
   facets?: FacetKey[];
+  categoryKey?: Category;
 }
 
 // ── Frame shape icons — 64×24 grid, stroke 1.5, round joins ─────────────────
