@@ -6,6 +6,7 @@ export interface Promotion {
   badgeVariant?: "brand" | "neutral";
   visual: PromoVisual;
   pct?: string;
+  image?: string;
   title: string;
   description: string;
   expiresAt?: Date;
@@ -38,6 +39,7 @@ export const promotions: Promotion[] = [
     badgeVariant: "brand",
     visual: "brand",
     pct: "−40%",
+    image: "/promo_banner_1.png",
     title: "Скидка на солнцезащитные Ray-Ban",
     description:
       "На всю коллекцию 2025 года — солнцезащитные, поляризационные, с диоптриями.",
@@ -48,6 +50,7 @@ export const promotions: Promotion[] = [
     badge: "Акция",
     badgeVariant: "neutral",
     visual: "cream",
+    image: "/promo_banner_2.png",
     title: "Бесплатная диагностика зрения",
     description:
       "Запишитесь к офтальмологу — полная проверка зрения и подбор линз бесплатно.",
@@ -59,6 +62,7 @@ export const promotions: Promotion[] = [
     badgeVariant: "neutral",
     visual: "dark",
     pct: "−15%",
+    image: "/promo_banner_3.png",
     title: "Студенческая скидка 15%",
     description:
       "Предъявите студенческий билет в салоне и получите скидку 15% на любые оправы.",

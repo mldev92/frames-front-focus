@@ -45,10 +45,17 @@ function PromoCard({ promo, featured = false }: { promo: Promotion; featured?: b
           className={cn(
             "relative flex items-center justify-center overflow-hidden",
             featured ? "aspect-[5/4]" : "aspect-[5/3]",
-            visualClasses[promo.visual],
+            !promo.image && visualClasses[promo.visual],
           )}
         >
-          {promo.pct && (
+          {promo.image && (
+            <img
+              src={promo.image}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+            />
+          )}
+          {!promo.image && promo.pct && (
             <div
               className={cn(
                 "font-serif font-normal leading-none tracking-[-0.03em] opacity-95 transition-transform duration-500 group-hover:scale-110",

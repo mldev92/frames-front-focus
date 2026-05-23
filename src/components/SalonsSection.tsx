@@ -146,7 +146,7 @@ const RatingBadge = ({
   </div>
 );
 
-const MapPlaceholder = ({ city }: { city: string }) => (
+const MapPlaceholder = ({ city, imageSrc }: { city: string; imageSrc?: string }) => (
   <div
     style={{
       borderRadius: 16,
@@ -158,22 +158,30 @@ const MapPlaceholder = ({ city }: { city: string }) => (
       marginBottom: 28,
     }}
   >
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "column" as const,
-        gap: 8,
-        color: "var(--muted-foreground)",
-      }}
-    >
-      <MapPin size={36} style={{ opacity: 0.5 }} />
-      <span style={{ fontSize: 14, fontWeight: 500 }}>Яндекс Карта · {city}</span>
-      <span style={{ fontSize: 12, opacity: 0.6 }}>Вставьте iframe Яндекс.Карт</span>
-    </div>
+    {imageSrc ? (
+      <img
+        src={imageSrc}
+        alt={`Карта · ${city}`}
+        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+      />
+    ) : (
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "column" as const,
+          gap: 8,
+          color: "var(--muted-foreground)",
+        }}
+      >
+        <MapPin size={36} style={{ opacity: 0.5 }} />
+        <span style={{ fontSize: 14, fontWeight: 500 }}>Яндекс Карта · {city}</span>
+        <span style={{ fontSize: 12, opacity: 0.6 }}>Вставьте iframe Яндекс.Карт</span>
+      </div>
+    )}
   </div>
 );
 
@@ -385,7 +393,7 @@ export function SalonsSection() {
         {/* SPB */}
         {city === "spb" && (
           <div className="salon-city-panel">
-            <MapPlaceholder city="Санкт-Петербург" />
+            <MapPlaceholder city="Санкт-Петербург" imageSrc="/map_template.png" />
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, marginBottom: 28 }}>
               <SalonCard
                 wide
