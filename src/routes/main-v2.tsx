@@ -424,10 +424,10 @@ function MainV2Page() {
               <CategoryTile cell={CAT_CELLS[1]} />
             </Reveal>
             <Reveal delay={160} className="o100-cat-area-men">
-              <CategoryTile cell={CAT_CELLS[2]} />
+              <CategoryTile cell={CAT_CELLS[3]} />
             </Reveal>
             <Reveal delay={240} className="o100-cat-area-kids">
-              <CategoryTile cell={CAT_CELLS[3]} />
+              <CategoryTile cell={CAT_CELLS[2]} />
             </Reveal>
           </div>
 
