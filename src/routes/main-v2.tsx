@@ -231,7 +231,7 @@ function MainV2Page() {
                 <Link
                   to="/catalog_s/$category"
                   params={{ category: "opravy" }}
-                  className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold bg-brand text-brand-foreground hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold bg-foreground text-background hover:opacity-90 transition-opacity"
                 >
                   Подобрать оправу
                   <ArrowRight className="h-4 w-4" />
@@ -305,13 +305,12 @@ function MainV2Page() {
                       style={{
                         width: 44,
                         height: 44,
-                        background: "var(--brand)",
-                        color: "var(--brand-foreground)",
-                        boxShadow:
-                          "0 6px 16px -6px rgba(180, 40, 30, 0.45)",
+                        background: "var(--cream)",
+                        color: "var(--foreground)",
+                        border: "1px solid var(--border)",
                       }}
                     >
-                      <Icon size={20} strokeWidth={2} />
+                      <Icon size={20} strokeWidth={1.75} />
                     </span>
                     <div className="flex flex-col">
                       <span
@@ -359,7 +358,7 @@ function MainV2Page() {
           2. CATEGORIES — Подберите свои идеальные очки (1:1 with screenshot)
          ───────────────────────────────────────────────────────────── */}
       <section
-        style={{ background: "#FBF9F7", padding: "clamp(56px, 7vw, 96px) 0" }}
+        style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
       >
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           {/* Header row: eyebrow + H2 on left, "See all" link on right */}
@@ -449,7 +448,7 @@ function MainV2Page() {
           3. POPULAR MODELS — Хиты продаж (cream bg, header w/ nav arrows)
          ───────────────────────────────────────────────────────────── */}
       <section
-        style={{ background: "#FBF9F7", padding: "clamp(56px, 7vw, 96px) 0" }}
+        style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
       >
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <MainV2HitsCarousel products={hits} />
@@ -460,7 +459,7 @@ function MainV2Page() {
           4. WHY TRUST US — Почему нам доверяют (2-col: heading | 4 reasons)
          ───────────────────────────────────────────────────────────── */}
       <section
-        style={{ background: "#F7F4EE", padding: "clamp(56px, 7vw, 96px) 0" }}
+        style={{ background: "var(--surface)", padding: "clamp(56px, 7vw, 96px) 0" }}
       >
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div
@@ -510,8 +509,9 @@ function MainV2Page() {
                         style={{
                           width: 48,
                           height: 48,
-                          border: "1.5px solid var(--brand)",
-                          color: "var(--brand)",
+                          border: "1px solid var(--border)",
+                          color: "var(--foreground)",
+                          background: "var(--background)",
                         }}
                       >
                         <Icon size={22} strokeWidth={1.6} />
@@ -540,7 +540,7 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           5. PAIRED BANNERS — child myopia + virtual try-on promo
          ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "#FBFAF8" }}>
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "var(--background)" }}>
         <div className="grid lg:grid-cols-2 gap-6 items-stretch">
           {/* Left — child myopia */}
           <Reveal>
@@ -602,13 +602,14 @@ function MainV2Page() {
             </div>
           </Reveal>
 
-          {/* Right — red virtual try-on promo */}
+          {/* Right — virtual try-on promo (editorial dark surface; brand red as accent only) */}
           <Reveal delay={120}>
             <div
               className="relative rounded-2xl overflow-hidden flex flex-col justify-between h-full"
               style={{
-                background: "var(--brand)",
-                color: "var(--brand-foreground)",
+                background:
+                  "linear-gradient(135deg, oklch(0.22 0.014 250) 0%, oklch(0.16 0.012 250) 100%)",
+                color: "var(--background)",
                 padding: 32,
                 minHeight: 340,
               }}
@@ -621,13 +622,13 @@ function MainV2Page() {
                   right: -20,
                   bottom: -20,
                   width: 220,
-                  opacity: 0.22,
+                  opacity: 0.28,
                 }}
               />
               <div style={{ position: "relative", zIndex: 1 }}>
                 <div
                   className="text-[11px] uppercase tracking-[0.2em] mb-3"
-                  style={{ opacity: 0.85 }}
+                  style={{ color: "var(--brand)" }}
                 >
                   Виртуальная примерка
                 </div>
@@ -643,11 +644,12 @@ function MainV2Page() {
                       fontSize: 64,
                       fontFamily: "var(--font-serif)",
                       lineHeight: 1,
+                      color: "var(--brand)",
                     }}
                   >
                     −50%
                   </span>
-                  <span style={{ fontSize: 14, opacity: 0.9 }}>
+                  <span style={{ fontSize: 14, opacity: 0.85 }}>
                     при первой покупке через VTO
                   </span>
                 </div>
@@ -673,7 +675,7 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           6. SERVICES — 4 photo cards
          ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "#FBFAF8" }}>
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "var(--background)" }}>
         <Reveal className="text-center max-w-2xl mx-auto mb-12">
           <div
             className="text-[11px] uppercase tracking-[0.2em] mb-3"
@@ -739,7 +741,7 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           8. JOURNAL — Полезные статьи
          ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "#FBFAF8" }}>
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "var(--background)" }}>
         <Reveal className="flex items-end justify-between mb-8 gap-4">
           <div>
             <div
@@ -928,12 +930,12 @@ function MainV2HitsCarousel({ products }: { products: Product[] }) {
     el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
   };
   const navBtn =
-    "flex items-center justify-center rounded-full bg-background transition-colors hover:bg-brand hover:text-brand-foreground";
+    "flex items-center justify-center rounded-full bg-background transition-colors hover:bg-foreground hover:text-background";
   const navBtnStyle = {
     width: 40,
     height: 40,
-    border: "1.5px solid var(--brand)",
-    color: "var(--brand)",
+    border: "1px solid var(--border)",
+    color: "var(--foreground)",
   } as const;
 
   return (
