@@ -165,21 +165,58 @@ function MainV2Page() {
           minHeight: "clamp(440px, 56vw, 680px)",
         }}
       >
+        {/* Hero light/brightness animation (mirrors `_light` on main page) */}
+        <style>{`
+          @keyframes _heroLightV2 {
+            0%, 100% { background-position: 0% 50%; opacity: 1; }
+            33%      { background-position: 30% 50%; opacity: 0.94; }
+            66%      { background-position: 60% 50%; opacity: 0.97; }
+          }
+          @keyframes _heroImgPulseV2 {
+            0%, 100% { filter: brightness(1.00) contrast(1.02) saturate(1.00); transform: scale(1); }
+            50%      { filter: brightness(1.06) contrast(1.04) saturate(1.04); transform: scale(1.012); }
+          }
+          @keyframes _heroSheenV2 {
+            0%   { transform: translateX(-30%); opacity: 0; }
+            45%  { opacity: 0.55; }
+            100% { transform: translateX(140%); opacity: 0; }
+          }
+          .o100-hero-img    { animation: _heroImgPulseV2 9s ease-in-out infinite; will-change: filter, transform; }
+          .o100-hero-wash   { background-size: 200% 100%; animation: _heroLightV2 11s ease-in-out infinite; }
+          .o100-hero-sheen  { animation: _heroSheenV2 7s ease-in-out 1.2s infinite; }
+          @media (prefers-reduced-motion: reduce) {
+            .o100-hero-img, .o100-hero-wash, .o100-hero-sheen { animation: none !important; }
+          }
+        `}</style>
+
         {/* Full-bleed banner photo */}
         <img
           src="/new_main_banner.png"
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover o100-hero-img"
           style={{ objectPosition: "right center", zIndex: 0 }}
         />
         {/* Soft left-side wash so text stays legible on any crop */}
         <div
           aria-hidden
-          className="absolute inset-0"
+          className="absolute inset-0 o100-hero-wash"
           style={{
             background:
               "linear-gradient(90deg, rgba(245,239,231,0.92) 0%, rgba(245,239,231,0.78) 30%, rgba(245,239,231,0.35) 55%, rgba(245,239,231,0) 75%)",
             zIndex: 1,
+          }}
+        />
+        {/* Diagonal sheen — warm light sweep across the photo */}
+        <div
+          aria-hidden
+          className="absolute inset-y-0 o100-hero-sheen pointer-events-none"
+          style={{
+            zIndex: 1,
+            left: 0,
+            width: "35%",
+            background:
+              "linear-gradient(100deg, transparent 0%, rgba(255,236,210,0.0) 20%, rgba(255,236,210,0.35) 50%, rgba(255,236,210,0.0) 80%, transparent 100%)",
+            mixBlendMode: "soft-light",
           }}
         />
 
