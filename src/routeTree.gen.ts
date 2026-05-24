@@ -19,6 +19,7 @@ import { Route as PodborOchkovRouteImport } from './routes/podbor-ochkov'
 import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as ONasRouteImport } from './routes/o-nas'
+import { Route as MainV2RouteImport } from './routes/main-v2'
 import { Route as LoyaltyRouteImport } from './routes/loyalty'
 import { Route as KabinetDiagnostikiSpbRouteImport } from './routes/kabinet-diagnostiki-spb'
 import { Route as ContactsRouteImport } from './routes/contacts'
@@ -83,6 +84,11 @@ const PaymentRoute = PaymentRouteImport.update({
 const ONasRoute = ONasRouteImport.update({
   id: '/o-nas',
   path: '/o-nas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MainV2Route = MainV2RouteImport.update({
+  id: '/main-v2',
+  path: '/main-v2',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoyaltyRoute = LoyaltyRouteImport.update({
@@ -164,6 +170,7 @@ export interface FileRoutesByFullPath {
   '/contacts': typeof ContactsRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
+  '/main-v2': typeof MainV2Route
   '/o-nas': typeof ONasRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
@@ -190,6 +197,7 @@ export interface FileRoutesByTo {
   '/contacts': typeof ContactsRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
+  '/main-v2': typeof MainV2Route
   '/o-nas': typeof ONasRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
@@ -215,6 +223,7 @@ export interface FileRoutesById {
   '/contacts': typeof ContactsRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
+  '/main-v2': typeof MainV2Route
   '/o-nas': typeof ONasRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
@@ -243,6 +252,7 @@ export interface FileRouteTypes {
     | '/contacts'
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
+    | '/main-v2'
     | '/o-nas'
     | '/payment'
     | '/personal'
@@ -269,6 +279,7 @@ export interface FileRouteTypes {
     | '/contacts'
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
+    | '/main-v2'
     | '/o-nas'
     | '/payment'
     | '/personal'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/contacts'
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
+    | '/main-v2'
     | '/o-nas'
     | '/payment'
     | '/personal'
@@ -320,6 +332,7 @@ export interface RootRouteChildren {
   ContactsRoute: typeof ContactsRoute
   KabinetDiagnostikiSpbRoute: typeof KabinetDiagnostikiSpbRoute
   LoyaltyRoute: typeof LoyaltyRoute
+  MainV2Route: typeof MainV2Route
   ONasRoute: typeof ONasRoute
   PaymentRoute: typeof PaymentRoute
   PersonalRoute: typeof PersonalRoute
@@ -403,6 +416,13 @@ declare module '@tanstack/react-router' {
       path: '/o-nas'
       fullPath: '/o-nas'
       preLoaderRoute: typeof ONasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/main-v2': {
+      id: '/main-v2'
+      path: '/main-v2'
+      fullPath: '/main-v2'
+      preLoaderRoute: typeof MainV2RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/loyalty': {
@@ -562,6 +582,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactsRoute: ContactsRoute,
   KabinetDiagnostikiSpbRoute: KabinetDiagnostikiSpbRoute,
   LoyaltyRoute: LoyaltyRoute,
+  MainV2Route: MainV2Route,
   ONasRoute: ONasRoute,
   PaymentRoute: PaymentRoute,
   PersonalRoute: PersonalRoute,
