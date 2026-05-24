@@ -165,15 +165,18 @@ function MainV2Page() {
           minHeight: "clamp(440px, 56vw, 680px)",
         }}
       >
-        {/* Hero light/brightness animation — inline styles only, mirrors `_light` on `/`. */}
+        {/* Hero light/brightness animation — inline styles only, mirrors `_light` on `/`.
+            No prefers-reduced-motion check on purpose: the home page (index.tsx) doesn't
+            check either, and turning it off here masks the effect on systems where the
+            OS toggle is on. */}
         <style>{`
           @keyframes _heroImgPulseV2 {
-            0%, 100% { filter: brightness(0.80) contrast(1.00) saturate(0.95); transform: scale(1.00); }
-            50%      { filter: brightness(1.22) contrast(1.10) saturate(1.15); transform: scale(1.04); }
+            0%, 100% { filter: brightness(0.78) contrast(1.00) saturate(0.95); transform: scale(1.00); }
+            50%      { filter: brightness(1.25) contrast(1.12) saturate(1.18); transform: scale(1.05); }
           }
           @keyframes _heroLightV2 {
             0%, 100% { opacity: 1.00; background-position:   0% 50%; }
-            33%      { opacity: 0.82; background-position:  50% 50%; }
+            33%      { opacity: 0.78; background-position:  50% 50%; }
             66%      { opacity: 0.92; background-position: 100% 50%; }
           }
           @keyframes _heroSheenV2 {
@@ -186,17 +189,19 @@ function MainV2Page() {
             0%, 100% { opacity: 0.55; transform: translate(0,0) scale(1.00); }
             50%      { opacity: 1.00; transform: translate(-26px, 22px) scale(1.18); }
           }
-          @media (prefers-reduced-motion: reduce) {
-            .o100-hero-img, .o100-hero-wash, .o100-hero-sheen, .o100-hero-sun { animation: none !important; }
-          }
         `}</style>
 
         {/* Full-bleed banner photo — pulses brightness like a sun emerging */}
         <img
           src="/new_main_banner.png"
           alt=""
-          className="absolute inset-0 w-full h-full object-cover o100-hero-img"
           style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
             objectPosition: "right center",
             zIndex: 0,
             animation: "_heroImgPulseV2 6s ease-in-out infinite",
@@ -206,8 +211,8 @@ function MainV2Page() {
         {/* Warm "sun" glow on the right — pulsing light source */}
         <div
           aria-hidden
-          className="absolute o100-hero-sun pointer-events-none"
           style={{
+            position: "absolute",
             zIndex: 1,
             top: "5%",
             right: "5%",
@@ -218,14 +223,19 @@ function MainV2Page() {
               "radial-gradient(circle, rgba(255,225,170,0.95) 0%, rgba(255,195,130,0.55) 35%, rgba(255,170,110,0) 72%)",
             mixBlendMode: "screen",
             filter: "blur(48px)",
+            pointerEvents: "none",
             animation: "_heroSunV2 7s ease-in-out infinite",
           }}
         />
         {/* Soft left-side wash so text stays legible (pulsing intensity, drifts laterally) */}
         <div
           aria-hidden
-          className="absolute inset-0 o100-hero-wash"
           style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
             background:
               "linear-gradient(90deg, rgba(245,239,231,0.95) 0%, rgba(245,239,231,0.78) 30%, rgba(245,239,231,0.35) 55%, rgba(245,239,231,0) 75%)",
             backgroundSize: "220% 100%",
@@ -236,13 +246,16 @@ function MainV2Page() {
         {/* Diagonal sheen — bright light sweep across visible photo area */}
         <div
           aria-hidden
-          className="absolute inset-y-0 o100-hero-sheen pointer-events-none"
           style={{
-            zIndex: 3,
+            position: "absolute",
+            top: 0,
+            bottom: 0,
             left: "20%",
             width: "45%",
+            zIndex: 3,
             background:
-              "linear-gradient(100deg, transparent 0%, rgba(255,240,210,0) 20%, rgba(255,240,210,0.75) 50%, rgba(255,240,210,0) 80%, transparent 100%)",
+              "linear-gradient(100deg, transparent 0%, rgba(255,240,210,0) 20%, rgba(255,240,210,0.85) 50%, rgba(255,240,210,0) 80%, transparent 100%)",
+            pointerEvents: "none",
             animation: "_heroSheenV2 5.5s ease-in-out infinite",
           }}
         />
