@@ -641,126 +641,125 @@ function MainV2Page() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          5. PAIRED BANNERS — child myopia + virtual try-on promo
+          5. SECOND BANNER — standalone animated promo
          ───────────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "var(--background)" }}>
-        <div className="grid lg:grid-cols-2 gap-6 items-stretch">
-          {/* Left — animated main banner */}
-          <Reveal>
+        <Reveal>
+          <div
+            className="relative rounded-[28px] overflow-hidden"
+            style={{ minHeight: "clamp(380px, 46vw, 520px)" }}
+          >
+            <style>{`
+              @keyframes _o100SecondPulse {
+                0%, 100% { transform: scale(1); filter: brightness(0.92) saturate(1.02); }
+                50% { transform: scale(1.015); filter: brightness(1.03) saturate(1.08); }
+              }
+              @keyframes _o100SecondLight {
+                0%, 100% { opacity: 0.84; background-position: 0% 50%; }
+                50% { opacity: 1; background-position: 100% 50%; }
+              }
+              @keyframes _o100SecondSweep {
+                0% { transform: translateX(-180%) skewX(-16deg); opacity: 0; }
+                16% { opacity: 0.32; }
+                54% { opacity: 0.32; }
+                100% { transform: translateX(280%) skewX(-16deg); opacity: 0; }
+              }
+              @keyframes _o100SecondGlow {
+                0%,100% { transform: translate(0, 0) scale(1); opacity: 0.62; }
+                50% { transform: translate(-14px, 12px) scale(1.08); opacity: 0.9; }
+              }
+            `}</style>
+
+            <img
+              src="/main_banner_22_05.jpg"
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ animation: "_o100SecondPulse 7s ease-in-out infinite" }}
+            />
             <div
-              className="relative rounded-2xl overflow-hidden h-full"
-              style={{ minHeight: 380 }}
-            >
-              <style>{`
-                @keyframes _o100SecondSweep {
-                  0% { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
-                  14% { opacity: 0.3; }
-                  56% { opacity: 0.3; }
-                  100% { transform: translateX(260%) skewX(-18deg); opacity: 0; }
-                }
-              `}</style>
-              <img
-                src="/main_banner_v4.jpg"
-                alt=""
-                className="absolute inset-0 w-full h-full object-cover"
-                style={{
-                  animation: "_heroImgPulseV2 7s ease-in-out infinite",
-                }}
-              />
-              <div
-                aria-hidden
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(95deg, rgba(26,5,8,0.78) 0%, rgba(26,5,8,0.48) 48%, rgba(26,5,8,0.14) 100%)",
-                  backgroundSize: "200% 100%",
-                  animation: "_heroLightV2 9s ease-in-out infinite",
-                }}
-              />
-              <div
-                aria-hidden
-                className="absolute"
-                style={{
-                  top: "-18%",
-                  right: "-10%",
-                  width: 300,
-                  height: 300,
-                  borderRadius: "50%",
-                  background:
-                    "radial-gradient(circle, rgba(255,225,170,0.72) 0%, rgba(255,190,140,0.34) 38%, rgba(255,170,110,0) 70%)",
-                  filter: "blur(26px)",
-                  mixBlendMode: "screen",
-                  pointerEvents: "none",
-                  animation: "_heroSunV2 8s ease-in-out infinite",
-                }}
-              />
-              <div className="relative h-full flex flex-col justify-end p-8 lg:p-10" style={{ maxWidth: 480 }}>
-                <div
-                  className="text-[11px] uppercase tracking-[0.2em] mb-3 text-white/75"
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(92deg, rgba(20,16,14,0.82) 0%, rgba(20,16,14,0.54) 44%, rgba(20,16,14,0.12) 100%)",
+                backgroundSize: "210% 100%",
+                animation: "_o100SecondLight 8.5s ease-in-out infinite",
+              }}
+            />
+            <div
+              aria-hidden
+              className="absolute"
+              style={{
+                top: "-22%",
+                right: "-8%",
+                width: 360,
+                height: 360,
+                borderRadius: "50%",
+                background:
+                  "radial-gradient(circle, rgba(255,219,162,0.72) 0%, rgba(255,184,118,0.34) 42%, rgba(255,170,110,0) 72%)",
+                filter: "blur(26px)",
+                mixBlendMode: "screen",
+                pointerEvents: "none",
+                animation: "_o100SecondGlow 8s ease-in-out infinite",
+              }}
+            />
+
+            <div className="relative h-full flex flex-col justify-end p-8 lg:p-12" style={{ maxWidth: 580 }}>
+              <div className="text-[11px] uppercase tracking-[0.2em] mb-3 text-white/70">
+                Второй баннер
+              </div>
+              <h3
+                className="font-serif text-white"
+                style={{ fontSize: "clamp(30px, 4vw, 44px)", lineHeight: 1.08, marginBottom: 14, letterSpacing: "-0.015em" }}
+              >
+                Подберите идеальные очки<br />с примеркой и проверкой зрения
+              </h3>
+              <p
+                className="text-white/80"
+                style={{ fontSize: 15, lineHeight: 1.55, marginBottom: 26, maxWidth: 500 }}
+              >
+                Новые коллекции, индивидуальная консультация и точная диагностика в салоне или онлайн.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  to="/catalog_s/$category"
+                  params={{ category: "opravy" }}
+                  className="inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold hover:opacity-90 transition-opacity"
+                  style={{ background: "#fff", color: "#171311" }}
                 >
-                  Главный баннер
-                </div>
-                <h3
-                  className="font-serif text-white"
-                  style={{ fontSize: 29, lineHeight: 1.12, marginBottom: 14, letterSpacing: "-0.01em" }}
-                >
-                  Новая коллекция оправ<br />с виртуальной примеркой
-                </h3>
-                <p
-                  className="text-white/80"
-                  style={{ fontSize: 14, lineHeight: 1.55, marginBottom: 24, maxWidth: 430 }}
-                >
-                  Более 11 000 моделей, персональный подбор и примерка онлайн перед покупкой.
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <Link
-                    to="/catalog_s/$category"
-                    params={{ category: "opravy" }}
-                    className="inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold self-start hover:opacity-90 transition-opacity"
-                    style={{ background: "#fff", color: "#1a0508" }}
-                  >
-                    Подобрать оправу
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => setVtoOpen(true)}
-                    className="relative overflow-hidden inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold self-start transition-colors"
-                    style={{
-                      color: "#fff",
-                      border: "1px solid rgba(255,255,255,0.45)",
-                      background: "rgba(255,255,255,0.08)",
-                    }}
-                  >
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute top-0 bottom-0 left-0 w-16 -translate-x-full skew-x-[-18deg]"
-                      style={{
-                        background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.46) 50%, transparent 100%)",
-                        animation: "_o100SecondSweep 3.2s ease-in-out infinite",
-                      }}
-                    />
-                    <span className="relative z-[1]">Примерить онлайн</span>
-                  </button>
-                </div>
-                <div
-                  aria-hidden
-                  className="absolute top-0 -left-24 h-full w-28 -skew-x-[14deg]"
+                  Смотреть каталог
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setVtoOpen(true)}
+                  className="relative overflow-hidden inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
                   style={{
-                    background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)",
-                    animation: "_heroSheenV2 11s ease-in-out infinite",
-                    pointerEvents: "none",
+                    color: "#fff",
+                    border: "1px solid rgba(255,255,255,0.48)",
+                    background: "rgba(255,255,255,0.1)",
                   }}
                 >
-                </div>
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute top-0 bottom-0 left-0 w-20 -translate-x-full skew-x-[-16deg]"
+                    style={{
+                      background:
+                        "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.52) 50%, transparent 100%)",
+                      animation: "_o100SecondSweep 3.2s ease-in-out infinite",
+                    }}
+                  />
+                  <span className="relative z-[1]">Примерить онлайн</span>
+                </button>
               </div>
             </div>
-          </Reveal>
+          </div>
+        </Reveal>
+      </section>
 
-          {/* Right — promotions block */}
-          <Reveal delay={120}>
-            <MainV2PromoBlock />
-          </Reveal>
-        </div>
+      <section className="mx-auto max-w-7xl px-4 lg:px-8 pt-0 pb-16 lg:pb-20" style={{ background: "var(--background)" }}>
+        <Reveal>
+          <MainV2PromoBlock />
+        </Reveal>
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
