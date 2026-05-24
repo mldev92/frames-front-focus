@@ -334,7 +334,22 @@ function MainV2Page() {
                   params={{ category: "opravy" }}
                   className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold border border-foreground text-foreground bg-transparent hover:bg-foreground hover:text-background transition-colors"
                 >
-                  Подобрать очки
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M2.402 2.652a.25.25 0 0 0-.25.25v2a.75.75 0 1 1-1.5 0v-2c0-.966.784-1.75 1.75-1.75h2a.75.75 0 1 1 0 1.5h-2Zm11.146.25a.25.25 0 0 0-.25-.25h-2a.75.75 0 0 1 0-1.5h2c.967 0 1.75.784 1.75 1.75v2a.75.75 0 0 1-1.5 0v-2ZM2.402 14.048a.25.25 0 0 1-.25-.25v-2a.75.75 0 1 0-1.5 0v2c0 .966.784 1.75 1.75 1.75h2a.75.75 0 0 0 0-1.5h-2Zm10.896 0a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2a1.75 1.75 0 0 1-1.75 1.75h-2a.75.75 0 0 1 0-1.5h2ZM8 7.25a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm-3.75 4.5a3.75 3.75 0 1 1 7.5 0h-1.5a2.25 2.25 0 1 0-4.5 0h-1.5Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Примерить онлайн
                 </Link>
               </div>
 
@@ -1010,6 +1025,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
   const { toggleSaved, saved } = useCart();
   const navigate = useNavigate();
   const isSaved = saved.includes(product.slug);
+  const hasHoverImage = product.images.length > 1;
   const dots = product.colors?.slice(0, 4) ?? [];
   const extra = (product.colors?.length ?? 0) - dots.length;
   const productRouteParams = {
@@ -1045,8 +1061,18 @@ function MainV2ProductCard({ product }: { product: Product }) {
             src={product.images[0]}
             alt={displayName}
             loading="lazy"
-            className="absolute inset-0 h-full w-full object-contain p-7 transition-transform duration-500 group-hover/card:scale-[1.04]"
+            className={`absolute inset-0 h-full w-full object-contain p-7 transition-opacity duration-500 ${
+              hasHoverImage ? "opacity-100 group-hover/card:opacity-0" : "opacity-100"
+            }`}
           />
+          {hasHoverImage && (
+            <img
+              src={product.images[1]}
+              alt={displayName}
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-contain p-7 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500"
+            />
+          )}
         </Link>
         <button
           type="button"
