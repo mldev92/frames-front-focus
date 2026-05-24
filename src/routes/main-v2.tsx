@@ -165,78 +165,85 @@ function MainV2Page() {
           minHeight: "clamp(440px, 56vw, 680px)",
         }}
       >
-        {/* Hero light/brightness animation (mirrors `_light` on main page) */}
+        {/* Hero light/brightness animation — inline styles only, mirrors `_light` on `/`. */}
         <style>{`
           @keyframes _heroImgPulseV2 {
-            0%, 100% { filter: brightness(0.94) contrast(1.02) saturate(0.98); transform: scale(1); }
-            50%      { filter: brightness(1.14) contrast(1.07) saturate(1.10); transform: scale(1.025); }
+            0%, 100% { filter: brightness(0.80) contrast(1.00) saturate(0.95); transform: scale(1.00); }
+            50%      { filter: brightness(1.22) contrast(1.10) saturate(1.15); transform: scale(1.04); }
           }
           @keyframes _heroLightV2 {
-            0%, 100% { opacity: 0.55; background-position: 0% 50%; }
-            50%      { opacity: 1.00; background-position: 100% 50%; }
+            0%, 100% { opacity: 1.00; background-position:   0% 50%; }
+            33%      { opacity: 0.82; background-position:  50% 50%; }
+            66%      { opacity: 0.92; background-position: 100% 50%; }
           }
           @keyframes _heroSheenV2 {
-            0%   { transform: translateX(-40%) skewX(-12deg); opacity: 0; }
-            12%  { opacity: 0.9; }
-            55%  { opacity: 0.9; }
-            100% { transform: translateX(260%) skewX(-12deg); opacity: 0; }
+            0%   { transform: translateX(-60%) skewX(-14deg); opacity: 0; }
+            10%  { opacity: 1; }
+            55%  { opacity: 1; }
+            100% { transform: translateX(260%) skewX(-14deg); opacity: 0; }
           }
           @keyframes _heroSunV2 {
-            0%, 100% { opacity: 0.35; transform: translate(0,0) scale(1); }
-            50%      { opacity: 0.85; transform: translate(-22px, 18px) scale(1.12); }
+            0%, 100% { opacity: 0.55; transform: translate(0,0) scale(1.00); }
+            50%      { opacity: 1.00; transform: translate(-26px, 22px) scale(1.18); }
           }
-          .o100-hero-img    { animation: _heroImgPulseV2 7s ease-in-out infinite; will-change: filter, transform; }
-          .o100-hero-wash   { background-size: 220% 100%; animation: _heroLightV2 8s ease-in-out infinite; }
-          .o100-hero-sheen  { animation: _heroSheenV2 6.5s ease-in-out infinite; }
-          .o100-hero-sun    { animation: _heroSunV2 9s ease-in-out infinite; mix-blend-mode: screen; filter: blur(40px); }
           @media (prefers-reduced-motion: reduce) {
             .o100-hero-img, .o100-hero-wash, .o100-hero-sheen, .o100-hero-sun { animation: none !important; }
           }
         `}</style>
 
-        {/* Full-bleed banner photo */}
+        {/* Full-bleed banner photo — pulses brightness like a sun emerging */}
         <img
           src="/new_main_banner.png"
           alt=""
           className="absolute inset-0 w-full h-full object-cover o100-hero-img"
-          style={{ objectPosition: "right center", zIndex: 0 }}
+          style={{
+            objectPosition: "right center",
+            zIndex: 0,
+            animation: "_heroImgPulseV2 6s ease-in-out infinite",
+            willChange: "filter, transform",
+          }}
         />
-        {/* Warm "sun" glow on the right side of the photo — pulsing light source */}
+        {/* Warm "sun" glow on the right — pulsing light source */}
         <div
           aria-hidden
           className="absolute o100-hero-sun pointer-events-none"
           style={{
             zIndex: 1,
-            top: "8%",
-            right: "8%",
-            width: 420,
-            height: 420,
+            top: "5%",
+            right: "5%",
+            width: 520,
+            height: 520,
             borderRadius: "50%",
             background:
-              "radial-gradient(circle, rgba(255,224,180,0.85) 0%, rgba(255,200,140,0.45) 35%, rgba(255,180,120,0) 70%)",
+              "radial-gradient(circle, rgba(255,225,170,0.95) 0%, rgba(255,195,130,0.55) 35%, rgba(255,170,110,0) 72%)",
+            mixBlendMode: "screen",
+            filter: "blur(48px)",
+            animation: "_heroSunV2 7s ease-in-out infinite",
           }}
         />
-        {/* Soft left-side wash so text stays legible on any crop (pulsing intensity) */}
+        {/* Soft left-side wash so text stays legible (pulsing intensity, drifts laterally) */}
         <div
           aria-hidden
           className="absolute inset-0 o100-hero-wash"
           style={{
             background:
-              "linear-gradient(90deg, rgba(245,239,231,0.96) 0%, rgba(245,239,231,0.80) 30%, rgba(245,239,231,0.35) 55%, rgba(245,239,231,0) 75%)",
+              "linear-gradient(90deg, rgba(245,239,231,0.95) 0%, rgba(245,239,231,0.78) 30%, rgba(245,239,231,0.35) 55%, rgba(245,239,231,0) 75%)",
+            backgroundSize: "220% 100%",
             zIndex: 2,
+            animation: "_heroLightV2 8s ease-in-out infinite",
           }}
         />
-        {/* Diagonal sheen — bright light sweep across the visible photo area */}
+        {/* Diagonal sheen — bright light sweep across visible photo area */}
         <div
           aria-hidden
           className="absolute inset-y-0 o100-hero-sheen pointer-events-none"
           style={{
             zIndex: 3,
-            left: "25%",
-            width: "40%",
+            left: "20%",
+            width: "45%",
             background:
-              "linear-gradient(100deg, transparent 0%, rgba(255,245,220,0) 25%, rgba(255,245,220,0.55) 50%, rgba(255,245,220,0) 75%, transparent 100%)",
-            mixBlendMode: "soft-light",
+              "linear-gradient(100deg, transparent 0%, rgba(255,240,210,0) 20%, rgba(255,240,210,0.75) 50%, rgba(255,240,210,0) 80%, transparent 100%)",
+            animation: "_heroSheenV2 5.5s ease-in-out infinite",
           }}
         />
 
