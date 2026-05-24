@@ -167,25 +167,30 @@ function MainV2Page() {
       >
         {/* Hero light/brightness animation (mirrors `_light` on main page) */}
         <style>{`
-          @keyframes _heroLightV2 {
-            0%, 100% { background-position: 0% 50%; opacity: 1; }
-            33%      { background-position: 30% 50%; opacity: 0.94; }
-            66%      { background-position: 60% 50%; opacity: 0.97; }
-          }
           @keyframes _heroImgPulseV2 {
-            0%, 100% { filter: brightness(1.00) contrast(1.02) saturate(1.00); transform: scale(1); }
-            50%      { filter: brightness(1.06) contrast(1.04) saturate(1.04); transform: scale(1.012); }
+            0%, 100% { filter: brightness(0.94) contrast(1.02) saturate(0.98); transform: scale(1); }
+            50%      { filter: brightness(1.14) contrast(1.07) saturate(1.10); transform: scale(1.025); }
+          }
+          @keyframes _heroLightV2 {
+            0%, 100% { opacity: 0.55; background-position: 0% 50%; }
+            50%      { opacity: 1.00; background-position: 100% 50%; }
           }
           @keyframes _heroSheenV2 {
-            0%   { transform: translateX(-30%); opacity: 0; }
-            45%  { opacity: 0.55; }
-            100% { transform: translateX(140%); opacity: 0; }
+            0%   { transform: translateX(-40%) skewX(-12deg); opacity: 0; }
+            12%  { opacity: 0.9; }
+            55%  { opacity: 0.9; }
+            100% { transform: translateX(260%) skewX(-12deg); opacity: 0; }
           }
-          .o100-hero-img    { animation: _heroImgPulseV2 9s ease-in-out infinite; will-change: filter, transform; }
-          .o100-hero-wash   { background-size: 200% 100%; animation: _heroLightV2 11s ease-in-out infinite; }
-          .o100-hero-sheen  { animation: _heroSheenV2 7s ease-in-out 1.2s infinite; }
+          @keyframes _heroSunV2 {
+            0%, 100% { opacity: 0.35; transform: translate(0,0) scale(1); }
+            50%      { opacity: 0.85; transform: translate(-22px, 18px) scale(1.12); }
+          }
+          .o100-hero-img    { animation: _heroImgPulseV2 7s ease-in-out infinite; will-change: filter, transform; }
+          .o100-hero-wash   { background-size: 220% 100%; animation: _heroLightV2 8s ease-in-out infinite; }
+          .o100-hero-sheen  { animation: _heroSheenV2 6.5s ease-in-out infinite; }
+          .o100-hero-sun    { animation: _heroSunV2 9s ease-in-out infinite; mix-blend-mode: screen; filter: blur(40px); }
           @media (prefers-reduced-motion: reduce) {
-            .o100-hero-img, .o100-hero-wash, .o100-hero-sheen { animation: none !important; }
+            .o100-hero-img, .o100-hero-wash, .o100-hero-sheen, .o100-hero-sun { animation: none !important; }
           }
         `}</style>
 
@@ -196,26 +201,41 @@ function MainV2Page() {
           className="absolute inset-0 w-full h-full object-cover o100-hero-img"
           style={{ objectPosition: "right center", zIndex: 0 }}
         />
-        {/* Soft left-side wash so text stays legible on any crop */}
+        {/* Warm "sun" glow on the right side of the photo — pulsing light source */}
+        <div
+          aria-hidden
+          className="absolute o100-hero-sun pointer-events-none"
+          style={{
+            zIndex: 1,
+            top: "8%",
+            right: "8%",
+            width: 420,
+            height: 420,
+            borderRadius: "50%",
+            background:
+              "radial-gradient(circle, rgba(255,224,180,0.85) 0%, rgba(255,200,140,0.45) 35%, rgba(255,180,120,0) 70%)",
+          }}
+        />
+        {/* Soft left-side wash so text stays legible on any crop (pulsing intensity) */}
         <div
           aria-hidden
           className="absolute inset-0 o100-hero-wash"
           style={{
             background:
-              "linear-gradient(90deg, rgba(245,239,231,0.92) 0%, rgba(245,239,231,0.78) 30%, rgba(245,239,231,0.35) 55%, rgba(245,239,231,0) 75%)",
-            zIndex: 1,
+              "linear-gradient(90deg, rgba(245,239,231,0.96) 0%, rgba(245,239,231,0.80) 30%, rgba(245,239,231,0.35) 55%, rgba(245,239,231,0) 75%)",
+            zIndex: 2,
           }}
         />
-        {/* Diagonal sheen — warm light sweep across the photo */}
+        {/* Diagonal sheen — bright light sweep across the visible photo area */}
         <div
           aria-hidden
           className="absolute inset-y-0 o100-hero-sheen pointer-events-none"
           style={{
-            zIndex: 1,
-            left: 0,
-            width: "35%",
+            zIndex: 3,
+            left: "25%",
+            width: "40%",
             background:
-              "linear-gradient(100deg, transparent 0%, rgba(255,236,210,0.0) 20%, rgba(255,236,210,0.35) 50%, rgba(255,236,210,0.0) 80%, transparent 100%)",
+              "linear-gradient(100deg, transparent 0%, rgba(255,245,220,0) 25%, rgba(255,245,220,0.55) 50%, rgba(255,245,220,0) 75%, transparent 100%)",
             mixBlendMode: "soft-light",
           }}
         />
