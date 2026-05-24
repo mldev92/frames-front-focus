@@ -171,23 +171,22 @@ function MainV2Page() {
             OS toggle is on. */}
         <style>{`
           @keyframes _heroImgPulseV2 {
-            0%, 100% { filter: brightness(0.78) contrast(1.00) saturate(0.95); transform: scale(1.00); }
-            50%      { filter: brightness(1.25) contrast(1.12) saturate(1.18); transform: scale(1.05); }
+            0%, 100% { filter: brightness(0.96) contrast(1.00) saturate(1.00); transform: scale(1.00); }
+            50%      { filter: brightness(1.06) contrast(1.03) saturate(1.04); transform: scale(1.012); }
           }
           @keyframes _heroLightV2 {
             0%, 100% { opacity: 1.00; background-position:   0% 50%; }
-            33%      { opacity: 0.78; background-position:  50% 50%; }
-            66%      { opacity: 0.92; background-position: 100% 50%; }
+            50%      { opacity: 0.92; background-position: 100% 50%; }
           }
           @keyframes _heroSheenV2 {
             0%   { transform: translateX(-60%) skewX(-14deg); opacity: 0; }
-            10%  { opacity: 1; }
-            55%  { opacity: 1; }
+            15%  { opacity: 0.35; }
+            55%  { opacity: 0.35; }
             100% { transform: translateX(260%) skewX(-14deg); opacity: 0; }
           }
           @keyframes _heroSunV2 {
-            0%, 100% { opacity: 0.55; transform: translate(0,0) scale(1.00); }
-            50%      { opacity: 1.00; transform: translate(-26px, 22px) scale(1.18); }
+            0%, 100% { opacity: 0.45; transform: translate(0,0) scale(1.00); }
+            50%      { opacity: 0.70; transform: translate(-12px, 10px) scale(1.06); }
           }
         `}</style>
 
@@ -254,9 +253,9 @@ function MainV2Page() {
             width: "45%",
             zIndex: 3,
             background:
-              "linear-gradient(100deg, transparent 0%, rgba(255,240,210,0) 20%, rgba(255,240,210,0.85) 50%, rgba(255,240,210,0) 80%, transparent 100%)",
+              "linear-gradient(100deg, transparent 0%, rgba(255,240,210,0) 20%, rgba(255,240,210,0.55) 50%, rgba(255,240,210,0) 80%, transparent 100%)",
             pointerEvents: "none",
-            animation: "_heroSheenV2 5.5s ease-in-out infinite",
+            animation: "_heroSheenV2 9s ease-in-out infinite",
           }}
         />
 
