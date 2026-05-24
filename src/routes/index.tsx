@@ -645,51 +645,113 @@ function MainV2Page() {
          ───────────────────────────────────────────────────────────── */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "var(--background)" }}>
         <div className="grid lg:grid-cols-2 gap-6 items-stretch">
-          {/* Left — child myopia */}
+          {/* Left — animated main banner */}
           <Reveal>
             <div
               className="relative rounded-2xl overflow-hidden h-full"
               style={{ minHeight: 380 }}
             >
+              <style>{`
+                @keyframes _o100SecondSweep {
+                  0% { transform: translateX(-140%) skewX(-18deg); opacity: 0; }
+                  14% { opacity: 0.3; }
+                  56% { opacity: 0.3; }
+                  100% { transform: translateX(260%) skewX(-18deg); opacity: 0; }
+                }
+              `}</style>
               <img
-                src="/main_bottom_child_banner.png"
+                src="/main_banner_v4.jpg"
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover"
+                style={{
+                  animation: "_heroImgPulseV2 7s ease-in-out infinite",
+                }}
               />
               <div
                 aria-hidden
                 className="absolute inset-0"
                 style={{
                   background:
-                    "linear-gradient(180deg, rgba(245,239,231,0.92) 0%, rgba(245,239,231,0.55) 40%, rgba(245,239,231,0) 70%)",
+                    "linear-gradient(95deg, rgba(26,5,8,0.78) 0%, rgba(26,5,8,0.48) 48%, rgba(26,5,8,0.14) 100%)",
+                  backgroundSize: "200% 100%",
+                  animation: "_heroLightV2 9s ease-in-out infinite",
                 }}
               />
-              <div className="relative h-full flex flex-col justify-start p-8 lg:p-10" style={{ maxWidth: 420 }}>
+              <div
+                aria-hidden
+                className="absolute"
+                style={{
+                  top: "-18%",
+                  right: "-10%",
+                  width: 300,
+                  height: 300,
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle, rgba(255,225,170,0.72) 0%, rgba(255,190,140,0.34) 38%, rgba(255,170,110,0) 70%)",
+                  filter: "blur(26px)",
+                  mixBlendMode: "screen",
+                  pointerEvents: "none",
+                  animation: "_heroSunV2 8s ease-in-out infinite",
+                }}
+              />
+              <div className="relative h-full flex flex-col justify-end p-8 lg:p-10" style={{ maxWidth: 480 }}>
                 <div
-                  className="text-[11px] uppercase tracking-[0.2em] mb-3"
-                  style={{ color: "var(--brand)" }}
+                  className="text-[11px] uppercase tracking-[0.2em] mb-3 text-white/75"
                 >
-                  Забота о зрении
+                  Главный баннер
                 </div>
                 <h3
-                  className="font-serif text-foreground"
-                  style={{ fontSize: 28, lineHeight: 1.15, marginBottom: 14, letterSpacing: "-0.01em" }}
+                  className="font-serif text-white"
+                  style={{ fontSize: 29, lineHeight: 1.12, marginBottom: 14, letterSpacing: "-0.01em" }}
                 >
-                  Контроль миопии<br />у детей и подростков
+                  Новая коллекция оправ<br />с виртуальной примеркой
                 </h3>
                 <p
-                  className="text-muted-foreground"
-                  style={{ fontSize: 14, lineHeight: 1.55, marginBottom: 24 }}
+                  className="text-white/80"
+                  style={{ fontSize: 14, lineHeight: 1.55, marginBottom: 24, maxWidth: 430 }}
                 >
-                  Эффективные методики замедления прогрессирования близорукости и сохранения здоровья глаз.
+                  Более 11 000 моделей, персональный подбор и примерка онлайн перед покупкой.
                 </p>
-                <a
-                  href={serviceHref("diagnostika")}
-                  className="inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold text-white self-start hover:opacity-90 transition-opacity"
-                  style={{ background: "var(--brand)" }}
+                <div className="flex flex-wrap gap-3">
+                  <Link
+                    to="/catalog_s/$category"
+                    params={{ category: "opravy" }}
+                    className="inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold self-start hover:opacity-90 transition-opacity"
+                    style={{ background: "#fff", color: "#1a0508" }}
+                  >
+                    Подобрать оправу
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setVtoOpen(true)}
+                    className="relative overflow-hidden inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold self-start transition-colors"
+                    style={{
+                      color: "#fff",
+                      border: "1px solid rgba(255,255,255,0.45)",
+                      background: "rgba(255,255,255,0.08)",
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute top-0 bottom-0 left-0 w-16 -translate-x-full skew-x-[-18deg]"
+                      style={{
+                        background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.46) 50%, transparent 100%)",
+                        animation: "_o100SecondSweep 3.2s ease-in-out infinite",
+                      }}
+                    />
+                    <span className="relative z-[1]">Примерить онлайн</span>
+                  </button>
+                </div>
+                <div
+                  aria-hidden
+                  className="absolute top-0 -left-24 h-full w-28 -skew-x-[14deg]"
+                  style={{
+                    background: "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.2) 50%, transparent 100%)",
+                    animation: "_heroSheenV2 11s ease-in-out infinite",
+                    pointerEvents: "none",
+                  }}
                 >
-                  Узнать больше
-                </a>
+                </div>
               </div>
             </div>
           </Reveal>
