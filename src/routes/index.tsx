@@ -361,9 +361,18 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           1b. SERVICE STRIP — separate white section, 4 icon cards
          ───────────────────────────────────────────────────────────── */}
-      <section className="bg-white border-b border-gray-100 py-10 relative z-20 -mt-6 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.03)] mx-4 md:mx-10 reveal-on-scroll">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+      <section
+        className="relative w-full"
+        style={{ background: "var(--background)" }}
+      >
+        <div
+          className="mx-auto max-w-7xl"
+          style={{
+            padding: "clamp(28px, 4vw, 48px) clamp(24px, 5vw, 64px)",
+          }}
+        >
+          <Reveal>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-100">
             <div className="flex items-start space-x-4 md:px-6 pt-6 md:pt-0 group">
               <div className="w-12 h-12 rounded-full bg-[#fbf9f6] flex items-center justify-center flex-shrink-0 text-[#c83b3b] group-hover:bg-[#c83b3b] group-hover:text-white transition-colors duration-300">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -417,8 +426,11 @@ function MainV2Page() {
                 <p className="text-xs text-gray-500 leading-relaxed">Быстрый и качественный ремонт</p>
               </div>
             </div>
+
+            </div>
+          </Reveal>
           </div>
-        </div>
+        
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
