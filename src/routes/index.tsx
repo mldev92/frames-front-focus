@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
   ArrowRight,
@@ -1008,9 +1008,14 @@ function MainV2Page() {
  */
 function MainV2ProductCard({ product }: { product: Product }) {
   const { toggleSaved, saved } = useCart();
+  const navigate = useNavigate();
   const isSaved = saved.includes(product.slug);
   const dots = product.colors?.slice(0, 4) ?? [];
   const extra = (product.colors?.length ?? 0) - dots.length;
+  const productRouteParams = {
+    category: categoryToSegment[product.category],
+    slug: product.slug,
+  };
 
   // Compose display name: prefer brand prefix when set (e.g. "Ray-Ban RX 7159"),
   // else fall back to product.name alone.
@@ -1029,29 +1034,35 @@ function MainV2ProductCard({ product }: { product: Product }) {
           "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)",
       }}
     >
-      <Link
-        to="/catalog_s/$category/$slug"
-        params={{
-          category: categoryToSegment[product.category],
-          slug: product.slug,
-        }}
-        className="relative block aspect-square"
-        aria-label={displayName}
-      >
-        <img
-          src={product.images[0]}
-          alt={displayName}
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-contain p-7 transition-transform duration-500 group-hover/card:scale-[1.04]"
-        />
-        <span
-          className="absolute top-3 right-3 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors group-hover/card:text-brand"
+      <div className="relative block aspect-square">
+        <Link
+          to="/catalog_s/$category/$slug"
+          params={productRouteParams}
+          className="relative block h-full w-full"
+          aria-label={displayName}
+        >
+          <img
+            src={product.images[0]}
+            alt={displayName}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-contain p-7 transition-transform duration-500 group-hover/card:scale-[1.04]"
+          />
+        </Link>
+        <button
+          type="button"
+          onClick={() =>
+            navigate({
+              to: "/catalog_s/$category/$slug",
+              params: productRouteParams,
+            })
+          }
+          className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:text-brand active:translate-y-0 active:scale-[0.98]"
           style={{
             borderColor: "color-mix(in oklch, var(--foreground) 14%, transparent)",
             background: "color-mix(in oklch, white 92%, transparent)",
             color: "var(--foreground)",
           }}
-          aria-hidden="true"
+          aria-label="Примерить"
         >
           <svg
             width="16"
@@ -1059,6 +1070,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
             viewBox="0 0 16 16"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
             <path
               fillRule="evenodd"
@@ -1068,14 +1080,11 @@ function MainV2ProductCard({ product }: { product: Product }) {
             />
           </svg>
           <span>Примерить</span>
-        </span>
+        </button>
         <button
           type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            toggleSaved(product.slug);
-          }}
-          className="absolute top-3 left-3 flex items-center justify-center rounded-full transition-colors"
+          onClick={() => toggleSaved(product.slug)}
+          className="absolute top-3 left-3 z-10 flex items-center justify-center rounded-full transition-colors"
           style={{
             width: 36,
             height: 36,
@@ -1090,7 +1099,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
             fill={isSaved ? "var(--brand)" : "none"}
           />
         </button>
-      </Link>
+      </div>
 
       <div
         className="flex flex-col gap-2"
@@ -1098,10 +1107,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
       >
         <Link
           to="/catalog_s/$category/$slug"
-          params={{
-            category: categoryToSegment[product.category],
-            slug: product.slug,
-          }}
+          params={productRouteParams}
           className="text-sm text-foreground hover:text-brand transition-colors"
           style={{ lineHeight: 1.3 }}
         >
