@@ -1002,7 +1002,7 @@ function MainV2Page() {
 /**
  * Local product card for main-v2. Differs from the shared `ProductCard`:
  *   – Heart icon (favorite) is always visible top-right, red outline.
- *   – No try-on badge overlay (the page surfaces VTO via the hero CTA / promo banner).
+ *   – "Примерить" action button with icon below the color row.
  *   – Simpler price + color-dots row, no brand caption.
  *   – White card with rounded corners that sit on the cream background.
  */
@@ -1011,6 +1011,8 @@ function MainV2ProductCard({ product }: { product: Product }) {
   const isSaved = saved.includes(product.slug);
   const dots = product.colors?.slice(0, 4) ?? [];
   const extra = (product.colors?.length ?? 0) - dots.length;
+  const [vtoOpen, setVtoOpen] = useState(false);
+  const vtoSku = product.vtoSku ?? "rayban_wayfarer_havane_marron";
 
   // Compose display name: prefer brand prefix when set (e.g. "Ray-Ban RX 7159"),
   // else fall back to product.name alone.
@@ -1114,7 +1116,40 @@ function MainV2ProductCard({ product }: { product: Product }) {
             )}
           </div>
         )}
+        <button
+          type="button"
+          onClick={() => setVtoOpen(true)}
+          className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors hover:text-brand"
+          style={{
+            borderColor: "color-mix(in oklch, var(--foreground) 14%, transparent)",
+            color: "var(--foreground)",
+          }}
+          aria-label="Примерить"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M2.402 2.652a.25.25 0 0 0-.25.25v2a.75.75 0 1 1-1.5 0v-2c0-.966.784-1.75 1.75-1.75h2a.75.75 0 1 1 0 1.5h-2Zm11.146.25a.25.25 0 0 0-.25-.25h-2a.75.75 0 0 1 0-1.5h2c.967 0 1.75.784 1.75 1.75v2a.75.75 0 0 1-1.5 0v-2ZM2.402 14.048a.25.25 0 0 1-.25-.25v-2a.75.75 0 1 0-1.5 0v2c0 .966.784 1.75 1.75 1.75h2a.75.75 0 0 0 0-1.5h-2Zm10.896 0a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2a1.75 1.75 0 0 1-1.75 1.75h-2a.75.75 0 0 1 0-1.5h2ZM8 7.25a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm-3.75 4.5a3.75 3.75 0 1 1 7.5 0h-1.5a2.25 2.25 0 1 0-4.5 0h-1.5Z"
+              fill="currentColor"
+            />
+          </svg>
+          <span>Примерить</span>
+        </button>
       </div>
+
+      <VirtualTryOnModal
+        open={vtoOpen}
+        onClose={() => setVtoOpen(false)}
+        vtoSku={vtoSku}
+      />
     </div>
   );
 }
