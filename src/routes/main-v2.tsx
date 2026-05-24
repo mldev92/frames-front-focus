@@ -39,26 +39,30 @@ export const Route = createFileRoute("/main-v2")({
 const HERO_SERVICES = [
   {
     slug: "priem-vracha",
-    title: "Запись к врачу",
-    subtitle: "Онлайн в 2 клика",
+    kicker: "Приём",
+    title: "Запись к офтальмологу",
+    subtitle: "Слот в день обращения",
     Icon: Stethoscope,
   },
   {
     slug: "podbor-ochkov",
+    kicker: "Подбор",
     title: "Подбор оправ",
-    subtitle: "С учётом черт лица",
+    subtitle: "Стилист по форме лица",
     Icon: Glasses,
   },
   {
     slug: "diagnostika",
+    kicker: "Диагностика",
     title: "Диагностика зрения",
-    subtitle: "Полное обследование",
+    subtitle: "Авторефрактометрия и PD",
     Icon: Eye,
   },
   {
     slug: "remont",
+    kicker: "Сервис",
     title: "Ремонт очков",
-    subtitle: "Свой сервис-центр",
+    subtitle: "Свой сервисный центр",
     Icon: Wrench,
   },
 ] as const;
@@ -72,23 +76,23 @@ const HERO_STATS = [
 const TRUST_REASONS = [
   {
     Icon: GraduationCap,
-    title: "Опыт и экспертиза",
-    text: "Более 10 лет помогаем видеть лучше.",
+    title: "10 лет в оптике",
+    text: "Команда из 18 врачей и оптометристов. Принимаем по ОМС и ДМС.",
   },
   {
     Icon: Microscope,
-    title: "Современное оборудование",
-    text: "Диагностика на оборудовании премиум-класса.",
+    title: "Премиум-диагностика",
+    text: "Авторефрактометр Topcon, аберрометр Tracey-VFA, биомикроскоп Zeiss.",
   },
   {
     Icon: ShieldCheck,
-    title: "Гарантия качества",
-    text: "Оригинальные линзы и оправы с гарантией.",
+    title: "Гарантия 12 месяцев",
+    text: "Только оригинальные линзы и оправы. Бесплатная замена при браке.",
   },
   {
     Icon: HeartHandshake,
-    title: "Сервис на высоте",
-    text: "Индивидуальный подход и забота о каждом клиенте.",
+    title: "Бесплатный сервис",
+    text: "Подгонка, чистка, замена винтов — навсегда после покупки.",
   },
 ];
 
@@ -372,54 +376,95 @@ function MainV2Page() {
           }}
         >
           <Reveal>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-              {HERO_SERVICES.map(({ slug, title, subtitle, Icon }) => {
+            <style>{`
+              .o100-svc-grid{
+                display:grid; grid-template-columns: 1fr 1fr; gap: 20px 16px;
+              }
+              @media (min-width: 1024px){
+                .o100-svc-grid{ grid-template-columns: repeat(4, minmax(0,1fr)); gap: 0; }
+                .o100-svc-cell{ padding: 4px 28px; border-left: 1px solid var(--border); }
+                .o100-svc-cell:first-child{ border-left: 0; padding-left: 0; }
+                .o100-svc-cell:last-child{ padding-right: 0; }
+              }
+              .o100-svc-cell .o100-svc-icon{
+                background: var(--cream);
+                border: 1px solid var(--border);
+                box-shadow: 0 1px 2px rgba(20,18,16,0.04), inset 0 0 0 1px rgba(255,255,255,0.55);
+                transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+              }
+              .o100-svc-cell:hover .o100-svc-icon{
+                border-color: color-mix(in oklab, var(--brand) 35%, var(--border));
+                box-shadow: 0 4px 14px -8px rgba(180,40,30,0.35), inset 0 0 0 1px rgba(255,255,255,0.7);
+                transform: translateY(-1px);
+              }
+            `}</style>
+            <div className="o100-svc-grid">
+              {HERO_SERVICES.map(({ slug, kicker, title, subtitle, Icon }, i) => {
                 const inner = (
-                  <>
+                  <div className="flex items-start gap-4">
                     <span
-                      className="flex items-center justify-center rounded-full shrink-0"
+                      className="o100-svc-icon flex items-center justify-center rounded-full shrink-0"
                       style={{
-                        width: 44,
-                        height: 44,
-                        background: "var(--cream)",
+                        width: 56,
+                        height: 56,
                         color: "var(--foreground)",
-                        border: "1px solid var(--border)",
                       }}
                     >
-                      <Icon size={20} strokeWidth={1.75} />
+                      <Icon size={22} strokeWidth={1.5} />
                     </span>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col" style={{ paddingTop: 2 }}>
                       <span
-                        className="font-medium text-foreground leading-tight"
-                        style={{ fontSize: 15 }}
+                        style={{
+                          fontFamily: "var(--font-mono)",
+                          fontSize: 10,
+                          letterSpacing: "0.18em",
+                          textTransform: "uppercase",
+                          color: "var(--muted-foreground)",
+                          marginBottom: 6,
+                        }}
+                      >
+                        {String(i + 1).padStart(2, "0")} · {kicker}
+                      </span>
+                      <span
+                        className="font-medium text-foreground"
+                        style={{
+                          fontSize: 15.5,
+                          lineHeight: 1.25,
+                          letterSpacing: "-0.005em",
+                        }}
                       >
                         {title}
                       </span>
                       <span
-                        className="text-muted-foreground leading-tight"
-                        style={{ fontSize: 12.5, marginTop: 3 }}
+                        className="text-muted-foreground"
+                        style={{
+                          fontSize: 12.5,
+                          lineHeight: 1.4,
+                          marginTop: 4,
+                        }}
                       >
                         {subtitle}
                       </span>
                     </div>
-                  </>
+                  </div>
                 );
-                const className =
-                  "flex items-center gap-3.5 text-left w-full hover:-translate-y-0.5 transition-transform duration-200";
+                const cellClass =
+                  "o100-svc-cell text-left w-full block group cursor-pointer";
                 if (slug === "priem-vracha") {
                   return (
                     <button
                       key={slug}
                       type="button"
                       onClick={() => setAptOpen(true)}
-                      className={`${className} bg-transparent border-0 cursor-pointer p-0`}
+                      className={`${cellClass} bg-transparent border-0 p-0`}
+                      style={{ font: "inherit" }}
                     >
                       {inner}
                     </button>
                   );
                 }
                 return (
-                  <a key={slug} href={serviceHref(slug)} className={className}>
+                  <a key={slug} href={serviceHref(slug)} className={cellClass}>
                     {inner}
                   </a>
                 );
@@ -545,11 +590,33 @@ function MainV2Page() {
             <style>{`
               .o100-trust-grid{display:grid;gap:40px;grid-template-columns:1fr}
               @media (min-width:1024px){
-                .o100-trust-grid{grid-template-columns:1fr 1.6fr;gap:64px;align-items:start}
+                .o100-trust-grid{grid-template-columns:1fr 1.6fr;gap:72px;align-items:start}
               }
-              .o100-trust-items{display:grid;gap:32px;grid-template-columns:1fr 1fr}
+              .o100-trust-items{display:grid;gap:28px;grid-template-columns:1fr 1fr}
               @media (min-width:768px){
-                .o100-trust-items{grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}
+                .o100-trust-items{grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
+                .o100-trust-cell{padding:4px 24px;border-left:1px solid var(--border)}
+                .o100-trust-cell:first-child{border-left:0;padding-left:0}
+                .o100-trust-cell:last-child{padding-right:0}
+              }
+              .o100-trust-cell .o100-trust-icon{
+                transition: border-color 200ms ease, color 200ms ease, transform 200ms ease;
+              }
+              .o100-trust-cell:hover .o100-trust-icon{
+                border-color: color-mix(in oklab, var(--brand) 40%, var(--border));
+                color: var(--brand);
+                transform: translateY(-1px);
+              }
+              .o100-trust-meta{
+                font-family:var(--font-mono); font-size:10.5px;
+                letter-spacing:0.18em; text-transform:uppercase;
+                color:var(--muted-foreground);
+                display:flex; align-items:center; gap:10px;
+                margin-bottom:14px;
+              }
+              .o100-trust-meta::after{
+                content:""; flex:1 1 auto; height:1px;
+                background:var(--border);
               }
             `}</style>
             <div className="o100-trust-grid">
@@ -565,36 +632,57 @@ function MainV2Page() {
                   className="font-serif text-foreground"
                   style={{
                     fontSize: "clamp(28px, 3.4vw, 42px)",
-                    lineHeight: 1.1,
-                    letterSpacing: "-0.01em",
+                    lineHeight: 1.05,
+                    letterSpacing: "-0.015em",
+                    marginBottom: 18,
                   }}
                 >
                   Профессионализм.
                   <br />
-                  Качество. Забота.
+                  Качество. <em style={{ fontStyle: "italic", fontWeight: 400 }}>Забота.</em>
                 </h2>
+                <p
+                  className="text-muted-foreground"
+                  style={{
+                    fontSize: 15,
+                    lineHeight: 1.55,
+                    maxWidth: 380,
+                  }}
+                >
+                  Мы открыли первую оптику в&nbsp;2014&nbsp;году. С&nbsp;тех пор подобрали
+                  очки 47&nbsp;000+ человек.
+                </p>
               </Reveal>
 
               {/* Right — 4 reasons */}
               <div className="o100-trust-items">
                 {TRUST_REASONS.map(({ Icon, title, text }, i) => (
                   <Reveal key={title} delay={i * 90}>
-                    <div className="flex flex-col">
+                    <div className="o100-trust-cell flex flex-col">
+                      <div className="o100-trust-meta">
+                        {String(i + 1).padStart(2, "0")}
+                      </div>
                       <span
-                        className="flex items-center justify-center rounded-full mb-4"
+                        className="o100-trust-icon flex items-center justify-center rounded-full mb-5"
                         style={{
-                          width: 48,
-                          height: 48,
+                          width: 52,
+                          height: 52,
                           border: "1px solid var(--border)",
                           color: "var(--foreground)",
                           background: "var(--background)",
                         }}
                       >
-                        <Icon size={22} strokeWidth={1.6} />
+                        <Icon size={22} strokeWidth={1.5} />
                       </span>
                       <div
-                        className="font-medium text-foreground"
-                        style={{ fontSize: 15, marginBottom: 8, lineHeight: 1.3 }}
+                        className="font-serif text-foreground"
+                        style={{
+                          fontSize: 17,
+                          marginBottom: 8,
+                          lineHeight: 1.2,
+                          letterSpacing: "-0.005em",
+                          fontWeight: 500,
+                        }}
                       >
                         {title}
                       </div>
