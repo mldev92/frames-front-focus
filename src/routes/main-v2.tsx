@@ -4,7 +4,6 @@ import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
-  Stethoscope,
   Eye,
   Glasses,
   Wrench,
@@ -17,12 +16,13 @@ import {
 import { SalonsSection } from "@/components/SalonsSection";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
-import { TryOnIcon } from "@/components/TryOnIcon";
 import { Reveal } from "@/components/Reveal";
 import { catalogHref, categoryToSegment } from "@/data/categories";
 import { bestsellers } from "@/data/products";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
+import { Calendar, Users, MapPin, Award, Phone, Send } from "lucide-react";
+import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
 
@@ -39,38 +39,38 @@ export const Route = createFileRoute("/main-v2")({
 const HERO_SERVICES = [
   {
     slug: "priem-vracha",
-    kicker: "Приём",
-    title: "Запись к офтальмологу",
-    subtitle: "Слот в день обращения",
-    Icon: Stethoscope,
+    kicker: "Диагностика",
+    title: "Проверка зрения",
+    subtitle: "Современная диагностика за 30 минут",
+    Icon: Eye,
   },
   {
     slug: "podbor-ochkov",
     kicker: "Подбор",
-    title: "Подбор оправ",
-    subtitle: "Стилист по форме лица",
+    title: "Подбор очков",
+    subtitle: "Индивидуальный подбор оправ и линз",
     Icon: Glasses,
   },
   {
     slug: "diagnostika",
-    kicker: "Диагностика",
-    title: "Диагностика зрения",
-    subtitle: "Авторефрактометрия и PD",
-    Icon: Eye,
+    kicker: "Миопия",
+    title: "Контроль миопии",
+    subtitle: "Программы для детей и подростков",
+    Icon: Heart,
   },
   {
     slug: "remont",
     kicker: "Сервис",
     title: "Ремонт очков",
-    subtitle: "Свой сервисный центр",
+    subtitle: "Быстрый и качественный ремонт",
     Icon: Wrench,
   },
 ] as const;
 
 const HERO_STATS = [
-  { value: "11 000+", label: "оправ от 120 брендов" },
-  { value: "2 города", label: "СПб · Новокузнецк" },
-  { value: "4.9 ★", label: "1 840 отзывов" },
+  { value: "11 000+", label: "довольных клиентов", Icon: Users },
+  { value: "2 города", label: "салоны оптики", Icon: MapPin },
+  { value: "10+ лет", label: "заботы о вашем зрении", Icon: Award },
 ];
 
 const TRUST_REASONS = [
@@ -154,7 +154,7 @@ const CAT_CELLS = [
 
 function MainV2Page() {
   const hits = bestsellers();
-  const recent = articles.slice(0, 3);
+  const recent = articles.slice(0, 2);
   const [aptOpen, setAptOpen] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
 
@@ -302,38 +302,26 @@ function MainV2Page() {
                   marginBottom: 32,
                 }}
               >
-                Более 11&nbsp;000 оправ от 120 брендов. Ручная подгонка
-                в&nbsp;наших салонах в&nbsp;Санкт-Петербурге
-                и&nbsp;Новокузнецке.
+                Современные очки, профессиональный подбор и&nbsp;забота
+                о&nbsp;вашем зрении.
               </p>
 
               <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAptOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity cursor-pointer"
+                  style={{ background: "var(--brand)" }}
+                >
+                  Записаться на проверку
+                </button>
                 <Link
                   to="/catalog_s/$category"
                   params={{ category: "opravy" }}
-                  className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold bg-foreground text-background hover:opacity-90 transition-opacity"
+                  className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold border border-foreground text-foreground bg-transparent hover:bg-foreground hover:text-background transition-colors"
                 >
-                  Подобрать оправу
-                  <ArrowRight className="h-4 w-4" />
+                  Подобрать очки
                 </Link>
-                <button
-                  type="button"
-                  onClick={() => setVtoOpen(true)}
-                  className="group inline-flex items-center gap-2.5 rounded-full px-6 py-3.5 text-sm font-semibold border border-foreground text-foreground bg-transparent hover:bg-foreground hover:text-background transition-colors cursor-pointer"
-                >
-                  <span
-                    className="flex items-center justify-center rounded-full transition-colors"
-                    style={{
-                      width: 26,
-                      height: 26,
-                      background: "var(--brand)",
-                      color: "var(--brand-foreground)",
-                    }}
-                  >
-                    <TryOnIcon className="h-3.5 w-3.5" />
-                  </span>
-                  Виртуальная примерка
-                </button>
               </div>
 
               <div
@@ -341,19 +329,32 @@ function MainV2Page() {
                 style={{ maxWidth: 460 }}
               >
                 {HERO_STATS.map((s) => (
-                  <div key={s.label} className="flex flex-col gap-1">
-                    <strong
-                      className="font-serif text-foreground"
-                      style={{ fontSize: 20 }}
-                    >
-                      {s.value}
-                    </strong>
+                  <div key={s.label} className="flex items-start gap-2.5">
                     <span
-                      className="text-muted-foreground"
-                      style={{ fontSize: 12, lineHeight: 1.35 }}
+                      className="flex items-center justify-center rounded-full shrink-0"
+                      style={{
+                        width: 32,
+                        height: 32,
+                        background: "color-mix(in oklab, var(--brand) 12%, transparent)",
+                        color: "var(--brand)",
+                      }}
                     >
-                      {s.label}
+                      <s.Icon size={16} strokeWidth={1.75} />
                     </span>
+                    <div className="flex flex-col">
+                      <strong
+                        className="font-serif text-foreground"
+                        style={{ fontSize: 18, lineHeight: 1.1 }}
+                      >
+                        {s.value}
+                      </strong>
+                      <span
+                        className="text-muted-foreground"
+                        style={{ fontSize: 12, lineHeight: 1.35, marginTop: 2 }}
+                      >
+                        {s.label}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -580,7 +581,7 @@ function MainV2Page() {
           4. WHY TRUST US — Почему нам доверяют (2-col: heading | 4 reasons)
          ───────────────────────────────────────────────────────────── */}
       <section
-        style={{ background: "var(--surface)", padding: "clamp(56px, 7vw, 96px) 0" }}
+        style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
       >
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <div
@@ -594,29 +595,14 @@ function MainV2Page() {
               }
               .o100-trust-items{display:grid;gap:28px;grid-template-columns:1fr 1fr}
               @media (min-width:768px){
-                .o100-trust-items{grid-template-columns:repeat(4,minmax(0,1fr));gap:0}
-                .o100-trust-cell{padding:4px 24px;border-left:1px solid var(--border)}
-                .o100-trust-cell:first-child{border-left:0;padding-left:0}
-                .o100-trust-cell:last-child{padding-right:0}
+                .o100-trust-items{grid-template-columns:repeat(4,minmax(0,1fr));gap:24px}
               }
               .o100-trust-cell .o100-trust-icon{
-                transition: border-color 200ms ease, color 200ms ease, transform 200ms ease;
+                transition: background-color 200ms ease, transform 200ms ease;
               }
               .o100-trust-cell:hover .o100-trust-icon{
-                border-color: color-mix(in oklab, var(--brand) 40%, var(--border));
-                color: var(--brand);
+                background: color-mix(in oklab, var(--brand) 18%, transparent);
                 transform: translateY(-1px);
-              }
-              .o100-trust-meta{
-                font-family:var(--font-mono); font-size:10.5px;
-                letter-spacing:0.18em; text-transform:uppercase;
-                color:var(--muted-foreground);
-                display:flex; align-items:center; gap:10px;
-                margin-bottom:14px;
-              }
-              .o100-trust-meta::after{
-                content:""; flex:1 1 auto; height:1px;
-                background:var(--border);
               }
             `}</style>
             <div className="o100-trust-grid">
@@ -659,17 +645,13 @@ function MainV2Page() {
                 {TRUST_REASONS.map(({ Icon, title, text }, i) => (
                   <Reveal key={title} delay={i * 90}>
                     <div className="o100-trust-cell flex flex-col">
-                      <div className="o100-trust-meta">
-                        {String(i + 1).padStart(2, "0")}
-                      </div>
                       <span
                         className="o100-trust-icon flex items-center justify-center rounded-full mb-5"
                         style={{
                           width: 52,
                           height: 52,
-                          border: "1px solid var(--border)",
-                          color: "var(--foreground)",
-                          background: "var(--background)",
+                          background: "color-mix(in oklab, var(--brand) 10%, transparent)",
+                          color: "var(--brand)",
                         }}
                       >
                         <Icon size={22} strokeWidth={1.5} />
@@ -709,129 +691,55 @@ function MainV2Page() {
           {/* Left — child myopia */}
           <Reveal>
             <div
-              className="relative rounded-2xl overflow-hidden bg-cream grid h-full"
-              style={{
-                gridTemplateColumns: "1fr",
-                minHeight: 340,
-              }}
-            >
-              <div
-                className="grid h-full"
-                style={{ gridTemplateColumns: "1fr 1fr", minHeight: 340 }}
-              >
-                <div className="relative h-full min-h-[340px]">
-                  <img
-                    src="/main_bottom_child_banner.png"
-                    alt=""
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-                </div>
-                <div className="flex flex-col justify-center p-7">
-                  <div
-                    className="text-[11px] uppercase tracking-[0.2em] mb-3"
-                    style={{ color: "var(--brand)" }}
-                  >
-                    Контроль миопии
-                  </div>
-                  <h3
-                    className="font-serif"
-                    style={{
-                      fontSize: 24,
-                      lineHeight: 1.15,
-                      marginBottom: 12,
-                    }}
-                  >
-                    Замедляем близорукость у детей
-                  </h3>
-                  <p
-                    className="text-muted-foreground"
-                    style={{ fontSize: 14, lineHeight: 1.55, marginBottom: 20 }}
-                  >
-                    Линзы Stellest и MiSight 1-Day, профильный кабинет
-                    в&nbsp;нашей клинике.
-                  </p>
-                  <a
-                    href={serviceHref("diagnostika")}
-                    className="inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-medium self-start"
-                    style={{
-                      background: "var(--foreground)",
-                      color: "var(--background)",
-                    }}
-                  >
-                    Записаться на диагностику{" "}
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </div>
-              </div>
-            </div>
-          </Reveal>
-
-          {/* Right — virtual try-on promo (editorial dark surface; brand red as accent only) */}
-          <Reveal delay={120}>
-            <div
-              className="relative rounded-2xl overflow-hidden flex flex-col justify-between h-full"
-              style={{
-                background:
-                  "linear-gradient(135deg, oklch(0.22 0.014 250) 0%, oklch(0.16 0.012 250) 100%)",
-                color: "var(--background)",
-                padding: 32,
-                minHeight: 340,
-              }}
+              className="relative rounded-2xl overflow-hidden h-full"
+              style={{ minHeight: 380 }}
             >
               <img
-                src="/processed_glasses_example.png"
+                src="/main_bottom_child_banner.png"
                 alt=""
-                className="absolute pointer-events-none"
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div
+                aria-hidden
+                className="absolute inset-0"
                 style={{
-                  right: -20,
-                  bottom: -20,
-                  width: 220,
-                  opacity: 0.28,
+                  background:
+                    "linear-gradient(180deg, rgba(245,239,231,0.92) 0%, rgba(245,239,231,0.55) 40%, rgba(245,239,231,0) 70%)",
                 }}
               />
-              <div style={{ position: "relative", zIndex: 1 }}>
+              <div className="relative h-full flex flex-col justify-start p-8 lg:p-10" style={{ maxWidth: 420 }}>
                 <div
                   className="text-[11px] uppercase tracking-[0.2em] mb-3"
                   style={{ color: "var(--brand)" }}
                 >
-                  Виртуальная примерка
+                  Забота о зрении
                 </div>
                 <h3
-                  className="font-serif"
-                  style={{ fontSize: 24, lineHeight: 1.15, marginBottom: 16 }}
+                  className="font-serif text-foreground"
+                  style={{ fontSize: 28, lineHeight: 1.15, marginBottom: 14, letterSpacing: "-0.01em" }}
                 >
-                  Примерьте 11&nbsp;000 оправ онлайн
+                  Контроль миопии<br />у детей и подростков
                 </h3>
-                <div className="flex items-baseline gap-3">
-                  <span
-                    style={{
-                      fontSize: 64,
-                      fontFamily: "var(--font-serif)",
-                      lineHeight: 1,
-                      color: "var(--brand)",
-                    }}
-                  >
-                    −50%
-                  </span>
-                  <span style={{ fontSize: 14, opacity: 0.85 }}>
-                    при первой покупке через VTO
-                  </span>
-                </div>
+                <p
+                  className="text-muted-foreground"
+                  style={{ fontSize: 14, lineHeight: 1.55, marginBottom: 24 }}
+                >
+                  Эффективные методики замедления прогрессирования близорукости и сохранения здоровья глаз.
+                </p>
+                <a
+                  href={serviceHref("diagnostika")}
+                  className="inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold text-white self-start hover:opacity-90 transition-opacity"
+                  style={{ background: "var(--brand)" }}
+                >
+                  Узнать больше
+                </a>
               </div>
-              <button
-                type="button"
-                onClick={() => setVtoOpen(true)}
-                className="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold self-start cursor-pointer"
-                style={{
-                  background: "var(--background)",
-                  color: "var(--foreground)",
-                  position: "relative",
-                  zIndex: 1,
-                }}
-              >
-                Попробовать <ArrowRight className="h-4 w-4" />
-              </button>
             </div>
+          </Reveal>
+
+          {/* Right — promotions block */}
+          <Reveal delay={120}>
+            <MainV2PromoBlock />
           </Reveal>
         </div>
       </section>
@@ -923,15 +831,15 @@ function MainV2Page() {
             Все статьи <ArrowRight className="h-4 w-4" />
           </Link>
         </Reveal>
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 gap-8">
           {recent.map((a, i) => (
             <Reveal key={a.slug} delay={i * 100}>
               <Link
                 to="/blog/$category/$slug"
                 params={{ category: a.categorySlug, slug: a.slug }}
-                className="group block"
+                className="group block md:flex md:items-stretch md:gap-6 rounded-2xl overflow-hidden bg-cream"
               >
-                <div className="aspect-[4/3] bg-cream rounded-2xl overflow-hidden mb-4">
+                <div className="md:w-2/5 shrink-0 aspect-[4/3] md:aspect-auto overflow-hidden">
                   <img
                     src={a.cover}
                     alt={a.title}
@@ -939,16 +847,131 @@ function MainV2Page() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
-                <span className="inline-block text-[11px] uppercase tracking-wider text-brand border border-brand/30 rounded-full px-2.5 py-0.5">
-                  {a.category}
-                </span>
-                <h3 className="font-serif text-xl mt-3 group-hover:text-brand transition-colors">
-                  {a.title}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-2">{a.excerpt}</p>
+                <div className="flex-1 p-5 md:p-6 flex flex-col">
+                  <h3 className="font-serif text-xl group-hover:text-brand transition-colors">
+                    {a.title}
+                  </h3>
+                  <span className="text-xs text-muted-foreground mt-2">{a.category}</span>
+                  <p className="text-sm text-muted-foreground mt-3 flex-1">{a.excerpt}</p>
+                  <span
+                    className="inline-flex items-center gap-1 mt-4 text-sm font-medium"
+                    style={{ color: "var(--brand)" }}
+                  >
+                    Читать статью <ArrowRight className="h-4 w-4" />
+                  </span>
+                </div>
               </Link>
             </Reveal>
           ))}
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          9. BOTTOM CTA STRIP — appointment / contact / newsletter
+         ───────────────────────────────────────────────────────────── */}
+      <section style={{ background: "var(--cream)", padding: "clamp(40px, 6vw, 72px) 0" }}>
+        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-5">
+            {/* 1. Appointment */}
+            <div
+              className="rounded-2xl bg-background p-6 flex items-start justify-between gap-4"
+              style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)" }}
+            >
+              <div className="flex-1">
+                <div className="font-serif text-lg" style={{ lineHeight: 1.2, marginBottom: 8 }}>
+                  Запишитесь на проверку зрения
+                </div>
+                <p className="text-sm text-muted-foreground" style={{ marginBottom: 18 }}>
+                  Выберите удобное время и приходите в ближайший салон.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setAptOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity cursor-pointer"
+                  style={{ background: "var(--brand)" }}
+                >
+                  Записаться
+                </button>
+              </div>
+              <span
+                className="flex items-center justify-center rounded-full shrink-0"
+                style={{
+                  width: 56,
+                  height: 56,
+                  background: "color-mix(in oklab, var(--brand) 10%, transparent)",
+                  color: "var(--brand)",
+                }}
+              >
+                <Calendar size={24} strokeWidth={1.5} />
+              </span>
+            </div>
+
+            {/* 2. Contact */}
+            <div
+              className="rounded-2xl bg-background p-6 flex flex-col"
+              style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)" }}
+            >
+              <div className="font-serif text-lg" style={{ lineHeight: 1.2, marginBottom: 8 }}>
+                Свяжитесь с нами
+              </div>
+              <a
+                href="tel:+78121000000"
+                className="text-lg font-semibold text-foreground hover:text-brand transition-colors"
+              >
+                +7 (812) 100-00-00
+              </a>
+              <p className="text-xs text-muted-foreground mt-1 mb-4">Ежедневно с 10:00 до 21:00</p>
+              <div className="flex items-center gap-2 mt-auto">
+                {[
+                  { name: "WhatsApp", href: "https://wa.me/78121000000" },
+                  { name: "Telegram", href: "https://t.me/optika100" },
+                  { name: "Viber", href: "viber://chat?number=78121000000" },
+                ].map((m) => (
+                  <a
+                    key={m.name}
+                    href={m.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full text-xs font-medium border border-border px-3 py-1.5 hover:border-brand hover:text-brand transition-colors"
+                  >
+                    <Phone className="h-3 w-3" />
+                    {m.name}
+                  </a>
+                ))}
+              </div>
+            </div>
+
+            {/* 3. Newsletter */}
+            <div
+              className="rounded-2xl bg-background p-6 flex flex-col"
+              style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)" }}
+            >
+              <div className="font-serif text-lg" style={{ lineHeight: 1.2, marginBottom: 8 }}>
+                Будьте в курсе
+              </div>
+              <p className="text-sm text-muted-foreground" style={{ marginBottom: 18 }}>
+                Подпишитесь на новости и акции — раз в месяц, без спама.
+              </p>
+              <form
+                onSubmit={(e) => e.preventDefault()}
+                className="flex items-center gap-2 mt-auto rounded-full border border-border pl-4 pr-1.5 py-1.5"
+              >
+                <input
+                  type="email"
+                  placeholder="Ваш e-mail"
+                  className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
+                />
+                <button
+                  type="submit"
+                  className="flex items-center justify-center rounded-full text-white hover:opacity-90 transition-opacity cursor-pointer"
+                  style={{ width: 36, height: 36, background: "var(--brand)" }}
+                  aria-label="Подписаться"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </form>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1241,5 +1264,106 @@ function CategoryTile({
         </span>
       </div>
     </a>
+  );
+}
+
+/**
+ * Promotions block on the main-v2 page.
+ * One large brand-red feature card on the left, two compact cards stacked on the right.
+ * Pulls copy from the existing `promotions` array.
+ */
+function MainV2PromoBlock() {
+  const compact = promotions.slice(1, 3);
+  return (
+    <div className="h-full flex flex-col" style={{ minHeight: 380 }}>
+      <div className="flex items-end justify-between gap-4 mb-5">
+        <div>
+          <div
+            className="text-[11px] uppercase tracking-[0.2em] mb-2"
+            style={{ color: "var(--brand)" }}
+          >
+            Акции и предложения
+          </div>
+          <h3
+            className="font-serif text-foreground"
+            style={{ fontSize: 26, lineHeight: 1.15, letterSpacing: "-0.01em" }}
+          >
+            Выгодные предложения
+          </h3>
+        </div>
+        <Link
+          to="/uslugi"
+          className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium shrink-0"
+          style={{ color: "var(--brand)" }}
+        >
+          Смотреть все <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 flex-1">
+        {/* Feature card */}
+        <a
+          href="/uslugi"
+          className="sm:col-span-3 relative rounded-2xl overflow-hidden p-7 flex flex-col justify-between text-white hover:opacity-95 transition-opacity"
+          style={{
+            background:
+              "linear-gradient(140deg, var(--brand) 0%, color-mix(in oklab, var(--brand) 78%, black) 100%)",
+            minHeight: 240,
+          }}
+        >
+          <div>
+            <h4
+              className="font-serif"
+              style={{ fontSize: 28, lineHeight: 1.15, letterSpacing: "-0.01em", marginBottom: 10 }}
+            >
+              Вторая пара очков
+              <br />
+              <span style={{ fontSize: 56, lineHeight: 1 }}>−50%</span>
+            </h4>
+            <p style={{ fontSize: 13, lineHeight: 1.5, opacity: 0.92 }}>
+              Подберите любые две пары очков и получите скидку 50% на вторую.
+            </p>
+          </div>
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold self-start"
+            style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(6px)" }}
+          >
+            Подробнее <ArrowRight className="h-3.5 w-3.5" />
+          </span>
+        </a>
+
+        {/* Stacked compact cards */}
+        <div className="sm:col-span-2 grid grid-rows-2 gap-3">
+          {compact.map((p) => (
+            <a
+              key={p.id}
+              href="/uslugi"
+              className="relative rounded-2xl overflow-hidden bg-cream p-4 pr-3 flex items-center gap-3 hover:-translate-y-0.5 transition-transform"
+            >
+              <div className="flex-1 min-w-0">
+                <div
+                  className="font-serif"
+                  style={{ fontSize: 14.5, lineHeight: 1.2, color: "var(--foreground)" }}
+                >
+                  {p.title}
+                </div>
+                <span
+                  className="inline-flex items-center gap-1 mt-2 text-[11px] font-medium"
+                  style={{ color: "var(--brand)" }}
+                >
+                  Подробнее <ArrowRight className="h-3 w-3" />
+                </span>
+              </div>
+              {p.image ? (
+                <img
+                  src={p.image}
+                  alt=""
+                  className="w-16 h-16 object-cover rounded-xl shrink-0"
+                />
+              ) : null}
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }
