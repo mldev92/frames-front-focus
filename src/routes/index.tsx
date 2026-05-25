@@ -173,13 +173,13 @@ function MainV2Page() {
             50%      { opacity: 0.70; transform: translate(-12px, 10px) scale(1.06); }
           }
           @keyframes _bannerFadeA {
-            0%, 42%  { opacity: 1; }
-            50%, 92% { opacity: 0; }
+            0%, 43%  { opacity: 1; }
+            50%, 93% { opacity: 0; }
             100%     { opacity: 1; }
           }
           @keyframes _bannerFadeB {
-            0%, 42%  { opacity: 0; }
-            50%, 92% { opacity: 1; }
+            0%, 43%  { opacity: 0; }
+            50%, 93% { opacity: 1; }
             100%     { opacity: 0; }
           }
         `}</style>
@@ -197,7 +197,7 @@ function MainV2Page() {
             objectFit: "cover",
             objectPosition: "right center",
             zIndex: 0,
-            animation: "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeA 10s ease-in-out infinite",
+            animation: "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeA 14s ease-in-out infinite",
             willChange: "filter, transform, opacity",
           }}
         />
@@ -214,7 +214,7 @@ function MainV2Page() {
             objectFit: "cover",
             objectPosition: "right center",
             zIndex: 0,
-            animation: "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeB 10s ease-in-out infinite",
+            animation: "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeB 14s ease-in-out infinite",
             willChange: "filter, transform, opacity",
           }}
         />
