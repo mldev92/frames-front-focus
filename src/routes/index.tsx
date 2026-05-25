@@ -671,10 +671,13 @@ function MainV2Page() {
             `}</style>
 
             <img
-              src="/main3example.jpeg?v=20260525b"
+              src="/promo_banner_22_05.jpg?v=20260525c"
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
-              style={{ animation: "_o100SecondPulse 7s ease-in-out infinite" }}
+              style={{
+                objectPosition: "left center",
+                animation: "_o100SecondPulse 7s ease-in-out infinite",
+              }}
             />
             <div
               aria-hidden
