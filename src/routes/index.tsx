@@ -1,12 +1,9 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
   ArrowRight,
   ChevronLeft,
   ChevronRight,
-  Eye,
-  Glasses,
-  Wrench,
   Heart,
   GraduationCap,
   Microscope,
@@ -49,37 +46,6 @@ export const Route = createFileRoute("/")({
   }),
   component: MainV2Page,
 });
-
-const HERO_SERVICES = [
-  {
-    slug: "priem-vracha",
-    kicker: "Диагностика",
-    title: "Проверка зрения",
-    subtitle: "Современная диагностика за 30 минут",
-    Icon: Eye,
-  },
-  {
-    slug: "podbor-ochkov",
-    kicker: "Подбор",
-    title: "Подбор очков",
-    subtitle: "Индивидуальный подбор оправ и линз",
-    Icon: Glasses,
-  },
-  {
-    slug: "diagnostika",
-    kicker: "Миопия",
-    title: "Контроль миопии",
-    subtitle: "Программы для детей и подростков",
-    Icon: Heart,
-  },
-  {
-    slug: "remont",
-    kicker: "Сервис",
-    title: "Ремонт очков",
-    subtitle: "Быстрый и качественный ремонт",
-    Icon: Wrench,
-  },
-] as const;
 
 const HERO_STATS = [
   { value: "11 000+", label: "довольных клиентов", Icon: Users },
@@ -334,7 +300,22 @@ function MainV2Page() {
                   params={{ category: "opravy" }}
                   className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold border border-foreground text-foreground bg-transparent hover:bg-foreground hover:text-background transition-colors"
                 >
-                  Подобрать очки
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M2.402 2.652a.25.25 0 0 0-.25.25v2a.75.75 0 1 1-1.5 0v-2c0-.966.784-1.75 1.75-1.75h2a.75.75 0 1 1 0 1.5h-2Zm11.146.25a.25.25 0 0 0-.25-.25h-2a.75.75 0 0 1 0-1.5h2c.967 0 1.75.784 1.75 1.75v2a.75.75 0 0 1-1.5 0v-2ZM2.402 14.048a.25.25 0 0 1-.25-.25v-2a.75.75 0 1 0-1.5 0v2c0 .966.784 1.75 1.75 1.75h2a.75.75 0 0 0 0-1.5h-2Zm10.896 0a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2a1.75 1.75 0 0 1-1.75 1.75h-2a.75.75 0 0 1 0-1.5h2ZM8 7.25a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm-3.75 4.5a3.75 3.75 0 1 1 7.5 0h-1.5a2.25 2.25 0 1 0-4.5 0h-1.5Z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                  Примерить онлайн
                 </Link>
               </div>
 
@@ -391,103 +372,65 @@ function MainV2Page() {
           }}
         >
           <Reveal>
-            <style>{`
-              .o100-svc-grid{
-                display:grid; grid-template-columns: 1fr 1fr; gap: 20px 16px;
-              }
-              @media (min-width: 1024px){
-                .o100-svc-grid{ grid-template-columns: repeat(4, minmax(0,1fr)); gap: 0; }
-                .o100-svc-cell{ padding: 4px 28px; border-left: 1px solid var(--border); }
-                .o100-svc-cell:first-child{ border-left: 0; padding-left: 0; }
-                .o100-svc-cell:last-child{ padding-right: 0; }
-              }
-              .o100-svc-cell .o100-svc-icon{
-                background: var(--cream);
-                border: 1px solid var(--border);
-                box-shadow: 0 1px 2px rgba(20,18,16,0.04), inset 0 0 0 1px rgba(255,255,255,0.55);
-                transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
-              }
-              .o100-svc-cell:hover .o100-svc-icon{
-                border-color: color-mix(in oklab, var(--brand) 35%, var(--border));
-                box-shadow: 0 4px 14px -8px rgba(180,40,30,0.35), inset 0 0 0 1px rgba(255,255,255,0.7);
-                transform: translateY(-1px);
-              }
-            `}</style>
-            <div className="o100-svc-grid">
-              {HERO_SERVICES.map(({ slug, kicker, title, subtitle, Icon }, i) => {
-                const inner = (
-                  <div className="flex items-start gap-4">
-                    <span
-                      className="o100-svc-icon flex items-center justify-center rounded-full shrink-0"
-                      style={{
-                        width: 56,
-                        height: 56,
-                        color: "var(--foreground)",
-                      }}
-                    >
-                      <Icon size={22} strokeWidth={1.5} />
-                    </span>
-                    <div className="flex flex-col" style={{ paddingTop: 2 }}>
-                      <span
-                        style={{
-                          fontFamily: "var(--font-mono)",
-                          fontSize: 10,
-                          letterSpacing: "0.18em",
-                          textTransform: "uppercase",
-                          color: "var(--muted-foreground)",
-                          marginBottom: 6,
-                        }}
-                      >
-                        {String(i + 1).padStart(2, "0")} · {kicker}
-                      </span>
-                      <span
-                        className="font-medium text-foreground"
-                        style={{
-                          fontSize: 15.5,
-                          lineHeight: 1.25,
-                          letterSpacing: "-0.005em",
-                        }}
-                      >
-                        {title}
-                      </span>
-                      <span
-                        className="text-muted-foreground"
-                        style={{
-                          fontSize: 12.5,
-                          lineHeight: 1.4,
-                          marginTop: 4,
-                        }}
-                      >
-                        {subtitle}
-                      </span>
-                    </div>
-                  </div>
-                );
-                const cellClass =
-                  "o100-svc-cell text-left w-full block group cursor-pointer";
-                if (slug === "priem-vracha") {
-                  return (
-                    <button
-                      key={slug}
-                      type="button"
-                      onClick={() => setAptOpen(true)}
-                      className={`${cellClass} bg-transparent border-0 p-0`}
-                      style={{ font: "inherit" }}
-                    >
-                      {inner}
-                    </button>
-                  );
-                }
-                return (
-                  <a key={slug} href={serviceHref(slug)} className={cellClass}>
-                    {inner}
-                  </a>
-                );
-              })}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+            <div className="flex items-start space-x-4 md:px-6 pt-6 md:pt-0 group">
+              <div className="w-12 h-12 rounded-full bg-[#fbf9f6] flex items-center justify-center flex-shrink-0 text-[#c83b3b] group-hover:bg-[#c83b3b] group-hover:text-white transition-colors duration-300">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
+                  <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
+                </svg>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">01 — ДИАГНОСТИКА</div>
+                <h3 className="font-semibold text-gray-900 mb-1">Проверка зрения</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">Современная диагностика за 30 минут</p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-4 md:px-6 pt-6 md:pt-0 group">
+              <div className="w-12 h-12 rounded-full bg-[#fbf9f6] flex items-center justify-center flex-shrink-0 text-[#c83b3b] group-hover:bg-[#c83b3b] group-hover:text-white transition-colors duration-300">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
+                </svg>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">02 — ПОДБОР</div>
+                <h3 className="font-semibold text-gray-900 mb-1">Подбор очков</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">Индивидуальный подбор оправ и линз</p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-4 md:px-6 pt-6 md:pt-0 group">
+              <div className="w-12 h-12 rounded-full bg-[#fbf9f6] flex items-center justify-center flex-shrink-0 text-[#c83b3b] group-hover:bg-[#c83b3b] group-hover:text-white transition-colors duration-300">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
+                </svg>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">03 — ЗАБОТА</div>
+                <h3 className="font-semibold text-gray-900 mb-1">Контроль миопии</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">Программы для детей и подростков</p>
+              </div>
+            </div>
+
+            <div className="flex items-start space-x-4 md:px-6 pt-6 md:pt-0 group">
+              <div className="w-12 h-12 rounded-full bg-[#fbf9f6] flex items-center justify-center flex-shrink-0 text-[#c83b3b] group-hover:bg-[#c83b3b] group-hover:text-white transition-colors duration-300">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
+                  <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
+                </svg>
+              </div>
+              <div>
+                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">04 — СЕРВИС</div>
+                <h3 className="font-semibold text-gray-900 mb-1">Ремонт очков</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">Быстрый и качественный ремонт</p>
+              </div>
+            </div>
+
             </div>
           </Reveal>
-        </div>
-
+          </div>
+        
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
@@ -1001,16 +944,22 @@ function MainV2Page() {
 
 /**
  * Local product card for main-v2. Differs from the shared `ProductCard`:
- *   – Heart icon (favorite) is always visible top-right, red outline.
- *   – No try-on badge overlay (the page surfaces VTO via the hero CTA / promo banner).
+ *   – "Примерить" overlay action in the top-right of the photo.
+ *   – Heart icon (favorite) is always visible top-left, red outline.
  *   – Simpler price + color-dots row, no brand caption.
  *   – White card with rounded corners that sit on the cream background.
  */
 function MainV2ProductCard({ product }: { product: Product }) {
   const { toggleSaved, saved } = useCart();
+  const navigate = useNavigate();
   const isSaved = saved.includes(product.slug);
+  const hasHoverImage = product.images.length > 1;
   const dots = product.colors?.slice(0, 4) ?? [];
   const extra = (product.colors?.length ?? 0) - dots.length;
+  const productRouteParams = {
+    category: categoryToSegment[product.category],
+    slug: product.slug,
+  };
 
   // Compose display name: prefer brand prefix when set (e.g. "Ray-Ban RX 7159"),
   // else fall back to product.name alone.
@@ -1023,34 +972,73 @@ function MainV2ProductCard({ product }: { product: Product }) {
     <div
       className="group/card flex flex-col h-full overflow-hidden"
       style={{
-        background: "var(--background)",
+        background: "#fff",
         borderRadius: 16,
         boxShadow:
           "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)",
       }}
     >
-      <Link
-        to="/catalog_s/$category/$slug"
-        params={{
-          category: categoryToSegment[product.category],
-          slug: product.slug,
-        }}
-        className="relative block aspect-square"
-        aria-label={displayName}
-      >
-        <img
-          src={product.images[0]}
-          alt={displayName}
-          loading="lazy"
-          className="absolute inset-0 w-full h-full object-contain p-7 transition-transform duration-500 group-hover/card:scale-[1.04]"
-        />
+      <div className="relative block aspect-square">
+        <Link
+          to="/catalog_s/$category/$slug"
+          params={productRouteParams}
+          className="relative block h-full w-full"
+          aria-label={displayName}
+        >
+          <img
+            src={product.images[0]}
+            alt={displayName}
+            loading="lazy"
+            className={`absolute inset-0 h-full w-full object-contain p-7 transition-opacity duration-500 ${
+              hasHoverImage ? "opacity-100 group-hover/card:opacity-0" : "opacity-100"
+            }`}
+          />
+          {hasHoverImage && (
+            <img
+              src={product.images[1]}
+              alt={displayName}
+              loading="lazy"
+              className="absolute inset-0 h-full w-full object-contain p-7 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500"
+            />
+          )}
+        </Link>
         <button
           type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            toggleSaved(product.slug);
+          onClick={() =>
+            navigate({
+              to: "/catalog_s/$category/$slug",
+              params: productRouteParams,
+            })
+          }
+          className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:text-brand active:translate-y-0 active:scale-[0.98]"
+          style={{
+            borderColor: "color-mix(in oklch, var(--foreground) 14%, transparent)",
+            background: "color-mix(in oklch, white 92%, transparent)",
+            color: "var(--foreground)",
           }}
-          className="absolute top-3 right-3 flex items-center justify-center rounded-full transition-colors"
+          aria-label="Примерить"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M2.402 2.652a.25.25 0 0 0-.25.25v2a.75.75 0 1 1-1.5 0v-2c0-.966.784-1.75 1.75-1.75h2a.75.75 0 1 1 0 1.5h-2Zm11.146.25a.25.25 0 0 0-.25-.25h-2a.75.75 0 0 1 0-1.5h2c.967 0 1.75.784 1.75 1.75v2a.75.75 0 0 1-1.5 0v-2ZM2.402 14.048a.25.25 0 0 1-.25-.25v-2a.75.75 0 1 0-1.5 0v2c0 .966.784 1.75 1.75 1.75h2a.75.75 0 0 0 0-1.5h-2Zm10.896 0a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2a1.75 1.75 0 0 1-1.75 1.75h-2a.75.75 0 0 1 0-1.5h2ZM8 7.25a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm-3.75 4.5a3.75 3.75 0 1 1 7.5 0h-1.5a2.25 2.25 0 1 0-4.5 0h-1.5Z"
+              fill="currentColor"
+            />
+          </svg>
+          <span>Примерить</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => toggleSaved(product.slug)}
+          className="absolute top-3 left-3 z-10 flex items-center justify-center rounded-full transition-colors"
           style={{
             width: 36,
             height: 36,
@@ -1065,7 +1053,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
             fill={isSaved ? "var(--brand)" : "none"}
           />
         </button>
-      </Link>
+      </div>
 
       <div
         className="flex flex-col gap-2"
@@ -1073,10 +1061,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
       >
         <Link
           to="/catalog_s/$category/$slug"
-          params={{
-            category: categoryToSegment[product.category],
-            slug: product.slug,
-          }}
+          params={productRouteParams}
           className="text-sm text-foreground hover:text-brand transition-colors"
           style={{ lineHeight: 1.3 }}
         >
