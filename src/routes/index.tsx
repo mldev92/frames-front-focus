@@ -650,75 +650,91 @@ function MainV2Page() {
             style={{ minHeight: "clamp(380px, 46vw, 520px)" }}
           >
             <style>{`
-              @keyframes _o100SecondPulse {
-                0%, 100% { transform: scale(1); filter: brightness(0.92) saturate(1.02); }
-                50% { transform: scale(1.015); filter: brightness(1.03) saturate(1.08); }
+              @keyframes _sbHeroImgPulse {
+                0%, 100% { filter: brightness(0.96) contrast(1.00) saturate(1.00); transform: scale(1.00); }
+                50% { filter: brightness(1.06) contrast(1.03) saturate(1.04); transform: scale(1.012); }
               }
-              @keyframes _o100SecondLight {
-                0%, 100% { opacity: 0.84; background-position: 0% 50%; }
-                50% { opacity: 1; background-position: 100% 50%; }
+              @keyframes _sbHeroLight {
+                0%, 100% { opacity: 1; background-position: 0% 50%; }
+                50% { opacity: 0.92; background-position: 100% 50%; }
               }
-              @keyframes _o100SecondSweep {
-                0% { transform: translateX(-180%) skewX(-16deg); opacity: 0; }
-                16% { opacity: 0.32; }
-                54% { opacity: 0.32; }
-                100% { transform: translateX(280%) skewX(-16deg); opacity: 0; }
+              @keyframes _sbHeroSheen {
+                0% { transform: translateX(-60%) skewX(-14deg); opacity: 0; }
+                15% { opacity: 0.35; }
+                55% { opacity: 0.35; }
+                100% { transform: translateX(260%) skewX(-14deg); opacity: 0; }
               }
-              @keyframes _o100SecondGlow {
-                0%,100% { transform: translate(0, 0) scale(1); opacity: 0.62; }
-                50% { transform: translate(-14px, 12px) scale(1.08); opacity: 0.9; }
+              @keyframes _sbHeroSun {
+                0%, 100% { opacity: 0.45; transform: translate(0,0) scale(1.00); }
+                50% { opacity: 0.70; transform: translate(-12px, 10px) scale(1.06); }
+              }
+              @media (prefers-reduced-motion: reduce) {
+                .sb-hero-animated { animation: none !important; }
               }
             `}</style>
 
             <img
-              src="/promo_banner_22_05.jpg?v=20260525c"
+              src="/100_full_reconstruction_v3_image_1.png?v=20260525d"
               alt=""
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-cover sb-hero-animated"
               style={{
-                objectPosition: "left center",
-                animation: "_o100SecondPulse 7s ease-in-out infinite",
+                objectPosition: "right center",
+                animation: "_sbHeroImgPulse 6s ease-in-out infinite",
               }}
             />
             <div
               aria-hidden
-              className="absolute inset-0"
+              className="absolute sb-hero-animated"
               style={{
-                background:
-                  "linear-gradient(92deg, rgba(20,16,14,0.82) 0%, rgba(20,16,14,0.54) 44%, rgba(20,16,14,0.12) 100%)",
-                backgroundSize: "210% 100%",
-                animation: "_o100SecondLight 8.5s ease-in-out infinite",
-              }}
-            />
-            <div
-              aria-hidden
-              className="absolute"
-              style={{
-                top: "-22%",
-                right: "-8%",
-                width: 360,
-                height: 360,
+                zIndex: 1,
+                top: "5%",
+                right: "5%",
+                width: 320,
+                height: 320,
                 borderRadius: "50%",
                 background:
-                  "radial-gradient(circle, rgba(255,219,162,0.72) 0%, rgba(255,184,118,0.34) 42%, rgba(255,170,110,0) 72%)",
-                filter: "blur(26px)",
+                  "radial-gradient(circle, rgba(255,225,170,0.95) 0%, rgba(255,195,130,0.55) 35%, rgba(255,170,110,0) 72%)",
                 mixBlendMode: "screen",
+                filter: "blur(40px)",
                 pointerEvents: "none",
-                animation: "_o100SecondGlow 8s ease-in-out infinite",
+                animation: "_sbHeroSun 7s ease-in-out infinite",
+              }}
+            />
+            <div
+              aria-hidden
+              className="absolute inset-0 sb-hero-animated"
+              style={{
+                background:
+                  "linear-gradient(90deg, rgba(245,239,231,0.95) 0%, rgba(245,239,231,0.78) 30%, rgba(245,239,231,0.35) 55%, rgba(245,239,231,0) 75%)",
+                backgroundSize: "220% 100%",
+                zIndex: 2,
+                animation: "_sbHeroLight 8s ease-in-out infinite",
+              }}
+            />
+            <div
+              aria-hidden
+              className="absolute top-0 bottom-0 left-[20%] w-[45%] sb-hero-animated"
+              style={{
+                zIndex: 3,
+                background:
+                  "linear-gradient(100deg, transparent 0%, rgba(255,240,210,0) 20%, rgba(255,240,210,0.55) 50%, rgba(255,240,210,0) 80%, transparent 100%)",
+                pointerEvents: "none",
+                animation: "_sbHeroSheen 9s ease-in-out infinite",
               }}
             />
 
-            <div className="relative h-full flex flex-col justify-end p-8 lg:p-12" style={{ maxWidth: 580 }}>
-              <div className="text-[11px] uppercase tracking-[0.2em] mb-3 text-white/70">
+            <div className="relative h-full flex flex-col justify-end p-8 lg:p-12" style={{ maxWidth: 580, zIndex: 4 }}>
+              <div className="text-[11px] uppercase tracking-[0.2em] mb-3" style={{ color: "var(--brand)" }}>
                 Второй баннер
               </div>
               <h3
-                className="font-serif text-white"
+                className="font-serif text-foreground"
                 style={{ fontSize: "clamp(30px, 4vw, 44px)", lineHeight: 1.08, marginBottom: 14, letterSpacing: "-0.015em" }}
               >
                 Подберите идеальные очки<br />с примеркой и проверкой зрения
               </h3>
               <p
-                className="text-white/80"
+                className="text-muted-foreground"
                 style={{ fontSize: 15, lineHeight: 1.55, marginBottom: 26, maxWidth: 500 }}
               >
                 Новые коллекции, индивидуальная консультация и точная диагностика в салоне или онлайн.
@@ -727,8 +743,8 @@ function MainV2Page() {
                 <Link
                   to="/catalog_s/$category"
                   params={{ category: "opravy" }}
-                  className="inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold hover:opacity-90 transition-opacity"
-                  style={{ background: "#fff", color: "#171311" }}
+                  className="inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                  style={{ background: "var(--brand)" }}
                 >
                   Смотреть каталог
                 </Link>
@@ -737,9 +753,9 @@ function MainV2Page() {
                   onClick={() => setVtoOpen(true)}
                   className="relative overflow-hidden inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold transition-colors"
                   style={{
-                    color: "#fff",
-                    border: "1px solid rgba(255,255,255,0.48)",
-                    background: "rgba(255,255,255,0.1)",
+                    color: "var(--foreground)",
+                    border: "1px solid rgba(20,18,16,0.48)",
+                    background: "rgba(255,255,255,0.4)",
                   }}
                 >
                   <span
@@ -747,8 +763,8 @@ function MainV2Page() {
                     className="pointer-events-none absolute top-0 bottom-0 left-0 w-20 -translate-x-full skew-x-[-16deg]"
                     style={{
                       background:
-                        "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.52) 50%, transparent 100%)",
-                      animation: "_o100SecondSweep 3.2s ease-in-out infinite",
+                        "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.72) 50%, transparent 100%)",
+                      animation: "_sbHeroSheen 6.8s ease-in-out infinite",
                     }}
                   />
                   <span className="relative z-[1]">Примерить онлайн</span>
