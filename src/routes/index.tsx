@@ -172,9 +172,19 @@ function MainV2Page() {
             0%, 100% { opacity: 0.45; transform: translate(0,0) scale(1.00); }
             50%      { opacity: 0.70; transform: translate(-12px, 10px) scale(1.06); }
           }
+          @keyframes _bannerFadeA {
+            0%, 42%  { opacity: 1; }
+            50%, 92% { opacity: 0; }
+            100%     { opacity: 1; }
+          }
+          @keyframes _bannerFadeB {
+            0%, 42%  { opacity: 0; }
+            50%, 92% { opacity: 1; }
+            100%     { opacity: 0; }
+          }
         `}</style>
 
-        {/* Full-bleed banner photo — pulses brightness like a sun emerging */}
+        {/* Banner A — new_main_banner.png */}
         <img
           src="/new_main_banner.png"
           alt=""
@@ -187,8 +197,25 @@ function MainV2Page() {
             objectFit: "cover",
             objectPosition: "right center",
             zIndex: 0,
-            animation: "_heroImgPulseV2 6s ease-in-out infinite",
-            willChange: "filter, transform",
+            animation: "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeA 10s ease-in-out infinite",
+            willChange: "filter, transform, opacity",
+          }}
+        />
+        {/* Banner B — 100_full_reconstruction_v3_image_1.png */}
+        <img
+          src="/100_full_reconstruction_v3_image_1.png"
+          alt=""
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "right center",
+            zIndex: 0,
+            animation: "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeB 10s ease-in-out infinite",
+            willChange: "filter, transform, opacity",
           }}
         />
         {/* Warm "sun" glow on the right — pulsing light source */}
