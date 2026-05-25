@@ -123,7 +123,7 @@ function HomePage() {
         {/* Text content overlaid */}
         <div className="hero-content">
           <span className="hero-eyebrow">Новая коллекция · Лето 2026</span>
-          <h1 className="hero-h1">Вижу мир на 100%</h1>
+          <h1 className="hero-h1">Вижу мир на <span style={{ color: "var(--brand)" }}>100%</span></h1>
           <p className="hero-lead">Более 11&nbsp;000 оправ от 120 брендов. Ручная подгонка в&nbsp;наших салонах в&nbsp;Санкт-Петербурге и&nbsp;Новокузнецке.</p>
           <div className="hero-ctas">
             <Link
