@@ -671,7 +671,7 @@ function MainV2Page() {
             `}</style>
 
             <img
-              src="/main_banner_22_05.jpg"
+              src="/main3example.jpeg?v=20260525b"
               alt=""
               className="absolute inset-0 w-full h-full object-cover"
               style={{ animation: "_o100SecondPulse 7s ease-in-out infinite" }}
