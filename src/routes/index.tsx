@@ -520,6 +520,8 @@ function MainV2Page() {
               .o100-cat-area-men{grid-area:men}
               .o100-cat-area-kids{grid-area:kids}
             }
+            .o100-cat-btn{transition:background-color 0.25s,color 0.25s,border-color 0.25s}
+            .o100-cat-tile:hover .o100-cat-btn{background:white;color:var(--foreground);border-color:white}
           `}</style>
           <div className="o100-cat-grid">
             <Reveal className="o100-cat-area-women">
@@ -556,6 +558,12 @@ function MainV2Page() {
       <section
         style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
       >
+        <style>{`
+          .o100-fav-btn{transition:transform 0.2s,background-color 0.2s}
+          .o100-fav-btn:hover{transform:scale(1.18);background:rgba(200,59,59,0.12)!important}
+          .o100-color-dot{transition:transform 0.18s;cursor:pointer}
+          .o100-color-dot:hover{transform:scale(1.35)}
+        `}</style>
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <MainV2HitsCarousel products={hits} />
         </div>
@@ -675,13 +683,13 @@ function MainV2Page() {
           {/* Left — child myopia */}
           <Reveal>
             <div
-              className="relative rounded-2xl overflow-hidden h-full"
+              className="group relative rounded-2xl overflow-hidden h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
               style={{ minHeight: 380 }}
             >
               <img
                 src="/main_bottom_child_banner.png"
                 alt=""
-                className="absolute inset-0 w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
               <div
                 aria-hidden
@@ -757,7 +765,7 @@ function MainV2Page() {
                 </div>
                 <div className="p-5">
                   <div className="font-serif text-lg">{s.title}</div>
-                  <div className="mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 group-hover:text-foreground">
+                  <div className="mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 group-hover:text-foreground hover:text-foreground transition-colors">
                     Подробнее <ArrowRight className="h-3 w-3" />
                   </div>
                 </div>
@@ -1065,7 +1073,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
         <button
           type="button"
           onClick={() => toggleSaved(product.slug)}
-          className="absolute top-3 left-3 z-10 flex items-center justify-center rounded-full transition-colors"
+          className="o100-fav-btn absolute top-3 left-3 z-10 flex items-center justify-center rounded-full"
           style={{
             width: 36,
             height: 36,
@@ -1105,7 +1113,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
             {dots.map((c) => (
               <span
                 key={c.name}
-                className="inline-block rounded-full"
+                className="o100-color-dot inline-block rounded-full"
                 style={{
                   width: 12,
                   height: 12,
@@ -1236,7 +1244,7 @@ function CategoryTile({
   return (
     <a
       href={cell.href}
-      className="group relative block rounded-2xl overflow-hidden bg-cream hover:-translate-y-1 transition-transform duration-300 h-full w-full"
+      className="o100-cat-tile group relative block rounded-2xl overflow-hidden bg-cream hover:-translate-y-1 transition-transform duration-300 h-full w-full"
     >
       <img
         src={cell.image}
@@ -1278,7 +1286,7 @@ function CategoryTile({
           {cell.subtitle}
         </p>
         <span
-          className="inline-flex items-center gap-1.5 rounded-full text-sm font-medium transition-colors"
+          className="o100-cat-btn inline-flex items-center gap-1.5 rounded-full text-sm font-medium"
           style={{
             border: "1px solid rgba(255,255,255,0.85)",
             color: "#fff",
@@ -1319,7 +1327,7 @@ function MainV2PromoBlock() {
         </div>
         <Link
           to="/uslugi"
-          className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium shrink-0"
+          className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium shrink-0 hover:opacity-70 transition-opacity"
           style={{ color: "var(--brand)" }}
         >
           Смотреть все <ArrowRight className="h-4 w-4" />
@@ -1329,7 +1337,7 @@ function MainV2PromoBlock() {
         {/* Feature card */}
         <a
           href="/uslugi"
-          className="sm:col-span-3 relative rounded-2xl overflow-hidden p-7 flex flex-col justify-between text-white hover:opacity-95 transition-opacity"
+          className="sm:col-span-3 relative rounded-2xl overflow-hidden p-7 flex flex-col justify-between text-white hover:opacity-95 hover:-translate-y-1 transition-all duration-300"
           style={{
             background:
               "linear-gradient(140deg, var(--brand) 0%, color-mix(in oklab, var(--brand) 78%, black) 100%)",
@@ -1350,7 +1358,7 @@ function MainV2PromoBlock() {
             </p>
           </div>
           <span
-            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold self-start"
+            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold self-start hover:bg-white/30 transition-colors"
             style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(6px)" }}
           >
             Подробнее <ArrowRight className="h-3.5 w-3.5" />
@@ -1363,7 +1371,7 @@ function MainV2PromoBlock() {
             <a
               key={p.id}
               href="/uslugi"
-              className="relative rounded-2xl overflow-hidden bg-cream p-4 pr-3 flex items-center gap-3 hover:-translate-y-0.5 transition-transform"
+              className="relative rounded-2xl overflow-hidden bg-cream p-4 pr-3 flex items-center gap-3 hover:-translate-y-1 hover:shadow-md transition-all duration-300"
             >
               <div className="flex-1 min-w-0">
                 <div
@@ -1373,7 +1381,7 @@ function MainV2PromoBlock() {
                   {p.title}
                 </div>
                 <span
-                  className="inline-flex items-center gap-1 mt-2 text-[11px] font-medium"
+                  className="inline-flex items-center gap-1 mt-2 text-[11px] font-medium hover:opacity-70 transition-opacity"
                   style={{ color: "var(--brand)" }}
                 >
                   Подробнее <ArrowRight className="h-3 w-3" />

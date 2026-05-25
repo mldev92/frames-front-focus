@@ -219,6 +219,7 @@ const SalonCard = ({
   wide,
 }: SalonCardProps) => (
   <div
+    className="salon-card-hover"
     style={{
       background: "var(--card)",
       border: "1px solid var(--border)",
@@ -243,7 +244,7 @@ const SalonCard = ({
           src={imageSrc}
           alt={name}
           loading="lazy"
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          className="salon-img"
         />
       ) : (
         <ImagePlaceholder label={imageLabel} />
@@ -325,6 +326,13 @@ export function SalonsSection() {
           .salons-header-wrap { flex-direction: column !important; align-items: flex-start !important; }
           .salons-cta-row { flex-direction: column !important; align-items: flex-start !important; }
         }
+        .salon-card-hover { transition: box-shadow 0.3s, transform 0.3s; }
+        .salon-card-hover:hover { box-shadow: 0 8px 28px -6px rgba(0,0,0,0.14); transform: translateY(-4px); }
+        .salon-img { width:100%;height:100%;object-fit:cover;display:block;transition:transform 0.7s cubic-bezier(0.22,1,0.36,1); }
+        .salon-card-hover:hover .salon-img { transform: scale(1.05); }
+        .salon-cta-primary,.salon-cta-secondary { transition: filter 0.2s, transform 0.2s, background 0.25s, color 0.25s; }
+        .salon-cta-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .salon-cta-secondary:hover { background: var(--foreground) !important; color: var(--background) !important; }
       `}</style>
 
       <section style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 32px 96px", background: "#FBFAF8" }}>
@@ -491,6 +499,7 @@ export function SalonsSection() {
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <a
               href="tel:88003512185"
+              className="salon-cta-primary"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -505,7 +514,6 @@ export function SalonsSection() {
                 fontFamily: "inherit",
                 cursor: "pointer",
                 textDecoration: "none",
-                transition: "background 0.2s, transform 0.1s",
               }}
             >
               <Phone size={18} />
@@ -513,6 +521,7 @@ export function SalonsSection() {
             </a>
             <a
               href="/contacts"
+              className="salon-cta-secondary"
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -527,7 +536,6 @@ export function SalonsSection() {
                 fontFamily: "inherit",
                 cursor: "pointer",
                 textDecoration: "none",
-                transition: "all 0.2s",
               }}
             >
               Все контакты
