@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { toast } from "sonner";
 import { serviceHref, services } from "@/data/services";
 import { AppointmentModal } from "@/components/AppointmentModal";
 
@@ -293,38 +292,6 @@ function KabinetDiagnostikiPage() {
             После диагностики вы получаете чёткое понимание состояния глаз и вариантов дальнейших действий — от очковой коррекции до подбора линз или наблюдения.
           </p>
           <BrandBtn onClick={openApt}>Записаться на диагностику</BrandBtn>
-        </div>
-      </section>
-
-      {/* BOOKING */}
-      <section id="booking" className="bg-surface">
-        <div className="mx-auto max-w-7xl px-4 lg:px-8 py-16">
-          <div className="max-w-lg mx-auto">
-            <h2 className="font-serif text-3xl mb-8 text-center">Записаться на диагностику</h2>
-            <form
-              className="space-y-3"
-              onSubmit={(e) => {
-                e.preventDefault();
-                toast.success("Спасибо! Мы перезвоним для подтверждения.");
-              }}
-            >
-              <input required placeholder="Имя" className="w-full bg-background border border-border rounded-sm px-3 py-2.5 text-sm" />
-              <input required type="tel" placeholder="Телефон" className="w-full bg-background border border-border rounded-sm px-3 py-2.5 text-sm" />
-              <input type="date" className="w-full bg-background border border-border rounded-sm px-3 py-2.5 text-sm" />
-              <select className="w-full bg-background border border-border rounded-sm px-3 py-2.5 text-sm">
-                <option>Любое время</option>
-                <option>Утро (10–13)</option>
-                <option>День (13–17)</option>
-                <option>Вечер (17–21)</option>
-              </select>
-              <button type="submit" className="w-full bg-ink text-primary-foreground py-3 rounded-sm hover:opacity-90 text-sm">
-                Записаться
-              </button>
-              <p className="text-xs text-muted-foreground text-center">
-                Нажимая кнопку, вы соглашаетесь с обработкой персональных данных.
-              </p>
-            </form>
-          </div>
         </div>
       </section>
 
