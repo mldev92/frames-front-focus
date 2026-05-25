@@ -203,7 +203,7 @@ function MainV2Page() {
         />
         {/* Banner B — 100_full_reconstruction_v3_image_1.png */}
         <img
-          src="/100_full_reconstruction_v3_image_1.png"
+          src="/2nd_banner.png"
           alt=""
           style={{
             position: "absolute",
