@@ -298,7 +298,7 @@ function MainV2Page() {
               >
                 Видеть мир
                 <br />
-                на 100%
+                на <span style={{ color: "var(--brand)" }}>100%</span>
               </h1>
               <p
                 className="text-muted-foreground"
