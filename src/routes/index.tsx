@@ -521,7 +521,7 @@ function MainV2Page() {
               .o100-cat-area-kids{grid-area:kids}
             }
             .o100-cat-btn{transition:background-color 0.25s,color 0.25s,border-color 0.25s}
-            .o100-cat-tile:hover .o100-cat-btn{background:white;color:var(--foreground);border-color:white}
+            .o100-cat-tile:hover .o100-cat-btn{background:white!important;color:var(--foreground)!important;border-color:white!important}
           `}</style>
           <div className="o100-cat-grid">
             <Reveal className="o100-cat-area-women">
@@ -563,6 +563,10 @@ function MainV2Page() {
           .o100-fav-btn:hover{transform:scale(1.18);background:rgba(200,59,59,0.12)!important}
           .o100-color-dot{transition:transform 0.18s;cursor:pointer}
           .o100-color-dot:hover{transform:scale(1.35)}
+          .o100-nav-btn{transition:background-color 0.2s,color 0.2s,border-color 0.2s}
+          .o100-nav-btn:hover{background:var(--brand)!important;color:#fff!important;border-color:var(--brand)!important}
+          .o100-podrobnee:hover{color:var(--foreground)!important}
+          .group:hover .o100-podrobnee{color:var(--foreground)!important}
         `}</style>
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           <MainV2HitsCarousel products={hits} />
@@ -765,7 +769,7 @@ function MainV2Page() {
                 </div>
                 <div className="p-5">
                   <div className="font-serif text-lg">{s.title}</div>
-                  <div className="mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 group-hover:text-foreground hover:text-foreground transition-colors">
+                  <div className="o100-podrobnee mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 transition-colors">
                     Подробнее <ArrowRight className="h-3 w-3" />
                   </div>
                 </div>
@@ -1151,7 +1155,7 @@ function MainV2HitsCarousel({ products }: { products: Product[] }) {
     el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
   };
   const navBtn =
-    "flex items-center justify-center rounded-full bg-background transition-colors hover:bg-foreground hover:text-background";
+    "o100-nav-btn flex items-center justify-center rounded-full bg-background";
   const navBtnStyle = {
     width: 40,
     height: 40,

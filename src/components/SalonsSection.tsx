@@ -333,6 +333,7 @@ export function SalonsSection() {
         .salon-cta-primary,.salon-cta-secondary { transition: filter 0.2s, transform 0.2s, background 0.25s, color 0.25s; }
         .salon-cta-primary:hover { filter: brightness(1.1); transform: translateY(-2px); }
         .salon-cta-secondary:hover { background: var(--foreground) !important; color: var(--background) !important; }
+        .salon-city-tab:hover:not([data-active="true"]) { background: rgba(0,0,0,0.06) !important; }
       `}</style>
 
       <section style={{ maxWidth: 1280, margin: "0 auto", padding: "80px 32px 96px", background: "#FBFAF8" }}>
@@ -379,6 +380,8 @@ export function SalonsSection() {
               <button
                 key={c}
                 onClick={() => setCity(c)}
+                className="salon-city-tab"
+                data-active={city === c ? "true" : "false"}
                 style={{
                   padding: "10px 22px",
                   borderRadius: 9999,
