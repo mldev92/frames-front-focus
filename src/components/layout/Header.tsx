@@ -1,6 +1,11 @@
 import { Link } from "@tanstack/react-router";
-import { Search, User, Heart, ShoppingBag, Menu, MapPin, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import {
+  Search, User, Heart, ShoppingBag, Menu, X,
+  Gem, Hexagon, Wrench, UserRound, Baby, Users, Tag,
+  CalendarDays, CalendarClock, CalendarRange, Circle, Layers, Sun, Minus,
+  Sigma,
+} from "lucide-react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
 
@@ -16,48 +21,221 @@ const PROMOS = [
   { text: "КУПИТЕ 2 УПАКОВКИ ЛИНЗ MISIGHT 1 DAY 90 И ПОЛУЧИТЕ 20 ЛИНЗ В ПОДАРОК + СКИДКУ 1000 р", href: "/catalog_s/opravy/vysota-oversize-crystal" },
 ];
 
-const NAV = [
-  {
-    label: "Оправы",
-    href: "/catalog_s/opravy/",
-    mega: {
-      cols: [
-        {
-          title: "По форме",
-          links: [
-            ["Прямоугольные", "/catalog_s/opravy/?shape=Прямоугольные"],
-            ["Круглые", "/catalog_s/opravy/?shape=Круглые"],
-            ["Авиаторы", "/catalog_s/opravy/?shape=Авиаторы"],
-            ["Кошачий глаз", "/catalog_s/opravy/?shape=Кошачий+глаз"],
-            ["Геометрические", "/catalog_s/opravy/?shape=Геометрические"],
-          ],
-        },
-        {
-          title: "По полу",
-          links: [
-            ["Мужские", "/catalog_s/opravy/?gender=Мужские"],
-            ["Женские", "/catalog_s/opravy/?gender=Женские"],
-            ["Унисекс", "/catalog_s/opravy/?gender=Унисекс"],
-            ["Детские", "/catalog_s/opravy/?gender=Детские"],
-          ],
-        },
-        {
-          title: "По материалу",
-          links: [
-            ["Ацетат", "/catalog_s/opravy/?material=Ацетат"],
-            ["Титан", "/catalog_s/opravy/?material=Титан"],
-            ["Металл", "/catalog_s/opravy/?material=Металл"],
-          ],
-        },
+// ---------- Mega-menu types ----------
+type LinkItem = { label: string; href: string; icon: ReactNode };
+type ChipItem = { label: string; href: string };
+type MegaCol =
+  | { kind: "links"; title: string; items: LinkItem[]; cols?: 1 | 2 }
+  | { kind: "chips"; title: string; items: ChipItem[] };
+type Mega = { cols: MegaCol[]; allHref: string; gridCols: 3 | 4 };
+
+// ---------- Inline shape SVGs (currentColor stroke) ----------
+const sw = 1.6;
+const S = (children: ReactNode) => (
+  <svg width="22" height="14" viewBox="0 0 44 22" fill="none" stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round">{children}</svg>
+);
+const ShapeIco = {
+  aviator: S(<><path d="M3 8 Q3 17 11 17 Q19 17 19 9 L19 6 L3 6 Z"/><path d="M25 6 L41 6 L41 9 Q41 17 33 17 Q25 17 25 8 Z"/><path d="M19 8 L25 8"/></>),
+  oversize: S(<><rect x="3" y="4" width="16" height="14" rx="4"/><rect x="25" y="4" width="16" height="14" rx="4"/><path d="M19 11 L25 11"/></>),
+  browliner: S(<><path d="M3 5 L19 5 M3 5 Q3 17 11 17 Q19 17 19 5" strokeWidth="2.4"/><path d="M25 5 L41 5 M25 5 Q25 17 33 17 Q41 17 41 5" strokeWidth="2.4"/><path d="M19 9 L25 9"/></>),
+  wayfarer: S(<><path d="M3 6 L19 5 L18 16 Q11 18 5 16 Z"/><path d="M25 5 L41 6 L39 16 Q33 18 26 16 Z"/><path d="M19 9 L25 9"/></>),
+  square: S(<><rect x="3" y="6" width="16" height="11"/><rect x="25" y="6" width="16" height="11"/><path d="M19 11 L25 11"/></>),
+  clipon: S(<><circle cx="11" cy="11" r="7"/><circle cx="33" cy="11" r="7"/><path d="M18 11 L26 11"/><path d="M20 4 L24 4 L24 7 L20 7 Z"/></>),
+  cateye: S(<><path d="M3 8 Q4 4 12 4 Q20 4 19 10 Q18 16 11 16 Q3 16 3 8 Z"/><path d="M25 10 Q24 4 32 4 Q40 4 41 8 Q41 16 33 16 Q26 16 25 10 Z"/><path d="M19 9 L25 9"/></>),
+  round: S(<><circle cx="11" cy="11" r="7"/><circle cx="33" cy="11" r="7"/><path d="M18 11 L26 11"/></>),
+  oval: S(<><ellipse cx="11" cy="11" rx="8" ry="6"/><ellipse cx="33" cy="11" rx="8" ry="6"/><path d="M19 11 L25 11"/></>),
+  rect: S(<><rect x="3" y="7" width="16" height="9" rx="1.5"/><rect x="25" y="7" width="16" height="9" rx="1.5"/><path d="M19 11 L25 11"/></>),
+  sport: S(<><path d="M3 8 Q3 16 11 16 Q20 16 21 9 L22 7 L2 7 Z"/><path d="M22 7 L42 7 L41 9 Q40 16 33 16 Q23 16 22 8 Z"/></>),
+  narrow: S(<><ellipse cx="11" cy="11" rx="8" ry="3.5"/><ellipse cx="33" cy="11" rx="8" ry="3.5"/><path d="M19 11 L25 11"/></>),
+  // construction
+  rimless: S(<><path d="M5 11 L17 11" /><path d="M27 11 L39 11"/><path d="M19 11 L25 11"/></>),
+  fullrim: S(<><circle cx="11" cy="11" r="7"/><circle cx="33" cy="11" r="7"/><path d="M18 11 L26 11"/></>),
+  halfrim: S(<><path d="M4 11 Q4 17 11 17 Q18 17 18 11"/><path d="M4 11 L18 11" strokeDasharray="2 2"/><path d="M26 11 Q26 17 33 17 Q40 17 40 11"/><path d="M26 11 L40 11" strokeDasharray="2 2"/><path d="M18 11 L26 11"/></>),
+};
+
+// ---------- Builders ----------
+function shapeMega(cat: string): Mega {
+  const base = `/catalog_s/${cat}/`;
+  const q = (k: string, v: string) => `${base}?${k}=${encodeURIComponent(v)}`;
+  return {
+    gridCols: 4,
+    allHref: base,
+    cols: [
+      {
+        kind: "links", title: "Форма", cols: 2,
+        items: [
+          { label: "Авиатор", href: q("shape", "Авиатор"), icon: ShapeIco.aviator },
+          { label: "Большие", href: q("shape", "Большие"), icon: ShapeIco.oversize },
+          { label: "Броулайнеры", href: q("shape", "Броулайнеры"), icon: ShapeIco.browliner },
+          { label: "Вэйфер", href: q("shape", "Вэйфер"), icon: ShapeIco.wayfarer },
+          { label: "Квадратные", href: q("shape", "Квадратные"), icon: ShapeIco.square },
+          { label: "Клипоны", href: q("shape", "Клипоны"), icon: ShapeIco.clipon },
+          { label: "Кошачий глаз", href: q("shape", "Кошачий глаз"), icon: ShapeIco.cateye },
+          { label: "Круглые", href: q("shape", "Круглые"), icon: ShapeIco.round },
+          { label: "Овальные", href: q("shape", "Овальные"), icon: ShapeIco.oval },
+          { label: "Прямоугольные", href: q("shape", "Прямоугольные"), icon: ShapeIco.rect },
+          { label: "Спортивные", href: q("shape", "Спортивные"), icon: ShapeIco.sport },
+          { label: "Узкие", href: q("shape", "Узкие"), icon: ShapeIco.narrow },
+        ],
+      },
+      {
+        kind: "links", title: "Материал",
+        items: [
+          { label: "Ацетат", href: q("material", "Ацетат"), icon: <Gem className="h-4 w-4" /> },
+          { label: "Титан", href: q("material", "Титан"), icon: <Hexagon className="h-4 w-4" /> },
+          { label: "Металл", href: q("material", "Металл"), icon: <Wrench className="h-4 w-4" /> },
+        ],
+      },
+      {
+        kind: "links", title: "Пол",
+        items: [
+          { label: "Мужские", href: q("gender", "Мужские"), icon: <User className="h-4 w-4" /> },
+          { label: "Женские", href: q("gender", "Женские"), icon: <UserRound className="h-4 w-4" /> },
+          { label: "Детские", href: q("gender", "Детские"), icon: <Baby className="h-4 w-4" /> },
+          { label: "Унисекс", href: q("gender", "Унисекс"), icon: <Users className="h-4 w-4" /> },
+        ],
+      },
+      {
+        kind: "links", title: "Конструкция",
+        items: [
+          { label: "Безободковые", href: q("construction", "Безободковые"), icon: ShapeIco.rimless },
+          { label: "Ободковые", href: q("construction", "Ободковые"), icon: ShapeIco.fullrim },
+          { label: "Полуободковые", href: q("construction", "Полуободковые"), icon: ShapeIco.halfrim },
+        ],
+      },
+      {
+        kind: "links", title: "Бренд", cols: 2,
+        items: [
+          "Ray-Ban", "Silhouette", "Carrera", "Polaroid", "BOSS", "MIU MIU",
+          "HUGO", "Emporio Armani", "Carolina Herrera", "Marc Jacobs", "William Morris", "Jaguar",
+        ].map((b) => ({ label: b, href: q("brand", b), icon: <Tag className="h-4 w-4" /> })),
+      },
+    ],
+  };
+}
+
+const MEGA_LENSES_CONTACT: Mega = {
+  gridCols: 3,
+  allHref: "/catalog_s/kontaktnye_linzy_/",
+  cols: [
+    {
+      kind: "links", title: "Бренд",
+      items: ["Acuvue", "CooperVision", "Bausch+Lomb", "Alcon"].map((b) => ({
+        label: b, href: `/catalog_s/kontaktnye_linzy_/?brand=${encodeURIComponent(b)}`, icon: <Tag className="h-4 w-4" />,
+      })),
+    },
+    {
+      kind: "links", title: "Замена через",
+      items: [
+        { label: "Однодневные", href: "/catalog_s/kontaktnye_linzy_/?wearMode=Однодневные", icon: <CalendarDays className="h-4 w-4" /> },
+        { label: "Двухнедельные", href: "/catalog_s/kontaktnye_linzy_/?wearMode=Двухнедельные", icon: <CalendarClock className="h-4 w-4" /> },
+        { label: "Месячные", href: "/catalog_s/kontaktnye_linzy_/?wearMode=Месячные", icon: <CalendarRange className="h-4 w-4" /> },
       ],
     },
-  },
-  { label: "Солнцезащитные", href: "/catalog_s/solntsezashchitnye_ochki/" },
-  { label: "Контактные линзы", href: "/catalog_s/kontaktnye_linzy_/" },
-  { label: "Линзы для очков", href: "/catalog_s/linzy_dlya_ochkov/" },
+    {
+      kind: "chips", title: "Оптическая сила (сфера)",
+      items: ["−6.00", "−3.00", "−1.00", "0", "+1.00", "+3.00"].map((s) => ({
+        label: s, href: `/catalog_s/kontaktnye_linzy_/?sphere=${encodeURIComponent(s)}`,
+      })),
+    },
+  ],
+};
+
+const MEGA_LENSES_GLASSES: Mega = {
+  gridCols: 4,
+  allHref: "/catalog_s/linzy_dlya_ochkov/",
+  cols: [
+    {
+      kind: "links", title: "Производитель",
+      items: ["ZEISS", "Essilor", "Hoya"].map((b) => ({
+        label: b, href: `/catalog_s/linzy_dlya_ochkov/?brand=${encodeURIComponent(b)}`, icon: <Tag className="h-4 w-4" />,
+      })),
+    },
+    {
+      kind: "links", title: "Тип линзы",
+      items: [
+        { label: "Однофокусные", href: "/catalog_s/linzy_dlya_ochkov/?lensType=Однофокусные", icon: <Circle className="h-4 w-4" /> },
+        { label: "Прогрессивные", href: "/catalog_s/linzy_dlya_ochkov/?lensType=Прогрессивные", icon: <Layers className="h-4 w-4" /> },
+        { label: "Фотохромные", href: "/catalog_s/linzy_dlya_ochkov/?lensType=Фотохромные", icon: <Sun className="h-4 w-4" /> },
+        { label: "Бифокальные", href: "/catalog_s/linzy_dlya_ochkov/?lensType=Бифокальные", icon: <Minus className="h-4 w-4" /> },
+      ],
+    },
+    {
+      kind: "chips", title: "Оптическая сила (сфера)",
+      items: ["−6.00", "−3.00", "−1.00", "0", "+1.00", "+3.00"].map((s) => ({
+        label: s, href: `/catalog_s/linzy_dlya_ochkov/?sphere=${encodeURIComponent(s)}`,
+      })),
+    },
+    {
+      kind: "chips", title: "Межзрачковое расстояние",
+      items: ["58", "60", "62", "64", "66"].map((p) => ({
+        label: `${p} мм`, href: `/catalog_s/linzy_dlya_ochkov/?pd=${p}`,
+      })),
+    },
+  ],
+};
+
+const NAV: { label: string; href: string; mega?: Mega }[] = [
+  { label: "Оправы", href: "/catalog_s/opravy/", mega: shapeMega("opravy") },
+  { label: "Солнцезащитные", href: "/catalog_s/solntsezashchitnye_ochki/", mega: shapeMega("solntsezashchitnye_ochki") },
+  { label: "Контактные линзы", href: "/catalog_s/kontaktnye_linzy_/", mega: MEGA_LENSES_CONTACT },
+  { label: "Линзы для очков", href: "/catalog_s/linzy_dlya_ochkov/", mega: MEGA_LENSES_GLASSES },
   { label: "Аксессуары", href: "/catalog_s/soputstvuyushchie_tovary/" },
   { label: "Салоны", href: "/contacts/" },
 ];
+
+function MegaPanel({ mega }: { mega: Mega }) {
+  const gridClass = mega.gridCols === 4 ? "grid-cols-4" : "grid-cols-3";
+  return (
+    <div className="mx-auto max-w-7xl px-8 py-8">
+      <div className={cn("grid gap-10", gridClass)}>
+        {mega.cols.map((col) => (
+          <div key={col.title}>
+            <div className="font-serif text-xs uppercase tracking-wider text-muted-foreground mb-3">
+              {col.title}
+            </div>
+            {col.kind === "links" ? (
+              <ul className={cn("gap-x-4", col.cols === 2 ? "grid grid-cols-2 gap-y-1.5" : "flex flex-col gap-1.5")}>
+                {col.items.map((it) => (
+                  <li key={it.label}>
+                    <a href={it.href} className="group flex items-center gap-2 text-sm hover:text-brand transition-colors py-0.5">
+                      <span className="text-muted-foreground group-hover:text-brand shrink-0 inline-flex items-center justify-center w-5">
+                        {it.icon}
+                      </span>
+                      <span>{it.label}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {col.items.map((it) => (
+                  <a
+                    key={it.label}
+                    href={it.href}
+                    className="px-2.5 py-1 text-xs rounded-full border border-border hover:border-brand hover:text-brand transition-colors inline-flex items-center gap-1"
+                  >
+                    <Sigma className="h-3 w-3 opacity-60" />
+                    {it.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 pt-5 border-t border-border flex justify-end">
+        <a
+          href={mega.allHref}
+          className="inline-flex items-center gap-1.5 text-xs uppercase tracking-wider px-4 py-2 rounded-full bg-brand text-brand-foreground hover:opacity-90 transition-opacity"
+        >
+          Смотреть всё →
+        </a>
+      </div>
+    </div>
+  );
+}
+
 
 export function Header() {
   const { totals, open: openCart, saved } = useCart();
@@ -249,27 +427,7 @@ export function Header() {
                       className="absolute left-0 right-0 top-full bg-background border-b border-border shadow-lg"
                       onMouseEnter={() => setHovered(item.href)}
                     >
-                      <div className="mx-auto max-w-7xl px-8 py-10 grid grid-cols-3 gap-12">
-                        {item.mega.cols.map((col) => (
-                          <div key={col.title}>
-                            <div className="font-serif text-sm uppercase tracking-wider text-muted-foreground mb-4">
-                              {col.title}
-                            </div>
-                            <ul className="space-y-2">
-                              {col.links.map(([label, href]) => (
-                                <li key={href}>
-                                  <a
-                                    href={href}
-                                    className="hover:text-brand transition-colors"
-                                  >
-                                    {label}
-                                  </a>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                      </div>
+                      <MegaPanel mega={item.mega} />
                     </div>
                   ),
               )}
