@@ -270,24 +270,20 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
   const FilterContent = (
     <div className="text-sm">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4">
-        <span className="font-serif text-[13px] font-normal tracking-normal text-foreground/70">
-          Фильтры
-        </span>
+      <div className="flex items-end justify-between pb-5 border-b border-border/70">
+        <div className="flex items-baseline gap-2">
+          <SlidersHorizontal className="h-3.5 w-3.5 text-foreground/60" />
+          <span className="font-serif text-[20px] leading-none font-normal text-foreground">
+            Фильтры
+          </span>
+        </div>
         <button
           onClick={clearAll}
-          className="group/reset relative text-[11.5px] font-sans font-medium text-muted-foreground hover:text-foreground transition-colors"
-          style={{ letterSpacing: '0.04em' }}
+          className="group/reset inline-flex items-center gap-1 text-[11px] uppercase font-sans font-medium text-muted-foreground hover:text-foreground transition-colors"
+          style={{ letterSpacing: '0.08em' }}
         >
+          <X className="h-3 w-3 transition-transform group-hover/reset:rotate-90" style={{ transitionDuration: 'var(--duration-snap)' }} />
           <span>Сбросить</span>
-          <span
-            className="absolute left-0 bottom-0 h-px bg-current max-w-0 group-hover/reset:max-w-full transition-all"
-            style={{
-              transitionDuration: 'var(--duration-snap)',
-              transitionTimingFunction: 'var(--ease-editorial)',
-              width: '100%',
-            }}
-          />
         </button>
       </div>
 
@@ -737,25 +733,28 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
               <>
                 <button
                   onClick={() => setSidebarOpen((v) => !v)}
-                  className="group/toggle hidden lg:flex items-center gap-1.5 text-sm font-medium hover:text-brand transition-colors shrink-0"
+                  className="group/toggle hidden lg:inline-flex items-center gap-2 h-9 rounded-full border border-border bg-background pl-3 pr-4 text-[12px] font-medium tracking-wide text-foreground hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all shrink-0"
+                  style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
                 >
                   {sidebarOpen ? (
                     <>
-                      <span className="inline-block transition-transform" style={{ transitionDuration: 'var(--duration-snap)' }}>←</span>
+                      <span className="inline-block transition-transform group-hover/toggle:-translate-x-0.5" style={{ transitionDuration: 'var(--duration-snap)' }}>←</span>
                       <span>Скрыть фильтры</span>
                     </>
                   ) : (
                     <>
+                      <SlidersHorizontal className="h-3.5 w-3.5" />
                       <span>Показать фильтры</span>
-                      <span className="inline-block transition-transform" style={{ transitionDuration: 'var(--duration-snap)' }}>→</span>
+                      <span className="inline-block transition-transform group-hover/toggle:translate-x-0.5" style={{ transitionDuration: 'var(--duration-snap)' }}>→</span>
                     </>
                   )}
                 </button>
                 <button
                   onClick={() => setMobileFilters(true)}
-                  className="lg:hidden inline-flex items-center gap-2 text-sm border border-border rounded-sm px-3 py-1.5"
+                  className="lg:hidden inline-flex items-center gap-2 h-9 rounded-full border border-border bg-background px-4 text-[12px] font-medium tracking-wide hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all"
+                  style={{ transitionDuration: 'var(--duration-snap)' }}
                 >
-                  <SlidersHorizontal className="h-4 w-4" /> Фильтры
+                  <SlidersHorizontal className="h-3.5 w-3.5" /> Фильтры
                 </button>
               </>
             )}
@@ -804,19 +803,21 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                   </svg>
                 </button>
               </div>
-              <div className="relative">
+              <div className="relative group/sort">
+                <span className="pointer-events-none hidden md:inline absolute left-3 top-1/2 -translate-y-1/2 text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+                  Сортировать
+                </span>
                 <select
                   value={sort}
                   onChange={(e) => setSort(e.target.value as typeof sort)}
-                  className="appearance-none bg-background border border-border rounded-sm pl-3 pr-8 py-1.5 text-sm cursor-pointer focus:outline-none focus:border-brand"
+                  className="appearance-none bg-background border border-border rounded-full h-9 pl-3 md:pl-[112px] pr-9 text-[12px] font-medium tracking-wide cursor-pointer focus:outline-none hover:border-ink focus:border-ink transition-colors"
+                  style={{ transitionDuration: 'var(--duration-snap)' }}
                 >
                   <option value="featured">Популярные</option>
                   <option value="price-asc">Цена ↑</option>
                   <option value="price-desc">Цена ↓</option>
                 </select>
-                <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground text-xs">
-                  ▾
-                </span>
+                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-foreground/60 transition-transform group-hover/sort:text-foreground" />
               </div>
             </div>
           </div>
@@ -922,11 +923,11 @@ function FilterSection({
         }}
         className="w-full flex items-center justify-between text-left group"
       >
-        <span className="font-serif text-[13px] font-normal tracking-normal text-foreground/70">
+        <span className="text-[11px] uppercase font-sans font-semibold text-foreground/80 group-hover:text-foreground transition-colors" style={{ letterSpacing: '0.1em' }}>
           {title}
         </span>
         <ChevronDown
-          className={cn("h-4 w-4 text-foreground/40 group-hover:text-foreground/70 transition-transform duration-200 shrink-0", open && "rotate-180")}
+          className={cn("h-4 w-4 text-foreground/50 group-hover:text-foreground transition-transform duration-200 shrink-0", open && "rotate-180")}
         />
       </button>
       <div
