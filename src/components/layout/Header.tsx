@@ -51,6 +51,7 @@ type ChipItem = { label: string; href: string };
 type MegaCol =
   | { kind: "links"; title: string; items: LinkItem[]; cols?: 1 | 2; span?: number }
   | { kind: "chips"; title: string; items: ChipItem[]; span?: number };
+type ConstructionType = "Ободковые" | "Полуободковые" | "Безободковые";
 type ClassicMega = { kind: "classic"; cols: MegaCol[]; allHref: string; gridCols: 3 | 4 };
 type ShowcaseMega = {
   kind: "showcase";
@@ -190,6 +191,36 @@ const ShapeIco = {
   ),
 };
 
+const FRAME_TYPE_SVG = {
+  width: 82.72,
+  height: 95.55,
+  order: ["Ободковые", "Полуободковые", "Безободковые"] as const,
+};
+
+function FrameTypeSvgIcon({ kind, className }: { kind: ConstructionType; className?: string }) {
+  const segmentWidth = FRAME_TYPE_SVG.width / FRAME_TYPE_SVG.order.length;
+  const index = FRAME_TYPE_SVG.order.indexOf(kind);
+  const x = Math.max(index, 0) * segmentWidth;
+
+  return (
+    <svg
+      className={cn("block", className)}
+      viewBox={`${x} 0 ${segmentWidth} ${FRAME_TYPE_SVG.height}`}
+      preserveAspectRatio="xMidYMid meet"
+      aria-hidden="true"
+    >
+      <image
+        href="/icon_frame_type.svg"
+        x="0"
+        y="0"
+        width={FRAME_TYPE_SVG.width}
+        height={FRAME_TYPE_SVG.height}
+        preserveAspectRatio="xMidYMid meet"
+      />
+    </svg>
+  );
+}
+
 // ---------- Builders ----------
 function shapeMega(cat: string): Mega {
   const base = `/catalog_s/${cat}/`;
@@ -269,9 +300,21 @@ function shapeMega(cat: string): Mega {
       },
     ],
     constructionItems: [
-      { label: "Безободковые", href: q("construction", "Безободковые"), icon: ShapeIco.rimless },
-      { label: "Ободковые", href: q("construction", "Ободковые"), icon: ShapeIco.fullrim },
-      { label: "Полуободковые", href: q("construction", "Полуободковые"), icon: ShapeIco.halfrim },
+      {
+        label: "Безободковые",
+        href: q("construction", "Безободковые"),
+        icon: <FrameTypeSvgIcon kind="Безободковые" className="h-3.5 w-3.5" />,
+      },
+      {
+        label: "Ободковые",
+        href: q("construction", "Ободковые"),
+        icon: <FrameTypeSvgIcon kind="Ободковые" className="h-3.5 w-3.5" />,
+      },
+      {
+        label: "Полуободковые",
+        href: q("construction", "Полуободковые"),
+        icon: <FrameTypeSvgIcon kind="Полуободковые" className="h-3.5 w-3.5" />,
+      },
     ],
     brandItems: [
       "Lionsheart",
