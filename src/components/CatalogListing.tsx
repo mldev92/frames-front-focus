@@ -5,7 +5,7 @@ import { Slider } from "./ui/slider";
 import type { Product, Category } from "@/data/types";
 import { cn } from "@/lib/utils";
 import { GenderIcon, genderToIconKind } from "@/components/ui/GenderIcon";
-import { brandLogoImg } from "@/lib/brand-logos";
+import { brandLogoImg, BRAND_NAMES } from "@/lib/brand-logos";
 
 type FacetKey =
   | "shape"
@@ -572,6 +572,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
         <FilterSection key="brand" title="Бренды" defaultOpen={false}>
           <div className="max-h-72 overflow-y-auto pr-1 space-y-2">
             {Object.entries(facetCounts.brand ?? {})
+              .filter(([b]) => BRAND_NAMES.includes(b))
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([b, c]) => {
                 const checked = active.brand?.has(b) ?? false;

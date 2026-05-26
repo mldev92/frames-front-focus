@@ -16,6 +16,22 @@ const BRAND_LOGOS: Record<string, string> = {
   "fisherprice": "/fisher-price.orig.svg",
 };
 
+/** The full list of brand names (display names) that have logo images. */
+export const BRAND_NAMES = [
+  "Lionsheart",
+  "ODL",
+  "Stepper",
+  "St. Louise",
+  "Silhouette",
+  "Safilo",
+  "Polaroid",
+  "Okula",
+  "Juniorlook",
+  "Guess",
+  "Furla",
+  "Fisher-Price",
+];
+
 /** Return the brand logo <img> element, or null if no logo exists. */
 export function brandLogoImg(brand: string, className = "h-4 w-auto"): JSX.Element | null {
   const key = brand.toLowerCase().replace(/\s+/g, "");

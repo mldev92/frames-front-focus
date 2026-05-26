@@ -6,7 +6,7 @@ import {
   Sigma,
 } from "lucide-react";
 import { GenderIcon, genderToIconKind } from "@/components/ui/GenderIcon";
-import { brandLogoImg } from "@/lib/brand-logos";
+import { brandLogoImg, BRAND_NAMES } from "@/lib/brand-logos";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
@@ -101,10 +101,7 @@ function shapeMega(cat: string): Mega {
       },
       {
         kind: "links", title: "Бренд", cols: 2, span: 2,
-        items: [
-          "Ray-Ban", "Silhouette", "Carrera", "Polaroid", "BOSS", "MIU MIU",
-          "HUGO", "Emporio Armani", "Carolina Herrera", "Marc Jacobs", "William Morris", "Jaguar",
-        ].map((b) => ({ label: b, href: q("brand", b), icon: brandLogoImg(b, "h-4 w-auto") ?? <Tag className="h-4 w-4" /> })),
+        items: BRAND_NAMES.map((b) => ({ label: b, href: q("brand", b), icon: brandLogoImg(b, "h-4 w-auto") ?? <Tag className="h-4 w-4" /> })),
       },
     ],
   };
