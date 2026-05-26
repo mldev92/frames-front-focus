@@ -1,10 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import {
   Search, User, Heart, ShoppingBag, Menu, X,
-  Gem, Hexagon, Wrench, UserRound, Baby, Users, Tag,
+  Gem, Hexagon, Wrench, Users, Tag,
   CalendarDays, CalendarClock, CalendarRange, Circle, Layers, Sun, Minus,
   Sigma,
 } from "lucide-react";
+import { GenderIcon, genderToIconKind } from "@/components/ui/GenderIcon";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
@@ -89,9 +90,9 @@ function shapeMega(cat: string): Mega {
       {
         kind: "links", title: "Пол",
         items: [
-          { label: "Мужские", href: q("gender", "Мужские"), icon: <User className="h-4 w-4" /> },
-          { label: "Женские", href: q("gender", "Женские"), icon: <UserRound className="h-4 w-4" /> },
-          { label: "Детские", href: q("gender", "Детские"), icon: <Baby className="h-4 w-4" /> },
+          { label: "Мужские", href: q("gender", "Мужские"), icon: <GenderIcon kind="male" className="h-4 w-4" /> },
+          { label: "Женские", href: q("gender", "Женские"), icon: <GenderIcon kind="female" className="h-4 w-4" /> },
+          { label: "Детские", href: q("gender", "Детские"), icon: <GenderIcon kind="boy" className="h-4 w-4" /> },
           { label: "Унисекс", href: q("gender", "Унисекс"), icon: <Users className="h-4 w-4" /> },
         ],
       },

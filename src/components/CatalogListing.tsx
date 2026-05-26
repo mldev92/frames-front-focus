@@ -4,6 +4,7 @@ import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
 import type { Product, Category } from "@/data/types";
 import { cn } from "@/lib/utils";
+import { GenderIcon, genderToIconKind } from "@/components/ui/GenderIcon";
 
 type FacetKey =
   | "shape"
@@ -512,6 +513,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
           <div className="flex flex-wrap gap-2">
             {Object.entries(facetCounts.gender ?? {}).map(([g, c]) => {
               const checked = active.gender?.has(g) ?? false;
+              const ik = genderToIconKind(g);
               return (
                 <button
                   key={g}
@@ -525,6 +527,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                   )}
                   style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
                 >
+                  {ik && <GenderIcon kind={ik} className="h-3.5 w-3.5" />}
                   <span className="first-letter:uppercase">{g.toLowerCase()}</span>
                   <span className={cn("text-[10px]", checked ? "opacity-80" : "text-muted-foreground")}>
                     ({c})
