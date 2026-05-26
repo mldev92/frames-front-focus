@@ -549,6 +549,20 @@ export const products: Product[] = [
     description: "Антибактериальный спрей 30 мл с салфеткой в комплекте.",
     specs: [{ label: "Объём", value: "30 мл" }],
   },
+
+  // ── Brand-logo showcase ──────────────────────────────────────────────────
+  { slug: "lionsheart-classic", name: "Classic", brand: "Lionsheart", category: "opravy", price: 8900, images: [ph("lionsheart")], shape: "Прямоугольные", material: "Ацетат", gender: "Мужские" },
+  { slug: "odl-minimal", name: "Minimal", brand: "ODL", category: "opravy", price: 7900, images: [ph("odl")], shape: "Круглые", material: "Металл", gender: "Унисекс" },
+  { slug: "stepper-sport", name: "Sport", brand: "Stepper", category: "opravy", price: 9500, images: [ph("stepper")], shape: "Прямоугольные", material: "Титан", gender: "Мужские" },
+  { slug: "st-louise-elegant", name: "Elegant", brand: "St. Louise", category: "opravy", price: 10500, images: [ph("stlouise")], shape: "Овальные", material: "Ацетат", gender: "Женские" },
+  { slug: "silhouette-ultra", name: "Ultra", brand: "Silhouette", category: "opravy", price: 14900, images: [ph("silhouette")], shape: "Прямоугольные", material: "Титан", gender: "Унисекс" },
+  { slug: "safilo-urban", name: "Urban", brand: "Safilo", category: "opravy", price: 11900, images: [ph("safilo")], shape: "Квадратные", material: "Ацетат", gender: "Мужские" },
+  { slug: "polaroid-retro", name: "Retro", brand: "Polaroid", category: "solntsezashchitnye", price: 6900, images: [ph("polaroid")], shape: "Круглые", material: "Ацетат", gender: "Унисекс" },
+  { slug: "okula-bold", name: "Bold", brand: "Okula", category: "opravy", price: 7200, images: [ph("okula")], shape: "Квадратные", material: "Металл", gender: "Мужские" },
+  { slug: "juniorlook-kids", name: "Kids", brand: "Juniorlook", category: "opravy", price: 4500, images: [ph("juniorlook")], shape: "Круглые", material: "Ацетат", gender: "Детские" },
+  { slug: "guess-glam", name: "Glam", brand: "Guess", category: "opravy", price: 9900, images: [ph("guess")], shape: "Кошачий глаз", material: "Ацетат", gender: "Женские" },
+  { slug: "furla-chic", name: "Chic", brand: "Furla", category: "opravy", price: 13500, images: [ph("furla")], shape: "Овальные", material: "Ацетат", gender: "Женские" },
+  { slug: "fisher-price-kids", name: "Fun Kids", brand: "Fisher-Price", category: "opravy", price: 3800, images: [ph("fisherprice")], shape: "Круглые", material: "Ацетат", gender: "Детские" },
 ];
 
 export const getProduct = (slug: string) => products.find((p) => p.slug === slug);

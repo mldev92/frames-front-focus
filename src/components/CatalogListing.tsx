@@ -572,7 +572,6 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
         <FilterSection key="brand" title="Бренды" defaultOpen={false}>
           <div className="max-h-72 overflow-y-auto pr-1 space-y-2">
             {Object.entries(facetCounts.brand ?? {})
-              .filter(([b]) => brandLogoImg(b) !== null)
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([b, c]) => {
                 const checked = active.brand?.has(b) ?? false;
