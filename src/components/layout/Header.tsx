@@ -66,17 +66,11 @@ function shapeMega(cat: string): Mega {
         kind: "links", title: "Форма", cols: 2,
         items: [
           { label: "Авиатор", href: q("shape", "Авиатор"), icon: <img src="/aviator.webp" alt="" className="h-5 w-auto" /> },
-          { label: "Большие", href: q("shape", "Большие"), icon: ShapeIco.oversize },
-          { label: "Броулайнеры", href: q("shape", "Броулайнеры"), icon: ShapeIco.browliner },
-          { label: "Вэйфер", href: q("shape", "Вэйфер"), icon: ShapeIco.wayfarer },
           { label: "Квадратные", href: q("shape", "Квадратные"), icon: <img src="/square.webp" alt="" className="h-5 w-auto" /> },
-          { label: "Клипоны", href: q("shape", "Клипоны"), icon: ShapeIco.clipon },
           { label: "Кошачий глаз", href: q("shape", "Кошачий глаз"), icon: <img src="/cat-eye.webp" alt="" className="h-5 w-auto" /> },
           { label: "Круглые", href: q("shape", "Круглые"), icon: <img src="/round.webp" alt="" className="h-5 w-auto" /> },
           { label: "Овальные", href: q("shape", "Овальные"), icon: <img src="/Anselm - Oval.webp" alt="" className="h-5 w-auto" /> },
           { label: "Прямоугольные", href: q("shape", "Прямоугольные"), icon: <img src="/rectangle.webp" alt="" className="h-5 w-auto" /> },
-          { label: "Спортивные", href: q("shape", "Спортивные"), icon: ShapeIco.sport },
-          { label: "Узкие", href: q("shape", "Узкие"), icon: ShapeIco.narrow },
         ],
       },
       {
@@ -200,7 +194,7 @@ function MegaPanel({ mega }: { mega: Mega }) {
                 {col.items.map((it) => (
                   <li key={it.label}>
                     <a href={it.href} className="group flex items-center gap-2 text-sm hover:text-brand transition-colors py-0.5">
-                      <span className="text-muted-foreground group-hover:text-brand shrink-0 inline-flex items-center justify-center w-5">
+                      <span className="text-muted-foreground group-hover:text-brand shrink-0 inline-flex items-center justify-center min-w-5">
                         {it.icon}
                       </span>
                       <span>{it.label}</span>
