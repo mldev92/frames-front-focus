@@ -5,7 +5,6 @@ import { Slider } from "./ui/slider";
 import type { Product, Category } from "@/data/types";
 import { cn } from "@/lib/utils";
 import { GenderIcon, genderToIconKind } from "@/components/ui/GenderIcon";
-import { brandLogoImg } from "@/lib/brand-logos";
 
 type FacetKey =
   | "shape"
@@ -594,10 +593,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                     >
                       {checked && <Check className="h-3 w-3" strokeWidth={3} />}
                     </span>
-                    <span className="flex-1 flex items-center gap-2 text-sm">
-                      {brandLogoImg(b, "h-4 w-auto opacity-70 group-hover:opacity-100")}
-                      {b}
-                    </span>
+                    <span className="flex-1 text-sm">{b}</span>
                     <span className="text-xs text-muted-foreground">({c})</span>
                   </button>
                 );
