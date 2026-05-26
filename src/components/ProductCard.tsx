@@ -4,7 +4,6 @@ import { Heart } from "lucide-react";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { categoryToSegment } from "@/data/categories";
-import { TryOnBadge } from "@/components/TryOnIcon";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +42,7 @@ export function ProductCard({ product }: { product: Product }) {
           />
         )}
         {product.badges && product.badges.length > 0 && (
-          <div className="absolute top-3 left-3 flex flex-col gap-1">
+          <div className="absolute top-14 left-3 z-10 flex flex-col gap-1">
             {product.badges.map((b) => (
               <span
                 key={b}
@@ -59,28 +58,57 @@ export function ProductCard({ product }: { product: Product }) {
             ))}
           </div>
         )}
-        {/* Always-visible VTO badge — click opens modal without navigating */}
-        <TryOnBadge
-          className="absolute bottom-3 left-3"
+        <button
+          type="button"
           onClick={(e) => {
-            e?.preventDefault();
-            e?.stopPropagation();
+            e.preventDefault();
+            e.stopPropagation();
             setVtoOpen(true);
           }}
-        />
+          className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-brand active:translate-y-0 active:scale-[0.98]"
+          style={{
+            borderColor: "color-mix(in oklch, var(--foreground) 14%, transparent)",
+            background: "color-mix(in oklch, white 92%, transparent)",
+          }}
+          aria-label="Примерить"
+        >
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              fillRule="evenodd"
+              clipRule="evenodd"
+              d="M2.402 2.652a.25.25 0 0 0-.25.25v2a.75.75 0 1 1-1.5 0v-2c0-.966.784-1.75 1.75-1.75h2a.75.75 0 1 1 0 1.5h-2Zm11.146.25a.25.25 0 0 0-.25-.25h-2a.75.75 0 0 1 0-1.5h2c.967 0 1.75.784 1.75 1.75v2a.75.75 0 0 1-1.5 0v-2ZM2.402 14.048a.25.25 0 0 1-.25-.25v-2a.75.75 0 1 0-1.5 0v2c0 .966.784 1.75 1.75 1.75h2a.75.75 0 0 0 0-1.5h-2Zm10.896 0a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2a1.75 1.75 0 0 1-1.75 1.75h-2a.75.75 0 0 1 0-1.5h2ZM8 7.25a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm-3.75 4.5a3.75 3.75 0 1 1 7.5 0h-1.5a2.25 2.25 0 1 0-4.5 0h-1.5Z"
+              fill="currentColor"
+            />
+          </svg>
+          <span>Примерить</span>
+        </button>
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             toggleSaved(product.slug);
           }}
-          className={cn(
-            "absolute top-3 right-3 p-2 bg-background/90 rounded-full hover:bg-background",
-            "opacity-0 group-hover/card:opacity-100 transition-opacity duration-200",
-            isSaved && "opacity-100",
-          )}
-          aria-label="Отложить"
+          className="absolute top-3 left-3 z-10 flex items-center justify-center rounded-full"
+          style={{
+            width: 36,
+            height: 36,
+            background: "transparent",
+            color: "var(--brand)",
+          }}
+          aria-label="В избранное"
         >
-          <Heart className={cn("h-4 w-4", isSaved && "fill-brand text-brand")} />
+          <Heart
+            className="h-5 w-5"
+            strokeWidth={1.75}
+            fill={isSaved ? "var(--brand)" : "none"}
+          />
         </button>
       </Link>
       <div className="mt-3 space-y-1.5">

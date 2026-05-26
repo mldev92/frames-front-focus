@@ -50,7 +50,14 @@ export const Route = createFileRoute("/")({
 const HERO_STATS = [
   { value: "11 000+", label: "довольных клиентов", Icon: Users },
   { value: "2 города", label: "салоны оптики", Icon: MapPin },
-  { value: "10+ лет", label: "заботы о вашем зрении", Icon: Award },
+  { value: "20+ лет", label: "заботы о вашем зрении", Icon: Award },
+  {
+    value: "Доставка",
+    label: "по всей России",
+    Icon: MapPin,
+    iconSrc: "/dostavka_icon.webp",
+    iconAlt: "Доставка по всей России",
+  },
 ];
 
 const TRUST_REASONS = [
@@ -124,7 +131,7 @@ const CAT_CELLS = [
   },
   {
     slug: "detskie-ochki",
-    title: "Детские очки",
+    title: "Детские оправы",
     subtitle: "Для заботы о будущем",
     image: "/new_categories_3.png",
     href: catalogHref("opravy"),
@@ -347,8 +354,8 @@ function MainV2Page() {
               </div>
 
               <div
-                className="mt-10 grid grid-cols-3 gap-6"
-                style={{ maxWidth: 460 }}
+                className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6"
+                style={{ maxWidth: 680 }}
               >
                 {HERO_STATS.map((s) => (
                   <div key={s.label} className="flex items-start gap-2.5">
@@ -361,7 +368,16 @@ function MainV2Page() {
                         color: "var(--brand)",
                       }}
                     >
-                      <s.Icon size={16} strokeWidth={1.75} />
+                      {s.iconSrc ? (
+                        <img
+                          src={s.iconSrc}
+                          alt={s.iconAlt ?? s.label}
+                          loading="lazy"
+                          className="h-4 w-4 object-contain"
+                        />
+                      ) : (
+                        <s.Icon size={16} strokeWidth={1.75} />
+                      )}
                     </span>
                     <div className="flex flex-col">
                       <strong
@@ -1049,11 +1065,10 @@ function MainV2ProductCard({ product }: { product: Product }) {
               params: productRouteParams,
             })
           }
-          className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-all duration-200 hover:-translate-y-0.5 hover:text-brand active:translate-y-0 active:scale-[0.98]"
+          className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-brand active:translate-y-0 active:scale-[0.98]"
           style={{
             borderColor: "color-mix(in oklch, var(--foreground) 14%, transparent)",
             background: "color-mix(in oklch, white 92%, transparent)",
-            color: "var(--foreground)",
           }}
           aria-label="Примерить"
         >
