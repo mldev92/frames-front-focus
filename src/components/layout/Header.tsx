@@ -51,7 +51,6 @@ type ChipItem = { label: string; href: string };
 type MegaCol =
   | { kind: "links"; title: string; items: LinkItem[]; cols?: 1 | 2; span?: number }
   | { kind: "chips"; title: string; items: ChipItem[]; span?: number };
-type ConstructionType = "Ободковые" | "Полуободковые" | "Безободковые";
 type ClassicMega = { kind: "classic"; cols: MegaCol[]; allHref: string; gridCols: 3 | 4 };
 type ShowcaseMega = {
   kind: "showcase";
@@ -191,26 +190,6 @@ const ShapeIco = {
   ),
 };
 
-function FrameTypeSvgIcon({ kind, className }: { kind: ConstructionType; className?: string }) {
-  const order = ["Ободковые", "Полуободковые", "Безободковые"] as const;
-  const index = Math.max(order.indexOf(kind), 0);
-  const shift = `${index * 33.333333}%`;
-
-  return (
-    <span className={cn("relative block overflow-hidden", className)} aria-hidden="true">
-      <img
-        src="/icon_frame_type.svg"
-        alt=""
-        className="absolute inset-0 h-full w-[300%] max-w-none"
-        style={{
-          transform: `translateX(-${shift})`,
-          transformOrigin: "left center",
-        }}
-      />
-    </span>
-  );
-}
-
 // ---------- Builders ----------
 function shapeMega(cat: string): Mega {
   const base = `/catalog_s/${cat}/`;
@@ -293,17 +272,35 @@ function shapeMega(cat: string): Mega {
       {
         label: "Безободковые",
         href: q("construction", "Безободковые"),
-        icon: <FrameTypeSvgIcon kind="Безободковые" className="h-3.5 w-6" />,
+        icon: (
+          <img
+            src="/bezobodkovaea.png"
+            alt="Безободковая (Втулки/Винты)"
+            className="h-3.5 w-auto object-contain"
+          />
+        ),
       },
       {
         label: "Ободковые",
         href: q("construction", "Ободковые"),
-        icon: <FrameTypeSvgIcon kind="Ободковые" className="h-3.5 w-6" />,
+        icon: (
+          <img
+            src="/obodkovaea.png"
+            alt="Ободковая (Ободок)"
+            className="h-3.5 w-auto object-contain"
+          />
+        ),
       },
       {
         label: "Полуободковые",
         href: q("construction", "Полуободковые"),
-        icon: <FrameTypeSvgIcon kind="Полуободковые" className="h-3.5 w-6" />,
+        icon: (
+          <img
+            src="/poluobodkovaea.png"
+            alt="Полуободковая (Полуободок/Леска)"
+            className="h-3.5 w-auto object-contain"
+          />
+        ),
       },
     ],
     brandItems: [

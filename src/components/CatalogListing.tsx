@@ -26,40 +26,133 @@ interface ListingProps {
 
 // ── Frame shape icons — 64×24 grid, stroke 1.5, round joins ─────────────────
 const ShapeIcon = ({ d }: { d: string }) => (
-  <svg viewBox="0 0 64 24" style={{ width: "100%", height: "auto", minHeight: "36px" }} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    {d === "rect" && (<><rect x="2" y="4" width="24" height="16" rx="4"/><rect x="38" y="4" width="24" height="16" rx="4"/><path d="M26 9 Q32 7 38 9"/></>)}
-    {d === "square" && (<><rect x="2" y="3" width="24" height="18" rx="1.5"/><rect x="38" y="3" width="24" height="18" rx="1.5"/><path d="M26 9 Q32 7 38 9"/></>)}
-    {d === "round" && (<><circle cx="13" cy="12" r="10"/><circle cx="51" cy="12" r="10"/><path d="M23 11 Q32 8 41 11"/></>)}
-    {d === "oval" && (<><ellipse cx="14" cy="12" rx="12" ry="8"/><ellipse cx="50" cy="12" rx="12" ry="8"/><path d="M26 11 Q32 8 38 11"/></>)}
-    {d === "aviator" && (<><path d="M3 6 Q3 4 5 4 L24 4 Q27 4 26 8 L23 18 Q22 21 18 21 L10 21 Q5 21 4 17 Z"/><path d="M61 6 Q61 4 59 4 L40 4 Q37 4 38 8 L41 18 Q42 21 46 21 L54 21 Q59 21 60 17 Z"/><path d="M26 8 Q32 6 38 8"/></>)}
-    {d === "cat" && (<><path d="M2 14 Q4 4 14 4 Q22 4 25 8 L27 12 Q26 18 18 18 L8 18 Q3 18 2 14 Z"/><path d="M62 14 Q60 4 50 4 Q42 4 39 8 L37 12 Q38 18 46 18 L56 18 Q61 18 62 14 Z"/><path d="M27 10 Q32 8 37 10"/></>)}
-    {d === "browline" && (<><path d="M2 4 L26 4 L26 9 L2 9 Z" fill="currentColor" stroke="none"/><path d="M38 4 L62 4 L62 9 L38 9 Z" fill="currentColor" stroke="none"/><path d="M2 9 Q2 20 12 20 L18 20 Q26 20 26 9"/><path d="M38 9 Q38 20 48 20 L54 20 Q62 20 62 9"/><path d="M26 9 Q32 7 38 9"/></>)}
-    {d === "wayfarer" && (<><path d="M3 5 L27 5 L24 18 Q23 20 20 20 L10 20 Q6 20 5 18 Z"/><path d="M61 5 L37 5 L40 18 Q41 20 44 20 L54 20 Q58 20 59 18 Z"/><path d="M27 8 Q32 6 37 8"/></>)}
-    {d === "big" && (<><rect x="1" y="2" width="27" height="20" rx="5"/><rect x="36" y="2" width="27" height="20" rx="5"/><path d="M28 9 Q32 7 36 9"/></>)}
-    {d === "narrow" && (<><rect x="2" y="9" width="24" height="6" rx="2"/><rect x="38" y="9" width="24" height="6" rx="2"/><path d="M26 11 Q32 9 38 11"/></>)}
-    {d === "sport" && (<><path d="M2 8 Q2 4 8 4 L24 4 Q28 4 28 10 L26 14 Q24 18 18 18 L8 18 Q2 18 2 12 Z"/><path d="M62 8 Q62 4 56 4 L40 4 Q36 4 36 10 L38 14 Q40 18 46 18 L56 18 Q62 18 62 12 Z"/><path d="M28 10 Q32 8 36 10"/></>)}
-    {d === "mono" && (<><path d="M4 8 Q4 4 10 4 L54 4 Q60 4 60 8 L60 16 Q60 20 54 20 L10 20 Q4 20 4 16 Z"/><path d="M32 7 L32 17" strokeDasharray="1.5 2" opacity="0.5"/></>)}
-    {d === "mask" && (<><path d="M3 8 Q32 2 61 8 L61 16 Q32 22 3 16 Z"/><path d="M3 13 Q32 17 61 13" opacity="0.3"/></>)}
-    {d === "clip" && (<><path d="M5 6 L5 2 M9 6 L9 2 M55 6 L55 2 M59 6 L59 2"/><rect x="2" y="6" width="24" height="14" rx="3"/><rect x="38" y="6" width="24" height="14" rx="3"/><path d="M26 11 Q32 9 38 11"/></>)}
+  <svg
+    viewBox="0 0 64 24"
+    style={{ width: "100%", height: "auto", minHeight: "36px" }}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    {d === "rect" && (
+      <>
+        <rect x="2" y="4" width="24" height="16" rx="4" />
+        <rect x="38" y="4" width="24" height="16" rx="4" />
+        <path d="M26 9 Q32 7 38 9" />
+      </>
+    )}
+    {d === "square" && (
+      <>
+        <rect x="2" y="3" width="24" height="18" rx="1.5" />
+        <rect x="38" y="3" width="24" height="18" rx="1.5" />
+        <path d="M26 9 Q32 7 38 9" />
+      </>
+    )}
+    {d === "round" && (
+      <>
+        <circle cx="13" cy="12" r="10" />
+        <circle cx="51" cy="12" r="10" />
+        <path d="M23 11 Q32 8 41 11" />
+      </>
+    )}
+    {d === "oval" && (
+      <>
+        <ellipse cx="14" cy="12" rx="12" ry="8" />
+        <ellipse cx="50" cy="12" rx="12" ry="8" />
+        <path d="M26 11 Q32 8 38 11" />
+      </>
+    )}
+    {d === "aviator" && (
+      <>
+        <path d="M3 6 Q3 4 5 4 L24 4 Q27 4 26 8 L23 18 Q22 21 18 21 L10 21 Q5 21 4 17 Z" />
+        <path d="M61 6 Q61 4 59 4 L40 4 Q37 4 38 8 L41 18 Q42 21 46 21 L54 21 Q59 21 60 17 Z" />
+        <path d="M26 8 Q32 6 38 8" />
+      </>
+    )}
+    {d === "cat" && (
+      <>
+        <path d="M2 14 Q4 4 14 4 Q22 4 25 8 L27 12 Q26 18 18 18 L8 18 Q3 18 2 14 Z" />
+        <path d="M62 14 Q60 4 50 4 Q42 4 39 8 L37 12 Q38 18 46 18 L56 18 Q61 18 62 14 Z" />
+        <path d="M27 10 Q32 8 37 10" />
+      </>
+    )}
+    {d === "browline" && (
+      <>
+        <path d="M2 4 L26 4 L26 9 L2 9 Z" fill="currentColor" stroke="none" />
+        <path d="M38 4 L62 4 L62 9 L38 9 Z" fill="currentColor" stroke="none" />
+        <path d="M2 9 Q2 20 12 20 L18 20 Q26 20 26 9" />
+        <path d="M38 9 Q38 20 48 20 L54 20 Q62 20 62 9" />
+        <path d="M26 9 Q32 7 38 9" />
+      </>
+    )}
+    {d === "wayfarer" && (
+      <>
+        <path d="M3 5 L27 5 L24 18 Q23 20 20 20 L10 20 Q6 20 5 18 Z" />
+        <path d="M61 5 L37 5 L40 18 Q41 20 44 20 L54 20 Q58 20 59 18 Z" />
+        <path d="M27 8 Q32 6 37 8" />
+      </>
+    )}
+    {d === "big" && (
+      <>
+        <rect x="1" y="2" width="27" height="20" rx="5" />
+        <rect x="36" y="2" width="27" height="20" rx="5" />
+        <path d="M28 9 Q32 7 36 9" />
+      </>
+    )}
+    {d === "narrow" && (
+      <>
+        <rect x="2" y="9" width="24" height="6" rx="2" />
+        <rect x="38" y="9" width="24" height="6" rx="2" />
+        <path d="M26 11 Q32 9 38 11" />
+      </>
+    )}
+    {d === "sport" && (
+      <>
+        <path d="M2 8 Q2 4 8 4 L24 4 Q28 4 28 10 L26 14 Q24 18 18 18 L8 18 Q2 18 2 12 Z" />
+        <path d="M62 8 Q62 4 56 4 L40 4 Q36 4 36 10 L38 14 Q40 18 46 18 L56 18 Q62 18 62 12 Z" />
+        <path d="M28 10 Q32 8 36 10" />
+      </>
+    )}
+    {d === "mono" && (
+      <>
+        <path d="M4 8 Q4 4 10 4 L54 4 Q60 4 60 8 L60 16 Q60 20 54 20 L10 20 Q4 20 4 16 Z" />
+        <path d="M32 7 L32 17" strokeDasharray="1.5 2" opacity="0.5" />
+      </>
+    )}
+    {d === "mask" && (
+      <>
+        <path d="M3 8 Q32 2 61 8 L61 16 Q32 22 3 16 Z" />
+        <path d="M3 13 Q32 17 61 13" opacity="0.3" />
+      </>
+    )}
+    {d === "clip" && (
+      <>
+        <path d="M5 6 L5 2 M9 6 L9 2 M55 6 L55 2 M59 6 L59 2" />
+        <rect x="2" y="6" width="24" height="14" rx="3" />
+        <rect x="38" y="6" width="24" height="14" rx="3" />
+        <path d="M26 11 Q32 9 38 11" />
+      </>
+    )}
   </svg>
 );
 
 const SHAPE_DEFS: { key: string; label: string; icon: string; img?: string }[] = [
-  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect",    img: "/rectangle.webp" },
-  { key: "Квадратные",    label: "Квадратные",    icon: "square",  img: "/square.webp" },
-  { key: "Круглые",       label: "Круглые",        icon: "round",   img: "/round.webp" },
-  { key: "Овальные",      label: "Овальные",       icon: "oval",    img: "/Anselm - Oval.webp" },
-  { key: "Авиаторы",      label: "Авиаторы",       icon: "aviator", img: "/aviator.webp" },
-  { key: "Кошачий глаз",  label: "Кошачий глаз",   icon: "cat",     img: "/cat-eye.webp" },
-  { key: "Геометрические",label: "Геометрические", icon: "rect",    img: "/Geometric.webp" },
-  { key: "Броулайнеры",   label: "Броулайнеры",    icon: "browline" },
-  { key: "Вэйфэрер",      label: "Вэйфэрер",       icon: "wayfarer" },
-  { key: "Большие",       label: "Большие",         icon: "big" },
-  { key: "Узкие",         label: "Узкие",           icon: "narrow" },
-  { key: "Спортивные",    label: "Спортивные",      icon: "sport" },
-  { key: "Монолинза",     label: "Монолинза",       icon: "mono" },
-  { key: "Горнолыжные маски", label: "Маски",       icon: "mask" },
-  { key: "Клипоны",       label: "Клипоны",         icon: "clip" },
+  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp" },
+  { key: "Квадратные", label: "Квадратные", icon: "square", img: "/square.webp" },
+  { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp" },
+  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval.webp" },
+  { key: "Авиаторы", label: "Авиаторы", icon: "aviator", img: "/aviator.webp" },
+  { key: "Кошачий глаз", label: "Кошачий глаз", icon: "cat", img: "/cat-eye.webp" },
+  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric.webp" },
+  { key: "Броулайнеры", label: "Броулайнеры", icon: "browline" },
+  { key: "Вэйфэрер", label: "Вэйфэрер", icon: "wayfarer" },
+  { key: "Большие", label: "Большие", icon: "big" },
+  { key: "Узкие", label: "Узкие", icon: "narrow" },
+  { key: "Спортивные", label: "Спортивные", icon: "sport" },
+  { key: "Монолинза", label: "Монолинза", icon: "mono" },
+  { key: "Горнолыжные маски", label: "Маски", icon: "mask" },
+  { key: "Клипоны", label: "Клипоны", icon: "clip" },
 ];
 
 const COLOR_SWATCHES: { name: string; hex: string }[] = [
@@ -85,68 +178,296 @@ const COLOR_SWATCHES: { name: string; hex: string }[] = [
   { name: "Градиент", hex: "linear-gradient(135deg,#e8b8a0,#7a4a90)" },
 ];
 
-
 // ── Per-category extra filter configs ───────────────────────────────────────
 type ExtraBlock =
   | { kind: "checkbox"; key: string; title: string; options: string[] }
-  | { kind: "range"; key: string; title: string; min: number; max: number; step: number; unit?: string }
+  | {
+      kind: "range";
+      key: string;
+      title: string;
+      min: number;
+      max: number;
+      step: number;
+      unit?: string;
+    }
   | { kind: "discount"; title?: string };
 
 const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
   opravy: [
     { kind: "discount" },
-    { kind: "checkbox", key: "construction", title: "Конструкция", options: ["Втулки/винты", "Ободок", "Полуободок/Леска"] },
-    { kind: "range", key: "templeLength", title: "Длина заушника", min: 120, max: 160, step: 1, unit: "мм" },
-    { kind: "range", key: "bridgeWidth", title: "Ширина переносицы", min: 12, max: 24, step: 1, unit: "мм" },
-    { kind: "range", key: "rimWidth", title: "Ширина ободка", min: 40, max: 62, step: 1, unit: "мм" },
+    {
+      kind: "checkbox",
+      key: "construction",
+      title: "Конструкция",
+      options: [
+        "Безободковая (Втулки/Винты)",
+        "Ободковая (Ободок)",
+        "Полуободковая (Полуободок/Леска)",
+      ],
+    },
+    {
+      kind: "range",
+      key: "templeLength",
+      title: "Длина заушника",
+      min: 120,
+      max: 160,
+      step: 1,
+      unit: "мм",
+    },
+    {
+      kind: "range",
+      key: "bridgeWidth",
+      title: "Ширина переносицы",
+      min: 12,
+      max: 24,
+      step: 1,
+      unit: "мм",
+    },
+    {
+      kind: "range",
+      key: "rimWidth",
+      title: "Ширина ободка",
+      min: 40,
+      max: 62,
+      step: 1,
+      unit: "мм",
+    },
   ],
   solntsezashchitnye: [
     { kind: "discount" },
-    { kind: "checkbox", key: "construction", title: "Конструкция", options: ["Втулки/винты", "Ободок", "Полуободок/Леска"] },
-    { kind: "range", key: "templeLength", title: "Длина заушника", min: 120, max: 160, step: 1, unit: "мм" },
-    { kind: "range", key: "bridgeWidth", title: "Ширина переносицы", min: 12, max: 24, step: 1, unit: "мм" },
-    { kind: "range", key: "rimWidth", title: "Ширина ободка", min: 40, max: 62, step: 1, unit: "мм" },
+    {
+      kind: "checkbox",
+      key: "construction",
+      title: "Конструкция",
+      options: [
+        "Безободковая (Втулки/Винты)",
+        "Ободковая (Ободок)",
+        "Полуободковая (Полуободок/Леска)",
+      ],
+    },
+    {
+      kind: "range",
+      key: "templeLength",
+      title: "Длина заушника",
+      min: 120,
+      max: 160,
+      step: 1,
+      unit: "мм",
+    },
+    {
+      kind: "range",
+      key: "bridgeWidth",
+      title: "Ширина переносицы",
+      min: 12,
+      max: 24,
+      step: 1,
+      unit: "мм",
+    },
+    {
+      kind: "range",
+      key: "rimWidth",
+      title: "Ширина ободка",
+      min: 40,
+      max: 62,
+      step: 1,
+      unit: "мм",
+    },
   ],
   "kontaktnye-linzy": [
     { kind: "discount" },
-    { kind: "checkbox", key: "design", title: "Дизайн", options: ["Асферический", "Сферический", "Торические"] },
-    { kind: "range", key: "sphere", title: "Оптическая сила (сфера)", min: -20, max: 15, step: 0.25, unit: "D" },
-    { kind: "range", key: "cylinder", title: "Оптическая сила цилиндра", min: -5.75, max: -0.75, step: 0.25, unit: "D" },
+    {
+      kind: "checkbox",
+      key: "design",
+      title: "Дизайн",
+      options: ["Асферический", "Сферический", "Торические"],
+    },
+    {
+      kind: "range",
+      key: "sphere",
+      title: "Оптическая сила (сфера)",
+      min: -20,
+      max: 15,
+      step: 0.25,
+      unit: "D",
+    },
+    {
+      kind: "range",
+      key: "cylinder",
+      title: "Оптическая сила цилиндра",
+      min: -5.75,
+      max: -0.75,
+      step: 0.25,
+      unit: "D",
+    },
     { kind: "range", key: "axis", title: "Ось", min: 10, max: 180, step: 10, unit: "°" },
-    { kind: "checkbox", key: "addition", title: "Аддидация", options: ["Low (+0.75…+1.25)", "Med (+1.50…+2.00)", "High (+2.25…+2.50)"] },
+    {
+      kind: "checkbox",
+      key: "addition",
+      title: "Аддидация",
+      options: ["Low (+0.75…+1.25)", "Med (+1.50…+2.00)", "High (+2.25…+2.50)"],
+    },
     { kind: "checkbox", key: "wearMode", title: "Режим ношения", options: ["Гибкий", "Дневной"] },
-    { kind: "checkbox", key: "replacement", title: "Замена через", options: ["1 день", "2 недели", "1 месяц", "3 месяца"] },
-    { kind: "range", key: "baseCurve", title: "Радиус кривизны", min: 8.0, max: 9.2, step: 0.1, unit: "мм" },
+    {
+      kind: "checkbox",
+      key: "replacement",
+      title: "Замена через",
+      options: ["1 день", "2 недели", "1 месяц", "3 месяца"],
+    },
+    {
+      kind: "range",
+      key: "baseCurve",
+      title: "Радиус кривизны",
+      min: 8.0,
+      max: 9.2,
+      step: 0.1,
+      unit: "мм",
+    },
   ],
   "linzy-dlya-ochkov": [
     { kind: "discount" },
-    { kind: "checkbox", key: "lensClass", title: "Тип линзы", options: ["Однофокальные", "Офисные", "Прогрессивные", "Бифокальные"] },
-    { kind: "checkbox", key: "lensTypeBrand", title: "Тип", options: ["Crizal", "Stellest", "Eyezen", "Varilux", "MiyoSmart"] },
-    { kind: "checkbox", key: "material", title: "Материал", options: ["Полимер", "Поликарбонат", "Trivex", "Стекло"] },
-    { kind: "checkbox", key: "thickness", title: "Толщина линзы", options: ["1.50", "1.56", "1.60", "1.67", "1.74"] },
-    { kind: "checkbox", key: "lensDesign", title: "Дизайн линзы", options: ["Сферический", "Асферический", "Двойной асферический"] },
-    { kind: "range", key: "lightTransmission", title: "Светопропускание", min: 0, max: 100, step: 5, unit: "%" },
-    { kind: "checkbox", key: "photochromicColor", title: "Цвет фотохрома", options: ["Серый", "Коричневый", "Зелёный"] },
-    { kind: "range", key: "sphere", title: "Оптическая сила (сфера)", min: -20, max: 15, step: 0.25, unit: "D" },
+    {
+      kind: "checkbox",
+      key: "lensClass",
+      title: "Тип линзы",
+      options: ["Однофокальные", "Офисные", "Прогрессивные", "Бифокальные"],
+    },
+    {
+      kind: "checkbox",
+      key: "lensTypeBrand",
+      title: "Тип",
+      options: ["Crizal", "Stellest", "Eyezen", "Varilux", "MiyoSmart"],
+    },
+    {
+      kind: "checkbox",
+      key: "material",
+      title: "Материал",
+      options: ["Полимер", "Поликарбонат", "Trivex", "Стекло"],
+    },
+    {
+      kind: "checkbox",
+      key: "thickness",
+      title: "Толщина линзы",
+      options: ["1.50", "1.56", "1.60", "1.67", "1.74"],
+    },
+    {
+      kind: "checkbox",
+      key: "lensDesign",
+      title: "Дизайн линзы",
+      options: ["Сферический", "Асферический", "Двойной асферический"],
+    },
+    {
+      kind: "range",
+      key: "lightTransmission",
+      title: "Светопропускание",
+      min: 0,
+      max: 100,
+      step: 5,
+      unit: "%",
+    },
+    {
+      kind: "checkbox",
+      key: "photochromicColor",
+      title: "Цвет фотохрома",
+      options: ["Серый", "Коричневый", "Зелёный"],
+    },
+    {
+      kind: "range",
+      key: "sphere",
+      title: "Оптическая сила (сфера)",
+      min: -20,
+      max: 15,
+      step: 0.25,
+      unit: "D",
+    },
     { kind: "checkbox", key: "astigmatic", title: "Астигматическая", options: ["Да", "Нет"] },
     { kind: "range", key: "cylinder", title: "Цилиндр", min: -6, max: 0, step: 0.25, unit: "D" },
     { kind: "range", key: "prism", title: "Призма", min: 0, max: 10, step: 0.5, unit: "Δ" },
-    { kind: "range", key: "pd", title: "Межзрачковое расстояние / PD", min: 50, max: 80, step: 1, unit: "мм" },
-    { kind: "checkbox", key: "purpose", title: "Назначение", options: ["Детские линзы", "Для вождения", "Для работы за ПК", "Для чтения", "Универсальные"] },
+    {
+      kind: "range",
+      key: "pd",
+      title: "Межзрачковое расстояние / PD",
+      min: 50,
+      max: 80,
+      step: 1,
+      unit: "мм",
+    },
+    {
+      kind: "checkbox",
+      key: "purpose",
+      title: "Назначение",
+      options: ["Детские линзы", "Для вождения", "Для работы за ПК", "Для чтения", "Универсальные"],
+    },
     { kind: "checkbox", key: "sunLens", title: "Солнцезащитная линза", options: ["Да", "Нет"] },
   ],
   aksessuary: [],
 };
 
-const CATEGORY_VISIBILITY: Record<Category, { shape: boolean; color: boolean; material: boolean; gender: boolean; style: boolean; availability: boolean; brand: boolean }> = {
-  opravy:               { shape: true,  color: true,  material: true,  gender: true,  style: true,  availability: true,  brand: true },
-  solntsezashchitnye:   { shape: true,  color: true,  material: true,  gender: true,  style: true,  availability: true,  brand: true },
-  "kontaktnye-linzy":   { shape: false, color: false, material: false, gender: false, style: false, availability: true,  brand: true },
-  "linzy-dlya-ochkov":  { shape: false, color: false, material: false, gender: false, style: false, availability: true,  brand: true },
-  aksessuary:           { shape: false, color: false, material: false, gender: false, style: false, availability: false, brand: true },
+const CATEGORY_VISIBILITY: Record<
+  Category,
+  {
+    shape: boolean;
+    color: boolean;
+    material: boolean;
+    gender: boolean;
+    style: boolean;
+    availability: boolean;
+    brand: boolean;
+  }
+> = {
+  opravy: {
+    shape: true,
+    color: true,
+    material: true,
+    gender: true,
+    style: true,
+    availability: true,
+    brand: true,
+  },
+  solntsezashchitnye: {
+    shape: true,
+    color: true,
+    material: true,
+    gender: true,
+    style: true,
+    availability: true,
+    brand: true,
+  },
+  "kontaktnye-linzy": {
+    shape: false,
+    color: false,
+    material: false,
+    gender: false,
+    style: false,
+    availability: true,
+    brand: true,
+  },
+  "linzy-dlya-ochkov": {
+    shape: false,
+    color: false,
+    material: false,
+    gender: false,
+    style: false,
+    availability: true,
+    brand: true,
+  },
+  aksessuary: {
+    shape: false,
+    color: false,
+    material: false,
+    gender: false,
+    style: false,
+    availability: false,
+    brand: true,
+  },
 };
 
-export function CatalogListing({ title, subtitle, products, facets = [], categoryKey }: ListingProps) {
+export function CatalogListing({
+  title,
+  subtitle,
+  products,
+  facets = [],
+  categoryKey,
+}: ListingProps) {
   const [active, setActive] = useState<Record<string, Set<string>>>({});
   const [sort, setSort] = useState<"featured" | "price-asc" | "price-desc">("featured");
   const [mobileFilters, setMobileFilters] = useState(false);
@@ -166,11 +487,29 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
   const [searchQuery, setSearchQuery] = useState("");
   const [availability, setAvailability] = useState<"all" | "in" | "out">("all");
   const [styleTag, setStyleTag] = useState<string>("Все стили");
-  const STYLE_TAGS = ["Все стили", "Современные", "Минимализм", "Винтаж", "Бохо", "Индастриал", "Скандинавские"];
+  const STYLE_TAGS = [
+    "Все стили",
+    "Современные",
+    "Минимализм",
+    "Винтаж",
+    "Бохо",
+    "Индастриал",
+    "Скандинавские",
+  ];
 
   // ── Extra filter state (category-specific) ────────────────────────────────
   const extras = categoryKey ? CATEGORY_EXTRAS[categoryKey] : [];
-  const vis = categoryKey ? CATEGORY_VISIBILITY[categoryKey] : { shape: true, color: true, material: true, gender: true, style: true, availability: true, brand: true };
+  const vis = categoryKey
+    ? CATEGORY_VISIBILITY[categoryKey]
+    : {
+        shape: true,
+        color: true,
+        material: true,
+        gender: true,
+        style: true,
+        availability: true,
+        brand: true,
+      };
 
   const [discount, setDiscount] = useState<number>(0);
   const [ranges, setRanges] = useState<Record<string, [number, number]>>({});
@@ -236,7 +575,18 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
     if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
     if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
     return list;
-  }, [products, active, sort, price, tryOn, selectedColors, sizeWidth, sizeTemple, availability, searchQuery]);
+  }, [
+    products,
+    active,
+    sort,
+    price,
+    tryOn,
+    selectedColors,
+    sizeWidth,
+    sizeTemple,
+    availability,
+    searchQuery,
+  ]);
 
   const toggle = (facet: string, value: string) => {
     setActive((prev) => {
@@ -281,9 +631,12 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
         <button
           onClick={clearAll}
           className="group/reset inline-flex items-center gap-1 text-[11px] uppercase font-sans font-medium text-muted-foreground hover:text-foreground transition-colors"
-          style={{ letterSpacing: '0.08em' }}
+          style={{ letterSpacing: "0.08em" }}
         >
-          <X className="h-3 w-3 transition-transform group-hover/reset:rotate-90" style={{ transitionDuration: 'var(--duration-snap)' }} />
+          <X
+            className="h-3 w-3 transition-transform group-hover/reset:rotate-90"
+            style={{ transitionDuration: "var(--duration-snap)" }}
+          />
           <span>Сбросить</span>
         </button>
       </div>
@@ -297,8 +650,12 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Поиск..."
           className="w-full bg-background border border-border rounded-full pl-9 pr-3 py-2 text-sm outline-none focus:border-ink/50 transition-all"
-          onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 3px oklch(0.18 0.01 250 / 0.08)'; }}
-          onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; }}
+          onFocus={(e) => {
+            e.currentTarget.style.boxShadow = "0 0 0 3px oklch(0.18 0.01 250 / 0.08)";
+          }}
+          onBlur={(e) => {
+            e.currentTarget.style.boxShadow = "none";
+          }}
         />
       </div>
 
@@ -332,16 +689,22 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                   onClick={() => toggle("shape", s.key)}
                   className={cn(
                     "flex flex-col items-center justify-center gap-2.5 rounded-xl border px-2 py-5 text-center transition-all hover:border-ink hover:-translate-y-0.5 hover:shadow-sm",
-                    checked
-                      ? "border-ink bg-cream shadow-xs"
-                      : "border-border bg-card",
+                    checked ? "border-ink bg-cream shadow-xs" : "border-border bg-card",
                   )}
-                  style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
+                  style={{
+                    transitionDuration: "var(--duration-snap)",
+                    transitionTimingFunction: "var(--ease-editorial)",
+                  }}
                 >
-                  {s.img
-                    ? <img src={s.img} alt={s.label} style={{ width: "100%", height: 36, objectFit: "contain" }} />
-                    : <ShapeIcon d={s.icon} />
-                  }
+                  {s.img ? (
+                    <img
+                      src={s.img}
+                      alt={s.label}
+                      style={{ width: "100%", height: 36, objectFit: "contain" }}
+                    />
+                  ) : (
+                    <ShapeIcon d={s.icon} />
+                  )}
                   <span className="text-[11px] leading-tight text-foreground/70 font-medium">
                     {s.label}
                   </span>
@@ -386,53 +749,66 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
 
       {/* Color — compact swatch grid */}
       {vis.color && (
-      <FilterSection key="color" title="Цвет">
-        <div className="grid grid-cols-5 gap-2 py-1">
-          {COLOR_SWATCHES.map((c) => {
-            const sel = selectedColors.has(c.name);
-            return (
-              <button
-                key={c.name}
-                type="button"
-                title={c.name}
-                onClick={() =>
-                  setSelectedColors((prev) => {
-                    const next = new Set(prev);
-                    if (next.has(c.name)) next.delete(c.name);
-                    else next.add(c.name);
-                    return next;
-                  })
-                }
-                className={cn(
-                  "relative w-full aspect-square rounded-full border transition-all hover:scale-105",
-                  sel ? "ring-2 ring-ink ring-offset-1 ring-offset-background border-transparent" : "border-border",
-                )}
-                style={{
-                  background: c.hex,
-                  backgroundImage:
-                    c.hex === "transparent"
-                      ? "repeating-conic-gradient(#ddd 0 25%, #fff 0 50%)"
-                      : c.hex.includes("gradient")
-                        ? c.hex
-                        : undefined,
-                  backgroundSize: c.hex === "transparent" ? "8px 8px" : undefined,
-                  transform: sel ? 'scale(1.05)' : undefined,
-                  transitionDuration: 'var(--duration-snap)',
-                  transitionTimingFunction: 'var(--ease-editorial)',
-                }}
-              >
-                {sel && (
-                  <Check
-                    className="absolute inset-0 m-auto h-3 w-3"
-                    strokeWidth={3}
-                    style={{ color: ['transparent', '#f5f5f0', '#f5f0e8', '#ffd700', '#fce4ec', '#fff'].includes(c.hex) ? '#1a1a1a' : '#f5f5f0' }}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </FilterSection>
+        <FilterSection key="color" title="Цвет">
+          <div className="grid grid-cols-5 gap-2 py-1">
+            {COLOR_SWATCHES.map((c) => {
+              const sel = selectedColors.has(c.name);
+              return (
+                <button
+                  key={c.name}
+                  type="button"
+                  title={c.name}
+                  onClick={() =>
+                    setSelectedColors((prev) => {
+                      const next = new Set(prev);
+                      if (next.has(c.name)) next.delete(c.name);
+                      else next.add(c.name);
+                      return next;
+                    })
+                  }
+                  className={cn(
+                    "relative w-full aspect-square rounded-full border transition-all hover:scale-105",
+                    sel
+                      ? "ring-2 ring-ink ring-offset-1 ring-offset-background border-transparent"
+                      : "border-border",
+                  )}
+                  style={{
+                    background: c.hex,
+                    backgroundImage:
+                      c.hex === "transparent"
+                        ? "repeating-conic-gradient(#ddd 0 25%, #fff 0 50%)"
+                        : c.hex.includes("gradient")
+                          ? c.hex
+                          : undefined,
+                    backgroundSize: c.hex === "transparent" ? "8px 8px" : undefined,
+                    transform: sel ? "scale(1.05)" : undefined,
+                    transitionDuration: "var(--duration-snap)",
+                    transitionTimingFunction: "var(--ease-editorial)",
+                  }}
+                >
+                  {sel && (
+                    <Check
+                      className="absolute inset-0 m-auto h-3 w-3"
+                      strokeWidth={3}
+                      style={{
+                        color: [
+                          "transparent",
+                          "#f5f5f0",
+                          "#f5f0e8",
+                          "#ffd700",
+                          "#fce4ec",
+                          "#fff",
+                        ].includes(c.hex)
+                          ? "#1a1a1a"
+                          : "#f5f5f0",
+                      }}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </FilterSection>
       )}
 
       {/* Material — checkbox list */}
@@ -447,15 +823,26 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                   type="button"
                   role="checkbox"
                   aria-checked={checked}
-                  onClick={(e) => { e.preventDefault(); toggle("material", m); }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toggle("material", m);
+                  }}
                   onMouseDown={(e) => e.preventDefault()}
                   className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
-                  style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px', background: 'none', border: 'none' }}
+                  style={{
+                    borderRadius: "4px",
+                    padding: "2px 4px",
+                    margin: "0 -4px",
+                    background: "none",
+                    border: "none",
+                  }}
                 >
                   <span
                     className={cn(
                       "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
-                      checked ? "border-ink bg-ink text-primary-foreground" : "border-border bg-card group-hover:border-foreground/40",
+                      checked
+                        ? "border-ink bg-ink text-primary-foreground"
+                        : "border-border bg-card group-hover:border-foreground/40",
                     )}
                   >
                     {checked && <Check className="h-3 w-3" strokeWidth={3} />}
@@ -471,40 +858,51 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
 
       {/* Availability — radios */}
       {vis.availability && (
-      <FilterSection key="availability" title="Наличие">
-        <div className="space-y-2" role="radiogroup" aria-label="Наличие">
-          {([
-            ["all", "Все", products.length],
-            ["in", "В наличии", products.length],
-            ["out", "Под заказ", 0],
-          ] as const).map(([val, label, count]) => {
-            const checked = availability === val;
-            return (
-              <button
-                key={val}
-                type="button"
-                role="radio"
-                aria-checked={checked}
-                onClick={(e) => { e.preventDefault(); setAvailability(val); }}
-                onMouseDown={(e) => e.preventDefault()}
-                className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
-                style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px', background: 'none', border: 'none' }}
-              >
-                <span
-                  className={cn(
-                    "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-                    checked ? "border-ink" : "border-border group-hover:border-foreground/40",
-                  )}
+        <FilterSection key="availability" title="Наличие">
+          <div className="space-y-2" role="radiogroup" aria-label="Наличие">
+            {(
+              [
+                ["all", "Все", products.length],
+                ["in", "В наличии", products.length],
+                ["out", "Под заказ", 0],
+              ] as const
+            ).map(([val, label, count]) => {
+              const checked = availability === val;
+              return (
+                <button
+                  key={val}
+                  type="button"
+                  role="radio"
+                  aria-checked={checked}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setAvailability(val);
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
+                  style={{
+                    borderRadius: "4px",
+                    padding: "2px 4px",
+                    margin: "0 -4px",
+                    background: "none",
+                    border: "none",
+                  }}
                 >
-                  {checked && <span className="h-2 w-2 rounded-full bg-ink" />}
-                </span>
-                <span className="flex-1 text-sm">{label}</span>
-                <span className="text-xs text-muted-foreground">({count})</span>
-              </button>
-            );
-          })}
-        </div>
-      </FilterSection>
+                  <span
+                    className={cn(
+                      "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                      checked ? "border-ink" : "border-border group-hover:border-foreground/40",
+                    )}
+                  >
+                    {checked && <span className="h-2 w-2 rounded-full bg-ink" />}
+                  </span>
+                  <span className="flex-1 text-sm">{label}</span>
+                  <span className="text-xs text-muted-foreground">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        </FilterSection>
       )}
 
       {/* Gender pills (kept) */}
@@ -525,11 +923,16 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                       ? "border-ink bg-ink text-primary-foreground"
                       : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
                   )}
-                  style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
+                  style={{
+                    transitionDuration: "var(--duration-snap)",
+                    transitionTimingFunction: "var(--ease-editorial)",
+                  }}
                 >
                   {ik && <GenderIcon kind={ik} className="h-3.5 w-3.5" />}
                   <span className="first-letter:uppercase">{g.toLowerCase()}</span>
-                  <span className={cn("text-[10px]", checked ? "opacity-80" : "text-muted-foreground")}>
+                  <span
+                    className={cn("text-[10px]", checked ? "opacity-80" : "text-muted-foreground")}
+                  >
                     ({c})
                   </span>
                 </button>
@@ -541,29 +944,32 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
 
       {/* Style — pills */}
       {vis.style && (
-      <FilterSection key="style" title="Стиль">
-        <div className="flex flex-wrap gap-2">
-          {STYLE_TAGS.map((s) => {
-            const checked = styleTag === s;
-            return (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setStyleTag(s)}
-                className={cn(
-                  "inline-flex items-center rounded-full border px-3.5 py-1.5 text-xs transition-all",
-                  checked
-                    ? "border-brand bg-brand text-brand-foreground"
-                    : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
-                )}
-                style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
-              >
-                {s}
-              </button>
-            );
-          })}
-        </div>
-      </FilterSection>
+        <FilterSection key="style" title="Стиль">
+          <div className="flex flex-wrap gap-2">
+            {STYLE_TAGS.map((s) => {
+              const checked = styleTag === s;
+              return (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setStyleTag(s)}
+                  className={cn(
+                    "inline-flex items-center rounded-full border px-3.5 py-1.5 text-xs transition-all",
+                    checked
+                      ? "border-brand bg-brand text-brand-foreground"
+                      : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
+                  )}
+                  style={{
+                    transitionDuration: "var(--duration-snap)",
+                    transitionTimingFunction: "var(--ease-editorial)",
+                  }}
+                >
+                  {s}
+                </button>
+              );
+            })}
+          </div>
+        </FilterSection>
       )}
 
       {/* Brands */}
@@ -580,15 +986,26 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                     type="button"
                     role="checkbox"
                     aria-checked={checked}
-                    onClick={(e) => { e.preventDefault(); toggle("brand", b); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggle("brand", b);
+                    }}
                     onMouseDown={(e) => e.preventDefault()}
                     className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
-                    style={{ borderRadius: '4px', padding: '2px 4px', margin: '0 -4px', background: 'none', border: 'none' }}
+                    style={{
+                      borderRadius: "4px",
+                      padding: "2px 4px",
+                      margin: "0 -4px",
+                      background: "none",
+                      border: "none",
+                    }}
                   >
                     <span
                       className={cn(
                         "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
-                        checked ? "border-ink bg-ink text-primary-foreground" : "border-border bg-card group-hover:border-foreground/40",
+                        checked
+                          ? "border-ink bg-ink text-primary-foreground"
+                          : "border-border bg-card group-hover:border-foreground/40",
                       )}
                     >
                       {checked && <Check className="h-3 w-3" strokeWidth={3} />}
@@ -635,7 +1052,9 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                     onChange={(e) => setRange(block.key, [Number(e.target.value), v[1]])}
                     className="w-full bg-transparent outline-none text-sm"
                   />
-                  {block.unit && <span className="text-muted-foreground text-xs">{block.unit}</span>}
+                  {block.unit && (
+                    <span className="text-muted-foreground text-xs">{block.unit}</span>
+                  )}
                 </label>
                 <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
                   <input
@@ -645,7 +1064,9 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                     onChange={(e) => setRange(block.key, [v[0], Number(e.target.value)])}
                     className="w-full bg-transparent outline-none text-sm"
                   />
-                  {block.unit && <span className="text-muted-foreground text-xs">{block.unit}</span>}
+                  {block.unit && (
+                    <span className="text-muted-foreground text-xs">{block.unit}</span>
+                  )}
                 </label>
               </div>
               <Slider
@@ -665,25 +1086,51 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
             <div className="space-y-2">
               {block.options.map((opt) => {
                 const checked = extraChecks[block.key]?.has(opt) ?? false;
+                const isConstruction = block.key === "construction";
+                const constructionIcon = isConstruction
+                  ? opt.toLowerCase().includes("полуобод")
+                    ? "/poluobodkovaea.png"
+                    : opt.toLowerCase().includes("втулки")
+                      ? "/bezobodkovaea.png"
+                      : opt.toLowerCase().includes("обод")
+                        ? "/obodkovaea.png"
+                        : null
+                  : null;
                 return (
                   <button
                     key={opt}
                     type="button"
                     role="checkbox"
                     aria-checked={checked}
-                    onClick={(e) => { e.preventDefault(); toggleExtra(block.key, opt); }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleExtra(block.key, opt);
+                    }}
                     onMouseDown={(e) => e.preventDefault()}
                     className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
-                    style={{ borderRadius: "4px", padding: "2px 4px", margin: "0 -4px", background: 'none', border: 'none' }}
+                    style={{
+                      borderRadius: "4px",
+                      padding: "2px 4px",
+                      margin: "0 -4px",
+                      background: "none",
+                      border: "none",
+                    }}
                   >
                     <span
                       className={cn(
                         "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
-                        checked ? "border-ink bg-ink text-primary-foreground" : "border-border bg-card group-hover:border-foreground/40",
+                        checked
+                          ? "border-ink bg-ink text-primary-foreground"
+                          : "border-border bg-card group-hover:border-foreground/40",
                       )}
                     >
                       {checked && <Check className="h-3 w-3" strokeWidth={3} />}
                     </span>
+                    {constructionIcon && (
+                      <span className="inline-flex h-4 w-7 shrink-0 items-center justify-center">
+                        <img src={constructionIcon} alt="" className="h-4 w-auto object-contain" />
+                      </span>
+                    )}
                     <span className="flex-1 text-sm">{opt}</span>
                   </button>
                 );
@@ -702,7 +1149,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
           type="button"
           onClick={() => setMobileFilters(false)}
           className="w-full bg-ink text-primary-foreground rounded-full py-3 text-sm font-medium hover:-translate-y-0.5 hover:shadow-md transition-all"
-          style={{ transitionDuration: 'var(--duration-snap)' }}
+          style={{ transitionDuration: "var(--duration-snap)" }}
         >
           Применить фильтры ({filtered.length})
         </button>
@@ -717,13 +1164,19 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
         {subtitle && <p className="mt-3 text-muted-foreground max-w-2xl">{subtitle}</p>}
       </div>
 
-      <div className="lg:flex lg:items-start" style={{ minHeight: '80vh' }}>
+      <div className="lg:flex lg:items-start" style={{ minHeight: "80vh" }}>
         {facets.length > 0 && (
           <div
             className="hidden lg:block shrink-0 sticky top-4 self-start overflow-hidden transition-[width,margin-right] duration-300 ease-in-out"
-            style={{ width: sidebarOpen ? "300px" : "0", marginRight: sidebarOpen ? "2.5rem" : "0" }}
+            style={{
+              width: sidebarOpen ? "300px" : "0",
+              marginRight: sidebarOpen ? "2.5rem" : "0",
+            }}
           >
-            <div className="h-[calc(100vh-6rem)] overflow-y-auto px-3" style={{ width: "300px", scrollbarGutter: "stable", paddingRight: "24px" }}>
+            <div
+              className="h-[calc(100vh-6rem)] overflow-y-auto px-3"
+              style={{ width: "300px", scrollbarGutter: "stable", paddingRight: "24px" }}
+            >
               {FilterContent}
             </div>
           </div>
@@ -737,25 +1190,38 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                 <button
                   onClick={() => setSidebarOpen((v) => !v)}
                   className="group/toggle hidden lg:inline-flex items-center gap-2 h-9 rounded-full border border-border bg-background pl-3 pr-4 text-[12px] font-medium tracking-wide text-foreground hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all shrink-0"
-                  style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
+                  style={{
+                    transitionDuration: "var(--duration-snap)",
+                    transitionTimingFunction: "var(--ease-editorial)",
+                  }}
                 >
                   {sidebarOpen ? (
                     <>
-                      <span className="inline-block transition-transform group-hover/toggle:-translate-x-0.5" style={{ transitionDuration: 'var(--duration-snap)' }}>←</span>
+                      <span
+                        className="inline-block transition-transform group-hover/toggle:-translate-x-0.5"
+                        style={{ transitionDuration: "var(--duration-snap)" }}
+                      >
+                        ←
+                      </span>
                       <span>Скрыть фильтры</span>
                     </>
                   ) : (
                     <>
                       <SlidersHorizontal className="h-3.5 w-3.5" />
                       <span>Показать фильтры</span>
-                      <span className="inline-block transition-transform group-hover/toggle:translate-x-0.5" style={{ transitionDuration: 'var(--duration-snap)' }}>→</span>
+                      <span
+                        className="inline-block transition-transform group-hover/toggle:translate-x-0.5"
+                        style={{ transitionDuration: "var(--duration-snap)" }}
+                      >
+                        →
+                      </span>
                     </>
                   )}
                 </button>
                 <button
                   onClick={() => setMobileFilters(true)}
                   className="lg:hidden inline-flex items-center gap-2 h-9 rounded-full border border-border bg-background px-4 text-[12px] font-medium tracking-wide hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all"
-                  style={{ transitionDuration: 'var(--duration-snap)' }}
+                  style={{ transitionDuration: "var(--duration-snap)" }}
                 >
                   <SlidersHorizontal className="h-3.5 w-3.5" /> Фильтры
                 </button>
@@ -814,7 +1280,7 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                   value={sort}
                   onChange={(e) => setSort(e.target.value as typeof sort)}
                   className="appearance-none bg-background border border-border rounded-full h-9 pl-3 md:pl-[112px] pr-9 text-[12px] font-medium tracking-wide cursor-pointer focus:outline-none hover:border-ink focus:border-ink transition-colors"
-                  style={{ transitionDuration: 'var(--duration-snap)' }}
+                  style={{ transitionDuration: "var(--duration-snap)" }}
                 >
                   <option value="featured">Популярные</option>
                   <option value="price-asc">Цена ↑</option>
@@ -832,7 +1298,10 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
                   key={facet + value}
                   onClick={() => toggle(facet, value)}
                   className="inline-flex items-center gap-1 bg-cream border border-ink/20 text-xs px-3 py-1 rounded-full hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all"
-                  style={{ transitionDuration: 'var(--duration-snap)', transitionTimingFunction: 'var(--ease-editorial)' }}
+                  style={{
+                    transitionDuration: "var(--duration-snap)",
+                    transitionTimingFunction: "var(--ease-editorial)",
+                  }}
                 >
                   {value} <X className="h-3 w-3" />
                 </button>
@@ -843,17 +1312,24 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
           {filtered.length === 0 ? (
             <div className="py-20 text-center">
               <div className="font-serif text-2xl text-foreground/60 mb-3">Ничего не найдено</div>
-              <p className="text-sm text-muted-foreground mb-6">Попробуйте изменить параметры фильтрации</p>
+              <p className="text-sm text-muted-foreground mb-6">
+                Попробуйте изменить параметры фильтрации
+              </p>
               <button
                 onClick={clearAll}
                 className="inline-flex items-center gap-2 border border-border rounded-full px-5 py-2.5 text-sm hover:border-ink hover:bg-surface transition-all"
-                style={{ transitionDuration: 'var(--duration-snap)' }}
+                style={{ transitionDuration: "var(--duration-snap)" }}
               >
                 Сбросить все фильтры
               </button>
             </div>
           ) : (
-            <div className={cn("grid gap-x-5 gap-y-10", gridCols === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3")}>
+            <div
+              className={cn(
+                "grid gap-x-5 gap-y-10",
+                gridCols === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3",
+              )}
+            >
               {filtered.map((p) => (
                 <ProductCard key={p.slug} product={p} />
               ))}
@@ -879,13 +1355,17 @@ export function CatalogListing({ title, subtitle, products, facets = [], categor
             </div>
             {FilterContent}
             <div className="sticky bottom-0 bg-background pt-4 flex gap-3">
-              <button onClick={clearAll} className="flex-1 border border-border py-3 rounded-full text-sm hover:border-ink hover:bg-surface transition-all" style={{ transitionDuration: 'var(--duration-snap)' }}>
+              <button
+                onClick={clearAll}
+                className="flex-1 border border-border py-3 rounded-full text-sm hover:border-ink hover:bg-surface transition-all"
+                style={{ transitionDuration: "var(--duration-snap)" }}
+              >
                 Сбросить
               </button>
               <button
                 onClick={() => setMobileFilters(false)}
                 className="flex-1 bg-ink text-primary-foreground py-3 rounded-full text-sm hover:-translate-y-0.5 hover:shadow-md transition-all"
-                style={{ transitionDuration: 'var(--duration-snap)' }}
+                style={{ transitionDuration: "var(--duration-snap)" }}
               >
                 Показать ({filtered.length})
               </button>
@@ -914,7 +1394,13 @@ function FilterSection({
   const [overflowVisible, setOverflowVisible] = useState(defaultOpen);
 
   return (
-    <div style={{ paddingTop: '20px', paddingBottom: '20px', borderTop: '1px solid var(--color-border)' }}>
+    <div
+      style={{
+        paddingTop: "20px",
+        paddingBottom: "20px",
+        borderTop: "1px solid var(--color-border)",
+      }}
+    >
       <button
         type="button"
         onClick={() => {
@@ -926,31 +1412,35 @@ function FilterSection({
         }}
         className="w-full flex items-center justify-between text-left group"
       >
-        <span className="text-[11px] uppercase font-sans font-semibold text-foreground/80 group-hover:text-foreground transition-colors" style={{ letterSpacing: '0.1em' }}>
+        <span
+          className="text-[11px] uppercase font-sans font-semibold text-foreground/80 group-hover:text-foreground transition-colors"
+          style={{ letterSpacing: "0.1em" }}
+        >
           {title}
         </span>
         <ChevronDown
-          className={cn("h-4 w-4 text-foreground/50 group-hover:text-foreground transition-transform duration-200 shrink-0", open && "rotate-180")}
+          className={cn(
+            "h-4 w-4 text-foreground/50 group-hover:text-foreground transition-transform duration-200 shrink-0",
+            open && "rotate-180",
+          )}
         />
       </button>
       <div
         style={{
-          display: 'grid',
-          gridTemplateRows: open ? '1fr' : '0fr',
+          display: "grid",
+          gridTemplateRows: open ? "1fr" : "0fr",
           opacity: open ? 1 : 0,
-          transition: 'grid-template-rows 220ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms ease-out',
+          transition:
+            "grid-template-rows 220ms cubic-bezier(0.4, 0, 0.2, 1), opacity 180ms ease-out",
         }}
         onTransitionEnd={(e) => {
-          if (e.propertyName === 'grid-template-rows' && open) setOverflowVisible(true);
+          if (e.propertyName === "grid-template-rows" && open) setOverflowVisible(true);
         }}
       >
-        <div style={{ overflow: open && overflowVisible ? 'visible' : 'hidden', minHeight: 0 }}>
-          <div style={{ paddingTop: '16px' }}>
-            {children}
-          </div>
+        <div style={{ overflow: open && overflowVisible ? "visible" : "hidden", minHeight: 0 }}>
+          <div style={{ paddingTop: "16px" }}>{children}</div>
         </div>
       </div>
     </div>
   );
 }
-
