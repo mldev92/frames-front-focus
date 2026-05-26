@@ -362,9 +362,11 @@ function MainV2Page() {
                     <span
                       className="flex items-center justify-center rounded-full shrink-0"
                       style={{
-                        width: 32,
-                        height: 32,
-                        background: "color-mix(in oklab, var(--brand) 12%, transparent)",
+                        width: s.iconSrc ? 44 : 32,
+                        height: s.iconSrc ? 44 : 32,
+                        background: s.iconSrc
+                          ? "transparent"
+                          : "color-mix(in oklab, var(--brand) 12%, transparent)",
                         color: "var(--brand)",
                       }}
                     >
@@ -373,7 +375,7 @@ function MainV2Page() {
                           src={s.iconSrc}
                           alt={s.iconAlt ?? s.label}
                           loading="lazy"
-                          className="h-[11px] w-auto max-w-[19px] object-contain"
+                          className="h-[44px] w-auto max-w-[76px] object-contain"
                         />
                       ) : (
                         <s.Icon size={16} strokeWidth={1.75} />
