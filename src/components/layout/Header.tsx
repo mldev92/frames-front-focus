@@ -201,71 +201,71 @@ function shapeMega(cat: string): Mega {
       {
         label: "Авиатор",
         href: q("shape", "Авиатор"),
-        icon: <img src="/aviator.webp" alt="" className="h-8 w-auto object-contain" />,
+        icon: <img src="/aviator.webp" alt="" className="h-4 w-auto object-contain" />,
       },
       {
         label: "Квадратные",
         href: q("shape", "Квадратные"),
-        icon: <img src="/square.webp" alt="" className="h-8 w-auto object-contain" />,
+        icon: <img src="/square.webp" alt="" className="h-4 w-auto object-contain" />,
       },
       {
         label: "Кошачий глаз",
         href: q("shape", "Кошачий глаз"),
-        icon: <img src="/cat-eye.webp" alt="" className="h-8 w-auto object-contain" />,
+        icon: <img src="/cat-eye.webp" alt="" className="h-4 w-auto object-contain" />,
       },
       {
         label: "Круглые",
         href: q("shape", "Круглые"),
-        icon: <img src="/round.webp" alt="" className="h-8 w-auto object-contain" />,
+        icon: <img src="/round.webp" alt="" className="h-4 w-auto object-contain" />,
       },
       {
         label: "Овальные",
         href: q("shape", "Овальные"),
-        icon: <img src="/Anselm - Oval.webp" alt="" className="h-8 w-auto object-contain" />,
+        icon: <img src="/Anselm - Oval.webp" alt="" className="h-4 w-auto object-contain" />,
       },
       {
         label: "Прямоугольные",
         href: q("shape", "Прямоугольные"),
-        icon: <img src="/rectangle.webp" alt="" className="h-8 w-auto object-contain" />,
+        icon: <img src="/rectangle.webp" alt="" className="h-4 w-auto object-contain" />,
       },
     ],
     genderItems: [
       {
         label: "Мужские",
         href: q("gender", "Мужские"),
-        icon: <GenderIcon kind="male" className="h-8 w-8" />,
+        icon: <GenderIcon kind="male" className="h-4 w-4" />,
       },
       {
         label: "Женские",
         href: q("gender", "Женские"),
-        icon: <GenderIcon kind="female" className="h-8 w-8" />,
+        icon: <GenderIcon kind="female" className="h-4 w-4" />,
       },
       {
         label: "Детские",
         href: q("gender", "Детские"),
-        icon: <GenderIcon kind="boy" className="h-8 w-8" />,
+        icon: <GenderIcon kind="boy" className="h-4 w-4" />,
       },
       {
         label: "Унисекс",
         href: q("gender", "Унисекс"),
-        icon: <Users className="h-8 w-8 stroke-[1.8]" />,
+        icon: <Users className="h-4 w-4 stroke-[1.8]" />,
       },
     ],
     materialItems: [
       {
         label: "Ацетат",
         href: q("material", "Ацетат"),
-        icon: <Gem className="h-10 w-10 stroke-[1.7]" />,
+        icon: <Gem className="h-5 w-5 stroke-[1.7]" />,
       },
       {
         label: "Титан",
         href: q("material", "Титан"),
-        icon: <ShieldCheck className="h-10 w-10 stroke-[1.7]" />,
+        icon: <ShieldCheck className="h-5 w-5 stroke-[1.7]" />,
       },
       {
         label: "Металл",
         href: q("material", "Металл"),
-        icon: <Link2 className="h-10 w-10 stroke-[1.7]" />,
+        icon: <Link2 className="h-5 w-5 stroke-[1.7]" />,
       },
     ],
     constructionItems: [
@@ -288,8 +288,8 @@ function shapeMega(cat: string): Mega {
     ].map((brand) => ({
       label: brand,
       href: q("brand", brand),
-      icon: brandLogoImg(brand, "h-10 w-auto max-w-[156px] object-contain") ?? (
-        <Tag className="h-6 w-6" />
+      icon: brandLogoImg(brand, "h-5 w-auto max-w-[78px] object-contain") ?? (
+        <Tag className="h-3 w-3" />
       ),
     })),
   };
@@ -415,18 +415,18 @@ const NAV: { label: string; href: string; mega?: Mega }[] = [
 
 function SectionTitle({ title, suffix }: { title: string; suffix?: ReactNode }) {
   return (
-    <div className="mb-5">
-      <div className="flex items-end gap-2">
-        <h3 className="text-[40px] leading-none uppercase tracking-tight text-foreground max-[1399px]:text-[34px] max-[1199px]:text-[28px]">
+    <div className="mb-2.5">
+      <div className="flex items-end gap-1">
+        <h3 className="text-[20px] leading-none uppercase tracking-tight text-foreground max-[1399px]:text-[17px] max-[1199px]:text-base">
           {title}
         </h3>
         {suffix && (
-          <span className="mb-1 text-[24px] text-muted-foreground max-[1399px]:text-[20px] max-[1199px]:text-base">
+          <span className="mb-0.5 text-xs text-muted-foreground max-[1399px]:text-[10px] max-[1199px]:text-[9px]">
             {suffix}
           </span>
         )}
       </div>
-      <div className="mt-2 h-[2px] w-10 bg-brand" />
+      <div className="mt-1 h-px w-5 bg-brand" />
     </div>
   );
 }
@@ -434,21 +434,21 @@ function SectionTitle({ title, suffix }: { title: string; suffix?: ReactNode }) 
 function ShowcaseMegaPanel({ mega }: { mega: ShowcaseMega }) {
   return (
     <div className="bg-[#f4f2ef] border-b border-[#e7e4de]">
-      <div className="mx-auto max-w-screen-2xl px-6 pb-7 pt-7">
-        <div className="grid gap-5 lg:grid-cols-2 xl:grid-cols-[1.2fr_0.88fr_1.08fr]">
-          <section className="rounded-2xl border border-[#ece9e4] bg-white p-6 shadow-[0_4px_16px_rgba(33,24,18,0.04)]">
+      <div className="mx-auto max-w-screen-2xl px-3 pb-3.5 pt-3.5">
+        <div className="grid gap-2.5 lg:grid-cols-2 xl:grid-cols-[1.2fr_0.88fr_1.08fr]">
+          <section className="rounded-xl border border-[#ece9e4] bg-white p-3 shadow-[0_4px_16px_rgba(33,24,18,0.04)]">
             <SectionTitle title="Форма" />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               {mega.shapeItems.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
-                  className="group flex min-h-[84px] items-center gap-4 rounded-2xl border border-[#efece8] bg-white px-4 py-3 transition-colors hover:border-brand/40"
+                  className="group flex min-h-[42px] items-center gap-2 rounded-xl border border-[#efece8] bg-white px-2 py-1.5 transition-colors hover:border-brand/40"
                 >
-                  <span className="flex w-[98px] shrink-0 items-center justify-center text-foreground">
+                  <span className="flex w-[49px] shrink-0 items-center justify-center text-foreground">
                     {item.icon}
                   </span>
-                  <span className="text-[30px] leading-tight text-foreground transition-colors group-hover:text-brand max-[1399px]:text-[24px] max-[1199px]:text-lg">
+                  <span className="text-[15px] leading-tight text-foreground transition-colors group-hover:text-brand max-[1399px]:text-xs max-[1199px]:text-[11px]">
                     {item.label}
                   </span>
                 </a>
@@ -456,19 +456,19 @@ function ShowcaseMegaPanel({ mega }: { mega: ShowcaseMega }) {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-[#ece9e4] bg-white p-6 shadow-[0_4px_16px_rgba(33,24,18,0.04)]">
+          <section className="rounded-xl border border-[#ece9e4] bg-white p-3 shadow-[0_4px_16px_rgba(33,24,18,0.04)]">
             <SectionTitle title="Пол" />
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-2">
               {mega.genderItems.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
-                  className="group flex min-h-[128px] flex-col items-center justify-center rounded-2xl border border-[#efece8] bg-white px-4 py-4 text-center transition-colors hover:border-brand/40"
+                  className="group flex min-h-16 flex-col items-center justify-center rounded-xl border border-[#efece8] bg-white px-2 py-2 text-center transition-colors hover:border-brand/40"
                 >
-                  <span className="mb-3 inline-flex h-16 w-16 items-center justify-center rounded-full bg-[#f4f0ed] text-foreground transition-colors group-hover:text-brand">
+                  <span className="mb-1.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f4f0ed] text-foreground transition-colors group-hover:text-brand">
                     {item.icon}
                   </span>
-                  <span className="text-[34px] leading-tight text-foreground transition-colors group-hover:text-brand max-[1399px]:text-[24px] max-[1199px]:text-lg">
+                  <span className="text-[17px] leading-tight text-foreground transition-colors group-hover:text-brand max-[1399px]:text-xs max-[1199px]:text-[11px]">
                     {item.label}
                   </span>
                 </a>
@@ -476,19 +476,19 @@ function ShowcaseMegaPanel({ mega }: { mega: ShowcaseMega }) {
             </div>
           </section>
 
-          <section className="rounded-2xl border border-[#ece9e4] bg-white p-6 shadow-[0_4px_16px_rgba(33,24,18,0.04)] lg:col-span-2 xl:col-span-1">
+          <section className="rounded-xl border border-[#ece9e4] bg-white p-3 shadow-[0_4px_16px_rgba(33,24,18,0.04)] lg:col-span-2 xl:col-span-1">
             <SectionTitle title="Материал" />
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-3 gap-2">
               {mega.materialItems.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
-                  className="group flex min-h-[158px] flex-col items-center justify-center gap-5 rounded-2xl px-3 text-center transition-colors hover:bg-[#faf8f6]"
+                  className="group flex min-h-20 flex-col items-center justify-center gap-2.5 rounded-xl px-1.5 text-center transition-colors hover:bg-[#faf8f6]"
                 >
                   <span className="text-foreground transition-colors group-hover:text-brand">
                     {item.icon}
                   </span>
-                  <span className="text-[36px] leading-tight text-foreground transition-colors group-hover:text-brand max-[1399px]:text-[26px] max-[1199px]:text-[20px]">
+                  <span className="text-lg leading-tight text-foreground transition-colors group-hover:text-brand max-[1399px]:text-[13px] max-[1199px]:text-xs">
                     {item.label}
                   </span>
                 </a>
@@ -497,41 +497,41 @@ function ShowcaseMegaPanel({ mega }: { mega: ShowcaseMega }) {
           </section>
         </div>
 
-        <div className="mt-5 grid gap-5 lg:grid-cols-[0.92fr_2.5fr]">
-          <section className="rounded-2xl border border-[#ece9e4] bg-white p-6 shadow-[0_4px_16px_rgba(33,24,18,0.04)]">
+        <div className="mt-2.5 grid gap-2.5 lg:grid-cols-[0.92fr_2.5fr]">
+          <section className="rounded-xl border border-[#ece9e4] bg-white p-3 shadow-[0_4px_16px_rgba(33,24,18,0.04)]">
             <SectionTitle title="Конструкция" />
             <div className="divide-y divide-[#eeeae5]">
               {mega.constructionItems.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
-                  className="group flex min-h-[92px] items-center gap-4 py-4 first:pt-2 last:pb-2"
+                  className="group flex min-h-[46px] items-center gap-2 py-2 first:pt-1 last:pb-1"
                 >
-                  <span className="inline-flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#f4f0ed] text-foreground transition-colors group-hover:text-brand">
+                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f4f0ed] text-foreground transition-colors group-hover:text-brand">
                     {item.icon}
                   </span>
-                  <span className="text-[34px] leading-tight text-foreground transition-colors group-hover:text-brand max-[1399px]:text-[24px] max-[1199px]:text-lg">
+                  <span className="text-[17px] leading-tight text-foreground transition-colors group-hover:text-brand max-[1399px]:text-xs max-[1199px]:text-[11px]">
                     {item.label}
                   </span>
-                  <ChevronRight className="ml-auto h-6 w-6 shrink-0 text-foreground/90 transition-colors group-hover:text-brand" />
+                  <ChevronRight className="ml-auto h-3 w-3 shrink-0 text-foreground/90 transition-colors group-hover:text-brand" />
                 </a>
               ))}
             </div>
           </section>
 
-          <section className="rounded-2xl border border-[#ece9e4] bg-white p-6 shadow-[0_4px_16px_rgba(33,24,18,0.04)]">
+          <section className="rounded-xl border border-[#ece9e4] bg-white p-3 shadow-[0_4px_16px_rgba(33,24,18,0.04)]">
             <SectionTitle title="Бренды" suffix="(включая O.D.L.)" />
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
               {mega.brandItems.map((item) => (
                 <a
                   key={item.label}
                   href={item.href}
-                  className="group flex min-h-[102px] flex-col items-center justify-center rounded-2xl border border-[#efece8] bg-white px-3 py-4 text-center transition-colors hover:border-brand/35"
+                  className="group flex min-h-[51px] flex-col items-center justify-center rounded-xl border border-[#efece8] bg-white px-1.5 py-2 text-center transition-colors hover:border-brand/35"
                 >
-                  <span className="mb-1 flex h-11 items-center justify-center text-foreground transition-colors group-hover:text-brand">
+                  <span className="mb-0.5 flex h-5 items-center justify-center text-foreground transition-colors group-hover:text-brand">
                     {item.icon}
                   </span>
-                  <span className="text-[30px] leading-tight text-foreground transition-colors group-hover:text-brand max-[1399px]:text-[21px] max-[1199px]:text-base">
+                  <span className="text-[15px] leading-tight text-foreground transition-colors group-hover:text-brand max-[1399px]:text-[11px] max-[1199px]:text-[10px]">
                     {item.label}
                   </span>
                 </a>
@@ -540,17 +540,17 @@ function ShowcaseMegaPanel({ mega }: { mega: ShowcaseMega }) {
           </section>
         </div>
 
-        <div className="mt-7 border-t border-[#e8e4dd] pt-5">
+        <div className="mt-3.5 border-t border-[#e8e4dd] pt-2.5">
           <div className="flex justify-center">
             <a
               href={mega.allHref}
-              className="inline-flex min-w-[404px] items-center justify-center gap-4 rounded-full border border-brand bg-white px-10 py-4 text-[40px] uppercase tracking-[0.02em] text-brand transition-colors hover:bg-brand hover:text-brand-foreground max-[1399px]:text-[30px] max-[1199px]:min-w-[320px] max-[1199px]:text-[24px]"
+              className="inline-flex min-w-[202px] items-center justify-center gap-2 rounded-full border border-brand bg-white px-5 py-2 text-[20px] uppercase tracking-[0.02em] text-brand transition-colors hover:bg-brand hover:text-brand-foreground max-[1399px]:text-[15px] max-[1199px]:min-w-40 max-[1199px]:text-xs"
             >
-              <Grid2x2 className="h-8 w-8 shrink-0 stroke-[1.8]" />
+              <Grid2x2 className="h-4 w-4 shrink-0 stroke-[1.8]" />
               СМОТРЕТЬ ВСЁ
               <span
                 aria-hidden
-                className="text-[46px] leading-none max-[1399px]:text-[34px] max-[1199px]:text-[28px]"
+                className="text-[23px] leading-none max-[1399px]:text-[17px] max-[1199px]:text-sm"
               >
                 →
               </span>
