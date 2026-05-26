@@ -26,8 +26,8 @@ const PROMOS = [
 type LinkItem = { label: string; href: string; icon: ReactNode };
 type ChipItem = { label: string; href: string };
 type MegaCol =
-  | { kind: "links"; title: string; items: LinkItem[]; cols?: 1 | 2 }
-  | { kind: "chips"; title: string; items: ChipItem[] };
+  | { kind: "links"; title: string; items: LinkItem[]; cols?: 1 | 2; span?: number }
+  | { kind: "chips"; title: string; items: ChipItem[]; span?: number };
 type Mega = { cols: MegaCol[]; allHref: string; gridCols: 3 | 4 };
 
 // ---------- Inline shape SVGs (currentColor stroke) ----------
@@ -63,7 +63,7 @@ function shapeMega(cat: string): Mega {
     allHref: base,
     cols: [
       {
-        kind: "links", title: "Форма", cols: 2,
+        kind: "links", title: "Форма", cols: 2, span: 3,
         items: [
           { label: "Авиатор", href: q("shape", "Авиатор"), icon: <img src="/aviator.webp" alt="" className="h-5 w-auto" /> },
           { label: "Квадратные", href: q("shape", "Квадратные"), icon: <img src="/square.webp" alt="" className="h-5 w-auto" /> },
@@ -71,14 +71,6 @@ function shapeMega(cat: string): Mega {
           { label: "Круглые", href: q("shape", "Круглые"), icon: <img src="/round.webp" alt="" className="h-5 w-auto" /> },
           { label: "Овальные", href: q("shape", "Овальные"), icon: <img src="/Anselm - Oval.webp" alt="" className="h-5 w-auto" /> },
           { label: "Прямоугольные", href: q("shape", "Прямоугольные"), icon: <img src="/rectangle.webp" alt="" className="h-5 w-auto" /> },
-        ],
-      },
-      {
-        kind: "links", title: "Материал",
-        items: [
-          { label: "Ацетат", href: q("material", "Ацетат"), icon: <Gem className="h-4 w-4" /> },
-          { label: "Титан", href: q("material", "Титан"), icon: <Hexagon className="h-4 w-4" /> },
-          { label: "Металл", href: q("material", "Металл"), icon: <Wrench className="h-4 w-4" /> },
         ],
       },
       {
@@ -91,6 +83,14 @@ function shapeMega(cat: string): Mega {
         ],
       },
       {
+        kind: "links", title: "Материал",
+        items: [
+          { label: "Ацетат", href: q("material", "Ацетат"), icon: <Gem className="h-4 w-4" /> },
+          { label: "Титан", href: q("material", "Титан"), icon: <Hexagon className="h-4 w-4" /> },
+          { label: "Металл", href: q("material", "Металл"), icon: <Wrench className="h-4 w-4" /> },
+        ],
+      },
+      {
         kind: "links", title: "Конструкция",
         items: [
           { label: "Безободковые", href: q("construction", "Безободковые"), icon: ShapeIco.rimless },
@@ -99,7 +99,7 @@ function shapeMega(cat: string): Mega {
         ],
       },
       {
-        kind: "links", title: "Бренд", cols: 2,
+        kind: "links", title: "Бренд", cols: 2, span: 2,
         items: [
           "Ray-Ban", "Silhouette", "Carrera", "Polaroid", "BOSS", "MIU MIU",
           "HUGO", "Emporio Armani", "Carolina Herrera", "Marc Jacobs", "William Morris", "Jaguar",
@@ -185,7 +185,7 @@ function MegaPanel({ mega }: { mega: Mega }) {
     <div className="mx-auto max-w-7xl px-8 py-8">
       <div className={cn("grid gap-10", gridClass)}>
         {mega.cols.map((col) => (
-          <div key={col.title}>
+          <div key={col.title} style={col.span ? { gridColumn: `span ${col.span}` } : undefined}>
             <div className="font-serif text-xs uppercase tracking-wider text-muted-foreground mb-3">
               {col.title}
             </div>
