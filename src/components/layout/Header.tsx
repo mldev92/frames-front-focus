@@ -846,11 +846,12 @@ export function Header() {
             </button>
 
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-1 shrink-0">
-              <span className="bg-brand text-brand-foreground font-bold px-2 py-1 text-sm tracking-tight rounded-sm">
-                100%
-              </span>
-              <span className="font-serif text-lg tracking-tight">ОПТИКА</span>
+            <Link to="/" className="flex items-center shrink-0" aria-label="ОПТИКА 100%">
+              <img
+                src="/100_proc_logo.jpg"
+                alt="ОПТИКА 100%"
+                className="h-10 w-auto object-contain"
+              />
             </Link>
 
             {/* Desktop nav */}
@@ -931,11 +932,17 @@ export function Header() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex justify-between items-center mb-8">
-              <Link to="/" onClick={() => setMobileOpen(false)} className="flex items-center gap-1">
-                <span className="bg-brand text-brand-foreground font-bold px-2 py-1 text-sm rounded-sm">
-                  100%
-                </span>
-                <span className="font-serif text-lg">ОПТИКА</span>
+              <Link
+                to="/"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center"
+                aria-label="ОПТИКА 100%"
+              >
+                <img
+                  src="/100_proc_logo.jpg"
+                  alt="ОПТИКА 100%"
+                  className="h-9 w-auto object-contain"
+                />
               </Link>
               <button onClick={() => setMobileOpen(false)} aria-label="Закрыть">
                 <X className="h-5 w-5" />

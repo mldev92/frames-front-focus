@@ -47,11 +47,12 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 mb-12">
           <div className="col-span-2">
-            <Link to="/" className="flex items-center gap-1">
-              <span className="bg-brand text-brand-foreground font-bold px-2 py-1 text-sm rounded-sm">
-                100%
-              </span>
-              <span className="font-serif text-lg">ОПТИКА</span>
+            <Link to="/" className="flex items-center" aria-label="ОПТИКА 100%">
+              <img
+                src="/100_proc_logo.jpg"
+                alt="ОПТИКА 100%"
+                className="h-10 w-auto object-contain"
+              />
             </Link>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
               Сеть оптических салонов и интернет-магазин. Подбор очков и контактных линз с
