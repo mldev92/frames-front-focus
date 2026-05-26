@@ -55,7 +55,7 @@ const HERO_STATS = [
     value: "Доставка",
     label: "по всей России",
     Icon: MapPin,
-    iconSrc: "/dostavka_icon_2.svg",
+    iconSrc: "/dostavka_icon.svg",
     iconAlt: "Доставка по всей России",
   },
 ];
