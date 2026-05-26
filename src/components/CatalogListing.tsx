@@ -45,12 +45,12 @@ const ShapeIcon = ({ d }: { d: string }) => (
 );
 
 const SHAPE_DEFS: { key: string; label: string; icon: string; img?: string }[] = [
-  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect",    img: "/rectangle.png" },
-  { key: "Квадратные",    label: "Квадратные",    icon: "square",  img: "/square.png" },
-  { key: "Круглые",       label: "Круглые",        icon: "round",   img: "/round.png" },
-  { key: "Овальные",      label: "Овальные",       icon: "oval",    img: "/Anselm - Oval.png" },
-  { key: "Авиаторы",      label: "Авиаторы",       icon: "aviator", img: "/aviator.png" },
-  { key: "Кошачий глаз",  label: "Кошачий глаз",   icon: "cat",     img: "/cat-eye.png" },
+  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect",    img: "/rectangle.webp" },
+  { key: "Квадратные",    label: "Квадратные",    icon: "square",  img: "/square.webp" },
+  { key: "Круглые",       label: "Круглые",        icon: "round",   img: "/round.webp" },
+  { key: "Овальные",      label: "Овальные",       icon: "oval",    img: "/Anselm - Oval.webp" },
+  { key: "Авиаторы",      label: "Авиаторы",       icon: "aviator", img: "/aviator.webp" },
+  { key: "Кошачий глаз",  label: "Кошачий глаз",   icon: "cat",     img: "/cat-eye.webp" },
   { key: "Геометрические",label: "Геометрические", icon: "rect",    img: "/Geometric.webp" },
   { key: "Броулайнеры",   label: "Броулайнеры",    icon: "browline" },
   { key: "Вэйфэрер",      label: "Вэйфэрер",       icon: "wayfarer" },
