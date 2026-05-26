@@ -191,33 +191,23 @@ const ShapeIco = {
   ),
 };
 
-const FRAME_TYPE_SVG = {
-  width: 82.72,
-  height: 95.55,
-  order: ["Ободковые", "Полуободковые", "Безободковые"] as const,
-};
-
 function FrameTypeSvgIcon({ kind, className }: { kind: ConstructionType; className?: string }) {
-  const segmentWidth = FRAME_TYPE_SVG.width / FRAME_TYPE_SVG.order.length;
-  const index = FRAME_TYPE_SVG.order.indexOf(kind);
-  const x = Math.max(index, 0) * segmentWidth;
+  const order = ["Ободковые", "Полуободковые", "Безободковые"] as const;
+  const index = Math.max(order.indexOf(kind), 0);
+  const shift = `${index * 33.333333}%`;
 
   return (
-    <svg
-      className={cn("block", className)}
-      viewBox={`${x} 0 ${segmentWidth} ${FRAME_TYPE_SVG.height}`}
-      preserveAspectRatio="xMidYMid meet"
-      aria-hidden="true"
-    >
-      <image
-        href="/icon_frame_type.svg"
-        x="0"
-        y="0"
-        width={FRAME_TYPE_SVG.width}
-        height={FRAME_TYPE_SVG.height}
-        preserveAspectRatio="xMidYMid meet"
+    <span className={cn("relative block overflow-hidden", className)} aria-hidden="true">
+      <img
+        src="/icon_frame_type.svg"
+        alt=""
+        className="absolute inset-0 h-full w-[300%] max-w-none"
+        style={{
+          transform: `translateX(-${shift})`,
+          transformOrigin: "left center",
+        }}
       />
-    </svg>
+    </span>
   );
 }
 
@@ -303,17 +293,17 @@ function shapeMega(cat: string): Mega {
       {
         label: "Безободковые",
         href: q("construction", "Безободковые"),
-        icon: <FrameTypeSvgIcon kind="Безободковые" className="h-3.5 w-3.5" />,
+        icon: <FrameTypeSvgIcon kind="Безободковые" className="h-3.5 w-6" />,
       },
       {
         label: "Ободковые",
         href: q("construction", "Ободковые"),
-        icon: <FrameTypeSvgIcon kind="Ободковые" className="h-3.5 w-3.5" />,
+        icon: <FrameTypeSvgIcon kind="Ободковые" className="h-3.5 w-6" />,
       },
       {
         label: "Полуободковые",
         href: q("construction", "Полуободковые"),
-        icon: <FrameTypeSvgIcon kind="Полуободковые" className="h-3.5 w-3.5" />,
+        icon: <FrameTypeSvgIcon kind="Полуободковые" className="h-3.5 w-6" />,
       },
     ],
     brandItems: [
@@ -550,7 +540,7 @@ function ShowcaseMegaPanel({ mega }: { mega: ShowcaseMega }) {
                   href={item.href}
                   className="group flex min-h-[46px] items-center gap-2 py-2 first:pt-1 last:pb-1"
                 >
-                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f4f0ed] text-foreground transition-colors group-hover:text-brand">
+                  <span className="inline-flex h-4 w-6 shrink-0 items-center justify-center text-foreground transition-colors group-hover:text-brand">
                     {item.icon}
                   </span>
                   <span className="text-[17px] leading-tight text-foreground transition-colors group-hover:text-brand max-[1399px]:text-xs max-[1199px]:text-[11px]">
