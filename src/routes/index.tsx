@@ -373,7 +373,7 @@ function MainV2Page() {
                           src={s.iconSrc}
                           alt={s.iconAlt ?? s.label}
                           loading="lazy"
-                          className="h-4 w-4 object-contain"
+                          className="h-4 w-auto max-w-[28px] object-contain"
                         />
                       ) : (
                         <s.Icon size={16} strokeWidth={1.75} />
