@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import {
   ArrowRight,
+  Check,
   ChevronLeft,
   ChevronRight,
   Heart,
@@ -15,7 +16,7 @@ import { AppointmentModal } from "@/components/AppointmentModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { Reveal } from "@/components/Reveal";
 import { catalogHref, categoryToSegment } from "@/data/categories";
-import { bestsellers } from "@/data/products";
+import { bestsellers, products } from "@/data/products";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
 import { Calendar, Users, MapPin, Award, Phone, Send } from "lucide-react";
@@ -96,6 +97,132 @@ const SERVICE_LIST = [
   { slug: "remont", title: "Ремонт очков" },
 ];
 
+const SERVICE_STRIP_ITEMS = [
+  {
+    eyebrow: "01 — ДИАГНОСТИКА",
+    title: "Проверка зрения",
+    text: "Современная диагностика за 30 минут",
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    ),
+  },
+  {
+    eyebrow: "02 — ПОДБОР",
+    title: "Подбор очков",
+    text: "Индивидуальный подбор оправ и линз",
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    ),
+  },
+  {
+    eyebrow: "03 — ЗАБОТА",
+    title: "Контроль миопии",
+    text: "Программы для детей и подростков",
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    ),
+  },
+  {
+    eyebrow: "04 — СЕРВИС",
+    title: "Ремонт очков",
+    text: "Быстрый и качественный ремонт",
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path
+          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    ),
+  },
+  {
+    eyebrow: "05 — ЛИНЗЫ",
+    title: "Контактные линзы",
+    text: "Подбор и доставка по России",
+    icon: (
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <ellipse
+          cx="12"
+          cy="12"
+          rx="9"
+          ry="6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+        <circle
+          cx="12"
+          cy="12"
+          r="3"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+        <path
+          d="M12 9.5a2.5 2.5 0 00-2.5 2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
+        />
+      </svg>
+    ),
+  },
+];
+
+const CONTACT_LENS_HOMEPAGE_SLUGS = [
+  "acuvue-oasys-1day",
+  "biofinity",
+  "misight-1day-90",
+  "air-optix-toric",
+] as const;
+
+const CONTACT_LENS_HOMEPAGE_PRODUCTS = CONTACT_LENS_HOMEPAGE_SLUGS.map((slug) =>
+  products.find((product) => product.slug === slug),
+).filter((product): product is Product => Boolean(product));
+
+const CONTACT_LENS_SERVICE_POINTS = [
+  "Подберем режим ношения и подходящий бренд вместе с врачом или оптометристом.",
+  "Поможем с линзами для сухих глаз, астигматизма и детского контроля миопии.",
+  "Подскажем растворы, капли и средства ухода под ваш ежедневный ритм.",
+  "Оформим доставку по Санкт-Петербургу, Новокузнецку и по всей России.",
+  "В салоне можно пройти подбор МКЛ и получить понятные рекомендации по уходу.",
+] as const;
+
 // Asymmetric category grid cells. Layout (desktop):
 //   ┌────────────┬───────────────────────┐
 //   │            │  Солнцезащитные       │  (wide top-right)
@@ -142,6 +269,7 @@ const CAT_CELLS = [
 function MainV2Page() {
   const hits = bestsellers();
   const recent = articles.slice(0, 2);
+  const contactLensProducts = CONTACT_LENS_HOMEPAGE_PRODUCTS;
   const [aptOpen, setAptOpen] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
 
@@ -204,7 +332,8 @@ function MainV2Page() {
             objectFit: "cover",
             objectPosition: "right center",
             zIndex: 0,
-            animation: "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeA 14s ease-in-out infinite",
+            animation:
+              "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeA 14s ease-in-out infinite",
             willChange: "filter, transform, opacity",
           }}
         />
@@ -221,7 +350,8 @@ function MainV2Page() {
             objectFit: "cover",
             objectPosition: "right center",
             zIndex: 0,
-            animation: "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeB 14s ease-in-out infinite",
+            animation:
+              "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeB 14s ease-in-out infinite",
             willChange: "filter, transform, opacity",
           }}
         />
@@ -283,8 +413,7 @@ function MainV2Page() {
           style={{
             zIndex: 2,
             minHeight: "clamp(440px, 56vw, 680px)",
-            padding:
-              "clamp(48px, 8vw, 96px) clamp(24px, 5vw, 64px)",
+            padding: "clamp(48px, 8vw, 96px) clamp(24px, 5vw, 64px)",
           }}
         >
           <Reveal>
@@ -316,8 +445,7 @@ function MainV2Page() {
                   marginBottom: 32,
                 }}
               >
-                Современные очки, профессиональный подбор и&nbsp;забота
-                о&nbsp;вашем зрении.
+                Современные очки, профессиональный подбор и&nbsp;забота о&nbsp;вашем зрении.
               </p>
 
               <div className="flex flex-wrap gap-3">
@@ -402,12 +530,69 @@ function MainV2Page() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          1b. SERVICE STRIP — separate white section, 4 icon cards
+          1b. SERVICE STRIP — separate white section, 5 icon cards
          ───────────────────────────────────────────────────────────── */}
-      <section
-        className="relative w-full"
-        style={{ background: "var(--background)" }}
-      >
+      <section className="relative w-full" style={{ background: "var(--background)" }}>
+        <style>{`
+          .o100-service-strip-grid{
+            display:grid;
+            grid-template-columns:1fr;
+            gap:24px;
+          }
+          @media (min-width:768px){
+            .o100-service-strip-grid{
+              grid-template-columns:repeat(2, minmax(0, 1fr));
+              gap:32px 24px;
+            }
+          }
+          @media (min-width:1280px){
+            .o100-service-strip-grid{
+              grid-template-columns:repeat(5, minmax(0, 1fr));
+              gap:0;
+            }
+          }
+          .o100-service-strip-cell{
+            display:flex;
+            align-items:flex-start;
+            gap:16px;
+            min-width:0;
+          }
+          @media (min-width:1280px){
+            .o100-service-strip-cell{
+              padding:0 24px;
+              border-left:1px solid color-mix(in oklab, var(--foreground) 10%, transparent);
+            }
+            .o100-service-strip-cell:first-child{
+              padding-left:0;
+              border-left:0;
+            }
+          }
+          .o100-service-strip-icon{
+            width:48px;
+            height:48px;
+            border-radius:999px;
+            flex-shrink:0;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            background:color-mix(in oklab, var(--cream) 92%, white);
+            color:var(--brand);
+            transition:background-color 260ms ease, color 260ms ease, transform 260ms ease;
+          }
+          .o100-service-strip-cell:hover .o100-service-strip-icon{
+            background:var(--brand);
+            color:#fff;
+            transform:translateY(-1px);
+          }
+          .o100-service-strip-eyebrow{
+            margin-bottom:4px;
+            font-size:10px;
+            font-weight:700;
+            letter-spacing:0.16em;
+            text-transform:uppercase;
+            color:color-mix(in oklab, var(--foreground) 42%, white);
+          }
+        `}</style>
         <div
           className="mx-auto max-w-7xl"
           style={{
@@ -415,73 +600,57 @@ function MainV2Page() {
           }}
         >
           <Reveal>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-            <div className="flex items-start space-x-4 md:px-6 pt-6 md:pt-0 group">
-              <div className="w-12 h-12 rounded-full bg-[#fbf9f6] flex items-center justify-center flex-shrink-0 text-[#c83b3b] group-hover:bg-[#c83b3b] group-hover:text-white transition-colors duration-300">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
-                  <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
-                </svg>
-              </div>
-              <div>
-                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">01 — ДИАГНОСТИКА</div>
-                <h3 className="font-semibold text-gray-900 mb-1">Проверка зрения</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">Современная диагностика за 30 минут</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4 md:px-6 pt-6 md:pt-0 group">
-              <div className="w-12 h-12 rounded-full bg-[#fbf9f6] flex items-center justify-center flex-shrink-0 text-[#c83b3b] group-hover:bg-[#c83b3b] group-hover:text-white transition-colors duration-300">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
-                </svg>
-              </div>
-              <div>
-                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">02 — ПОДБОР</div>
-                <h3 className="font-semibold text-gray-900 mb-1">Подбор очков</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">Индивидуальный подбор оправ и линз</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4 md:px-6 pt-6 md:pt-0 group">
-              <div className="w-12 h-12 rounded-full bg-[#fbf9f6] flex items-center justify-center flex-shrink-0 text-[#c83b3b] group-hover:bg-[#c83b3b] group-hover:text-white transition-colors duration-300">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
-                </svg>
-              </div>
-              <div>
-                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">03 — ЗАБОТА</div>
-                <h3 className="font-semibold text-gray-900 mb-1">Контроль миопии</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">Программы для детей и подростков</p>
-              </div>
-            </div>
-
-            <div className="flex items-start space-x-4 md:px-6 pt-6 md:pt-0 group">
-              <div className="w-12 h-12 rounded-full bg-[#fbf9f6] flex items-center justify-center flex-shrink-0 text-[#c83b3b] group-hover:bg-[#c83b3b] group-hover:text-white transition-colors duration-300">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
-                  <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5"></path>
-                </svg>
-              </div>
-              <div>
-                <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-1">04 — СЕРВИС</div>
-                <h3 className="font-semibold text-gray-900 mb-1">Ремонт очков</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">Быстрый и качественный ремонт</p>
-              </div>
-            </div>
-
+            <div className="o100-service-strip-grid">
+              {SERVICE_STRIP_ITEMS.map(({ eyebrow, title, text, icon }) => (
+                <div key={title} className="o100-service-strip-cell">
+                  <div className="o100-service-strip-icon">{icon}</div>
+                  <div>
+                    <div className="o100-service-strip-eyebrow">{eyebrow}</div>
+                    <h3
+                      className="text-foreground"
+                      style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}
+                    >
+                      {title}
+                    </h3>
+                    <p
+                      className="text-muted-foreground"
+                      style={{ fontSize: 12.5, lineHeight: 1.5 }}
+                    >
+                      {text}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </Reveal>
-          </div>
-        
+        </div>
       </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          2. FAMILY BANNER — category-led full-bleed banner
+         ───────────────────────────────────────────────────────────── */}
+      <MainV2FamilyBanner />
+
+      {/* ─────────────────────────────────────────────────────────────
+          3. CONTACT LENS CAROUSEL — real products from catalog data
+         ───────────────────────────────────────────────────────────── */}
+      {contactLensProducts.length > 0 && (
+        <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
+          <div className="mx-auto max-w-7xl px-4 lg:px-8">
+            <MainV2ContactLensCarousel products={contactLensProducts} />
+          </div>
+        </section>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          4. CONTACT LENS SERVICE — lead-gen support block
+         ───────────────────────────────────────────────────────────── */}
+      <MainV2ContactLensServiceBlock onOpenAppointment={() => setAptOpen(true)} />
 
       {/* ─────────────────────────────────────────────────────────────
           2. CATEGORIES — Подберите свои идеальные очки (1:1 with screenshot)
          ───────────────────────────────────────────────────────────── */}
-      <section
-        style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
-      >
+      <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
           {/* Header row: eyebrow + H2 on left, "See all" link on right */}
           <Reveal className="flex items-end justify-between gap-4 mb-8 lg:mb-10">
@@ -571,9 +740,7 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           3. POPULAR MODELS — Хиты продаж (cream bg, header w/ nav arrows)
          ───────────────────────────────────────────────────────────── */}
-      <section
-        style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
-      >
+      <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
         <style>{`
           .o100-fav-btn{transition:transform 0.2s,background-color 0.2s}
           .o100-fav-btn:hover{transform:scale(1.18);background:rgba(200,59,59,0.12)!important}
@@ -592,14 +759,9 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           4. WHY TRUST US — Почему нам доверяют (2-col: heading | 4 reasons)
          ───────────────────────────────────────────────────────────── */}
-      <section
-        style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
-      >
+      <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <div
-            className="grid gap-10 lg:gap-14"
-            style={{ gridTemplateColumns: "1fr" }}
-          >
+          <div className="grid gap-10 lg:gap-14" style={{ gridTemplateColumns: "1fr" }}>
             <style>{`
               .o100-trust-grid{display:grid;gap:40px;grid-template-columns:1fr}
               @media (min-width:1024px){
@@ -647,8 +809,9 @@ function MainV2Page() {
                     maxWidth: 380,
                   }}
                 >
-                  Мы открыли первую оптику в&nbsp;2014&nbsp;году. С&nbsp;тех пор подобрали
-                  очки 47&nbsp;000+ человек.
+                  открыли первую оптику в&nbsp;2006&nbsp;году
+                  <br />
+                  подобрали 100&nbsp;000+ человек
                 </p>
               </Reveal>
 
@@ -698,7 +861,10 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           5. PAIRED BANNERS — child myopia + virtual try-on promo
          ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "var(--background)" }}>
+      <section
+        className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20"
+        style={{ background: "var(--background)" }}
+      >
         <div className="grid lg:grid-cols-2 gap-6 items-stretch">
           {/* Left — child myopia */}
           <Reveal>
@@ -719,7 +885,10 @@ function MainV2Page() {
                     "linear-gradient(180deg, rgba(245,239,231,0.92) 0%, rgba(245,239,231,0.55) 40%, rgba(245,239,231,0) 70%)",
                 }}
               />
-              <div className="relative h-full flex flex-col justify-start p-8 lg:p-10" style={{ maxWidth: 420 }}>
+              <div
+                className="relative h-full flex flex-col justify-start p-8 lg:p-10"
+                style={{ maxWidth: 420 }}
+              >
                 <div
                   className="text-[11px] uppercase tracking-[0.2em] mb-3"
                   style={{ color: "var(--brand)" }}
@@ -728,15 +897,22 @@ function MainV2Page() {
                 </div>
                 <h3
                   className="font-serif text-foreground"
-                  style={{ fontSize: 28, lineHeight: 1.15, marginBottom: 14, letterSpacing: "-0.01em" }}
+                  style={{
+                    fontSize: 28,
+                    lineHeight: 1.15,
+                    marginBottom: 14,
+                    letterSpacing: "-0.01em",
+                  }}
                 >
-                  Контроль миопии<br />у детей и подростков
+                  Контроль миопии
+                  <br />у детей и подростков
                 </h3>
                 <p
                   className="text-muted-foreground"
                   style={{ fontSize: 14, lineHeight: 1.55, marginBottom: 24 }}
                 >
-                  Эффективные методики замедления прогрессирования близорукости и сохранения здоровья глаз.
+                  Эффективные методики замедления прогрессирования близорукости и сохранения
+                  здоровья глаз.
                 </p>
                 <a
                   href={serviceHref("diagnostika")}
@@ -829,7 +1005,10 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           8. JOURNAL — Полезные статьи
          ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "var(--background)" }}>
+      <section
+        className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20"
+        style={{ background: "var(--background)" }}
+      >
         <Reveal className="flex items-end justify-between mb-8 gap-4">
           <div>
             <div
@@ -1001,6 +1180,129 @@ function MainV2Page() {
   );
 }
 
+function MainV2FamilyBanner() {
+  return (
+    <section className="relative w-full overflow-hidden" style={{ background: "var(--cream)" }}>
+      <style>{`
+        .o100-family-banner-wash{
+          background:linear-gradient(
+            90deg,
+            rgba(246, 240, 233, 0.98) 0%,
+            rgba(246, 240, 233, 0.94) 28%,
+            rgba(246, 240, 233, 0.64) 56%,
+            rgba(246, 240, 233, 0.12) 84%
+          );
+        }
+        @media (max-width:767px){
+          .o100-family-banner-wash{
+            background:linear-gradient(
+              180deg,
+              rgba(246, 240, 233, 0.9) 0%,
+              rgba(246, 240, 233, 0.78) 38%,
+              rgba(246, 240, 233, 0.32) 72%,
+              rgba(246, 240, 233, 0.10) 100%
+            );
+          }
+        }
+        .o100-family-btn{
+          display:inline-flex;
+          align-items:center;
+          gap:8px;
+          border-radius:999px;
+          padding:14px 24px;
+          font-size:14px;
+          font-weight:600;
+          transition:transform 200ms ease, opacity 200ms ease, background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+          border:1px solid transparent;
+        }
+        .o100-family-btn:hover{
+          transform:translateY(-1px);
+        }
+      `}</style>
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{
+          backgroundImage: "url(/main_banner_v2.png)",
+          backgroundPosition: "right center",
+          backgroundSize: "cover",
+        }}
+      />
+      <div aria-hidden className="o100-family-banner-wash absolute inset-0" />
+      <div
+        className="relative mx-auto max-w-7xl px-4 lg:px-8"
+        style={{ paddingTop: "clamp(72px, 9vw, 108px)", paddingBottom: "clamp(72px, 9vw, 112px)" }}
+      >
+        <Reveal>
+          <div style={{ maxWidth: 520 }}>
+            <div
+              className="text-[11px] uppercase tracking-[0.22em] mb-3"
+              style={{ color: "var(--brand)" }}
+            >
+              Для всей семьи
+            </div>
+            <h2
+              className="font-serif text-foreground"
+              style={{
+                fontSize: "clamp(34px, 4.6vw, 56px)",
+                lineHeight: 1.04,
+                letterSpacing: "-0.02em",
+                marginBottom: 18,
+              }}
+            >
+              Оправы и солнцезащитные очки для всей семьи
+            </h2>
+            <p
+              className="text-muted-foreground"
+              style={{
+                fontSize: 17,
+                lineHeight: 1.55,
+                maxWidth: 460,
+                marginBottom: 26,
+              }}
+            >
+              Подберем повседневные оправы, детские модели и солнцезащитные очки, которые удобно
+              носить каждый день и легко сочетать с вашим ритмом жизни.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <a
+                href={catalogHref("opravy")}
+                className="o100-family-btn"
+                style={{ background: "var(--brand)", color: "#fff" }}
+              >
+                Выбрать оправы
+              </a>
+              <a
+                href={catalogHref("solntsezashchitnye")}
+                className="o100-family-btn"
+                style={{
+                  color: "var(--foreground)",
+                  borderColor: "var(--foreground)",
+                  background: "transparent",
+                }}
+              >
+                Солнцезащитные очки
+              </a>
+            </div>
+            <div
+              className="flex flex-wrap items-center gap-2"
+              style={{ marginTop: 22, fontSize: 13.5, color: "var(--foreground)" }}
+            >
+              <span>Нужна помощь с первой парой?</span>
+              <a
+                href={serviceHref("podbor-ochkov")}
+                style={{ color: "var(--brand)", fontWeight: 600 }}
+              >
+                Запишитесь на подбор очков <span aria-hidden>→</span>
+              </a>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
 /**
  * Local product card for main-v2. Differs from the shared `ProductCard`:
  *   – "Примерить" overlay action in the top-right of the photo.
@@ -1033,8 +1335,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
       style={{
         background: "#fff",
         borderRadius: 16,
-        boxShadow:
-          "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)",
       }}
     >
       <div className="relative block aspect-square">
@@ -1105,18 +1406,11 @@ function MainV2ProductCard({ product }: { product: Product }) {
           }}
           aria-label="В избранное"
         >
-          <Heart
-            className="h-5 w-5"
-            strokeWidth={1.75}
-            fill={isSaved ? "var(--brand)" : "none"}
-          />
+          <Heart className="h-5 w-5" strokeWidth={1.75} fill={isSaved ? "var(--brand)" : "none"} />
         </button>
       </div>
 
-      <div
-        className="flex flex-col gap-2"
-        style={{ padding: "18px 20px 22px" }}
-      >
+      <div className="flex flex-col gap-2" style={{ padding: "18px 20px 22px" }}>
         <Link
           to="/catalog_s/$category/$slug"
           params={productRouteParams}
@@ -1125,10 +1419,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
         >
           {displayName}
         </Link>
-        <div
-          className="text-foreground"
-          style={{ fontSize: 15, fontWeight: 600 }}
-        >
+        <div className="text-foreground" style={{ fontSize: 15, fontWeight: 600 }}>
           {formatPrice(product.price)}
         </div>
         {dots.length > 0 && (
@@ -1141,17 +1432,13 @@ function MainV2ProductCard({ product }: { product: Product }) {
                   width: 12,
                   height: 12,
                   background: c.hex,
-                  border:
-                    "1px solid color-mix(in oklch, var(--foreground) 10%, transparent)",
+                  border: "1px solid color-mix(in oklch, var(--foreground) 10%, transparent)",
                 }}
                 title={c.name}
               />
             ))}
             {extra > 0 && (
-              <span
-                className="text-muted-foreground"
-                style={{ fontSize: 11, marginLeft: 2 }}
-              >
+              <span className="text-muted-foreground" style={{ fontSize: 11, marginLeft: 2 }}>
                 +{extra}
               </span>
             )}
@@ -1173,8 +1460,7 @@ function MainV2HitsCarousel({ products }: { products: Product[] }) {
     if (!el) return;
     el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
   };
-  const navBtn =
-    "o100-nav-btn flex items-center justify-center rounded-full bg-background";
+  const navBtn = "o100-nav-btn flex items-center justify-center rounded-full bg-background";
   const navBtnStyle = {
     width: 40,
     height: 40,
@@ -1253,11 +1539,493 @@ function MainV2HitsCarousel({ products }: { products: Product[] }) {
   );
 }
 
-function CategoryTile({
-  cell,
-}: {
-  cell: (typeof CAT_CELLS)[number];
-}) {
+function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
+  const scroller = useRef<HTMLDivElement>(null);
+  const scrollBy = (dir: 1 | -1) => {
+    const el = scroller.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth * 0.8, behavior: "smooth" });
+  };
+
+  return (
+    <div>
+      <style>{`
+        .o100-lens-nav-btn{
+          transition:background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+        }
+        .o100-lens-nav-btn:hover{
+          background:var(--brand)!important;
+          color:#fff!important;
+          border-color:var(--brand)!important;
+        }
+        .o100-lens-fav-btn{
+          transition:transform 200ms ease, background-color 200ms ease;
+        }
+        .o100-lens-fav-btn:hover{
+          transform:scale(1.14);
+          background:rgba(255,255,255,0.95)!important;
+        }
+      `}</style>
+      <Reveal className="flex items-end justify-between gap-4 mb-8 lg:mb-10">
+        <div>
+          <div
+            className="text-[11px] uppercase tracking-[0.22em] mb-3"
+            style={{ color: "var(--brand)" }}
+          >
+            Контактные линзы
+          </div>
+          <h2
+            className="font-serif text-foreground"
+            style={{
+              fontSize: "clamp(28px, 3.4vw, 42px)",
+              lineHeight: 1.1,
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Популярные контактные линзы
+          </h2>
+        </div>
+        <div className="flex items-center gap-4">
+          <a
+            href={catalogHref("kontaktnye-linzy")}
+            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium"
+            style={{ color: "var(--brand)" }}
+          >
+            Все линзы <ArrowRight className="h-4 w-4" />
+          </a>
+          <div className="hidden md:flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => scrollBy(-1)}
+              aria-label="Назад"
+              className="o100-lens-nav-btn flex items-center justify-center rounded-full bg-background"
+              style={{
+                width: 40,
+                height: 40,
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+              }}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollBy(1)}
+              aria-label="Вперед"
+              className="o100-lens-nav-btn flex items-center justify-center rounded-full bg-background"
+              style={{
+                width: 40,
+                height: 40,
+                border: "1px solid var(--border)",
+                color: "var(--foreground)",
+              }}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </Reveal>
+      <Reveal delay={120}>
+        <div
+          ref={scroller}
+          className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 -mx-4 px-4 lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        >
+          {products.map((product) => (
+            <div
+              key={product.slug}
+              className="snap-start shrink-0 w-[72%] sm:w-[44%] md:w-[31%] lg:w-[23.5%]"
+            >
+              <MainV2ContactLensCard product={product} />
+            </div>
+          ))}
+        </div>
+      </Reveal>
+      <div className="mt-6 sm:hidden">
+        <a
+          href={catalogHref("kontaktnye-linzy")}
+          className="inline-flex items-center gap-1.5 text-sm font-medium"
+          style={{ color: "var(--brand)" }}
+        >
+          Все линзы <ArrowRight className="h-4 w-4" />
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function MainV2ContactLensCard({ product }: { product: Product }) {
+  const { toggleSaved, saved } = useCart();
+  const isSaved = saved.includes(product.slug);
+  const productRouteParams = {
+    category: categoryToSegment[product.category],
+    slug: product.slug,
+  };
+  const packSize = product.specs.find((spec) => spec.label === "Упаковка")?.value;
+  const lensMeta = [product.wearMode, packSize].filter(Boolean).join(" · ");
+  const isGeneratedPlaceholder = product.images[0]?.includes("picsum.photos");
+  const displayName =
+    product.brand && !product.name.toLowerCase().includes(product.brand.toLowerCase())
+      ? `${product.brand} ${product.name}`
+      : product.name;
+  const pillLabel =
+    product.lensType === "Для контроля миопии"
+      ? "Контроль миопии"
+      : product.lensType === "Торические"
+        ? "Для астигматизма"
+        : (product.wearMode ?? "Контактные линзы");
+
+  return (
+    <div
+      className="group/card flex h-full flex-col overflow-hidden"
+      style={{
+        background: "#fff",
+        borderRadius: 16,
+        boxShadow: "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)",
+      }}
+    >
+      <div
+        className="relative aspect-square overflow-hidden"
+        style={{
+          background:
+            "radial-gradient(circle at top left, rgba(255,255,255,0.7), transparent 38%), var(--cream)",
+        }}
+      >
+        <Link
+          to="/catalog_s/$category/$slug"
+          params={productRouteParams}
+          className="absolute inset-0 block"
+          aria-label={displayName}
+        >
+          {isGeneratedPlaceholder ? (
+            <div className="flex h-full w-full items-center justify-center p-6">
+              <div
+                className="flex h-full w-full max-h-[220px] max-w-[220px] flex-col justify-between rounded-[14px] border p-4"
+                style={{
+                  borderColor: "color-mix(in oklab, var(--foreground) 10%, transparent)",
+                  background:
+                    "linear-gradient(160deg, rgba(255,255,255,0.96), rgba(247,243,238,0.98))",
+                  boxShadow: "0 12px 28px rgba(0,0,0,0.06)",
+                }}
+              >
+                <div
+                  style={{
+                    fontSize: 10,
+                    letterSpacing: "0.16em",
+                    textTransform: "uppercase",
+                    color: "var(--brand)",
+                    fontWeight: 700,
+                  }}
+                >
+                  {product.wearMode ?? "Контактные линзы"}
+                </div>
+                <div>
+                  <div
+                    className="font-serif text-foreground"
+                    style={{ fontSize: 22, lineHeight: 1.05, marginBottom: 6 }}
+                  >
+                    {product.brand}
+                  </div>
+                  <div
+                    className="text-muted-foreground"
+                    style={{ fontSize: 12.5, lineHeight: 1.45 }}
+                  >
+                    {packSize ?? "Подбор контактных линз"}
+                  </div>
+                </div>
+                <div
+                  style={{
+                    height: 8,
+                    width: "100%",
+                    borderRadius: 999,
+                    background:
+                      "linear-gradient(90deg, color-mix(in oklab, var(--brand) 16%, white), color-mix(in oklab, var(--brand) 36%, white))",
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <img
+              src={product.images[0]}
+              alt={displayName}
+              loading="lazy"
+              className="h-full w-full object-contain p-7 transition-transform duration-500 group-hover/card:scale-[1.03]"
+            />
+          )}
+        </Link>
+        <span
+          className="absolute left-3 top-3 inline-flex items-center rounded-full border px-3 py-1.5 text-[11px] font-medium"
+          style={{
+            background: "rgba(255,255,255,0.92)",
+            borderColor: "color-mix(in oklab, var(--foreground) 8%, transparent)",
+            color: "var(--foreground)",
+            backdropFilter: "blur(4px)",
+          }}
+        >
+          {pillLabel}
+        </span>
+        <button
+          type="button"
+          onClick={() => toggleSaved(product.slug)}
+          className="o100-lens-fav-btn absolute right-3 top-3 z-10 flex items-center justify-center rounded-full"
+          style={{
+            width: 36,
+            height: 36,
+            background: "rgba(255,255,255,0.8)",
+            color: "var(--brand)",
+          }}
+          aria-label="В избранное"
+        >
+          <Heart className="h-5 w-5" strokeWidth={1.75} fill={isSaved ? "var(--brand)" : "none"} />
+        </button>
+      </div>
+
+      <div className="flex flex-col gap-2" style={{ padding: "18px 20px 22px" }}>
+        <Link
+          to="/catalog_s/$category/$slug"
+          params={productRouteParams}
+          className="font-serif text-foreground transition-colors hover:text-brand"
+          style={{ fontSize: 18, lineHeight: 1.25 }}
+        >
+          {displayName}
+        </Link>
+        <div className="text-muted-foreground" style={{ fontSize: 12.5, lineHeight: 1.45 }}>
+          {lensMeta || "Контактные линзы"}
+        </div>
+        <div className="flex items-baseline gap-2.5" style={{ marginTop: 8 }}>
+          <span className="text-foreground" style={{ fontSize: 18, fontWeight: 600 }}>
+            {formatPrice(product.price)}
+          </span>
+          {product.oldPrice && (
+            <span
+              className="text-muted-foreground"
+              style={{ fontSize: 13, textDecoration: "line-through" }}
+            >
+              {formatPrice(product.oldPrice)}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MainV2ContactLensServiceBlock({ onOpenAppointment }: { onOpenAppointment: () => void }) {
+  return (
+    <section style={{ background: "var(--background)", padding: "clamp(56px, 7vw, 96px) 0" }}>
+      <style>{`
+        .o100-lens-service-grid{
+          display:grid;
+          grid-template-columns:1fr;
+          gap:28px;
+          align-items:stretch;
+        }
+        @media (min-width:1024px){
+          .o100-lens-service-grid{
+            grid-template-columns:1.05fr 1fr;
+            gap:48px;
+          }
+        }
+        .o100-lens-service-photo{
+          position:relative;
+          overflow:hidden;
+          border-radius:20px;
+          min-height:420px;
+          background:var(--cream);
+        }
+        .o100-lens-service-photo img{
+          position:absolute;
+          inset:0;
+          width:100%;
+          height:100%;
+          object-fit:cover;
+          transition:transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .o100-lens-service-photo:hover img{
+          transform:scale(1.03);
+        }
+        .o100-lens-service-btn{
+          display:inline-flex;
+          align-items:center;
+          justify-content:center;
+          gap:8px;
+          min-height:48px;
+          padding:0 24px;
+          border-radius:999px;
+          font-size:14px;
+          font-weight:600;
+          transition:transform 200ms ease, opacity 200ms ease, background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+          border:1px solid transparent;
+        }
+        .o100-lens-service-btn:hover{
+          transform:translateY(-1px);
+        }
+      `}</style>
+      <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        <div className="o100-lens-service-grid">
+          <Reveal>
+            <div className="o100-lens-service-photo">
+              <img src="/category_cont_lenses_v3.png" alt="" />
+              <div
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                  background: "linear-gradient(180deg, rgba(0,0,0,0.02) 24%, rgba(0,0,0,0.6) 100%)",
+                }}
+              />
+              <span
+                className="absolute left-6 top-6 inline-flex rounded-full px-4 py-2 text-[11px] font-bold uppercase"
+                style={{
+                  letterSpacing: "0.12em",
+                  background: "var(--brand)",
+                  color: "#fff",
+                }}
+              >
+                Подбор МКЛ
+              </span>
+              <div
+                className="absolute bottom-8 left-8 right-8"
+                style={{ color: "#fff", maxWidth: 360 }}
+              >
+                <div
+                  style={{
+                    fontSize: 11,
+                    letterSpacing: "0.2em",
+                    textTransform: "uppercase",
+                    opacity: 0.76,
+                    marginBottom: 8,
+                  }}
+                >
+                  Контактные линзы
+                </div>
+                <h3
+                  className="font-serif"
+                  style={{ fontSize: "clamp(24px, 2.4vw, 32px)", lineHeight: 1.15 }}
+                >
+                  Подберем линзы и средства ухода под ваш ритм жизни
+                </h3>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <div style={{ paddingTop: 10 }}>
+              <div
+                className="text-[11px] uppercase tracking-[0.22em] mb-3"
+                style={{ color: "var(--brand)" }}
+              >
+                Сервис
+              </div>
+              <h2
+                className="font-serif text-foreground"
+                style={{
+                  fontSize: "clamp(32px, 4vw, 52px)",
+                  lineHeight: 1.05,
+                  letterSpacing: "-0.02em",
+                  marginBottom: 14,
+                }}
+              >
+                Подбор контактных линз и средства ухода
+              </h2>
+              <p
+                className="text-muted-foreground"
+                style={{
+                  fontSize: 16,
+                  lineHeight: 1.6,
+                  maxWidth: 520,
+                  marginBottom: 22,
+                }}
+              >
+                Поможем выбрать комфортный режим ношения, объясним отличия брендов и подскажем
+                средства ухода, которые удобно встроить в повседневный график.
+              </p>
+
+              <ul
+                style={{
+                  listStyle: "none",
+                  margin: 0,
+                  padding: 0,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 14,
+                }}
+              >
+                {CONTACT_LENS_SERVICE_POINTS.map((point) => (
+                  <li key={point} className="flex items-start gap-3">
+                    <span
+                      className="inline-flex items-center justify-center rounded-full"
+                      style={{
+                        width: 22,
+                        height: 22,
+                        marginTop: 2,
+                        flexShrink: 0,
+                        background: "color-mix(in oklab, var(--brand) 12%, transparent)",
+                        color: "var(--brand)",
+                      }}
+                    >
+                      <Check className="h-3.5 w-3.5" strokeWidth={2.3} />
+                    </span>
+                    <span className="text-foreground" style={{ fontSize: 15, lineHeight: 1.55 }}>
+                      {point}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex flex-wrap gap-3" style={{ marginTop: 28 }}>
+                <a
+                  href={catalogHref("kontaktnye-linzy")}
+                  className="o100-lens-service-btn"
+                  style={{ background: "var(--brand)", color: "#fff" }}
+                >
+                  Все контактные линзы
+                </a>
+                <button
+                  type="button"
+                  onClick={onOpenAppointment}
+                  className="o100-lens-service-btn"
+                  style={{
+                    background: "transparent",
+                    color: "var(--foreground)",
+                    borderColor: "var(--foreground)",
+                  }}
+                >
+                  Записаться на подбор МКЛ
+                </button>
+              </div>
+
+              <div
+                className="flex items-center gap-4"
+                style={{
+                  marginTop: 28,
+                  padding: "16px 18px",
+                  borderRadius: 14,
+                  border: "1px solid var(--border)",
+                  background: "var(--cream)",
+                }}
+              >
+                <div
+                  className="font-serif"
+                  style={{ fontSize: 34, lineHeight: 1, color: "var(--brand)" }}
+                >
+                  1–2 дня
+                </div>
+                <div className="text-muted-foreground" style={{ fontSize: 13, lineHeight: 1.5 }}>
+                  <strong style={{ color: "var(--foreground)" }}>
+                    Доставка по Санкт-Петербургу и Новокузнецку
+                  </strong>
+                  <br />
+                  По России отправляем СДЭК и Почтой России в срок от 3 до 7 дней.
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CategoryTile({ cell }: { cell: (typeof CAT_CELLS)[number] }) {
   const isTop = cell.titlePos === "top";
   // Gradient direction depends on text position so the dark wash is
   // always behind the text (top-anchored vs bottom-anchored).
@@ -1275,10 +2043,7 @@ function CategoryTile({
         loading="lazy"
         className="absolute inset-0 w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700"
       />
-      <div
-        className="absolute inset-0"
-        style={{ background: gradient }}
-      />
+      <div className="absolute inset-0" style={{ background: gradient }} />
       <div
         className="absolute"
         style={{
@@ -1411,11 +2176,7 @@ function MainV2PromoBlock() {
                 </span>
               </div>
               {p.image ? (
-                <img
-                  src={p.image}
-                  alt=""
-                  className="w-16 h-16 object-cover rounded-xl shrink-0"
-                />
+                <img src={p.image} alt="" className="w-16 h-16 object-cover rounded-xl shrink-0" />
               ) : null}
             </a>
           ))}
