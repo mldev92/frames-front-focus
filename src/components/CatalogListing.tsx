@@ -188,16 +188,52 @@ const SHAPE_DEFS: ShapeDef[] = [
 const FRAME_SHAPE_DEFS: ShapeDef[] = [
   { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp" },
   { key: "Квадратные", label: "Квадратные", icon: "square", img: "/square.webp" },
-  { key: "Трапеция", label: "Трапеция", icon: "trapezoid", matches: ["Трапеция", "Вэйфэрер"] },
+  {
+    key: "Трапеция",
+    label: "Трапеция",
+    icon: "trapezoid",
+    img: "/trapec_shape.webp",
+    matches: ["Трапеция", "Вэйфэрер"],
+  },
   { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp" },
   { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval.webp", matches: ["Овальные", "Панто"] },
-  { key: "Клабмастер", label: "Клабмастер", icon: "browline", matches: ["Клабмастер", "Броулайн", "Броулайнеры"] },
+  {
+    key: "Клабмастер",
+    label: "Клабмастер",
+    icon: "browline",
+    img: "/clubman_shape.webp",
+    matches: ["Клабмастер", "Броулайн", "Броулайнеры"],
+  },
   { key: "Авиатор", label: "Авиатор", icon: "aviator", img: "/aviator.webp", matches: ["Авиатор", "Авиаторы"] },
   { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric.webp", matches: ["Геометрические", "Гексагональные"] },
-  { key: "Маска", label: "Маска", icon: "mask", matches: ["Маска", "Монолинза", "Горнолыжные маски"] },
-  { key: "Спорт", label: "Спорт", icon: "sport", matches: ["Спорт", "Спортивные"] },
-  { key: "Бабочка", label: "Бабочка", icon: "butterfly", matches: ["Бабочка", "Кошачий глаз"] },
-  { key: "Лектор", label: "Лектор", icon: "lector", matches: ["Лектор", "Оверсайз"] },
+  {
+    key: "Маска",
+    label: "Маска",
+    icon: "mask",
+    img: "/mask_shape.webp",
+    matches: ["Маска", "Монолинза", "Горнолыжные маски"],
+  },
+  {
+    key: "Спорт",
+    label: "Спорт",
+    icon: "sport",
+    img: "/sport_shape.webp",
+    matches: ["Спорт", "Спортивные"],
+  },
+  {
+    key: "Бабочка",
+    label: "Бабочка",
+    icon: "butterfly",
+    img: "/buterfly_shape.webp",
+    matches: ["Бабочка", "Кошачий глаз"],
+  },
+  {
+    key: "Лектор",
+    label: "Лектор",
+    icon: "lector",
+    img: "/lector_shape_.webp",
+    matches: ["Лектор", "Оверсайз"],
+  },
 ];
 
 const FRAME_MATERIAL_DEFS = [
