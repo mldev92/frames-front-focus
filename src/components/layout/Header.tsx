@@ -440,6 +440,7 @@ const NAV: { label: string; href: string; mega?: Mega }[] = [
   { label: "Контактные линзы", href: "/catalog_s/kontaktnye_linzy_/", mega: MEGA_LENSES_CONTACT },
   { label: "Линзы для очков", href: "/catalog_s/linzy_dlya_ochkov/", mega: MEGA_LENSES_GLASSES },
   { label: "Аксессуары", href: "/catalog_s/soputstvuyushchie_tovary/" },
+  { label: "Услуги", href: "/#services" },
   { label: "Салоны", href: "/contacts/" },
 ];
 

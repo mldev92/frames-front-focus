@@ -759,7 +759,11 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           6. SERVICES — 4 photo cards
          ───────────────────────────────────────────────────────────── */}
-      <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20" style={{ background: "var(--background)" }}>
+      <section
+        id="services"
+        className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20"
+        style={{ background: "var(--background)" }}
+      >
         <Reveal className="text-center max-w-2xl mx-auto mb-12">
           <div
             className="text-[11px] uppercase tracking-[0.2em] mb-3"
