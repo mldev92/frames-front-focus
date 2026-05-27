@@ -173,7 +173,7 @@ const SERVICE_STRIP_ITEMS = [
   {
     eyebrow: "05 — ЛИНЗЫ",
     title: "Контактные линзы",
-    text: "Подбор и доставка по России",
+    text: "Подбор и подписка с доставкой",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <ellipse
@@ -215,13 +215,20 @@ const CONTACT_LENS_HOMEPAGE_PRODUCTS = CONTACT_LENS_HOMEPAGE_SLUGS.map((slug) =>
   products.find((product) => product.slug === slug),
 ).filter((product): product is Product => Boolean(product));
 
-const CONTACT_LENS_SERVICE_POINTS = [
-  "Подберем режим ношения и подходящий бренд вместе с врачом или оптометристом.",
-  "Поможем с линзами для сухих глаз, астигматизма и детского контроля миопии.",
-  "Подскажем растворы, капли и средства ухода под ваш ежедневный ритм.",
-  "Оформим доставку по Санкт-Петербургу, Новокузнецку и по всей России.",
-  "В салоне можно пройти подбор МКЛ и получить понятные рекомендации по уходу.",
+const SUBSCRIPTION_POINTS = [
+  "Оформите один раз — пополнение приходит автоматически",
+  "Подписка всегда дешевле обычной цены",
+  "Количество и интервал — под ваш ритм",
+  "Бесплатная доставка на дом",
+  "Можно отменить или поставить на паузу в любой момент",
 ] as const;
+
+const LENS_PROMO_PILL_BY_SLUG: Record<string, string> = {
+  "acuvue-oasys-1day": "для сухих глаз",
+  biofinity: "комфорт 14ч",
+  "misight-1day-90": "контроль миопии",
+  "air-optix-toric": "для астигматизма",
+};
 
 // Asymmetric category grid cells. Layout (desktop):
 //   ┌────────────┬───────────────────────┐
@@ -627,9 +634,9 @@ function MainV2Page() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. FAMILY BANNER — category-led full-bleed banner
+          2. BUY TOGETHER & SAVE — full-bleed banner, family promo
          ───────────────────────────────────────────────────────────── */}
-      <MainV2FamilyBanner />
+      <MainV2BuyTogetherBanner />
 
       {/* ─────────────────────────────────────────────────────────────
           3. CONTACT LENS CAROUSEL — real products from catalog data
@@ -643,9 +650,9 @@ function MainV2Page() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          4. CONTACT LENS SERVICE — lead-gen support block
+          4. SUBSCRIPTION — Подписка на линзы и средства ухода
          ───────────────────────────────────────────────────────────── */}
-      <MainV2ContactLensServiceBlock onOpenAppointment={() => setAptOpen(true)} />
+      <MainV2SubscriptionBlock />
 
       {/* ─────────────────────────────────────────────────────────────
           2. CATEGORIES — Подберите свои идеальные очки (1:1 with screenshot)
@@ -1180,11 +1187,11 @@ function MainV2Page() {
   );
 }
 
-function MainV2FamilyBanner() {
+function MainV2BuyTogetherBanner() {
   return (
     <section className="relative w-full overflow-hidden" style={{ background: "var(--cream)" }}>
       <style>{`
-        .o100-family-banner-wash{
+        .o100-bts-wash{
           background:linear-gradient(
             90deg,
             rgba(246, 240, 233, 0.98) 0%,
@@ -1194,7 +1201,7 @@ function MainV2FamilyBanner() {
           );
         }
         @media (max-width:767px){
-          .o100-family-banner-wash{
+          .o100-bts-wash{
             background:linear-gradient(
               180deg,
               rgba(246, 240, 233, 0.9) 0%,
@@ -1204,19 +1211,33 @@ function MainV2FamilyBanner() {
             );
           }
         }
-        .o100-family-btn{
+        .o100-bts-btn{
           display:inline-flex;
           align-items:center;
           gap:8px;
           border-radius:999px;
-          padding:14px 24px;
+          padding:14px 26px;
           font-size:14px;
           font-weight:600;
           transition:transform 200ms ease, opacity 200ms ease, background-color 200ms ease, color 200ms ease, border-color 200ms ease;
           border:1px solid transparent;
         }
-        .o100-family-btn:hover{
+        .o100-bts-btn:hover{
           transform:translateY(-1px);
+        }
+        .o100-bts-btn[data-variant="primary"]:hover{
+          opacity:0.9;
+        }
+        .o100-bts-btn[data-variant="secondary"]:hover{
+          background:var(--foreground);
+          color:var(--background);
+        }
+        .o100-bts-quiz-link{
+          border-bottom:1px solid transparent;
+          transition:border-color 200ms ease;
+        }
+        .o100-bts-quiz-link:hover{
+          border-bottom-color:var(--brand);
         }
       `}</style>
       <div
@@ -1228,7 +1249,7 @@ function MainV2FamilyBanner() {
           backgroundSize: "cover",
         }}
       />
-      <div aria-hidden className="o100-family-banner-wash absolute inset-0" />
+      <div aria-hidden className="o100-bts-wash absolute inset-0" />
       <div
         className="relative mx-auto max-w-7xl px-4 lg:px-8"
         style={{ paddingTop: "clamp(72px, 9vw, 108px)", paddingBottom: "clamp(72px, 9vw, 112px)" }}
@@ -1239,61 +1260,83 @@ function MainV2FamilyBanner() {
               className="text-[11px] uppercase tracking-[0.22em] mb-3"
               style={{ color: "var(--brand)" }}
             >
-              Для всей семьи
+              Семейная выгода
             </div>
             <h2
               className="font-serif text-foreground"
               style={{
-                fontSize: "clamp(34px, 4.6vw, 56px)",
+                fontSize: "clamp(36px, 4.6vw, 56px)",
                 lineHeight: 1.04,
                 letterSpacing: "-0.02em",
                 marginBottom: 18,
               }}
             >
-              Оправы и солнцезащитные очки для всей семьи
+              Покупайте вместе{" "}
+              <em
+                style={{
+                  fontStyle: "italic",
+                  fontWeight: 400,
+                  color: "var(--brand)",
+                }}
+              >
+                и&nbsp;экономьте
+              </em>
             </h2>
             <p
               className="text-muted-foreground"
               style={{
                 fontSize: 17,
                 lineHeight: 1.55,
-                maxWidth: 460,
-                marginBottom: 26,
+                maxWidth: 440,
+                marginBottom: 22,
               }}
             >
-              Подберем повседневные оправы, детские модели и солнцезащитные очки, которые удобно
-              носить каждый день и легко сочетать с вашим ритмом жизни.
+              Купите одну пару — и&nbsp;получите −20% на&nbsp;каждую следующую. Включая детские
+              оправы и&nbsp;солнцезащитные очки.
+            </p>
+            <p
+              className="text-muted-foreground"
+              style={{
+                fontSize: 12,
+                letterSpacing: "0.02em",
+                marginBottom: 28,
+              }}
+            >
+              Действуют ограничения. Подробности у&nbsp;консультанта в&nbsp;салоне.
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <a
                 href={catalogHref("opravy")}
-                className="o100-family-btn"
+                className="o100-bts-btn"
+                data-variant="primary"
                 style={{ background: "var(--brand)", color: "#fff" }}
               >
-                Выбрать оправы
+                Купить очки
               </a>
               <a
                 href={catalogHref("solntsezashchitnye")}
-                className="o100-family-btn"
+                className="o100-bts-btn"
+                data-variant="secondary"
                 style={{
                   color: "var(--foreground)",
                   borderColor: "var(--foreground)",
                   background: "transparent",
                 }}
               >
-                Солнцезащитные очки
+                Солнцезащитные
               </a>
             </div>
             <div
               className="flex flex-wrap items-center gap-2"
               style={{ marginTop: 22, fontSize: 13.5, color: "var(--foreground)" }}
             >
-              <span>Нужна помощь с первой парой?</span>
+              <span>Не знаете, с&nbsp;чего начать?</span>
               <a
                 href={serviceHref("podbor-ochkov")}
+                className="o100-bts-quiz-link"
                 style={{ color: "var(--brand)", fontWeight: 600 }}
               >
-                Запишитесь на подбор очков <span aria-hidden>→</span>
+                Пройдите подбор за&nbsp;2&nbsp;минуты <span aria-hidden>→</span>
               </a>
             </div>
           </div>
@@ -1565,6 +1608,20 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
           transform:scale(1.14);
           background:rgba(255,255,255,0.95)!important;
         }
+        .o100-lens-all-link{
+          border-bottom:1px solid transparent;
+          transition:border-color 200ms ease;
+        }
+        .o100-lens-all-link:hover{
+          border-bottom-color:var(--brand);
+        }
+        .o100-lens-card-shell{
+          transition:transform 220ms ease, box-shadow 220ms ease;
+        }
+        .o100-lens-card-shell:hover{
+          transform:translateY(-2px);
+          box-shadow:0 4px 10px rgba(0,0,0,0.06), 0 18px 40px rgba(0,0,0,0.09)!important;
+        }
       `}</style>
       <Reveal className="flex items-end justify-between gap-4 mb-8 lg:mb-10">
         <div>
@@ -1572,7 +1629,7 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
             className="text-[11px] uppercase tracking-[0.22em] mb-3"
             style={{ color: "var(--brand)" }}
           >
-            Контактные линзы
+            Акция · сентябрь
           </div>
           <h2
             className="font-serif text-foreground"
@@ -1582,13 +1639,22 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
               letterSpacing: "-0.01em",
             }}
           >
-            Популярные контактные линзы
+            <span
+              style={{
+                color: "var(--brand)",
+                fontStyle: "italic",
+                fontWeight: 500,
+              }}
+            >
+              −10%
+            </span>{" "}
+            на&nbsp;контактные линзы
           </h2>
         </div>
         <div className="flex items-center gap-4">
           <a
             href={catalogHref("kontaktnye-linzy")}
-            className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium"
+            className="o100-lens-all-link hidden sm:inline-flex items-center gap-1.5 text-sm font-medium"
             style={{ color: "var(--brand)" }}
           >
             Все линзы <ArrowRight className="h-4 w-4" />
@@ -1667,16 +1733,19 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
     product.brand && !product.name.toLowerCase().includes(product.brand.toLowerCase())
       ? `${product.brand} ${product.name}`
       : product.name;
-  const pillLabel =
+  const fallbackPill =
     product.lensType === "Для контроля миопии"
       ? "Контроль миопии"
       : product.lensType === "Торические"
         ? "Для астигматизма"
         : (product.wearMode ?? "Контактные линзы");
+  const pillLabel = LENS_PROMO_PILL_BY_SLUG[product.slug] ?? fallbackPill;
+  const strike = product.oldPrice ?? product.price;
+  const discounted = Math.round(strike * 0.9);
 
   return (
     <div
-      className="group/card flex h-full flex-col overflow-hidden"
+      className="o100-lens-card-shell group/card flex h-full flex-col overflow-hidden"
       style={{
         background: "#fff",
         borderRadius: 16,
@@ -1793,46 +1862,72 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
         </div>
         <div className="flex items-baseline gap-2.5" style={{ marginTop: 8 }}>
           <span className="text-foreground" style={{ fontSize: 18, fontWeight: 600 }}>
-            {formatPrice(product.price)}
+            {formatPrice(discounted)}
           </span>
-          {product.oldPrice && (
-            <span
-              className="text-muted-foreground"
-              style={{ fontSize: 13, textDecoration: "line-through" }}
-            >
-              {formatPrice(product.oldPrice)}
-            </span>
-          )}
+          <span
+            className="text-muted-foreground"
+            style={{ fontSize: 13, textDecoration: "line-through" }}
+          >
+            {formatPrice(strike)}
+          </span>
+        </div>
+        <div className="flex items-center gap-2" style={{ marginTop: 10 }}>
+          <span
+            style={{
+              background: "var(--brand)",
+              color: "#fff",
+              fontSize: 11,
+              fontWeight: 700,
+              padding: "4px 9px",
+              borderRadius: 4,
+              letterSpacing: "0.04em",
+            }}
+          >
+            −10%
+          </span>
+          <span
+            style={{
+              color: "var(--brand)",
+              fontSize: 11,
+              fontWeight: 600,
+              padding: "4px 9px",
+              border: "1px solid var(--brand)",
+              borderRadius: 4,
+              letterSpacing: "0.04em",
+            }}
+          >
+            Sale
+          </span>
         </div>
       </div>
     </div>
   );
 }
 
-function MainV2ContactLensServiceBlock({ onOpenAppointment }: { onOpenAppointment: () => void }) {
+function MainV2SubscriptionBlock() {
   return (
     <section style={{ background: "var(--background)", padding: "clamp(56px, 7vw, 96px) 0" }}>
       <style>{`
-        .o100-lens-service-grid{
+        .o100-sub-grid{
           display:grid;
           grid-template-columns:1fr;
           gap:28px;
           align-items:stretch;
         }
         @media (min-width:1024px){
-          .o100-lens-service-grid{
+          .o100-sub-grid{
             grid-template-columns:1.05fr 1fr;
             gap:48px;
           }
         }
-        .o100-lens-service-photo{
+        .o100-sub-photo{
           position:relative;
           overflow:hidden;
           border-radius:20px;
           min-height:420px;
           background:var(--cream);
         }
-        .o100-lens-service-photo img{
+        .o100-sub-photo img{
           position:absolute;
           inset:0;
           width:100%;
@@ -1840,30 +1935,52 @@ function MainV2ContactLensServiceBlock({ onOpenAppointment }: { onOpenAppointmen
           object-fit:cover;
           transition:transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .o100-lens-service-photo:hover img{
+        .o100-sub-photo:hover img{
           transform:scale(1.03);
         }
-        .o100-lens-service-btn{
+        .o100-sub-btn{
           display:inline-flex;
           align-items:center;
           justify-content:center;
           gap:8px;
           min-height:48px;
-          padding:0 24px;
+          padding:0 26px;
           border-radius:999px;
           font-size:14px;
           font-weight:600;
           transition:transform 200ms ease, opacity 200ms ease, background-color 200ms ease, color 200ms ease, border-color 200ms ease;
           border:1px solid transparent;
         }
-        .o100-lens-service-btn:hover{
+        .o100-sub-btn:hover{
           transform:translateY(-1px);
+        }
+        .o100-sub-btn[data-variant="primary"]:hover{
+          opacity:0.9;
+        }
+        .o100-sub-btn[data-variant="secondary"]:hover{
+          background:var(--foreground);
+          color:var(--background);
+        }
+        .o100-sub-saveline{
+          font-family:var(--font-serif);
+          font-size:22px;
+          line-height:1.2;
+          color:var(--brand);
+          font-style:italic;
+          font-weight:500;
+          margin-bottom:22px;
+        }
+        .o100-sub-savings{
+          transition:border-color 200ms ease, background-color 200ms ease;
+        }
+        .o100-sub-savings:hover{
+          border-color:var(--brand);
         }
       `}</style>
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
-        <div className="o100-lens-service-grid">
+        <div className="o100-sub-grid">
           <Reveal>
-            <div className="o100-lens-service-photo">
+            <div className="o100-sub-photo">
               <img src="/category_cont_lenses_v3.png" alt="" />
               <div
                 aria-hidden
@@ -1880,7 +1997,7 @@ function MainV2ContactLensServiceBlock({ onOpenAppointment }: { onOpenAppointmen
                   color: "#fff",
                 }}
               >
-                Подбор МКЛ
+                Подписка
               </span>
               <div
                 className="absolute bottom-8 left-8 right-8"
@@ -1891,17 +2008,19 @@ function MainV2ContactLensServiceBlock({ onOpenAppointment }: { onOpenAppointmen
                     fontSize: 11,
                     letterSpacing: "0.2em",
                     textTransform: "uppercase",
-                    opacity: 0.76,
+                    opacity: 0.78,
                     marginBottom: 8,
                   }}
                 >
-                  Контактные линзы
+                  Автоматическое пополнение
                 </div>
                 <h3
                   className="font-serif"
                   style={{ fontSize: "clamp(24px, 2.4vw, 32px)", lineHeight: 1.15 }}
                 >
-                  Подберем линзы и средства ухода под ваш ритм жизни
+                  Линзы приходят сами,
+                  <br />
+                  пока вы&nbsp;живёте
                 </h3>
               </div>
             </div>
@@ -1924,20 +2043,9 @@ function MainV2ContactLensServiceBlock({ onOpenAppointment }: { onOpenAppointmen
                   marginBottom: 14,
                 }}
               >
-                Подбор контактных линз и средства ухода
+                Подписка на&nbsp;линзы и&nbsp;средства ухода
               </h2>
-              <p
-                className="text-muted-foreground"
-                style={{
-                  fontSize: 16,
-                  lineHeight: 1.6,
-                  maxWidth: 520,
-                  marginBottom: 22,
-                }}
-              >
-                Поможем выбрать комфортный режим ношения, объясним отличия брендов и подскажем
-                средства ухода, которые удобно встроить в повседневный график.
-              </p>
+              <div className="o100-sub-saveline">Экономьте с&nbsp;первой доставки</div>
 
               <ul
                 style={{
@@ -1949,7 +2057,7 @@ function MainV2ContactLensServiceBlock({ onOpenAppointment }: { onOpenAppointmen
                   gap: 14,
                 }}
               >
-                {CONTACT_LENS_SERVICE_POINTS.map((point) => (
+                {SUBSCRIPTION_POINTS.map((point) => (
                   <li key={point} className="flex items-start gap-3">
                     <span
                       className="inline-flex items-center justify-center rounded-full"
@@ -1974,27 +2082,28 @@ function MainV2ContactLensServiceBlock({ onOpenAppointment }: { onOpenAppointmen
               <div className="flex flex-wrap gap-3" style={{ marginTop: 28 }}>
                 <a
                   href={catalogHref("kontaktnye-linzy")}
-                  className="o100-lens-service-btn"
+                  className="o100-sub-btn"
+                  data-variant="primary"
                   style={{ background: "var(--brand)", color: "#fff" }}
                 >
-                  Все контактные линзы
+                  Все товары по&nbsp;подписке
                 </a>
-                <button
-                  type="button"
-                  onClick={onOpenAppointment}
-                  className="o100-lens-service-btn"
+                <a
+                  href="#"
+                  className="o100-sub-btn"
+                  data-variant="secondary"
                   style={{
                     background: "transparent",
                     color: "var(--foreground)",
                     borderColor: "var(--foreground)",
                   }}
                 >
-                  Записаться на подбор МКЛ
-                </button>
+                  Как это работает
+                </a>
               </div>
 
               <div
-                className="flex items-center gap-4"
+                className="o100-sub-savings flex items-center gap-4"
                 style={{
                   marginTop: 28,
                   padding: "16px 18px",
@@ -2005,16 +2114,15 @@ function MainV2ContactLensServiceBlock({ onOpenAppointment }: { onOpenAppointmen
               >
                 <div
                   className="font-serif"
-                  style={{ fontSize: 34, lineHeight: 1, color: "var(--brand)" }}
+                  style={{ fontSize: 36, lineHeight: 1, color: "var(--brand)", fontWeight: 600 }}
                 >
-                  1–2 дня
+                  −15%
                 </div>
                 <div className="text-muted-foreground" style={{ fontSize: 13, lineHeight: 1.5 }}>
-                  <strong style={{ color: "var(--foreground)" }}>
-                    Доставка по Санкт-Петербургу и Новокузнецку
-                  </strong>
+                  <strong style={{ color: "var(--foreground)" }}>Средняя экономия</strong>
+                  &nbsp;по подписке против разовых покупок за&nbsp;год.
                   <br />
-                  По России отправляем СДЭК и Почтой России в срок от 3 до 7 дней.
+                  Точная скидка зависит от&nbsp;бренда и&nbsp;режима ношения.
                 </div>
               </div>
             </div>
