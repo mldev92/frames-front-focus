@@ -635,27 +635,6 @@ function MainV2Page() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          2. BUY TOGETHER & SAVE — full-bleed banner, family promo
-         ───────────────────────────────────────────────────────────── */}
-      <MainV2BuyTogetherBanner />
-
-      {/* ─────────────────────────────────────────────────────────────
-          3. CONTACT LENS CAROUSEL — real products from catalog data
-         ───────────────────────────────────────────────────────────── */}
-      {contactLensProducts.length > 0 && (
-        <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
-          <div className="mx-auto max-w-7xl px-4 lg:px-8">
-            <MainV2ContactLensCarousel products={contactLensProducts} />
-          </div>
-        </section>
-      )}
-
-      {/* ─────────────────────────────────────────────────────────────
-          4. SUBSCRIPTION — Подписка на линзы и средства ухода
-         ───────────────────────────────────────────────────────────── */}
-      <MainV2SubscriptionBlock />
-
-      {/* ─────────────────────────────────────────────────────────────
           2. CATEGORIES — Подберите свои идеальные очки (1:1 with screenshot)
          ───────────────────────────────────────────────────────────── */}
       <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
@@ -763,6 +742,22 @@ function MainV2Page() {
           <MainV2HitsCarousel products={hits} />
         </div>
       </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          4. CONTACT LENS CAROUSEL — real products from catalog data
+         ───────────────────────────────────────────────────────────── */}
+      {contactLensProducts.length > 0 && (
+        <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
+          <div className="mx-auto max-w-7xl px-4 lg:px-8">
+            <MainV2ContactLensCarousel products={contactLensProducts} />
+          </div>
+        </section>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          5. SUBSCRIPTION — Подписка на линзы и средства ухода
+         ───────────────────────────────────────────────────────────── */}
+      <MainV2SubscriptionBlock />
 
       {/* ─────────────────────────────────────────────────────────────
           4. WHY TRUST US — Почему нам доверяют (2-col: heading | 4 reasons)
@@ -1004,6 +999,11 @@ function MainV2Page() {
           })}
         </div>
       </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          6b. BUY TOGETHER & SAVE — full-bleed banner, family promo
+         ───────────────────────────────────────────────────────────── */}
+      <MainV2BuyTogetherBanner />
 
       {/* ─────────────────────────────────────────────────────────────
           7. SALONS — Приходите к нам
