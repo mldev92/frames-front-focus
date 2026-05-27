@@ -352,9 +352,9 @@ const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
       key: "construction",
       title: "Конструкция",
       options: [
-        "Безободковая (Втулки/Винты)",
-        "Ободковая (Ободок)",
-        "Полуободковая (Полуободок/Леска)",
+        "Безободковая",
+        "Ободковая",
+        "Полуободковая",
       ],
     },
     {
@@ -392,9 +392,9 @@ const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
       key: "construction",
       title: "Конструкция",
       options: [
-        "Безободковая (Втулки/Винты)",
-        "Ободковая (Ободок)",
-        "Полуободковая (Полуободок/Леска)",
+        "Безободковая",
+        "Ободковая",
+        "Полуободковая",
       ],
     },
     {
@@ -1537,12 +1537,13 @@ export function CatalogListing({
               {block.options.map((opt) => {
                 const checked = extraChecks[block.key]?.has(opt) ?? false;
                 const isConstruction = block.key === "construction";
+                const constructionLower = opt.toLowerCase();
                 const constructionIcon = isConstruction
-                  ? opt.toLowerCase().includes("полуобод")
+                  ? constructionLower.includes("безобод")
+                    ? "/bezobodkovaea.png"
+                    : constructionLower.includes("полуобод")
                     ? "/poluobodkovaea.png"
-                    : opt.toLowerCase().includes("втулки")
-                      ? "/bezobodkovaea.png"
-                      : opt.toLowerCase().includes("обод")
+                    : constructionLower.includes("обод")
                         ? "/obodkovaea.png"
                         : null
                   : null;

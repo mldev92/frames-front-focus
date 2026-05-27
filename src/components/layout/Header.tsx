@@ -199,9 +199,9 @@ function shapeMega(cat: string): Mega {
     allHref: base,
     shapeItems: [
       {
-        label: "Авиатор",
-        href: q("shape", "Авиатор"),
-        icon: <img src="/aviator.webp" alt="" className="h-4 w-auto object-contain" />,
+        label: "Прямоугольные",
+        href: q("shape", "Прямоугольные"),
+        icon: <img src="/rectangle.webp" alt="" className="h-4 w-auto object-contain" />,
       },
       {
         label: "Квадратные",
@@ -209,9 +209,9 @@ function shapeMega(cat: string): Mega {
         icon: <img src="/square.webp" alt="" className="h-4 w-auto object-contain" />,
       },
       {
-        label: "Кошачий глаз",
-        href: q("shape", "Кошачий глаз"),
-        icon: <img src="/cat-eye.webp" alt="" className="h-4 w-auto object-contain" />,
+        label: "Трапеция",
+        href: q("shape", "Трапеция"),
+        icon: <img src="/trapec_shape.webp" alt="" className="h-4 w-auto object-contain" />,
       },
       {
         label: "Круглые",
@@ -224,9 +224,39 @@ function shapeMega(cat: string): Mega {
         icon: <img src="/Anselm - Oval.webp" alt="" className="h-4 w-auto object-contain" />,
       },
       {
-        label: "Прямоугольные",
-        href: q("shape", "Прямоугольные"),
-        icon: <img src="/rectangle.webp" alt="" className="h-4 w-auto object-contain" />,
+        label: "Клабмастер",
+        href: q("shape", "Клабмастер"),
+        icon: <img src="/clubman_shape.webp" alt="" className="h-4 w-auto object-contain" />,
+      },
+      {
+        label: "Авиатор",
+        href: q("shape", "Авиатор"),
+        icon: <img src="/aviator.webp" alt="" className="h-4 w-auto object-contain" />,
+      },
+      {
+        label: "Геометрические",
+        href: q("shape", "Геометрические"),
+        icon: <img src="/Geometric.webp" alt="" className="h-4 w-auto object-contain" />,
+      },
+      {
+        label: "Маска",
+        href: q("shape", "Маска"),
+        icon: <img src="/mask_shape.webp" alt="" className="h-4 w-auto object-contain" />,
+      },
+      {
+        label: "Спорт",
+        href: q("shape", "Спорт"),
+        icon: <img src="/sport_shape.webp" alt="" className="h-4 w-auto object-contain" />,
+      },
+      {
+        label: "Бабочка",
+        href: q("shape", "Бабочка"),
+        icon: <img src="/buterfly_shape.webp" alt="" className="h-4 w-auto object-contain" />,
+      },
+      {
+        label: "Лектор",
+        href: q("shape", "Лектор"),
+        icon: <img src="/lector_shape_.webp" alt="" className="h-4 w-auto object-contain" />,
       },
     ],
     genderItems: [
@@ -241,9 +271,14 @@ function shapeMega(cat: string): Mega {
         icon: <GenderIcon kind="female" className="h-4 w-4" />,
       },
       {
-        label: "Детские",
-        href: q("gender", "Детские"),
+        label: "для мальчиков",
+        href: q("gender", "для мальчиков"),
         icon: <GenderIcon kind="boy" className="h-4 w-4" />,
+      },
+      {
+        label: "для девочек",
+        href: q("gender", "для девочек"),
+        icon: <GenderIcon kind="female" className="h-4 w-4" />,
       },
       {
         label: "Унисекс",
@@ -253,9 +288,19 @@ function shapeMega(cat: string): Mega {
     ],
     materialItems: [
       {
+        label: "Пластик",
+        href: q("material", "Пластик"),
+        icon: <Layers className="h-5 w-5 stroke-[1.7]" />,
+      },
+      {
         label: "Ацетат",
         href: q("material", "Ацетат"),
         icon: <Gem className="h-5 w-5 stroke-[1.7]" />,
+      },
+      {
+        label: "Нейлон",
+        href: q("material", "Нейлон"),
+        icon: <Link2 className="h-5 w-5 stroke-[1.7]" />,
       },
       {
         label: "Титан",
@@ -263,9 +308,19 @@ function shapeMega(cat: string): Mega {
         icon: <ShieldCheck className="h-5 w-5 stroke-[1.7]" />,
       },
       {
-        label: "Металл",
-        href: q("material", "Металл"),
+        label: "TR-90",
+        href: q("material", "TR-90"),
         icon: <Link2 className="h-5 w-5 stroke-[1.7]" />,
+      },
+      {
+        label: "Pebax",
+        href: q("material", "Pebax"),
+        icon: <Gem className="h-5 w-5 stroke-[1.7]" />,
+      },
+      {
+        label: "Комбинированный",
+        href: q("material", "Комбинированный"),
+        icon: <Grid2x2 className="h-5 w-5 stroke-[1.7]" />,
       },
     ],
     constructionItems: [
