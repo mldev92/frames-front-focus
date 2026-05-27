@@ -552,7 +552,7 @@ function MainV2Page() {
               gap:32px 24px;
             }
           }
-          @media (min-width:1280px){
+          @media (min-width:1024px){
             .o100-service-strip-grid{
               grid-template-columns:repeat(5, minmax(0, 1fr));
               gap:0;
@@ -564,7 +564,7 @@ function MainV2Page() {
             gap:16px;
             min-width:0;
           }
-          @media (min-width:1280px){
+          @media (min-width:1024px){
             .o100-service-strip-cell{
               padding:0 24px;
               border-left:1px solid color-mix(in oklab, var(--foreground) 10%, transparent);
@@ -601,9 +601,10 @@ function MainV2Page() {
           }
         `}</style>
         <div
-          className="mx-auto max-w-7xl"
+          className="mx-auto"
           style={{
-            padding: "clamp(28px, 4vw, 48px) clamp(24px, 5vw, 64px)",
+            maxWidth: "min(1536px, 96vw)",
+            padding: "clamp(28px, 4vw, 48px) clamp(20px, 3.5vw, 56px)",
           }}
         >
           <Reveal>
@@ -1189,27 +1190,79 @@ function MainV2Page() {
 
 function MainV2BuyTogetherBanner() {
   return (
-    <section className="relative w-full overflow-hidden" style={{ background: "var(--cream)" }}>
+    <section
+      className="relative w-full overflow-hidden"
+      style={{ background: "var(--cream)", minHeight: "clamp(440px, 56vw, 620px)" }}
+    >
       <style>{`
+        @keyframes _btsImgPulse {
+          0%, 100% { filter: brightness(0.96) contrast(1.00) saturate(1.00); transform: scale(1.00); }
+          50%      { filter: brightness(1.06) contrast(1.03) saturate(1.04); transform: scale(1.012); }
+        }
+        @keyframes _btsLight {
+          0%, 100% { opacity: 1.00; background-position:   0% 50%; }
+          50%      { opacity: 0.92; background-position: 100% 50%; }
+        }
+        @keyframes _btsSheen {
+          0%   { transform: translateX(-60%) skewX(-14deg); opacity: 0; }
+          15%  { opacity: 0.35; }
+          55%  { opacity: 0.35; }
+          100% { transform: translateX(260%) skewX(-14deg); opacity: 0; }
+        }
+        @keyframes _btsSun {
+          0%, 100% { opacity: 0.45; transform: translate(0,0) scale(1.00); }
+          50%      { opacity: 0.70; transform: translate(-12px, 10px) scale(1.06); }
+        }
+        .o100-bts-img{
+          animation:_btsImgPulse 6s ease-in-out infinite;
+          will-change:filter, transform;
+        }
         .o100-bts-wash{
           background:linear-gradient(
             90deg,
-            rgba(246, 240, 233, 0.98) 0%,
-            rgba(246, 240, 233, 0.94) 28%,
-            rgba(246, 240, 233, 0.64) 56%,
-            rgba(246, 240, 233, 0.12) 84%
+            rgba(246, 240, 233, 0.90) 0%,
+            rgba(246, 240, 233, 0.74) 28%,
+            rgba(246, 240, 233, 0.36) 52%,
+            rgba(246, 240, 233, 0.00) 74%
           );
+          background-size:220% 100%;
+          animation:_btsLight 8s ease-in-out infinite;
         }
         @media (max-width:767px){
           .o100-bts-wash{
             background:linear-gradient(
               180deg,
-              rgba(246, 240, 233, 0.9) 0%,
-              rgba(246, 240, 233, 0.78) 38%,
-              rgba(246, 240, 233, 0.32) 72%,
-              rgba(246, 240, 233, 0.10) 100%
+              rgba(246, 240, 233, 0.86) 0%,
+              rgba(246, 240, 233, 0.66) 38%,
+              rgba(246, 240, 233, 0.26) 72%,
+              rgba(246, 240, 233, 0.08) 100%
             );
           }
+        }
+        .o100-bts-sun{
+          position:absolute;
+          z-index:1;
+          top:6%;
+          right:6%;
+          width:460px;
+          height:460px;
+          border-radius:50%;
+          background:radial-gradient(circle, rgba(255,225,170,0.90) 0%, rgba(255,195,130,0.52) 35%, rgba(255,170,110,0) 72%);
+          mix-blend-mode:screen;
+          filter:blur(48px);
+          pointer-events:none;
+          animation:_btsSun 7s ease-in-out infinite;
+        }
+        .o100-bts-sheen{
+          position:absolute;
+          top:0;
+          bottom:0;
+          left:20%;
+          width:45%;
+          z-index:3;
+          background:linear-gradient(100deg, transparent 0%, rgba(255,240,210,0) 20%, rgba(255,240,210,0.55) 50%, rgba(255,240,210,0) 80%, transparent 100%);
+          pointer-events:none;
+          animation:_btsSheen 9s ease-in-out infinite;
         }
         .o100-bts-btn{
           display:inline-flex;
@@ -1217,6 +1270,7 @@ function MainV2BuyTogetherBanner() {
           gap:8px;
           border-radius:999px;
           padding:14px 26px;
+          font-family:var(--font-sans);
           font-size:14px;
           font-weight:600;
           transition:transform 200ms ease, opacity 200ms ease, background-color 200ms ease, color 200ms ease, border-color 200ms ease;
@@ -1225,12 +1279,21 @@ function MainV2BuyTogetherBanner() {
         .o100-bts-btn:hover{
           transform:translateY(-1px);
         }
-        .o100-bts-btn[data-variant="primary"]:hover{
+        .o100-bts-btn-primary{
+          background:var(--brand)!important;
+          color:#fff!important;
+        }
+        .o100-bts-btn-primary:hover{
           opacity:0.9;
         }
-        .o100-bts-btn[data-variant="secondary"]:hover{
-          background:var(--foreground);
-          color:var(--background);
+        .o100-bts-btn-secondary{
+          background:transparent!important;
+          color:var(--foreground)!important;
+          border-color:var(--foreground)!important;
+        }
+        .o100-bts-btn-secondary:hover{
+          background:var(--foreground)!important;
+          color:var(--background)!important;
         }
         .o100-bts-quiz-link{
           border-bottom:1px solid transparent;
@@ -1242,33 +1305,41 @@ function MainV2BuyTogetherBanner() {
       `}</style>
       <div
         aria-hidden
-        className="absolute inset-0"
+        className="o100-bts-img absolute inset-0"
         style={{
           backgroundImage: "url(/main_banner_v2.png)",
           backgroundPosition: "right center",
           backgroundSize: "cover",
+          zIndex: 0,
         }}
       />
-      <div aria-hidden className="o100-bts-wash absolute inset-0" />
+      <div aria-hidden className="o100-bts-sun" />
+      <div aria-hidden className="o100-bts-wash absolute inset-0" style={{ zIndex: 2 }} />
+      <div aria-hidden className="o100-bts-sheen" />
       <div
         className="relative mx-auto max-w-7xl px-4 lg:px-8"
-        style={{ paddingTop: "clamp(72px, 9vw, 108px)", paddingBottom: "clamp(72px, 9vw, 112px)" }}
+        style={{
+          zIndex: 4,
+          paddingTop: "clamp(72px, 9vw, 108px)",
+          paddingBottom: "clamp(72px, 9vw, 112px)",
+        }}
       >
         <Reveal>
           <div style={{ maxWidth: 520 }}>
             <div
               className="text-[11px] uppercase tracking-[0.22em] mb-3"
-              style={{ color: "var(--brand)" }}
+              style={{ color: "var(--brand)", fontFamily: "var(--font-sans)", fontWeight: 600 }}
             >
               Семейная выгода
             </div>
             <h2
               className="font-serif text-foreground"
               style={{
-                fontSize: "clamp(36px, 4.6vw, 56px)",
+                fontSize: "clamp(36px, 4.4vw, 56px)",
                 lineHeight: 1.04,
                 letterSpacing: "-0.02em",
                 marginBottom: 18,
+                fontWeight: 500,
               }}
             >
               Покупайте вместе{" "}
@@ -1285,6 +1356,7 @@ function MainV2BuyTogetherBanner() {
             <p
               className="text-muted-foreground"
               style={{
+                fontFamily: "var(--font-sans)",
                 fontSize: 17,
                 lineHeight: 1.55,
                 maxWidth: 440,
@@ -1297,6 +1369,7 @@ function MainV2BuyTogetherBanner() {
             <p
               className="text-muted-foreground"
               style={{
+                fontFamily: "var(--font-sans)",
                 fontSize: 12,
                 letterSpacing: "0.02em",
                 marginBottom: 28,
@@ -1305,30 +1378,24 @@ function MainV2BuyTogetherBanner() {
               Действуют ограничения. Подробности у&nbsp;консультанта в&nbsp;салоне.
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <a
-                href={catalogHref("opravy")}
-                className="o100-bts-btn"
-                data-variant="primary"
-                style={{ background: "var(--brand)", color: "#fff" }}
-              >
+              <a href={catalogHref("opravy")} className="o100-bts-btn o100-bts-btn-primary">
                 Купить очки
               </a>
               <a
                 href={catalogHref("solntsezashchitnye")}
-                className="o100-bts-btn"
-                data-variant="secondary"
-                style={{
-                  color: "var(--foreground)",
-                  borderColor: "var(--foreground)",
-                  background: "transparent",
-                }}
+                className="o100-bts-btn o100-bts-btn-secondary"
               >
                 Солнцезащитные
               </a>
             </div>
             <div
               className="flex flex-wrap items-center gap-2"
-              style={{ marginTop: 22, fontSize: 13.5, color: "var(--foreground)" }}
+              style={{
+                marginTop: 22,
+                fontFamily: "var(--font-sans)",
+                fontSize: 13.5,
+                color: "var(--foreground)",
+              }}
             >
               <span>Не знаете, с&nbsp;чего начать?</span>
               <a
@@ -1920,11 +1987,19 @@ function MainV2SubscriptionBlock() {
             gap:48px;
           }
         }
+        .o100-sub-grid > *{
+          display:flex;
+          min-height:0;
+        }
+        .o100-sub-grid > * > *{
+          flex:1 1 auto;
+          width:100%;
+        }
         .o100-sub-photo{
           position:relative;
           overflow:hidden;
           border-radius:20px;
-          min-height:420px;
+          min-height:460px;
           background:var(--cream);
         }
         .o100-sub-photo img{
@@ -1938,6 +2013,13 @@ function MainV2SubscriptionBlock() {
         .o100-sub-photo:hover img{
           transform:scale(1.03);
         }
+        .o100-sub-copy{
+          display:flex;
+          flex-direction:column;
+          justify-content:center;
+          padding:12px 0;
+          font-family:var(--font-sans);
+        }
         .o100-sub-btn{
           display:inline-flex;
           align-items:center;
@@ -1946,6 +2028,7 @@ function MainV2SubscriptionBlock() {
           min-height:48px;
           padding:0 26px;
           border-radius:999px;
+          font-family:var(--font-sans);
           font-size:14px;
           font-weight:600;
           transition:transform 200ms ease, opacity 200ms ease, background-color 200ms ease, color 200ms ease, border-color 200ms ease;
@@ -1954,12 +2037,21 @@ function MainV2SubscriptionBlock() {
         .o100-sub-btn:hover{
           transform:translateY(-1px);
         }
-        .o100-sub-btn[data-variant="primary"]:hover{
+        .o100-sub-btn-primary{
+          background:var(--brand)!important;
+          color:#fff!important;
+        }
+        .o100-sub-btn-primary:hover{
           opacity:0.9;
         }
-        .o100-sub-btn[data-variant="secondary"]:hover{
-          background:var(--foreground);
-          color:var(--background);
+        .o100-sub-btn-secondary{
+          background:transparent!important;
+          color:var(--foreground)!important;
+          border-color:var(--foreground)!important;
+        }
+        .o100-sub-btn-secondary:hover{
+          background:var(--foreground)!important;
+          color:var(--background)!important;
         }
         .o100-sub-saveline{
           font-family:var(--font-serif);
@@ -2027,20 +2119,21 @@ function MainV2SubscriptionBlock() {
           </Reveal>
 
           <Reveal delay={100}>
-            <div style={{ paddingTop: 10 }}>
+            <div className="o100-sub-copy">
               <div
                 className="text-[11px] uppercase tracking-[0.22em] mb-3"
-                style={{ color: "var(--brand)" }}
+                style={{ color: "var(--brand)", fontFamily: "var(--font-sans)", fontWeight: 600 }}
               >
                 Сервис
               </div>
               <h2
                 className="font-serif text-foreground"
                 style={{
-                  fontSize: "clamp(32px, 4vw, 52px)",
+                  fontSize: "clamp(34px, 4vw, 52px)",
                   lineHeight: 1.05,
                   letterSpacing: "-0.02em",
                   marginBottom: 14,
+                  fontWeight: 500,
                 }}
               >
                 Подписка на&nbsp;линзы и&nbsp;средства ухода
@@ -2072,7 +2165,10 @@ function MainV2SubscriptionBlock() {
                     >
                       <Check className="h-3.5 w-3.5" strokeWidth={2.3} />
                     </span>
-                    <span className="text-foreground" style={{ fontSize: 15, lineHeight: 1.55 }}>
+                    <span
+                      className="text-foreground"
+                      style={{ fontSize: 15, lineHeight: 1.55, fontFamily: "var(--font-sans)" }}
+                    >
                       {point}
                     </span>
                   </li>
@@ -2082,22 +2178,11 @@ function MainV2SubscriptionBlock() {
               <div className="flex flex-wrap gap-3" style={{ marginTop: 28 }}>
                 <a
                   href={catalogHref("kontaktnye-linzy")}
-                  className="o100-sub-btn"
-                  data-variant="primary"
-                  style={{ background: "var(--brand)", color: "#fff" }}
+                  className="o100-sub-btn o100-sub-btn-primary"
                 >
                   Все товары по&nbsp;подписке
                 </a>
-                <a
-                  href="#"
-                  className="o100-sub-btn"
-                  data-variant="secondary"
-                  style={{
-                    background: "transparent",
-                    color: "var(--foreground)",
-                    borderColor: "var(--foreground)",
-                  }}
-                >
+                <a href="#" className="o100-sub-btn o100-sub-btn-secondary">
                   Как это работает
                 </a>
               </div>
