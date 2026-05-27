@@ -211,7 +211,14 @@ function shapeMega(cat: string): Mega {
       {
         label: "Трапеция",
         href: q("shape", "Трапеция"),
-        icon: <img src="/trapec_shape.webp" alt="" className="h-4 w-auto object-contain" />,
+        icon: (
+          <img
+            src="/trapec_shape.webp"
+            alt=""
+            className="h-4 w-auto object-contain"
+            style={{ transform: "scale(1.3)", transformOrigin: "center" }}
+          />
+        ),
       },
       {
         label: "Круглые",
@@ -226,7 +233,14 @@ function shapeMega(cat: string): Mega {
       {
         label: "Клабмастер",
         href: q("shape", "Клабмастер"),
-        icon: <img src="/clubman_shape.webp" alt="" className="h-4 w-auto object-contain" />,
+        icon: (
+          <img
+            src="/clubman_shape.webp"
+            alt=""
+            className="h-4 w-auto object-contain"
+            style={{ transform: "scale(1.3)", transformOrigin: "center" }}
+          />
+        ),
       },
       {
         label: "Авиатор",
