@@ -744,17 +744,6 @@ function MainV2Page() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          4. CONTACT LENS CAROUSEL — real products from catalog data
-         ───────────────────────────────────────────────────────────── */}
-      {contactLensProducts.length > 0 && (
-        <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
-          <div className="mx-auto max-w-7xl px-4 lg:px-8">
-            <MainV2ContactLensCarousel products={contactLensProducts} />
-          </div>
-        </section>
-      )}
-
-      {/* ─────────────────────────────────────────────────────────────
           5. SUBSCRIPTION — Подписка на линзы и средства ухода
          ───────────────────────────────────────────────────────────── */}
       <MainV2SubscriptionBlock />
@@ -862,7 +851,88 @@ function MainV2Page() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
-          5. PAIRED BANNERS — child myopia + virtual try-on promo
+          6. SERVICES — 4 photo cards
+         ───────────────────────────────────────────────────────────── */}
+      <section
+        id="services"
+        className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20"
+        style={{ background: "var(--background)" }}
+      >
+        <Reveal className="text-center max-w-2xl mx-auto mb-12">
+          <div
+            className="text-[11px] uppercase tracking-[0.2em] mb-3"
+            style={{ color: "var(--brand)" }}
+          >
+            Услуги клиники
+          </div>
+          <h2 className="font-serif text-3xl lg:text-4xl">
+            Комплексные услуги по подбору очков и линз
+          </h2>
+        </Reveal>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {SERVICE_LIST.map((s, i) => {
+            const img = SERVICE_IMAGES[i];
+            const inner = (
+              <>
+                <div className="aspect-[4/3] overflow-hidden bg-cream">
+                  <img
+                    src={img}
+                    alt={s.title}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                </div>
+                <div className="p-5">
+                  <div className="font-serif text-lg">{s.title}</div>
+                  <div className="o100-podrobnee mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 transition-colors">
+                    Подробнее <ArrowRight className="h-3 w-3" />
+                  </div>
+                </div>
+              </>
+            );
+            const className =
+              "group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer";
+            if (s.slug === "priem-vracha") {
+              return (
+                <Reveal key={s.slug} delay={i * 80}>
+                  <button
+                    type="button"
+                    onClick={() => setAptOpen(true)}
+                    className={`${className} text-left w-full`}
+                  >
+                    {inner}
+                  </button>
+                </Reveal>
+              );
+            }
+            return (
+              <Reveal key={s.slug} delay={i * 80}>
+                <a href={serviceHref(s.slug)} className={className}>
+                  {inner}
+                </a>
+              </Reveal>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────
+          6a. CONTACT LENS CAROUSEL — real products from catalog data
+         ───────────────────────────────────────────────────────────── */}
+      {contactLensProducts.length > 0 && (
+        <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
+          <div className="mx-auto max-w-7xl px-4 lg:px-8">
+            <MainV2ContactLensCarousel products={contactLensProducts} />
+          </div>
+        </section>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          6b. BUY TOGETHER & SAVE — full-bleed banner, family promo
+         ───────────────────────────────────────────────────────────── */}
+      <MainV2BuyTogetherBanner />
+
+      {/* ─────────────────────────────────────────────────────────────
+          6c. PAIRED BANNERS — child myopia + virtual try-on promo
          ───────────────────────────────────────────────────────────── */}
       <section
         className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20"
@@ -934,76 +1004,6 @@ function MainV2Page() {
           </Reveal>
         </div>
       </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          6. SERVICES — 4 photo cards
-         ───────────────────────────────────────────────────────────── */}
-      <section
-        id="services"
-        className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20"
-        style={{ background: "var(--background)" }}
-      >
-        <Reveal className="text-center max-w-2xl mx-auto mb-12">
-          <div
-            className="text-[11px] uppercase tracking-[0.2em] mb-3"
-            style={{ color: "var(--brand)" }}
-          >
-            Услуги клиники
-          </div>
-          <h2 className="font-serif text-3xl lg:text-4xl">
-            Комплексные услуги по подбору очков и линз
-          </h2>
-        </Reveal>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {SERVICE_LIST.map((s, i) => {
-            const img = SERVICE_IMAGES[i];
-            const inner = (
-              <>
-                <div className="aspect-[4/3] overflow-hidden bg-cream">
-                  <img
-                    src={img}
-                    alt={s.title}
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                </div>
-                <div className="p-5">
-                  <div className="font-serif text-lg">{s.title}</div>
-                  <div className="o100-podrobnee mt-3 text-sm text-muted-foreground inline-flex items-center gap-1 transition-colors">
-                    Подробнее <ArrowRight className="h-3 w-3" />
-                  </div>
-                </div>
-              </>
-            );
-            const className =
-              "group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer";
-            if (s.slug === "priem-vracha") {
-              return (
-                <Reveal key={s.slug} delay={i * 80}>
-                  <button
-                    type="button"
-                    onClick={() => setAptOpen(true)}
-                    className={`${className} text-left w-full`}
-                  >
-                    {inner}
-                  </button>
-                </Reveal>
-              );
-            }
-            return (
-              <Reveal key={s.slug} delay={i * 80}>
-                <a href={serviceHref(s.slug)} className={className}>
-                  {inner}
-                </a>
-              </Reveal>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          6b. BUY TOGETHER & SAVE — full-bleed banner, family promo
-         ───────────────────────────────────────────────────────────── */}
-      <MainV2BuyTogetherBanner />
 
       {/* ─────────────────────────────────────────────────────────────
           7. SALONS — Приходите к нам
