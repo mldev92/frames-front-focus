@@ -165,7 +165,14 @@ const ShapeIcon = ({ d }: { d: string }) => (
   </svg>
 );
 
-type ShapeDef = { key: string; label: string; icon: string; img?: string; matches?: string[] };
+type ShapeDef = {
+  key: string;
+  label: string;
+  icon: string;
+  img?: string;
+  imgScale?: number;
+  matches?: string[];
+};
 
 const SHAPE_DEFS: ShapeDef[] = [
   { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp" },
@@ -193,6 +200,7 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     label: "Трапеция",
     icon: "trapezoid",
     img: "/trapec_shape.webp",
+    imgScale: 1.3,
     matches: ["Трапеция", "Вэйфэрер"],
   },
   { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp" },
@@ -202,6 +210,7 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     label: "Клабмастер",
     icon: "browline",
     img: "/clubman_shape.webp",
+    imgScale: 1.3,
     matches: ["Клабмастер", "Броулайн", "Броулайнеры"],
   },
   { key: "Авиатор", label: "Авиатор", icon: "aviator", img: "/aviator.webp", matches: ["Авиатор", "Авиаторы"] },
@@ -211,6 +220,7 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     label: "Маска",
     icon: "mask",
     img: "/mask_shape.webp",
+    imgScale: 1.3,
     matches: ["Маска", "Монолинза", "Горнолыжные маски"],
   },
   {
@@ -218,6 +228,7 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     label: "Спорт",
     icon: "sport",
     img: "/sport_shape.webp",
+    imgScale: 1.3,
     matches: ["Спорт", "Спортивные"],
   },
   {
@@ -952,7 +963,13 @@ export function CatalogListing({
                     <img
                       src={s.img}
                       alt={s.label}
-                      style={{ width: "100%", height: 36, objectFit: "contain" }}
+                      style={{
+                        width: "100%",
+                        height: 36,
+                        objectFit: "contain",
+                        transform: `scale(${s.imgScale ?? 1})`,
+                        transformOrigin: "center center",
+                      }}
                     />
                   ) : (
                     <ShapeIcon d={s.icon} />
