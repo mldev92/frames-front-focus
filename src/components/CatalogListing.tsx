@@ -24,6 +24,13 @@ interface ListingProps {
   categoryKey?: Category;
 }
 
+type AvailabilityKey = "salon" | "warehouse" | "preorder";
+type AvailabilityFilter = "all" | AvailabilityKey;
+type ClipOnFilter = "all" | "Да" | "Нет";
+
+const CORPORATE_EMAIL = "info@optika100.com";
+const normalize = (v?: string) => (v ?? "").trim().toLowerCase();
+
 // ── Frame shape icons — 64×24 grid, stroke 1.5, round joins ─────────────────
 const ShapeIcon = ({ d }: { d: string }) => (
   <svg
@@ -114,6 +121,27 @@ const ShapeIcon = ({ d }: { d: string }) => (
         <path d="M28 10 Q32 8 36 10" />
       </>
     )}
+    {d === "trapezoid" && (
+      <>
+        <path d="M4 7 L24 5 L22 19 L7 19 Q4 19 3 16 Z" />
+        <path d="M60 7 L40 5 L42 19 L57 19 Q60 19 61 16 Z" />
+        <path d="M24 9 Q32 7 40 9" />
+      </>
+    )}
+    {d === "butterfly" && (
+      <>
+        <path d="M2 13 Q3 4 14 4 Q22 4 25 10 Q24 18 16 18 L7 18 Q3 18 2 13 Z" />
+        <path d="M62 13 Q61 4 50 4 Q42 4 39 10 Q40 18 48 18 L57 18 Q61 18 62 13 Z" />
+        <path d="M25 10 Q32 8 39 10" />
+      </>
+    )}
+    {d === "lector" && (
+      <>
+        <rect x="2" y="6" width="24" height="12" rx="2.5" />
+        <rect x="38" y="6" width="24" height="12" rx="2.5" />
+        <path d="M26 10 Q32 7 38 10" />
+      </>
+    )}
     {d === "mono" && (
       <>
         <path d="M4 8 Q4 4 10 4 L54 4 Q60 4 60 8 L60 16 Q60 20 54 20 L10 20 Q4 20 4 16 Z" />
@@ -137,7 +165,9 @@ const ShapeIcon = ({ d }: { d: string }) => (
   </svg>
 );
 
-const SHAPE_DEFS: { key: string; label: string; icon: string; img?: string }[] = [
+type ShapeDef = { key: string; label: string; icon: string; img?: string; matches?: string[] };
+
+const SHAPE_DEFS: ShapeDef[] = [
   { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp" },
   { key: "Квадратные", label: "Квадратные", icon: "square", img: "/square.webp" },
   { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp" },
@@ -154,6 +184,49 @@ const SHAPE_DEFS: { key: string; label: string; icon: string; img?: string }[] =
   { key: "Горнолыжные маски", label: "Маски", icon: "mask" },
   { key: "Клипоны", label: "Клипоны", icon: "clip" },
 ];
+
+const FRAME_SHAPE_DEFS: ShapeDef[] = [
+  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp" },
+  { key: "Квадратные", label: "Квадратные", icon: "square", img: "/square.webp" },
+  { key: "Трапеция", label: "Трапеция", icon: "trapezoid", matches: ["Трапеция", "Вэйфэрер"] },
+  { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp" },
+  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval.webp", matches: ["Овальные", "Панто"] },
+  { key: "Клабмастер", label: "Клабмастер", icon: "browline", matches: ["Клабмастер", "Броулайн", "Броулайнеры"] },
+  { key: "Авиатор", label: "Авиатор", icon: "aviator", img: "/aviator.webp", matches: ["Авиатор", "Авиаторы"] },
+  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric.webp", matches: ["Геометрические", "Гексагональные"] },
+  { key: "Маска", label: "Маска", icon: "mask", matches: ["Маска", "Монолинза", "Горнолыжные маски"] },
+  { key: "Спорт", label: "Спорт", icon: "sport", matches: ["Спорт", "Спортивные"] },
+  { key: "Бабочка", label: "Бабочка", icon: "butterfly", matches: ["Бабочка", "Кошачий глаз"] },
+  { key: "Лектор", label: "Лектор", icon: "lector", matches: ["Лектор", "Оверсайз"] },
+];
+
+const FRAME_MATERIAL_DEFS = [
+  "Пластик",
+  "Ацетат",
+  "Нейлон",
+  "Титан",
+  "TR-90",
+  "Pebax",
+  "Комбинированный",
+] as const;
+
+const FRAME_MATERIAL_MATCHES: Record<(typeof FRAME_MATERIAL_DEFS)[number], string[]> = {
+  Пластик: ["Пластик", "Полимер"],
+  Ацетат: ["Ацетат", "Гибкий ацетат", "Mazzucchelli"],
+  Нейлон: ["Нейлон"],
+  Титан: ["Титан", "Бета-титан"],
+  "TR-90": ["TR-90", "TR90"],
+  Pebax: ["Pebax"],
+  Комбинированный: ["Комбинированный", "Комбинированные", "Ацетат + металл"],
+};
+
+const FRAME_GENDER_DEFS = [
+  { key: "Мужские", label: "Мужские", matches: ["Мужские"] },
+  { key: "Женские", label: "Женские", matches: ["Женские"] },
+  { key: "Унисекс", label: "Унисекс", matches: ["Унисекс"] },
+  { key: "для мальчиков", label: "для мальчиков", matches: ["Детские"] },
+  { key: "для девочек", label: "для девочек", matches: ["Детские"] },
+] as const;
 
 const COLOR_SWATCHES: { name: string; hex: string }[] = [
   { name: "Чёрный", hex: "#1a1a1a" },
@@ -177,6 +250,38 @@ const COLOR_SWATCHES: { name: string; hex: string }[] = [
   { name: "Прозрачный", hex: "transparent" },
   { name: "Градиент", hex: "linear-gradient(135deg,#e8b8a0,#7a4a90)" },
 ];
+
+const getProductMaterialValues = (p: Product): string[] => {
+  const out = new Set<string>();
+  if (p.material) out.add(p.material);
+  for (const s of p.specs) {
+    if (normalize(s.label).includes("материал")) out.add(s.value);
+  }
+  return [...out];
+};
+
+const hasClipOn = (p: Product): boolean => {
+  const shape = normalize(p.shape);
+  if (shape.includes("клип")) return true;
+  return p.specs.some((s) => normalize(`${s.label} ${s.value}`).includes("клип"));
+};
+
+const getAvailabilityTags = (p: Product): Set<AvailabilityKey> => {
+  const tags = new Set<AvailabilityKey>();
+  const availabilityLine = p.specs.find((s) => {
+    const key = normalize(s.label);
+    return key.includes("налич") || key.includes("stock");
+  });
+  const raw = normalize(availabilityLine?.value);
+  if (raw.includes("салон")) tags.add("salon");
+  if (raw.includes("склад")) tags.add("warehouse");
+  if (raw.includes("заказ")) tags.add("preorder");
+  if (tags.size === 0) {
+    tags.add("salon");
+    tags.add("warehouse");
+  }
+  return tags;
+};
 
 // ── Per-category extra filter configs ───────────────────────────────────────
 type ExtraBlock =
@@ -485,7 +590,11 @@ export function CatalogListing({
   const [sizeWidth] = useState<[number, number]>([1, 165]);
   const [sizeTemple] = useState<[number, number]>([1, 178]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [availability, setAvailability] = useState<"all" | "in" | "out">("all");
+  const [availability, setAvailability] = useState<AvailabilityFilter>("all");
+  const [clipOn, setClipOn] = useState<ClipOnFilter>("all");
+  const [preorderOpen, setPreorderOpen] = useState(false);
+  const [preorderSent, setPreorderSent] = useState(false);
+  const [preorderForm, setPreorderForm] = useState({ fullName: "", phone: "", email: "" });
   const [styleTag, setStyleTag] = useState<string>("Все стили");
   const STYLE_TAGS = [
     "Все стили",
@@ -496,6 +605,7 @@ export function CatalogListing({
     "Индастриал",
     "Скандинавские",
   ];
+  const isFramesCategory = categoryKey === "opravy";
 
   // ── Extra filter state (category-specific) ────────────────────────────────
   const extras = categoryKey ? CATEGORY_EXTRAS[categoryKey] : [];
@@ -543,11 +653,65 @@ export function CatalogListing({
     return out;
   }, [products, facets]);
 
+  const availabilityCounts = useMemo(() => {
+    const counts: Record<AvailabilityKey, number> = { salon: 0, warehouse: 0, preorder: 0 };
+    for (const p of products) {
+      const tags = getAvailabilityTags(p);
+      if (tags.has("salon")) counts.salon += 1;
+      if (tags.has("warehouse")) counts.warehouse += 1;
+      if (tags.has("preorder")) counts.preorder += 1;
+    }
+    return counts;
+  }, [products]);
+
+  const frameShapeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const def of FRAME_SHAPE_DEFS) {
+      const aliases = def.matches ?? [def.key];
+      counts[def.key] = products.filter((p) => aliases.some((a) => normalize(a) === normalize(p.shape))).length;
+    }
+    return counts;
+  }, [products]);
+
+  const frameMaterialCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const mat of FRAME_MATERIAL_DEFS) {
+      const aliases = FRAME_MATERIAL_MATCHES[mat];
+      counts[mat] = products.filter((p) => {
+        const values = getProductMaterialValues(p).map((v) => normalize(v));
+        return aliases.some((alias) => values.some((v) => v.includes(normalize(alias))));
+      }).length;
+    }
+    return counts;
+  }, [products]);
+
+  const frameGenderCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const g of FRAME_GENDER_DEFS) {
+      counts[g.key] = products.filter((p) =>
+        g.matches.some((alias) => normalize(alias) === normalize(p.gender)),
+      ).length;
+    }
+    return counts;
+  }, [products]);
+
+  const clipOnCounts = useMemo(() => {
+    let yes = 0;
+    let no = 0;
+    for (const p of products) {
+      if (hasClipOn(p)) yes += 1;
+      else no += 1;
+    }
+    return { yes, no };
+  }, [products]);
+
   const filtered = useMemo(() => {
     let list = products.filter((p) => {
       if (p.price < price[0] || p.price > price[1]) return false;
       if (tryOn && !p.hasTryOn) return false;
-      if (availability === "out") return false;
+      const availabilityTags = getAvailabilityTags(p);
+      if (availability !== "all" && !availabilityTags.has(availability)) return false;
+      if (isFramesCategory && clipOn !== "all" && (hasClipOn(p) ? "Да" : "Нет") !== clipOn) return false;
       if (selectedColors.size > 0) {
         const names = (p.colors ?? []).map((c) => c.name);
         if (!names.some((n) => selectedColors.has(n))) return false;
@@ -568,6 +732,26 @@ export function CatalogListing({
       if (temple !== undefined && (temple < sizeTemple[0] || temple > sizeTemple[1])) return false;
       return Object.entries(active).every(([k, set]) => {
         if (!set || set.size === 0) return true;
+        if (isFramesCategory && k === "shape") {
+          return [...set].some((picked) => {
+            const aliases = FRAME_SHAPE_DEFS.find((d) => d.key === picked)?.matches ?? [picked];
+            return aliases.some((a) => normalize(a) === normalize(p.shape));
+          });
+        }
+        if (isFramesCategory && k === "material") {
+          const values = getProductMaterialValues(p).map((v) => normalize(v));
+          return [...set].some((picked) =>
+            FRAME_MATERIAL_MATCHES[picked as (typeof FRAME_MATERIAL_DEFS)[number]]?.some((alias) =>
+              values.some((v) => v.includes(normalize(alias))),
+            ),
+          );
+        }
+        if (isFramesCategory && k === "gender") {
+          return [...set].some((picked) => {
+            const aliases = FRAME_GENDER_DEFS.find((d) => d.key === picked)?.matches ?? [picked];
+            return aliases.some((a) => normalize(a) === normalize(p.gender));
+          });
+        }
         const v = (p as unknown as Record<string, string | undefined>)[k];
         return v ? set.has(v) : false;
       });
@@ -585,6 +769,8 @@ export function CatalogListing({
     sizeWidth,
     sizeTemple,
     availability,
+    clipOn,
+    isFramesCategory,
     searchQuery,
   ]);
 
@@ -605,6 +791,10 @@ export function CatalogListing({
     setPrice([priceBounds.min, priceBounds.max]);
     setTryOn(false);
     setAvailability("all");
+    setClipOn("all");
+    setPreorderOpen(false);
+    setPreorderSent(false);
+    setPreorderForm({ fullName: "", phone: "", email: "" });
     setSearchQuery("");
     setDiscount(0);
     setRanges({});
@@ -617,6 +807,29 @@ export function CatalogListing({
   }
 
   const hasFacet = (k: FacetKey) => facets.includes(k);
+  const handlePreorderSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const body = [
+      "Заявка на товар под заказ",
+      "",
+      `Категория: ${title}`,
+      `ФИО: ${preorderForm.fullName}`,
+      `Телефон: ${preorderForm.phone}`,
+      `Email: ${preorderForm.email}`,
+      "",
+      "Источник: фильтр Наличие (Под заказ)",
+    ].join("\n");
+    const href = `mailto:${CORPORATE_EMAIL}?subject=${encodeURIComponent(
+      "Заявка на товар под заказ",
+    )}&body=${encodeURIComponent(body)}`;
+    if (typeof window !== "undefined") {
+      window.location.href = href;
+    }
+    setPreorderSent(true);
+  };
+  const shapeDefsForRender = isFramesCategory
+    ? FRAME_SHAPE_DEFS
+    : SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]);
 
   const FilterContent = (
     <div className="text-sm">
@@ -680,13 +893,15 @@ export function CatalogListing({
       {vis.shape && hasFacet("shape") && (
         <FilterSection key="shape" title="Форма">
           <div className="grid grid-cols-2 gap-2">
-            {SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]).map((s) => {
-              const checked = active.shape?.has(s.key) ?? false;
+            {shapeDefsForRender.map((s) => {
+              const value = s.key;
+              const checked = active.shape?.has(value) ?? false;
+              const count = isFramesCategory ? (frameShapeCounts[s.key] ?? 0) : (facetCounts.shape?.[s.key] ?? 0);
               return (
                 <button
                   key={s.key}
                   type="button"
-                  onClick={() => toggle("shape", s.key)}
+                  onClick={() => toggle("shape", value)}
                   className={cn(
                     "flex flex-col items-center justify-center gap-2.5 rounded-xl border px-2 py-5 text-center transition-all hover:border-ink hover:-translate-y-0.5 hover:shadow-sm",
                     checked ? "border-ink bg-cream shadow-xs" : "border-border bg-card",
@@ -694,6 +909,7 @@ export function CatalogListing({
                   style={{
                     transitionDuration: "var(--duration-snap)",
                     transitionTimingFunction: "var(--ease-editorial)",
+                    opacity: !checked && count === 0 ? 0.45 : 1,
                   }}
                 >
                   {s.img ? (
@@ -708,6 +924,7 @@ export function CatalogListing({
                   <span className="text-[11px] leading-tight text-foreground/70 font-medium">
                     {s.label}
                   </span>
+                  <span className="text-[10px] text-muted-foreground">({count})</span>
                 </button>
               );
             })}
@@ -750,14 +967,13 @@ export function CatalogListing({
       {/* Color — compact swatch grid */}
       {vis.color && (
         <FilterSection key="color" title="Цвет">
-          <div className="grid grid-cols-5 gap-2 py-1">
+          <div className="grid grid-cols-1 gap-2 py-1">
             {COLOR_SWATCHES.map((c) => {
               const sel = selectedColors.has(c.name);
               return (
                 <button
                   key={c.name}
                   type="button"
-                  title={c.name}
                   onClick={() =>
                     setSelectedColors((prev) => {
                       const next = new Set(prev);
@@ -767,43 +983,26 @@ export function CatalogListing({
                     })
                   }
                   className={cn(
-                    "relative w-full aspect-square rounded-full border transition-all hover:scale-105",
-                    sel
-                      ? "ring-2 ring-ink ring-offset-1 ring-offset-background border-transparent"
-                      : "border-border",
+                    "w-full flex items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-all",
+                    sel ? "border-ink bg-cream" : "border-border bg-card hover:border-foreground/40",
                   )}
-                  style={{
-                    background: c.hex,
-                    backgroundImage:
-                      c.hex === "transparent"
-                        ? "repeating-conic-gradient(#ddd 0 25%, #fff 0 50%)"
-                        : c.hex.includes("gradient")
-                          ? c.hex
-                          : undefined,
-                    backgroundSize: c.hex === "transparent" ? "8px 8px" : undefined,
-                    transform: sel ? "scale(1.05)" : undefined,
-                    transitionDuration: "var(--duration-snap)",
-                    transitionTimingFunction: "var(--ease-editorial)",
-                  }}
+                  style={{ transitionDuration: "var(--duration-snap)" }}
                 >
-                  {sel && (
-                    <Check
-                      className="absolute inset-0 m-auto h-3 w-3"
-                      strokeWidth={3}
-                      style={{
-                        color: [
-                          "transparent",
-                          "#f5f5f0",
-                          "#f5f0e8",
-                          "#ffd700",
-                          "#fce4ec",
-                          "#fff",
-                        ].includes(c.hex)
-                          ? "#1a1a1a"
-                          : "#f5f5f0",
-                      }}
-                    />
-                  )}
+                  <span
+                    className="inline-flex h-5 w-5 shrink-0 rounded-full border border-border"
+                    style={{
+                      background: c.hex,
+                      backgroundImage:
+                        c.hex === "transparent"
+                          ? "repeating-conic-gradient(#ddd 0 25%, #fff 0 50%)"
+                          : c.hex.includes("gradient")
+                            ? c.hex
+                            : undefined,
+                      backgroundSize: c.hex === "transparent" ? "8px 8px" : undefined,
+                    }}
+                  />
+                  <span className="flex-1 text-sm">{c.name}</span>
+                  {sel && <Check className="h-3.5 w-3.5 text-foreground" strokeWidth={3} />}
                 </button>
               );
             })}
@@ -815,7 +1014,10 @@ export function CatalogListing({
       {vis.material && hasFacet("material") && (
         <FilterSection key="material" title="Материал">
           <div className="space-y-2">
-            {Object.entries(facetCounts.material ?? {}).map(([m, c]) => {
+            {(isFramesCategory
+              ? FRAME_MATERIAL_DEFS.map((m) => [m, frameMaterialCounts[m] ?? 0] as const)
+              : Object.entries(facetCounts.material ?? {})
+            ).map(([m, c]) => {
               const checked = active.material?.has(m) ?? false;
               return (
                 <button
@@ -847,7 +1049,7 @@ export function CatalogListing({
                   >
                     {checked && <Check className="h-3 w-3" strokeWidth={3} />}
                   </span>
-                  <span className="flex-1 text-sm first-letter:uppercase">{m.toLowerCase()}</span>
+                  <span className="flex-1 text-sm">{m}</span>
                   <span className="text-xs text-muted-foreground">({c})</span>
                 </button>
               );
@@ -856,18 +1058,17 @@ export function CatalogListing({
         </FilterSection>
       )}
 
-      {/* Availability — radios */}
-      {vis.availability && (
-        <FilterSection key="availability" title="Наличие">
-          <div className="space-y-2" role="radiogroup" aria-label="Наличие">
+      {/* Clip-On */}
+      {isFramesCategory && (
+        <FilterSection key="clipon" title="Clip-On">
+          <div className="space-y-2" role="radiogroup" aria-label="Clip-On">
             {(
               [
-                ["all", "Все", products.length],
-                ["in", "В наличии", products.length],
-                ["out", "Под заказ", 0],
+                ["Да", "Да", clipOnCounts.yes],
+                ["Нет", "Нет", clipOnCounts.no],
               ] as const
             ).map(([val, label, count]) => {
-              const checked = availability === val;
+              const checked = clipOn === val;
               return (
                 <button
                   key={val}
@@ -876,7 +1077,7 @@ export function CatalogListing({
                   aria-checked={checked}
                   onClick={(e) => {
                     e.preventDefault();
-                    setAvailability(val);
+                    setClipOn((prev) => (prev === val ? "all" : val));
                   }}
                   onMouseDown={(e) => e.preventDefault()}
                   className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
@@ -905,40 +1106,236 @@ export function CatalogListing({
         </FilterSection>
       )}
 
-      {/* Gender pills (kept) */}
-      {vis.gender && hasFacet("gender") && (
-        <FilterSection key="gender" title="Пол">
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(facetCounts.gender ?? {}).map(([g, c]) => {
-              const checked = active.gender?.has(g) ?? false;
-              const ik = genderToIconKind(g);
+      {/* Availability — radios */}
+      {vis.availability && (
+        <FilterSection key="availability" title="Наличие">
+          <div className="space-y-2" role="radiogroup" aria-label="Наличие">
+            {(
+              [
+                ["salon", "В наличии в салоне", availabilityCounts.salon],
+                ["warehouse", "В наличии на складе", availabilityCounts.warehouse],
+                ["preorder", "Под заказ", availabilityCounts.preorder],
+              ] as const
+            ).map(([val, label, count]) => {
+              const checked = availability === val;
               return (
                 <button
-                  key={g}
+                  key={val}
                   type="button"
-                  onClick={() => toggle("gender", g)}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition-all",
-                    checked
-                      ? "border-ink bg-ink text-primary-foreground"
-                      : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
-                  )}
+                  role="radio"
+                  aria-checked={checked}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setAvailability((prev) => (prev === val ? "all" : val));
+                    if (val === "preorder") {
+                      setPreorderOpen(true);
+                      setPreorderSent(false);
+                    }
+                  }}
+                  onMouseDown={(e) => e.preventDefault()}
+                  className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
                   style={{
-                    transitionDuration: "var(--duration-snap)",
-                    transitionTimingFunction: "var(--ease-editorial)",
+                    borderRadius: "4px",
+                    padding: "2px 4px",
+                    margin: "0 -4px",
+                    background: "none",
+                    border: "none",
                   }}
                 >
-                  {ik && <GenderIcon kind={ik} className="h-3.5 w-3.5" />}
-                  <span className="first-letter:uppercase">{g.toLowerCase()}</span>
                   <span
-                    className={cn("text-[10px]", checked ? "opacity-80" : "text-muted-foreground")}
+                    className={cn(
+                      "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
+                      checked ? "border-ink" : "border-border group-hover:border-foreground/40",
+                    )}
                   >
-                    ({c})
+                    {checked && <span className="h-2 w-2 rounded-full bg-ink" />}
                   </span>
+                  <span className="flex-1 text-sm">{label}</span>
+                  <span className="text-xs text-muted-foreground">({count})</span>
                 </button>
               );
             })}
           </div>
+          {availability === "preorder" && (
+            <div className="mt-3 space-y-3 rounded-xl border border-border bg-card p-3">
+              <button
+                type="button"
+                onClick={() => setPreorderOpen((v) => !v)}
+                className={cn(
+                  "w-full rounded-full px-4 py-2.5 text-sm font-medium transition-colors",
+                  preorderOpen
+                    ? "bg-ink text-primary-foreground"
+                    : "border border-border hover:border-foreground/40",
+                )}
+              >
+                {preorderOpen ? "Скрыть форму заявки" : "Оставить заявку на под заказ"}
+              </button>
+              {preorderOpen && (
+                <>
+                  {preorderSent ? (
+                    <p className="text-sm text-muted-foreground">
+                      Черновик письма открыт. Отправьте его, чтобы заявка ушла на {CORPORATE_EMAIL}.
+                    </p>
+                  ) : (
+                    <form onSubmit={handlePreorderSubmit} className="space-y-2.5">
+                      <input
+                        type="text"
+                        required
+                        placeholder="ФИО"
+                        value={preorderForm.fullName}
+                        onChange={(e) =>
+                          setPreorderForm((prev) => ({ ...prev, fullName: e.target.value }))
+                        }
+                        className="w-full rounded-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ink/50"
+                      />
+                      <input
+                        type="tel"
+                        required
+                        placeholder="Телефон"
+                        value={preorderForm.phone}
+                        onChange={(e) =>
+                          setPreorderForm((prev) => ({ ...prev, phone: e.target.value }))
+                        }
+                        className="w-full rounded-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ink/50"
+                      />
+                      <input
+                        type="email"
+                        required
+                        placeholder="E-mail"
+                        value={preorderForm.email}
+                        onChange={(e) =>
+                          setPreorderForm((prev) => ({ ...prev, email: e.target.value }))
+                        }
+                        className="w-full rounded-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-ink/50"
+                      />
+                      <button
+                        type="submit"
+                        className="w-full rounded-full bg-brand px-4 py-2.5 text-sm font-medium text-brand-foreground hover:opacity-90 transition-opacity"
+                      >
+                        Отправить заявку
+                      </button>
+                    </form>
+                  )}
+                </>
+              )}
+            </div>
+          )}
+        </FilterSection>
+      )}
+
+      {/* Gender pills (kept) */}
+      {vis.gender && hasFacet("gender") && (
+        <FilterSection key="gender" title="Пол">
+          {isFramesCategory ? (
+            <div className="space-y-3">
+              <div className="flex flex-wrap gap-2">
+                {FRAME_GENDER_DEFS.slice(0, 3).map((g) => {
+                  const checked = active.gender?.has(g.key) ?? false;
+                  const ik = genderToIconKind(g.label);
+                  return (
+                    <button
+                      key={g.key}
+                      type="button"
+                      onClick={() => toggle("gender", g.key)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition-all",
+                        checked
+                          ? "border-ink bg-ink text-primary-foreground"
+                          : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
+                      )}
+                      style={{
+                        transitionDuration: "var(--duration-snap)",
+                        transitionTimingFunction: "var(--ease-editorial)",
+                      }}
+                    >
+                      {ik && <GenderIcon kind={ik} className="h-3.5 w-3.5" />}
+                      <span>{g.label}</span>
+                      <span
+                        className={cn(
+                          "text-[10px]",
+                          checked ? "opacity-80" : "text-muted-foreground",
+                        )}
+                      >
+                        ({frameGenderCounts[g.key] ?? 0})
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div>
+                <div className="text-[11px] uppercase font-semibold tracking-[0.08em] text-foreground/70 mb-2">
+                  Детские
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {FRAME_GENDER_DEFS.slice(3).map((g) => {
+                    const checked = active.gender?.has(g.key) ?? false;
+                    return (
+                      <button
+                        key={g.key}
+                        type="button"
+                        onClick={() => toggle("gender", g.key)}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition-all",
+                          checked
+                            ? "border-ink bg-ink text-primary-foreground"
+                            : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
+                        )}
+                        style={{
+                          transitionDuration: "var(--duration-snap)",
+                          transitionTimingFunction: "var(--ease-editorial)",
+                        }}
+                      >
+                        <span>{g.label}</span>
+                        <span
+                          className={cn(
+                            "text-[10px]",
+                            checked ? "opacity-80" : "text-muted-foreground",
+                          )}
+                        >
+                          ({frameGenderCounts[g.key] ?? 0})
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(facetCounts.gender ?? {}).map(([g, c]) => {
+                const checked = active.gender?.has(g) ?? false;
+                const ik = genderToIconKind(g);
+                return (
+                  <button
+                    key={g}
+                    type="button"
+                    onClick={() => toggle("gender", g)}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition-all",
+                      checked
+                        ? "border-ink bg-ink text-primary-foreground"
+                        : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
+                    )}
+                    style={{
+                      transitionDuration: "var(--duration-snap)",
+                      transitionTimingFunction: "var(--ease-editorial)",
+                    }}
+                  >
+                    {ik && <GenderIcon kind={ik} className="h-3.5 w-3.5" />}
+                    <span className="first-letter:uppercase">{g.toLowerCase()}</span>
+                    <span
+                      className={cn(
+                        "text-[10px]",
+                        checked ? "opacity-80" : "text-muted-foreground",
+                      )}
+                    >
+                      ({c})
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </FilterSection>
       )}
 
