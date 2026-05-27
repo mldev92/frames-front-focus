@@ -725,6 +725,11 @@ function MainV2Page() {
       </section>
 
       {/* ─────────────────────────────────────────────────────────────
+          6b. BUY TOGETHER & SAVE — full-bleed banner, family promo
+         ───────────────────────────────────────────────────────────── */}
+      <MainV2BuyTogetherBanner />
+
+      {/* ─────────────────────────────────────────────────────────────
           3. POPULAR MODELS — Хиты продаж (cream bg, header w/ nav arrows)
          ───────────────────────────────────────────────────────────── */}
       <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
@@ -742,11 +747,6 @@ function MainV2Page() {
           <MainV2HitsCarousel products={hits} />
         </div>
       </section>
-
-      {/* ─────────────────────────────────────────────────────────────
-          5. SUBSCRIPTION — Подписка на линзы и средства ухода
-         ───────────────────────────────────────────────────────────── */}
-      <MainV2SubscriptionBlock />
 
       {/* ─────────────────────────────────────────────────────────────
           4. WHY TRUST US — Почему нам доверяют (2-col: heading | 4 reasons)
@@ -927,9 +927,9 @@ function MainV2Page() {
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          6b. BUY TOGETHER & SAVE — full-bleed banner, family promo
+          5. SUBSCRIPTION — Подписка на линзы и средства ухода
          ───────────────────────────────────────────────────────────── */}
-      <MainV2BuyTogetherBanner />
+      <MainV2SubscriptionBlock />
 
       {/* ─────────────────────────────────────────────────────────────
           6c. PAIRED BANNERS — child myopia + virtual try-on promo
