@@ -1784,7 +1784,7 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
       <Reveal delay={120}>
         <div
           ref={scroller}
-          className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-2 -mx-4 px-4 lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-8 -mb-6 -mx-4 px-4 lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {products.map((product) => (
             <div
