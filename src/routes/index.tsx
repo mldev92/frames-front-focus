@@ -19,7 +19,7 @@ import { catalogHref, categoryToSegment } from "@/data/categories";
 import { bestsellers, products } from "@/data/products";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
-import { Calendar, Users, MapPin, Award, Phone, Send } from "lucide-react";
+import { Calendar, Users, Award, Phone, Send } from "lucide-react";
 import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
@@ -47,19 +47,6 @@ export const Route = createFileRoute("/")({
   }),
   component: MainV2Page,
 });
-
-const HERO_STATS = [
-  { value: "11 000+", label: "довольных клиентов", Icon: Users },
-  { value: "2 города", label: "салоны оптики", Icon: MapPin },
-  { value: "20+ лет", label: "заботы о вашем зрении", Icon: Award },
-  {
-    value: "Доставка",
-    label: "по всей России",
-    Icon: MapPin,
-    iconSrc: "/dostavka_icon.svg",
-    iconAlt: "Доставка по всей России",
-  },
-];
 
 const TRUST_REASONS = [
   {
@@ -489,47 +476,83 @@ function MainV2Page() {
               </div>
 
               <div
-                className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6"
+                className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6"
                 style={{ maxWidth: 680 }}
               >
-                {HERO_STATS.map((s) => (
-                  <div key={s.label} className="flex items-start gap-2.5">
-                    <span
-                      className="flex items-center justify-center rounded-full shrink-0"
-                      style={{
-                        width: 32,
-                        height: 32,
-                        background: "color-mix(in oklab, var(--brand) 12%, transparent)",
-                        color: "var(--brand)",
-                      }}
-                    >
-                      {s.iconSrc ? (
-                        <img
-                          src={s.iconSrc}
-                          alt={s.iconAlt ?? s.label}
-                          loading="lazy"
-                          className="h-[11px] w-auto max-w-[19px] object-contain"
-                        />
-                      ) : (
-                        <s.Icon size={16} strokeWidth={1.75} />
-                      )}
+                <div className="flex items-start gap-2.5">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
+                    <Users size={16} strokeWidth={1.75} />
+                  </span>
+                  <div className="flex min-w-0 flex-col">
+                    <strong className="font-serif text-[18px] leading-[1.1] text-foreground">
+                      11 000+
+                    </strong>
+                    <span className="mt-0.5 text-[12px] leading-[1.35] text-muted-foreground">
+                      довольных клиентов
                     </span>
-                    <div className="flex flex-col">
-                      <strong
-                        className="font-serif text-foreground"
-                        style={{ fontSize: 18, lineHeight: 1.1 }}
-                      >
-                        {s.value}
-                      </strong>
-                      <span
-                        className="text-muted-foreground"
-                        style={{ fontSize: 12, lineHeight: 1.35, marginTop: 2 }}
-                      >
-                        {s.label}
-                      </span>
-                    </div>
                   </div>
-                ))}
+                </div>
+
+                <Link
+                  to="/tinkoff"
+                  aria-label="Рассрочка 0‑0‑3 от Т‑Банка, без переплат"
+                  className="group flex items-start gap-2.5 text-inherit no-underline transition-transform duration-200 hover:-translate-y-px"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand/10 text-brand transition-colors duration-200 group-hover:bg-brand/15">
+                    <img src="/t_icon_red.png" alt="" loading="lazy" className="h-5 w-4 object-contain" />
+                  </span>
+                  <div className="flex min-w-0 flex-col">
+                    <strong className="border-b border-dashed border-transparent font-serif text-[18px] leading-[1.1] text-foreground transition-colors group-hover:border-brand/40">
+                      0‑0‑3
+                    </strong>
+                    <span className="mt-0.5 text-[12px] leading-[1.35] text-muted-foreground">
+                      рассрочка от Т‑Банка
+                    </span>
+                  </div>
+                </Link>
+
+                <div className="flex items-start gap-2.5">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
+                    <Award size={16} strokeWidth={1.75} />
+                  </span>
+                  <div className="flex min-w-0 flex-col">
+                    <strong className="font-serif text-[18px] leading-[1.1] text-foreground">
+                      20+ лет
+                    </strong>
+                    <span className="mt-0.5 text-[12px] leading-[1.35] text-muted-foreground">
+                      заботы о вашем зрении
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      className="h-4 w-4"
+                      aria-hidden="true"
+                    >
+                      <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+                      <path d="M15 18H9" />
+                      <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H15" />
+                      <circle cx="17" cy="18" r="2" />
+                      <circle cx="7" cy="18" r="2" />
+                    </svg>
+                  </span>
+                  <div className="flex min-w-0 flex-col">
+                    <strong className="font-serif text-[18px] leading-[1.1] text-foreground">
+                      Доставка
+                    </strong>
+                    <span className="mt-0.5 text-[12px] leading-[1.35] text-muted-foreground">
+                      по всей России
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </Reveal>
