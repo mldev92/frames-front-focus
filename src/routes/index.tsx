@@ -1789,7 +1789,7 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
           {products.map((product) => (
             <div
               key={product.slug}
-              className="snap-start shrink-0 w-[72%] sm:w-[44%] md:w-[31%] lg:w-[23.5%]"
+              className="snap-start shrink-0 w-[72%] first:ml-2 last:mr-2 sm:w-[44%] md:w-[31%] lg:w-[23.5%] lg:first:ml-6 lg:last:mr-6"
             >
               <MainV2ContactLensCard product={product} />
             </div>
