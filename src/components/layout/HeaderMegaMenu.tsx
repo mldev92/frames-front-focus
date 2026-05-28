@@ -18,9 +18,7 @@ import {
   Sun,
   Truck,
   Upload,
-  Users,
 } from "lucide-react";
-import { GenderIcon } from "@/components/ui/GenderIcon";
 import { catalogHref } from "@/data/categories";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +44,15 @@ type CardLink = {
   label: string;
   meta?: string;
   tag?: string;
+};
+
+type DemographicCard = CardLink & {
+  wide?: boolean;
+};
+
+type KidsCard = CardLink & {
+  meta: string;
+  tone: "boys" | "girls";
 };
 
 type UtilityLink = {
@@ -77,7 +84,12 @@ type FramesMegaMenu = {
   title: string;
   titleEmphasis: string;
   construction: CardLink[];
-  demographics: CardLink[];
+  demographics: DemographicCard[];
+  kidsGroup: {
+    count: string;
+    href: string;
+    items: KidsCard[];
+  };
 };
 
 type ContactMegaMenu = {
@@ -207,6 +219,54 @@ const clipOnConstructionIcon = (
     </span>
   </span>
 );
+
+const audienceIconBase =
+  "h-[18px] w-[18px] shrink-0 text-muted-foreground transition-colors group-hover:text-brand";
+
+const AudienceIcons = {
+  male: (
+    <svg viewBox="0 0 24 24" className={audienceIconBase} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="9" r="4" />
+      <path d="M5 21c0-4 3-7 7-7s7 3 7 7" />
+    </svg>
+  ),
+  female: (
+    <svg viewBox="0 0 24 24" className={audienceIconBase} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M12 12v8" />
+      <path d="M9 17h6" />
+    </svg>
+  ),
+  unisex: (
+    <svg viewBox="0 0 24 24" className={audienceIconBase} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="9" cy="9" r="3" />
+      <circle cx="16" cy="9" r="3" />
+      <path d="M4 20c0-3 2-5 5-5s5 2 5 5" />
+      <path d="M11 20c0-3 2-5 5-5s5 2 5 5" />
+    </svg>
+  ),
+  kidsTitle: (
+    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-brand" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="10" r="3" />
+      <path d="M7 21c0-3 2-5 5-5s5 2 5 5" />
+      <path d="M9 4l3-2 3 2" />
+    </svg>
+  ),
+  boys: (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 text-[oklch(0.50_0.13_240)]" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="3.2" />
+      <path d="M7 21v-5a5 5 0 0 1 10 0v5" />
+      <path d="M9 4.5l3-2 3 2" />
+    </svg>
+  ),
+  girls: (
+    <svg viewBox="0 0 24 24" className="h-4 w-4 text-brand" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="3.2" />
+      <path d="M8 21l2-9h4l2 9" />
+      <path d="M10 5.5q2-2 4 0" />
+    </svg>
+  ),
+};
 
 const LensTypeIcon = ({ kind }: { kind: "single" | "progressive" | "bifocal" | "office" | "photo" | "kids" }) => {
   const base = "h-[18px] w-6 shrink-0 text-muted-foreground transition-colors group-hover:text-brand";
@@ -368,27 +428,44 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Мужские",
         count: "412",
         href: frameHref(category, { gender: "Мужские" }),
-        icon: <GenderIcon kind="male" className="h-4 w-4" />,
+        icon: AudienceIcons.male,
       },
       {
         label: "Женские",
         count: "488",
         href: frameHref(category, { gender: "Женские" }),
-        icon: <GenderIcon kind="female" className="h-4 w-4" />,
+        icon: AudienceIcons.female,
       },
       {
         label: "Унисекс",
         count: "204",
         href: frameHref(category, { gender: "Унисекс" }),
-        icon: <Users className="h-4 w-4 stroke-[1.8]" />,
-      },
-      {
-        label: "Детские",
-        count: "180",
-        href: frameHref(category, { gender: "Детские" }),
-        icon: <GenderIcon kind="boy" className="h-4 w-4" />,
+        icon: AudienceIcons.unisex,
+        wide: true,
       },
     ],
+    kidsGroup: {
+      count: "180",
+      href: frameHref(category, { gender: "Детские" }),
+      items: [
+        {
+          label: "Для мальчиков",
+          meta: "3-14 лет",
+          count: "96",
+          href: frameHref(category, { gender: "для мальчиков" }),
+          icon: AudienceIcons.boys,
+          tone: "boys",
+        },
+        {
+          label: "Для девочек",
+          meta: "3-14 лет",
+          count: "84",
+          href: frameHref(category, { gender: "для девочек" }),
+          icon: AudienceIcons.girls,
+          tone: "girls",
+        },
+      ],
+    },
     construction: [
       {
         label: "Ободковые",
@@ -786,20 +863,58 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
 
             <section>
               {sectionHeader("Пол / возраст", "Все →")}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
                 {menu.demographics.map((item) => (
                   <a
                     key={item.label}
                     href={item.href}
-                    className="group flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 text-[12.5px] transition-colors hover:border-brand hover:text-brand"
+                    className={cn(
+                      "group flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-white px-2.5 py-[9px] text-[12.5px] transition-colors hover:border-brand hover:text-brand",
+                      item.wide && "col-span-2",
+                    )}
                   >
-                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#f4efeb] text-foreground transition-colors group-hover:text-brand">
-                      {item.icon}
-                    </span>
+                    {item.icon}
                     <span className="font-medium">{item.label}</span>
                     <span className="ml-auto font-mono text-[10px] text-muted-foreground">{item.count}</span>
                   </a>
                 ))}
+              </div>
+
+              <div className="mt-3 border-t border-dashed border-border pt-3">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
+                    {AudienceIcons.kidsTitle}
+                    Детские
+                  </span>
+                  <a
+                    href={menu.kidsGroup.href}
+                    className="text-[11px] text-muted-foreground transition-colors hover:text-brand"
+                  >
+                    {`Все ${menu.kidsGroup.count} →`}
+                  </a>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  {menu.kidsGroup.items.map((item) => (
+                    <a
+                      key={item.label}
+                      href={item.href}
+                      className="group grid grid-cols-[32px_1fr_auto] items-center gap-2.5 rounded-[14px] border border-[#ece7df] bg-white px-3 py-2 transition-colors hover:border-brand hover:bg-brand-50"
+                    >
+                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#ece7df] bg-[var(--cream)]">
+                        {item.icon}
+                      </span>
+                      <span className="min-w-0 leading-[1.15]">
+                        <span className="block text-[12.5px] font-medium text-foreground">
+                          {item.label}
+                        </span>
+                        <span className="mt-0.5 block text-[10.5px] text-muted-foreground">
+                          {item.meta}
+                        </span>
+                      </span>
+                      <span className="font-mono text-[10px] text-muted-foreground">{item.count}</span>
+                    </a>
+                  ))}
+                </div>
               </div>
 
               <div className="mt-5 border-t border-dashed border-border pt-4">
