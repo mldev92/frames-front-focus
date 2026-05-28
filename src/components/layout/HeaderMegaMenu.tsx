@@ -157,131 +157,56 @@ const sectionNameClass =
 const chipClass =
   "inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand";
 
-const frameIcon = (children: ReactNode) => (
-  <svg
-    viewBox="0 0 60 22"
-    className="h-7 w-full text-foreground transition-colors group-hover:text-brand"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="1.75"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    {children}
-  </svg>
+const assetIcon = ({
+  alt,
+  boxClassName,
+  className,
+  scale = 1,
+  src,
+}: {
+  alt: string;
+  boxClassName?: string;
+  className?: string;
+  scale?: number;
+  src: string;
+}) => (
+  <span className={cn("flex items-center justify-center", boxClassName)}>
+    <img
+      src={src}
+      alt={alt}
+      className={cn("object-contain", className)}
+      style={{
+        transform: `scale(${scale})`,
+        transformOrigin: "center center",
+      }}
+    />
+  </span>
 );
 
-const FrameIcons = {
-  rect: frameIcon(
-    <>
-      <rect x="2" y="3" width="22" height="16" rx="3" />
-      <rect x="36" y="3" width="22" height="16" rx="3" />
-      <path d="M24 11h12" />
-    </>,
-  ),
-  square: frameIcon(
-    <>
-      <rect x="2" y="3" width="22" height="16" rx="1.5" />
-      <rect x="36" y="3" width="22" height="16" rx="1.5" />
-      <path d="M24 11h12" />
-    </>,
-  ),
-  oval: frameIcon(
-    <>
-      <ellipse cx="13" cy="11" rx="11" ry="8" />
-      <ellipse cx="47" cy="11" rx="11" ry="8" />
-      <path d="M24 11h12" />
-    </>,
-  ),
-  round: frameIcon(
-    <>
-      <circle cx="13" cy="11" r="9" />
-      <circle cx="47" cy="11" r="9" />
-      <path d="M22 11h16" />
-    </>,
-  ),
-  aviator: frameIcon(
-    <>
-      <path d="M2 6q11-6 22 0v9q-11 6-22 0z" />
-      <path d="M36 6q11-6 22 0v9q-11 6-22 0z" />
-      <path d="M24 11h12" />
-    </>,
-  ),
-  clubmaster: frameIcon(
-    <>
-      <path d="M2 5h22v6q-3 7-11 7Q5 18 2 11Z" />
-      <path d="M36 5h22v6q-3 7-11 7q-8 0-11-7Z" />
-      <path d="M24 8h12" />
-    </>,
-  ),
-  cat: frameIcon(
-    <>
-      <path d="M2 5q4-4 11-4q7 0 11 6v9q-3 4-11 4Q5 20 2 14Z" />
-      <path d="M36 5q4-4 11-4q7 0 11 6v9q-3 4-11 4q-8 0-11-6Z" />
-    </>,
-  ),
-  geometric: frameIcon(
-    <>
-      <path d="M2 8l11-5 11 5v6l-11 5L2 14Z" />
-      <path d="M36 8l11-5 11 5v6l-11 5-11-5Z" />
-    </>,
-  ),
-  mask: frameIcon(<path d="M2 7q0-5 6-5h44q6 0 6 5v8q0 5-6 5H8q-6 0-6-5Z" />),
-  sport: frameIcon(
-    <path d="M2 8q5-7 12-5q5 1 10 7h12q5-6 10-7q7-2 12 5v6q-5 7-12 5q-5-1-10-7H24q-5 6-10 7q-7 2-12-5Z" />,
-  ),
-  trapezoid: frameIcon(
-    <>
-      <path d="M2 5q3-3 11-3q8 0 11 3v9q-3 5-11 5Q5 19 2 14Z" />
-      <path d="M36 5q3-3 11-3q8 0 11 3v9q-3 5-11 5q-8 0-11-5Z" />
-    </>,
-  ),
-  lector: frameIcon(
-    <>
-      <path d="M2 3h22v6q-3 9-11 9Q5 18 2 9Z" />
-      <path d="M36 3h22v6q-3 9-11 9q-8 0-11-9Z" />
-    </>,
-  ),
-};
+const frameShapeAssetIcon = (src: string, alt: string, scale?: number) =>
+  assetIcon({
+    alt,
+    boxClassName: "w-full",
+    className: "h-9 w-full",
+    scale,
+    src,
+  });
 
-const ConstructionIcon = ({ kind }: { kind: "full" | "rimless" | "half" | "clip" }) => {
-  if (kind === "rimless") {
-    return (
-      <svg viewBox="0 0 60 14" className="h-4 w-9 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.6">
-        <path d="M2 9h26" />
-        <path d="M32 9h26" />
-      </svg>
-    );
-  }
+const frameConstructionAssetIcon = (src: string, alt: string) =>
+  assetIcon({
+    alt,
+    boxClassName: "h-4 w-10 shrink-0",
+    className: "h-3.5 w-auto",
+    src,
+  });
 
-  if (kind === "half") {
-    return (
-      <svg viewBox="0 0 60 14" className="h-4 w-9 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.6">
-        <path d="M2 4q0-2 3-2h20q3 0 3 2" />
-        <path d="M2 4v6q0 2 3 2h20q3 0 3-2V4" />
-        <path d="M32 4q0-2 3-2h20q3 0 3 2" />
-        <path d="M32 4v6q0 2 3 2h20q3 0 3-2V4" />
-      </svg>
-    );
-  }
-
-  if (kind === "clip") {
-    return (
-      <svg viewBox="0 0 24 24" className="h-4 w-4 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 7h16" />
-        <path d="M4 12h16" />
-        <path d="M4 17h16" />
-      </svg>
-    );
-  }
-
-  return (
-    <svg viewBox="0 0 60 14" className="h-4 w-9 text-muted-foreground" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <path d="M2 4q0-2 3-2h20q3 0 3 2v6q0 2-3 2H5q-3 0-3-2Z" />
-      <path d="M32 4q0-2 3-2h20q3 0 3 2v6q0 2-3 2H35q-3 0-3-2Z" />
-    </svg>
-  );
-};
+const clipOnConstructionIcon = (
+  <span className="inline-flex h-4 w-10 shrink-0 items-center justify-center">
+    <span className="rounded-full border border-[#d8d1c8] px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      Clip
+    </span>
+  </span>
+);
 
 const LensTypeIcon = ({ kind }: { kind: "single" | "progressive" | "bifocal" | "office" | "photo" | "kids" }) => {
   const base = "h-[18px] w-6 shrink-0 text-muted-foreground transition-colors group-hover:text-brand";
@@ -365,18 +290,78 @@ function buildFrameMega(category: FrameCategory, copy: {
     title: copy.title,
     titleEmphasis: copy.titleEmphasis,
     shapes: [
-      { label: "Прямоугольные", count: "214", href: frameHref(category, { shape: "Прямоугольные" }), icon: FrameIcons.rect },
-      { label: "Квадратные", count: "186", href: frameHref(category, { shape: "Квадратные" }), icon: FrameIcons.square },
-      { label: "Овальные", count: "142", href: frameHref(category, { shape: "Овальные" }), icon: FrameIcons.oval },
-      { label: "Круглые", count: "98", href: frameHref(category, { shape: "Круглые" }), icon: FrameIcons.round },
-      { label: "Авиаторы", count: "76", href: frameHref(category, { shape: "Авиаторы" }), icon: FrameIcons.aviator },
-      { label: "Клабмастер", count: "64", href: frameHref(category, { shape: "Клабмастер" }), icon: FrameIcons.clubmaster },
-      { label: "Бабочка", count: "52", href: frameHref(category, { shape: "Бабочка" }), icon: FrameIcons.cat },
-      { label: "Геометрия", count: "48", href: frameHref(category, { shape: "Геометрические" }), icon: FrameIcons.geometric },
-      { label: "Маска", count: "36", href: frameHref(category, { shape: "Маска" }), icon: FrameIcons.mask },
-      { label: "Спорт", count: "29", href: frameHref(category, { shape: "Спорт" }), icon: FrameIcons.sport },
-      { label: "Трапеция", count: "22", href: frameHref(category, { shape: "Трапеция" }), icon: FrameIcons.trapezoid },
-      { label: "Лектор", count: "18", href: frameHref(category, { shape: "Лектор" }), icon: FrameIcons.lector },
+      {
+        label: "Прямоугольные",
+        count: "214",
+        href: frameHref(category, { shape: "Прямоугольные" }),
+        icon: frameShapeAssetIcon("/rectangle.webp", "Прямоугольные"),
+      },
+      {
+        label: "Квадратные",
+        count: "186",
+        href: frameHref(category, { shape: "Квадратные" }),
+        icon: frameShapeAssetIcon("/square.webp", "Квадратные"),
+      },
+      {
+        label: "Овальные",
+        count: "142",
+        href: frameHref(category, { shape: "Овальные" }),
+        icon: frameShapeAssetIcon("/Anselm - Oval.webp", "Овальные"),
+      },
+      {
+        label: "Круглые",
+        count: "98",
+        href: frameHref(category, { shape: "Круглые" }),
+        icon: frameShapeAssetIcon("/round.webp", "Круглые"),
+      },
+      {
+        label: "Авиаторы",
+        count: "76",
+        href: frameHref(category, { shape: "Авиаторы" }),
+        icon: frameShapeAssetIcon("/aviator.webp", "Авиаторы"),
+      },
+      {
+        label: "Клабмастер",
+        count: "64",
+        href: frameHref(category, { shape: "Клабмастер" }),
+        icon: frameShapeAssetIcon("/clubman_shape.webp", "Клабмастер", 1.3),
+      },
+      {
+        label: "Бабочка",
+        count: "52",
+        href: frameHref(category, { shape: "Бабочка" }),
+        icon: frameShapeAssetIcon("/buterfly_shape.webp", "Бабочка"),
+      },
+      {
+        label: "Геометрия",
+        count: "48",
+        href: frameHref(category, { shape: "Геометрические" }),
+        icon: frameShapeAssetIcon("/Geometric.webp", "Геометрические"),
+      },
+      {
+        label: "Маска",
+        count: "36",
+        href: frameHref(category, { shape: "Маска" }),
+        icon: frameShapeAssetIcon("/mask_shape.webp", "Маска", 1.3),
+      },
+      {
+        label: "Спорт",
+        count: "29",
+        href: frameHref(category, { shape: "Спорт" }),
+        icon: frameShapeAssetIcon("/sport_shape.webp", "Спорт", 1.3),
+      },
+      {
+        label: "Трапеция",
+        count: "22",
+        href: frameHref(category, { shape: "Трапеция" }),
+        icon: frameShapeAssetIcon("/trapec_shape.webp", "Трапеция", 1.3),
+      },
+      {
+        label: "Лектор",
+        count: "18",
+        href: frameHref(category, { shape: "Лектор" }),
+        icon: frameShapeAssetIcon("/lector_shape_.webp", "Лектор"),
+      },
     ],
     demographics: [
       {
@@ -409,25 +394,25 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Ободковые",
         count: "684",
         href: frameHref(category, { construction: "Ободковые" }),
-        icon: <ConstructionIcon kind="full" />,
+        icon: frameConstructionAssetIcon("/obodkovaea.png", "Ободковые"),
       },
       {
         label: "Безободковые",
         count: "142",
         href: frameHref(category, { construction: "Безободковые" }),
-        icon: <ConstructionIcon kind="rimless" />,
+        icon: frameConstructionAssetIcon("/bezobodkovaea.png", "Безободковые"),
       },
       {
         label: "Полуободковые",
         count: "96",
         href: frameHref(category, { construction: "Полуободковые" }),
-        icon: <ConstructionIcon kind="half" />,
+        icon: frameConstructionAssetIcon("/poluobodkovaea.png", "Полуободковые"),
       },
       {
         label: "Clip-on",
         count: "28",
         href: frameHref(category, { construction: "Clip-on" }),
-        icon: <ConstructionIcon kind="clip" />,
+        icon: clipOnConstructionIcon,
       },
     ],
     materials: [
