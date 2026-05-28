@@ -2005,7 +2005,10 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
 
 function MainV2SubscriptionBlock() {
   return (
-    <section style={{ background: "var(--background)", padding: "clamp(56px, 7vw, 96px) 0" }}>
+    <section
+      id="lens-subscription"
+      style={{ background: "var(--background)", padding: "clamp(56px, 7vw, 96px) 0" }}
+    >
       <style>{`
         .o100-sub-grid{
           display:grid;
@@ -2214,7 +2217,7 @@ function MainV2SubscriptionBlock() {
                 >
                   Все товары по&nbsp;подписке
                 </a>
-                <a href="#" className="o100-sub-btn o100-sub-btn-secondary">
+                <a href="#lens-subscription" className="o100-sub-btn o100-sub-btn-secondary">
                   Как это работает
                 </a>
               </div>

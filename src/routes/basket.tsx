@@ -41,7 +41,7 @@ function CartPage() {
       <div className="grid lg:grid-cols-[1fr_360px] gap-12">
         <div className="divide-y divide-border border-y border-border">
           {lines.map((l) => (
-            <div key={l.slug + (l.color ?? "")} className="flex gap-5 py-6">
+            <div key={l.slug + (l.color ?? "") + (l.lensLabel ?? "")} className="flex gap-5 py-6">
               <img
                 src={l.image}
                 alt={l.name}
@@ -64,19 +64,31 @@ function CartPage() {
                     Цвет: {l.color}
                   </div>
                 )}
+                {l.lensLabel && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    Линзы: {l.lensLabel}
+                    {l.lensPrice ? ` (+${formatPrice(l.lensPrice)})` : ""}
+                  </div>
+                )}
                 <div className="mt-3 flex items-center border border-border rounded-sm w-fit">
-                  <button onClick={() => setQty(l.slug, l.qty - 1, l.color)} className="p-2">
+                  <button
+                    onClick={() => setQty(l.slug, l.qty - 1, l.color, l.lensLabel)}
+                    className="p-2"
+                  >
                     <Minus className="h-3 w-3" />
                   </button>
                   <span className="px-3 text-sm">{l.qty}</span>
-                  <button onClick={() => setQty(l.slug, l.qty + 1, l.color)} className="p-2">
+                  <button
+                    onClick={() => setQty(l.slug, l.qty + 1, l.color, l.lensLabel)}
+                    className="p-2"
+                  >
                     <Plus className="h-3 w-3" />
                   </button>
                 </div>
               </div>
               <div className="flex flex-col items-end justify-between">
                 <button
-                  onClick={() => remove(l.slug, l.color)}
+                  onClick={() => remove(l.slug, l.color, l.lensLabel)}
                   className="text-muted-foreground hover:text-brand"
                   aria-label="Удалить"
                 >

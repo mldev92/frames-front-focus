@@ -1,4 +1,4 @@
-import { Instagram, Send, Youtube } from "lucide-react";
+import { Mail, MessageCircle, Send } from "lucide-react";
 import { SiteLogo } from "./SiteLogo";
 
 const COLS = [
@@ -79,25 +79,29 @@ export function Footer() {
           </div>
           <div className="flex gap-4">
             <a
-              href="#"
-              aria-label="Instagram"
-              className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
-            >
-              <Instagram className="h-5 w-5" />
-            </a>
-            <a
-              href="#"
+              href="https://t.me/optika100"
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="Telegram"
               className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
             >
               <Send className="h-5 w-5" />
             </a>
             <a
-              href="#"
-              aria-label="YouTube"
+              href="https://vk.com/optika100"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="ВКонтакте"
               className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
             >
-              <Youtube className="h-5 w-5" />
+              <MessageCircle className="h-5 w-5" />
+            </a>
+            <a
+              href="mailto:sale-spb@optika100.com"
+              aria-label="Email"
+              className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
+            >
+              <Mail className="h-5 w-5" />
             </a>
           </div>
         </div>

@@ -20,7 +20,11 @@ const noTryOnCategories = new Set<Product["category"]>([
 export function ProductCard({ product, compactLensPreview = false }: ProductCardProps) {
   const { toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
-  const hasHoverImage = product.images.length > 1;
+  const [selectedColorName, setSelectedColorName] = useState<string | undefined>();
+  const selectedColor = product.colors?.find((item) => item.name === selectedColorName);
+  const primaryImage = selectedColor?.image ?? product.images[0];
+  const hoverImage = selectedColor?.image ? undefined : product.images[1];
+  const hasHoverImage = Boolean(hoverImage);
   const [vtoOpen, setVtoOpen] = useState(false);
   const vtoSku = product.vtoSku ?? "rayban_wayfarer_havane_marron";
   const showTryOn = !noTryOnCategories.has(product.category);
@@ -37,7 +41,7 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
         className="block relative aspect-square bg-white rounded-sm overflow-hidden"
       >
         <img
-          src={product.images[0]}
+          src={primaryImage}
           alt={product.name}
           loading="lazy"
           className={cn(
@@ -48,7 +52,7 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
         />
         {hasHoverImage && (
           <img
-            src={product.images[1]}
+            src={hoverImage}
             alt={product.name}
             loading="lazy"
             className="absolute inset-0 w-full h-full object-contain opacity-0 group-hover/card:opacity-100 transition-opacity duration-500"
@@ -138,18 +142,43 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
         </Link>
         {product.colors && product.colors.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {displayColors.map((c) => (
-              <span
-                key={c.name}
-                className="inline-flex items-center gap-1 text-[11px] text-muted-foreground border border-border rounded-full px-2 py-0.5"
-              >
-                <span
-                  className="w-2.5 h-2.5 rounded-full flex-shrink-0"
-                  style={{ backgroundColor: c.hex }}
-                />
-                {c.name}
-              </span>
-            ))}
+            {displayColors.map((c) => {
+              const active = selectedColorName === c.name;
+              if (!c.image) {
+                return (
+                  <span
+                    key={c.name}
+                    className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground"
+                  >
+                    <span
+                      className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                      style={{ backgroundColor: c.hex }}
+                    />
+                    {c.name}
+                  </span>
+                );
+              }
+              return (
+                <button
+                  key={c.name}
+                  type="button"
+                  onClick={() => setSelectedColorName(active ? undefined : c.name)}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors",
+                    active
+                      ? "border-foreground text-foreground"
+                      : "border-border text-muted-foreground hover:border-foreground/40",
+                  )}
+                  aria-label={`Показать цвет ${c.name}`}
+                >
+                  <span
+                    className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                    style={{ backgroundColor: c.hex }}
+                  />
+                  {c.name}
+                </button>
+              );
+            })}
             {extraCount > 0 && (
               <span className="inline-flex items-center text-[11px] text-muted-foreground border border-border rounded-full px-2 py-0.5">
                 +{extraCount}

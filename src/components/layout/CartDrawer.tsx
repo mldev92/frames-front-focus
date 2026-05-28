@@ -36,7 +36,7 @@ export function CartDrawer() {
           <>
             <div className="flex-1 overflow-y-auto divide-y divide-border">
               {lines.map((l) => (
-                <div key={l.slug + (l.color ?? "")} className="flex gap-4 p-5">
+                <div key={l.slug + (l.color ?? "") + (l.lensLabel ?? "")} className="flex gap-4 p-5">
                   <img
                     src={l.image}
                     alt={l.name}
@@ -50,11 +50,17 @@ export function CartDrawer() {
                         Цвет: {l.color}
                       </div>
                     )}
+                    {l.lensLabel && (
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Линзы: {l.lensLabel}
+                        {l.lensPrice ? ` (+${formatPrice(l.lensPrice)})` : ""}
+                      </div>
+                    )}
                     <div className="mt-2 flex items-center justify-between">
                       <div className="flex items-center border border-border rounded-sm">
                         <button
                           className="p-1.5"
-                          onClick={() => setQty(l.slug, l.qty - 1, l.color)}
+                          onClick={() => setQty(l.slug, l.qty - 1, l.color, l.lensLabel)}
                           aria-label="Меньше"
                         >
                           <Minus className="h-3 w-3" />
@@ -62,7 +68,7 @@ export function CartDrawer() {
                         <span className="px-2 text-sm w-6 text-center">{l.qty}</span>
                         <button
                           className="p-1.5"
-                          onClick={() => setQty(l.slug, l.qty + 1, l.color)}
+                          onClick={() => setQty(l.slug, l.qty + 1, l.color, l.lensLabel)}
                           aria-label="Больше"
                         >
                           <Plus className="h-3 w-3" />
@@ -74,7 +80,7 @@ export function CartDrawer() {
                     </div>
                   </div>
                   <button
-                    onClick={() => remove(l.slug, l.color)}
+                    onClick={() => remove(l.slug, l.color, l.lensLabel)}
                     className="text-muted-foreground hover:text-brand"
                     aria-label="Удалить"
                   >

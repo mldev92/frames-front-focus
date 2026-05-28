@@ -61,6 +61,11 @@ function ProductPage() {
   const [lensModal, setLensModal] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
   const vtoSku = product.vtoSku ?? "rayban_wayfarer_havane_marron";
+  const selectedColor = product.colors?.find((item) => item.name === color);
+  const galleryImages = selectedColor?.image
+    ? [selectedColor.image, ...product.images.filter((img) => img !== selectedColor.image)]
+    : product.images;
+  const currentImage = galleryImages[activeImg] ?? galleryImages[0] ?? product.images[0];
 
   const specIcons: Record<string, string> = {
     "Длина дужки": "/icon_param_glasses_length.svg",
@@ -95,13 +100,13 @@ function ProductPage() {
     if (isFrameLike) {
       setLensModal(true);
     } else {
-      add(product, { color });
+      add(product, { color, image: currentImage });
       toast.success(`«${product.name}» добавлен в корзину`);
     }
   };
 
   return (
-    <div className="px-4 lg:px-10 py-8">
+    <div className="px-4 pb-28 pt-8 lg:px-10 lg:pb-8">
       {/* Breadcrumbs */}
       <nav className="text-xs text-muted-foreground mb-6 flex items-center gap-1">
         <Link to="/" className="hover:text-foreground">Главная</Link>
@@ -122,7 +127,7 @@ function ProductPage() {
           {/* Gallery with vertical thumb rail */}
           <div className="flex gap-3">
             <div className="hidden sm:flex flex-col gap-2 shrink-0">
-              {product.images.map((img, i) => (
+              {galleryImages.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
@@ -151,13 +156,14 @@ function ProductPage() {
 
             <div className="relative flex-1 bg-surface rounded-lg overflow-hidden flex items-center justify-center min-h-[420px] lg:min-h-[560px]">
               <img
-                src={product.images[activeImg]}
+                src={currentImage}
                 alt={product.name}
                 className="max-w-[80%] max-h-[80%] object-contain mix-blend-multiply"
               />
               {showTryOn && (
                 <TryOnBadge
                   variant="pill"
+                  label="Примерить"
                   className="absolute top-4 right-4"
                   onClick={() => setVtoOpen(true)}
                 />
@@ -167,7 +173,7 @@ function ProductPage() {
 
           {/* Mobile thumb strip */}
           <div className="sm:hidden mt-3 grid grid-cols-5 gap-2">
-            {product.images.map((img, i) => (
+            {galleryImages.map((img, i) => (
               <button
                 key={i}
                 onClick={() => setActiveImg(i)}
@@ -355,7 +361,10 @@ function ProductPage() {
                   {product.colors.map((c) => (
                     <button
                       key={c.name}
-                      onClick={() => setColor(c.name)}
+                      onClick={() => {
+                        setColor(c.name);
+                        if (c.image) setActiveImg(0);
+                      }}
                       aria-label={c.name}
                       className={cn(
                         "w-9 h-9 rounded-full border-2 transition-all shrink-0",
@@ -378,7 +387,7 @@ function ProductPage() {
               {isFrameLike && (
                 <button
                   onClick={() => {
-                    add(product, { color, openDrawer: false });
+                    add(product, { color, openDrawer: false, image: currentImage });
                     toast.success(`«${product.name}» (без линз) добавлен в корзину`);
                   }}
                   className="w-full text-sm text-muted-foreground border border-border rounded-full py-3 hover:text-foreground hover:border-foreground transition-colors"
@@ -418,7 +427,45 @@ function ProductPage() {
         </section>
       )}
 
-      <LensPurposeModal open={lensModal} onClose={() => setLensModal(false)} />
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
+        <div className="mx-auto flex max-w-xl items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="truncate text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+              {selectedColor ? `Цвет: ${selectedColor.name}` : product.brand}
+            </div>
+            <div className="font-serif text-xl leading-tight">{formatPrice(product.price)}</div>
+          </div>
+          <button
+            onClick={handlePrimaryCta}
+            className="shrink-0 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:opacity-90"
+          >
+            {isFrameLike ? (
+              <>
+                <span className="sm:hidden">Подобрать</span>
+                <span className="hidden sm:inline">Подобрать линзы</span>
+              </>
+            ) : (
+              "В корзину"
+            )}
+          </button>
+        </div>
+      </div>
+
+      <LensPurposeModal
+        open={lensModal}
+        onClose={() => setLensModal(false)}
+        product={product}
+        selectedColor={color}
+        onComplete={({ lensLabel, lensPrice }) => {
+          add(product, {
+            color,
+            image: currentImage,
+            lensLabel,
+            lensPrice,
+          });
+          toast.success(`Комплект «${product.name}» добавлен в корзину`);
+        }}
+      />
       {showTryOn && (
         <VirtualTryOnModal
           open={vtoOpen}

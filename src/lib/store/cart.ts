@@ -9,6 +9,8 @@ export interface CartLine {
   price: number;
   image: string;
   color?: string;
+  lensLabel?: string;
+  lensPrice?: number;
   qty: number;
 }
 
@@ -18,9 +20,19 @@ interface CartState {
   isOpen: boolean;
   open: () => void;
   close: () => void;
-  add: (product: Product, opts?: { color?: string; qty?: number; openDrawer?: boolean }) => void;
-  remove: (slug: string, color?: string) => void;
-  setQty: (slug: string, qty: number, color?: string) => void;
+  add: (
+    product: Product,
+    opts?: {
+      color?: string;
+      qty?: number;
+      openDrawer?: boolean;
+      image?: string;
+      lensLabel?: string;
+      lensPrice?: number;
+    },
+  ) => void;
+  remove: (slug: string, color?: string, lensLabel?: string) => void;
+  setQty: (slug: string, qty: number, color?: string, lensLabel?: string) => void;
   clear: () => void;
   toggleSaved: (slug: string) => void;
   totals: () => { count: number; subtotal: number };
@@ -36,10 +48,12 @@ export const useCart = create<CartState>()(
       close: () => set({ isOpen: false }),
       add: (product, opts) => {
         const color = opts?.color;
+        const lensLabel = opts?.lensLabel;
+        const lensPrice = opts?.lensPrice ?? 0;
         const qty = opts?.qty ?? 1;
         const openDrawer = opts?.openDrawer ?? true;
         const existing = get().lines.find(
-          (l) => l.slug === product.slug && l.color === color,
+          (l) => l.slug === product.slug && l.color === color && l.lensLabel === lensLabel,
         );
         if (existing) {
           set({
@@ -56,9 +70,11 @@ export const useCart = create<CartState>()(
                 slug: product.slug,
                 name: product.name,
                 brand: product.brand,
-                price: product.price,
-                image: product.images[0],
+                price: product.price + lensPrice,
+                image: opts?.image ?? product.images[0],
                 color,
+                lensLabel,
+                lensPrice: opts?.lensPrice,
                 qty,
               },
             ],
@@ -66,16 +82,18 @@ export const useCart = create<CartState>()(
           });
         }
       },
-      remove: (slug, color) =>
+      remove: (slug, color, lensLabel) =>
         set({
           lines: get().lines.filter(
-            (l) => !(l.slug === slug && l.color === color),
+            (l) => !(l.slug === slug && l.color === color && l.lensLabel === lensLabel),
           ),
         }),
-      setQty: (slug, qty, color) =>
+      setQty: (slug, qty, color, lensLabel) =>
         set({
           lines: get().lines.map((l) =>
-            l.slug === slug && l.color === color ? { ...l, qty: Math.max(1, qty) } : l,
+            l.slug === slug && l.color === color && l.lensLabel === lensLabel
+              ? { ...l, qty: Math.max(1, qty) }
+              : l,
           ),
         }),
       clear: () => set({ lines: [] }),

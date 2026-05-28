@@ -84,11 +84,11 @@ export function Header() {
     <>
       <div className="bg-ink px-4 py-2 text-xs text-primary-foreground">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <div className="relative" ref={cityRef}>
               <button
                 onClick={() => setCityOpen((value) => !value)}
-                className="flex items-center gap-1.5 opacity-80 transition-opacity hover:opacity-100"
+                className="flex shrink-0 items-center gap-1.5 opacity-80 transition-opacity hover:opacity-100"
               >
                 <svg
                   width="10"
@@ -164,18 +164,19 @@ export function Header() {
               style={{
                 opacity: promoVisible ? 0.75 : 0,
                 transition: "opacity 0.3s ease",
-                maxWidth: "420px",
+                maxWidth: "min(420px, calc(100vw - 150px))",
                 display: "inline-block",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
+                minWidth: 0,
               }}
             >
               {PROMOS[promoIdx].text}
             </a>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="hidden items-center gap-5 md:flex">
             <button
               onClick={() => document.dispatchEvent(new CustomEvent("open-callback"))}
               className="border-b border-dotted border-white/30 pb-px opacity-70 transition-opacity hover:border-white/70 hover:opacity-100"

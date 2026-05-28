@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useRouterState } from "@tanstack/react-router";
 import { X, MessageCircle, Phone, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CallbackModal } from "./CallbackModal";
@@ -53,11 +54,18 @@ const CHANNELS = [
 export function MessengerFAB() {
   const [open, setOpen] = useState(false);
   const [callbackOpen, setCallbackOpen] = useState(false);
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isProductPage = /^\/catalog_s\/[^/]+\/[^/]+\/?$/.test(pathname);
 
   return (
     <>
       {/* FAB */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+      <div
+        className={cn(
+          "fixed right-6 z-50 flex flex-col items-end gap-3 transition-[bottom]",
+          isProductPage ? "bottom-24 lg:bottom-6" : "bottom-6",
+        )}
+      >
         {/* Panel */}
         {open && (
           <div className="w-[340px] bg-card border border-border rounded-[18px] shadow-xl overflow-hidden origin-bottom-right animate-in fade-in slide-in-from-bottom-2 duration-200">

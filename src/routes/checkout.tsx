@@ -230,7 +230,7 @@ function Checkout() {
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {lines.map((line) => (
                   <div
-                    key={line.slug + (line.color ?? "")}
+                    key={line.slug + (line.color ?? "") + (line.lensLabel ?? "")}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -264,11 +264,17 @@ function Checkout() {
                           Цвет: {line.color}
                         </div>
                       )}
+                      {line.lensLabel && (
+                        <div className="text-muted-foreground" style={{ fontSize: "12px" }}>
+                          Линзы: {line.lensLabel}
+                          {line.lensPrice ? ` (+${formatPrice(line.lensPrice)})` : ""}
+                        </div>
+                      )}
                     </div>
                     <QtyControl
                       qty={line.qty}
-                      onDec={() => setQty(line.slug, line.qty - 1, line.color)}
-                      onInc={() => setQty(line.slug, line.qty + 1, line.color)}
+                      onDec={() => setQty(line.slug, line.qty - 1, line.color, line.lensLabel)}
+                      onInc={() => setQty(line.slug, line.qty + 1, line.color, line.lensLabel)}
                     />
                     <div style={{ fontWeight: 600, fontSize: "15px", minWidth: "72px", textAlign: "right", flexShrink: 0 }}>
                       {formatPrice(line.price * line.qty)}
