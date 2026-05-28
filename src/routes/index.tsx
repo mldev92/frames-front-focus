@@ -1710,7 +1710,7 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
         }
         .o100-lens-card-shell:hover{
           transform:translateY(-2px);
-          box-shadow:0 4px 10px rgba(0,0,0,0.06), 0 18px 40px rgba(0,0,0,0.09)!important;
+          box-shadow:var(--shadow-md)!important;
         }
       `}</style>
       <Reveal className="flex items-end justify-between gap-4 mb-8 lg:mb-10">
@@ -1839,7 +1839,7 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
       style={{
         background: "#fff",
         borderRadius: 16,
-        boxShadow: "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)",
+        boxShadow: "var(--shadow-sm)",
       }}
     >
       <div
