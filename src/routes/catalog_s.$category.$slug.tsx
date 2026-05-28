@@ -71,6 +71,8 @@ function ProductPage() {
   const isLens = product.category === "kontaktnye-linzy";
   const isFrameLike =
     product.category === "opravy" || product.category === "linzy-dlya-ochkov";
+  const showTryOn =
+    product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
   const isMisight = product.slug.toLowerCase().includes("misight");
   const showInstallment =
     (isFrameLike && product.price > 3500) ||
@@ -132,13 +134,15 @@ function ProductPage() {
                   <img src={img} alt="" className="max-w-full max-h-full object-contain" />
                 </button>
               ))}
-              <button
-                onClick={() => setVtoOpen(true)}
-                className="w-16 h-16 rounded-sm overflow-hidden border-2 border-transparent flex items-center justify-center bg-surface hover:border-brand transition-colors"
-                aria-label="Примерить онлайн"
-              >
-                <TryOnIcon className="h-6 w-6" />
-              </button>
+              {showTryOn && (
+                <button
+                  onClick={() => setVtoOpen(true)}
+                  className="w-16 h-16 rounded-sm overflow-hidden border-2 border-transparent flex items-center justify-center bg-surface hover:border-brand transition-colors"
+                  aria-label="Примерить онлайн"
+                >
+                  <TryOnIcon className="h-6 w-6" />
+                </button>
+              )}
             </div>
 
             <div className="relative flex-1 bg-surface rounded-lg overflow-hidden flex items-center justify-center min-h-[420px] lg:min-h-[560px]">
@@ -147,11 +151,13 @@ function ProductPage() {
                 alt={product.name}
                 className="max-w-[80%] max-h-[80%] object-contain"
               />
-              <TryOnBadge
-                variant="pill"
-                className="absolute top-4 right-4"
-                onClick={() => setVtoOpen(true)}
-              />
+              {showTryOn && (
+                <TryOnBadge
+                  variant="pill"
+                  className="absolute top-4 right-4"
+                  onClick={() => setVtoOpen(true)}
+                />
+              )}
             </div>
           </div>
 
@@ -405,11 +411,13 @@ function ProductPage() {
       )}
 
       <LensPurposeModal open={lensModal} onClose={() => setLensModal(false)} />
-      <VirtualTryOnModal
-        open={vtoOpen}
-        onClose={() => setVtoOpen(false)}
-        vtoSku={vtoSku}
-      />
+      {showTryOn && (
+        <VirtualTryOnModal
+          open={vtoOpen}
+          onClose={() => setVtoOpen(false)}
+          vtoSku={vtoSku}
+        />
+      )}
     </div>
   );
 }
