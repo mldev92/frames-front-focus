@@ -7,12 +7,24 @@ import { categoryToSegment } from "@/data/categories";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { cn } from "@/lib/utils";
 
-export function ProductCard({ product }: { product: Product }) {
+interface ProductCardProps {
+  product: Product;
+  compactLensPreview?: boolean;
+}
+
+const noTryOnCategories = new Set<Product["category"]>([
+  "kontaktnye-linzy",
+  "linzy-dlya-ochkov",
+]);
+
+export function ProductCard({ product, compactLensPreview = false }: ProductCardProps) {
   const { toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
   const hasHoverImage = product.images.length > 1;
   const [vtoOpen, setVtoOpen] = useState(false);
   const vtoSku = product.vtoSku ?? "rayban_wayfarer_havane_marron";
+  const showTryOn = !noTryOnCategories.has(product.category);
+  const imagePadding = compactLensPreview && product.category === "kontaktnye-linzy" ? "15%" : undefined;
 
   const displayColors = product.colors?.slice(0, 3) ?? [];
   const extraCount = (product.colors?.length ?? 0) - displayColors.length;
@@ -32,6 +44,7 @@ export function ProductCard({ product }: { product: Product }) {
             "absolute inset-0 w-full h-full object-contain transition-opacity duration-500",
             hasHoverImage ? "opacity-100 group-hover/card:opacity-0" : "opacity-100",
           )}
+          style={imagePadding ? { padding: imagePadding } : undefined}
         />
         {hasHoverImage && (
           <img
@@ -39,6 +52,7 @@ export function ProductCard({ product }: { product: Product }) {
             alt={product.name}
             loading="lazy"
             className="absolute inset-0 w-full h-full object-contain opacity-0 group-hover/card:opacity-100 transition-opacity duration-500"
+            style={imagePadding ? { padding: imagePadding } : undefined}
           />
         )}
         {product.badges && product.badges.length > 0 && (
@@ -58,37 +72,39 @@ export function ProductCard({ product }: { product: Product }) {
             ))}
           </div>
         )}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setVtoOpen(true);
-          }}
-          className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-brand active:translate-y-0 active:scale-[0.98]"
-          style={{
-            borderColor: "color-mix(in oklch, var(--foreground) 14%, transparent)",
-            background: "color-mix(in oklch, white 92%, transparent)",
-          }}
-          aria-label="Примерить"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
+        {showTryOn && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setVtoOpen(true);
+            }}
+            className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-brand active:translate-y-0 active:scale-[0.98]"
+            style={{
+              borderColor: "color-mix(in oklch, var(--foreground) 14%, transparent)",
+              background: "color-mix(in oklch, white 92%, transparent)",
+            }}
+            aria-label="Примерить"
           >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M2.402 2.652a.25.25 0 0 0-.25.25v2a.75.75 0 1 1-1.5 0v-2c0-.966.784-1.75 1.75-1.75h2a.75.75 0 1 1 0 1.5h-2Zm11.146.25a.25.25 0 0 0-.25-.25h-2a.75.75 0 0 1 0-1.5h2c.967 0 1.75.784 1.75 1.75v2a.75.75 0 0 1-1.5 0v-2ZM2.402 14.048a.25.25 0 0 1-.25-.25v-2a.75.75 0 1 0-1.5 0v2c0 .966.784 1.75 1.75 1.75h2a.75.75 0 0 0 0-1.5h-2Zm10.896 0a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2a1.75 1.75 0 0 1-1.75 1.75h-2a.75.75 0 0 1 0-1.5h2ZM8 7.25a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm-3.75 4.5a3.75 3.75 0 1 1 7.5 0h-1.5a2.25 2.25 0 1 0-4.5 0h-1.5Z"
-              fill="currentColor"
-            />
-          </svg>
-          <span>Примерить</span>
-        </button>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M2.402 2.652a.25.25 0 0 0-.25.25v2a.75.75 0 1 1-1.5 0v-2c0-.966.784-1.75 1.75-1.75h2a.75.75 0 1 1 0 1.5h-2Zm11.146.25a.25.25 0 0 0-.25-.25h-2a.75.75 0 0 1 0-1.5h2c.967 0 1.75.784 1.75 1.75v2a.75.75 0 0 1-1.5 0v-2ZM2.402 14.048a.25.25 0 0 1-.25-.25v-2a.75.75 0 1 0-1.5 0v2c0 .966.784 1.75 1.75 1.75h2a.75.75 0 0 0 0-1.5h-2Zm10.896 0a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2a1.75 1.75 0 0 1-1.75 1.75h-2a.75.75 0 0 1 0-1.5h2ZM8 7.25a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm-3.75 4.5a3.75 3.75 0 1 1 7.5 0h-1.5a2.25 2.25 0 1 0-4.5 0h-1.5Z"
+                fill="currentColor"
+              />
+            </svg>
+            <span>Примерить</span>
+          </button>
+        )}
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -151,11 +167,13 @@ export function ProductCard({ product }: { product: Product }) {
         </div>
       </div>
 
-      <VirtualTryOnModal
-        open={vtoOpen}
-        onClose={() => setVtoOpen(false)}
-        vtoSku={vtoSku}
-      />
+      {showTryOn && (
+        <VirtualTryOnModal
+          open={vtoOpen}
+          onClose={() => setVtoOpen(false)}
+          vtoSku={vtoSku}
+        />
+      )}
     </div>
   );
 }

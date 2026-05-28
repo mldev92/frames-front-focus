@@ -1450,6 +1450,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
   const hasHoverImage = product.images.length > 1;
   const dots = product.colors?.slice(0, 4) ?? [];
   const extra = (product.colors?.length ?? 0) - dots.length;
+  const showTryOn = product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
   const productRouteParams = {
     category: categoryToSegment[product.category],
     slug: product.slug,
@@ -1495,38 +1496,40 @@ function MainV2ProductCard({ product }: { product: Product }) {
             />
           )}
         </Link>
-        <button
-          type="button"
-          onClick={() =>
-            navigate({
-              to: "/catalog_s/$category/$slug",
-              params: productRouteParams,
-            })
-          }
-          className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-brand active:translate-y-0 active:scale-[0.98]"
-          style={{
-            borderColor: "color-mix(in oklch, var(--foreground) 14%, transparent)",
-            background: "color-mix(in oklch, white 92%, transparent)",
-          }}
-          aria-label="Примерить"
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            aria-hidden="true"
+        {showTryOn && (
+          <button
+            type="button"
+            onClick={() =>
+              navigate({
+                to: "/catalog_s/$category/$slug",
+                params: productRouteParams,
+              })
+            }
+            className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-brand active:translate-y-0 active:scale-[0.98]"
+            style={{
+              borderColor: "color-mix(in oklch, var(--foreground) 14%, transparent)",
+              background: "color-mix(in oklch, white 92%, transparent)",
+            }}
+            aria-label="Примерить"
           >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M2.402 2.652a.25.25 0 0 0-.25.25v2a.75.75 0 1 1-1.5 0v-2c0-.966.784-1.75 1.75-1.75h2a.75.75 0 1 1 0 1.5h-2Zm11.146.25a.25.25 0 0 0-.25-.25h-2a.75.75 0 0 1 0-1.5h2c.967 0 1.75.784 1.75 1.75v2a.75.75 0 0 1-1.5 0v-2ZM2.402 14.048a.25.25 0 0 1-.25-.25v-2a.75.75 0 1 0-1.5 0v2c0 .966.784 1.75 1.75 1.75h2a.75.75 0 0 0 0-1.5h-2Zm10.896 0a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2a1.75 1.75 0 0 1-1.75 1.75h-2a.75.75 0 0 1 0-1.5h2ZM8 7.25a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm-3.75 4.5a3.75 3.75 0 1 1 7.5 0h-1.5a2.25 2.25 0 1 0-4.5 0h-1.5Z"
-              fill="currentColor"
-            />
-          </svg>
-          <span>Примерить</span>
-        </button>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M2.402 2.652a.25.25 0 0 0-.25.25v2a.75.75 0 1 1-1.5 0v-2c0-.966.784-1.75 1.75-1.75h2a.75.75 0 1 1 0 1.5h-2Zm11.146.25a.25.25 0 0 0-.25-.25h-2a.75.75 0 0 1 0-1.5h2c.967 0 1.75.784 1.75 1.75v2a.75.75 0 0 1-1.5 0v-2ZM2.402 14.048a.25.25 0 0 1-.25-.25v-2a.75.75 0 1 0-1.5 0v2c0 .966.784 1.75 1.75 1.75h2a.75.75 0 0 0 0-1.5h-2Zm10.896 0a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2a1.75 1.75 0 0 1-1.75 1.75h-2a.75.75 0 0 1 0-1.5h2ZM8 7.25a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm-3.75 4.5a3.75 3.75 0 1 1 7.5 0h-1.5a2.25 2.25 0 1 0-4.5 0h-1.5Z"
+                fill="currentColor"
+              />
+            </svg>
+            <span>Примерить</span>
+          </button>
+        )}
         <button
           type="button"
           onClick={() => toggleSaved(product.slug)}

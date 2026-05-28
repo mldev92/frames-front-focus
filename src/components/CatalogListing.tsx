@@ -27,6 +27,7 @@ interface ListingProps {
 type AvailabilityKey = "salon" | "warehouse" | "preorder";
 type AvailabilityFilter = "all" | AvailabilityKey;
 type ClipOnFilter = "all" | "Да" | "Нет";
+type GridCols = 2 | 3 | 4;
 
 const CORPORATE_EMAIL = "info@optika100.com";
 const normalize = (v?: string) => (v ?? "").trim().toLowerCase();
@@ -625,7 +626,7 @@ export function CatalogListing({
   const [mobileFilters, setMobileFilters] = useState(false);
   const [tryOn, setTryOn] = useState(false);
   const [selectedColors, setSelectedColors] = useState<Set<string>>(new Set());
-  const [gridCols, setGridCols] = useState<2 | 3>(3);
+  const [gridCols, setGridCols] = useState<GridCols>(3);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const priceBounds = useMemo(() => {
@@ -1722,6 +1723,25 @@ export function CatalogListing({
                     <rect x="11.5" y="9" width="4" height="6" rx="1" />
                   </svg>
                 </button>
+                <button
+                  onClick={() => setGridCols(4)}
+                  className={cn(
+                    "px-2.5 py-1.5 border-l border-border transition-colors",
+                    gridCols === 4 ? "bg-foreground text-background" : "hover:bg-surface",
+                  )}
+                  aria-label="4 колонки"
+                >
+                  <svg viewBox="0 0 16 16" className="w-4 h-4" fill="currentColor">
+                    <rect x="0.5" y="1" width="2.75" height="6" rx="0.75" />
+                    <rect x="4.75" y="1" width="2.75" height="6" rx="0.75" />
+                    <rect x="9" y="1" width="2.75" height="6" rx="0.75" />
+                    <rect x="13.25" y="1" width="2.25" height="6" rx="0.75" />
+                    <rect x="0.5" y="9" width="2.75" height="6" rx="0.75" />
+                    <rect x="4.75" y="9" width="2.75" height="6" rx="0.75" />
+                    <rect x="9" y="9" width="2.75" height="6" rx="0.75" />
+                    <rect x="13.25" y="9" width="2.25" height="6" rx="0.75" />
+                  </svg>
+                </button>
               </div>
               <div className="relative group/sort">
                 <span className="pointer-events-none hidden md:inline absolute left-3 top-1/2 -translate-y-1/2 text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
@@ -1778,11 +1798,17 @@ export function CatalogListing({
             <div
               className={cn(
                 "grid gap-x-5 gap-y-10",
-                gridCols === 2 ? "grid-cols-2" : "grid-cols-2 md:grid-cols-3",
+                gridCols === 2 && "grid-cols-2",
+                gridCols === 3 && "grid-cols-2 md:grid-cols-3",
+                gridCols === 4 && "grid-cols-2 md:grid-cols-4",
               )}
             >
               {filtered.map((p) => (
-                <ProductCard key={p.slug} product={p} />
+                <ProductCard
+                  key={p.slug}
+                  product={p}
+                  compactLensPreview={categoryKey === "kontaktnye-linzy"}
+                />
               ))}
             </div>
           )}
