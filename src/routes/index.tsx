@@ -1845,8 +1845,8 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
       <div
         className="relative aspect-square overflow-hidden"
         style={{
-          background:
-            "radial-gradient(circle at top left, rgba(255,255,255,0.7), transparent 38%), var(--cream)",
+          background: "#fff",
+          borderBottom: "1px solid var(--border)",
         }}
       >
         <Link
@@ -1862,7 +1862,7 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
                 style={{
                   borderColor: "color-mix(in oklab, var(--foreground) 10%, transparent)",
                   background:
-                    "linear-gradient(160deg, rgba(255,255,255,0.96), rgba(247,243,238,0.98))",
+                    "repeating-linear-gradient(135deg, oklch(0.96 0.006 80) 0 6px, oklch(0.985 0.004 80) 6px 12px)",
                   boxShadow: "0 12px 28px rgba(0,0,0,0.06)",
                 }}
               >
