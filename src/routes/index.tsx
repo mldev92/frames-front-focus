@@ -51,7 +51,7 @@ export const Route = createFileRoute("/")({
 const TRUST_REASONS = [
   {
     Icon: GraduationCap,
-    title: "10 лет в оптике",
+    title: "20 лет в оптике",
     text: "Команда из 18 врачей и оптометристов. Принимаем по ОМС и ДМС.",
   },
   {
