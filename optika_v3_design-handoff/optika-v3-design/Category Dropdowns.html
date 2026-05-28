@@ -1,0 +1,1751 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ОПТИКА 100% — Header category dropdowns (review)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  /* ─── Tokens (lifted from Homepage Additions.html, identical scale) ── */
+  :root {
+    --background: oklch(0.985 0.004 80);
+    --foreground: oklch(0.18 0.01 250);
+    --surface:    oklch(0.96 0.008 75);
+    --cream:      oklch(0.965 0.015 85);
+    --card:       oklch(1 0 0);
+    --ink:        oklch(0.18 0.01 250);
+    --muted-foreground: oklch(0.5 0.015 250);
+    --border:     oklch(0.9 0.008 80);
+    --hairline:   oklch(0.93 0.008 80);
+    --brand:      #c94040;
+    --brand-soft: oklch(0.97 0.018 28);
+    --brand-50:   oklch(0.97 0.018 28);
+    --brand-100:  oklch(0.94 0.038 28);
+    --brand-200:  oklch(0.88 0.075 28);
+    --brand-700:  oklch(0.40 0.160 28);
+    --success:    oklch(0.55 0.13 150);
+    --info:       oklch(0.50 0.13 240);
+
+    --font-sans:  "Inter", system-ui, sans-serif;
+    --font-serif: "Fraunces", Georgia, serif;
+    --font-mono:  "JetBrains Mono", ui-monospace, monospace;
+
+    --shadow-xs: 0 1px 2px oklch(0.22 0.02 60 / 0.045);
+    --shadow-sm: 0 1px 2px oklch(0.22 0.02 60 / 0.05), 0 2px 6px oklch(0.22 0.02 60 / 0.04);
+    --shadow-md: 0 2px 4px oklch(0.22 0.02 60 / 0.045), 0 8px 20px oklch(0.22 0.02 60 / 0.06);
+    --shadow-lg: 0 4px 10px oklch(0.22 0.02 60 / 0.06), 0 18px 40px oklch(0.22 0.02 60 / 0.09);
+    --shadow-mega: 0 12px 30px oklch(0.20 0.02 60 / 0.08), 0 28px 80px oklch(0.20 0.02 60 / 0.10);
+
+    --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+    --duration-snap:  200ms;
+    --duration-flow:  360ms;
+
+    --r-sm: 6px;
+    --r-md: 10px;
+    --r-lg: 14px;
+    --r-xl: 20px;
+  }
+
+  * { box-sizing: border-box; border-color: var(--border); }
+  html, body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, .font-serif {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+    margin: 0;
+    font-weight: 500;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; color: inherit; cursor: pointer; background: none; border: 0; padding: 0; }
+  img, svg { display: block; max-width: 100%; }
+  .ico { width: 16px; height: 16px; stroke: currentColor; stroke-width: 1.7; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+  .eyebrow {
+    color: var(--brand);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .mono-eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+
+  /* ─── Review banner ───────────────────────────────────── */
+  .review-banner {
+    background: oklch(0.97 0.02 95);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0 22px;
+    font-size: 13px;
+    line-height: 1.55;
+  }
+  .container { max-width: 1280px; margin: 0 auto; padding: 0 32px; }
+  .review-banner .eyebrow { margin-bottom: 10px; }
+  .review-banner h1 {
+    font-family: var(--font-serif);
+    font-size: 28px;
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+  .review-banner p { margin: 0 0 8px; max-width: 880px; color: var(--muted-foreground); }
+  .review-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px 32px;
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--border);
+  }
+  .review-cell h4 {
+    font-family: var(--font-sans);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--foreground);
+    margin: 0 0 6px;
+    font-weight: 700;
+  }
+  .review-cell p { font-size: 12.5px; margin: 0; }
+  .tag {
+    display: inline-block;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 100px;
+    margin-bottom: 6px;
+  }
+  .tag-keep    { background: color-mix(in oklab, var(--success) 14%, transparent); color: var(--success); }
+  .tag-adjust  { background: color-mix(in oklab, var(--brand) 14%, transparent); color: var(--brand); }
+  .tag-add     { background: oklch(0.94 0.04 240); color: oklch(0.45 0.14 240); }
+
+  .section-label {
+    background: oklch(0.94 0.01 90);
+    border-top: 1px dashed var(--border);
+    border-bottom: 1px dashed var(--border);
+    padding: 12px 32px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--muted-foreground);
+    text-transform: uppercase;
+  }
+  .section-label strong { color: var(--brand); font-weight: 600; }
+
+  /* ─── Faux site header (just enough to anchor the dropdown) ── */
+  .site-header {
+    position: relative;
+    background: var(--background);
+    border-bottom: 1px solid var(--hairline);
+    z-index: 2;
+  }
+  .header-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 0 0;
+    gap: 24px;
+  }
+  .brand-mark {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    display: inline-flex; align-items: baseline; gap: 6px;
+  }
+  .brand-mark .pct { color: var(--brand); font-style: italic; }
+  .header-actions {
+    display: flex; align-items: center; gap: 18px;
+    color: var(--muted-foreground); font-size: 13px;
+  }
+  .header-actions .ico { width: 18px; height: 18px; }
+  .header-action { display: inline-flex; align-items: center; gap: 6px; color: var(--foreground); }
+  .nav-row {
+    display: flex; align-items: stretch; gap: 0;
+    margin-top: 14px;
+    border-top: 1px solid var(--hairline);
+    padding-top: 0;
+  }
+  .nav-item {
+    position: relative;
+    padding: 16px 22px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--foreground);
+    display: inline-flex; align-items: center; gap: 6px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color var(--duration-snap) var(--ease-editorial), border-color var(--duration-snap) var(--ease-editorial);
+  }
+  .nav-item:first-child { padding-left: 0; }
+  .nav-item .caret {
+    width: 9px; height: 9px;
+    color: var(--muted-foreground);
+    transition: transform var(--duration-snap), color var(--duration-snap);
+  }
+  .nav-item:hover { color: var(--brand); }
+  .nav-item:hover .caret { color: var(--brand); transform: translateY(1px); }
+  .nav-item.is-open { color: var(--brand); border-bottom-color: var(--brand); }
+  .nav-item.is-open .caret { color: var(--brand); transform: rotate(180deg); }
+
+  /* ─── MEGA DROPDOWN base ─────────────────────────────── */
+  .mega {
+    position: relative;
+    background: var(--card);
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-mega);
+    overflow: hidden;
+  }
+  .mega-inner { padding: 28px 32px 24px; }
+
+  .mega-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    gap: 24px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 22px;
+  }
+  .mega-head .title-line {
+    display: flex; align-items: baseline; gap: 14px;
+  }
+  .mega-head h2 {
+    font-family: var(--font-serif);
+    font-size: 26px;
+    line-height: 1;
+    font-weight: 400;
+  }
+  .mega-head h2 em {
+    font-style: italic;
+    color: var(--brand);
+    font-weight: 400;
+  }
+  .mega-head .count {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted-foreground);
+  }
+  .mega-head .head-cta {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px;
+    color: var(--foreground);
+    padding: 9px 16px;
+    border: 1px solid var(--foreground);
+    border-radius: 100px;
+    transition: background var(--duration-snap), color var(--duration-snap);
+  }
+  .mega-head .head-cta:hover { background: var(--foreground); color: var(--background); }
+
+  /* Column titles inside mega */
+  .col-title {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .col-title .name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--foreground);
+  }
+  .col-title .all {
+    font-size: 11.5px;
+    color: var(--muted-foreground);
+    text-decoration: none;
+  }
+  .col-title .all:hover { color: var(--brand); }
+
+  /* Reusable chip & item */
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 11px;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    font-size: 12.5px;
+    color: var(--foreground);
+    background: var(--card);
+    transition: border-color var(--duration-snap), color var(--duration-snap), background var(--duration-snap);
+    white-space: nowrap;
+  }
+  .chip:hover { border-color: var(--brand); color: var(--brand); }
+  .chip .count { color: var(--muted-foreground); font-size: 10.5px; }
+  .chip.is-active { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+  .row-link {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 4px;
+    font-size: 13.5px;
+    color: var(--foreground);
+    border-bottom: 1px dashed transparent;
+    transition: color var(--duration-snap), border-color var(--duration-snap);
+  }
+  .row-link:hover { color: var(--brand); }
+  .row-link .glyph {
+    width: 22px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--muted-foreground);
+  }
+  .row-link:hover .glyph { color: var(--brand); }
+  .row-link .count { margin-left: auto; font-family: var(--font-mono); font-size: 11px; color: var(--muted-foreground); }
+  .row-link .arrow { margin-left: 6px; color: var(--muted-foreground); opacity: 0; transition: opacity var(--duration-snap), transform var(--duration-snap); }
+  .row-link:hover .arrow { opacity: 1; transform: translateX(2px); color: var(--brand); }
+
+  /* ─── TYPE 1: FRAMES & SUNGLASSES (Visual) ──────────── */
+  .mega-frames .body {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr 0.95fr;
+    gap: 32px;
+  }
+  .shape-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .shape-tile {
+    aspect-ratio: 1 / 0.78;
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    background: var(--card);
+    padding: 10px 8px 8px;
+    display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+    text-align: center;
+    transition: border-color var(--duration-snap), transform var(--duration-snap), background var(--duration-snap);
+    cursor: pointer;
+    position: relative;
+  }
+  .shape-tile:hover {
+    border-color: var(--brand);
+    background: var(--brand-50);
+    transform: translateY(-1px);
+  }
+  .shape-tile svg.shape {
+    width: 100%; height: 26px;
+    color: var(--foreground);
+    stroke-width: 1.8;
+    fill: none;
+    stroke: currentColor;
+  }
+  .shape-tile:hover svg.shape { color: var(--brand); }
+  .shape-tile .label {
+    font-size: 11.5px;
+    line-height: 1.1;
+    color: var(--foreground);
+    font-weight: 500;
+  }
+  .shape-tile .ct {
+    position: absolute; top: 6px; right: 8px;
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    color: var(--muted-foreground);
+  }
+
+  /* Gender + Construction stack */
+  .gender-stack {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+  .gender-card {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 10px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    background: var(--card);
+    font-size: 12.5px;
+    transition: border-color var(--duration-snap), color var(--duration-snap);
+  }
+  .gender-card .ico {
+    width: 18px; height: 18px;
+    color: var(--muted-foreground);
+    transition: color var(--duration-snap);
+  }
+  .gender-card:hover { border-color: var(--brand); color: var(--brand); }
+  .gender-card:hover .ico { color: var(--brand); }
+
+  .construction-stack {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+
+  /* Material column (chips) */
+  .chip-cloud {
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .material-extra {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+  .material-extra .label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    margin-bottom: 8px;
+  }
+  .price-presets {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  }
+  .price-preset {
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-sm);
+    padding: 8px 10px;
+    text-align: left;
+    font-size: 12px;
+    color: var(--foreground);
+    cursor: pointer;
+    transition: border-color var(--duration-snap), background var(--duration-snap);
+  }
+  .price-preset .price { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted-foreground); display: block; margin-top: 2px; }
+  .price-preset:hover { border-color: var(--brand); background: var(--brand-50); }
+
+  /* Right rail: featured */
+  .featured {
+    background: var(--cream);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    display: flex; flex-direction: column;
+    gap: 12px;
+    border: 1px solid var(--hairline);
+    height: 100%;
+  }
+  .featured .photo {
+    aspect-ratio: 4 / 3;
+    border-radius: var(--r-md);
+    background:
+      repeating-linear-gradient(135deg,
+        oklch(0.92 0.012 80) 0 6px,
+        oklch(0.96 0.008 80) 6px 12px);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted-foreground);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    border: 1px dashed var(--border);
+  }
+  .featured .meta { display: flex; flex-direction: column; gap: 4px; }
+  .featured .meta .eyebrow { font-size: 10px; }
+  .featured h3 {
+    font-size: 18px;
+    line-height: 1.15;
+  }
+  .featured p { font-size: 12.5px; color: var(--muted-foreground); margin: 0; line-height: 1.5; }
+  .featured .cta-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+  }
+  .featured .cta-row .price {
+    font-family: var(--font-serif);
+    font-size: 19px;
+  }
+  .featured .cta-row .cta {
+    font-size: 12.5px;
+    color: var(--brand);
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+
+  /* Bottom strip: Brands */
+  .brand-strip {
+    margin-top: 22px;
+    padding-top: 16px;
+    border-top: 1px solid var(--hairline);
+    display: flex; align-items: center; gap: 18px;
+  }
+  .brand-strip .lbl {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    white-space: nowrap;
+  }
+  .brand-strip .logos {
+    display: flex; align-items: center; gap: 6px;
+    flex: 1;
+    overflow-x: auto;
+  }
+  .brand-pill {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border: 1px solid var(--hairline);
+    border-radius: 100px;
+    font-size: 12.5px;
+    color: var(--foreground);
+    transition: border-color var(--duration-snap), color var(--duration-snap);
+    background: var(--card);
+  }
+  .brand-pill:hover { border-color: var(--brand); color: var(--brand); }
+  .brand-pill.is-featured {
+    background: var(--ink);
+    color: #fff;
+    border-color: var(--ink);
+  }
+  .brand-strip .more {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--muted-foreground);
+  }
+  .brand-strip .more:hover { color: var(--brand); }
+
+  /* ─── TYPE 2: CONTACT LENSES (parameter-led) ───────── */
+  .mega-contact .body {
+    display: grid;
+    grid-template-columns: 1.2fr 1.1fr 1fr 0.95fr;
+    gap: 32px;
+  }
+
+  .cycle-stack { display: flex; flex-direction: column; gap: 8px; }
+  .cycle-card {
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    padding: 12px;
+    background: var(--card);
+    cursor: pointer;
+    transition: border-color var(--duration-snap), background var(--duration-snap);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .cycle-card:hover { border-color: var(--brand); background: var(--brand-50); }
+  .cycle-card .glyph {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--cream);
+    color: var(--brand);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-weight: 500;
+    font-size: 11.5px;
+    border: 1px solid var(--hairline);
+  }
+  .cycle-card .meta { flex: 1; min-width: 0; }
+  .cycle-card .name { font-size: 13.5px; font-weight: 500; color: var(--foreground); line-height: 1.2; }
+  .cycle-card .sub { font-size: 11.5px; color: var(--muted-foreground); margin-top: 2px; }
+  .cycle-card .ct {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted-foreground);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  /* Sphere parameter visual */
+  .param-block {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--border);
+  }
+  .param-block .label {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    margin-bottom: 8px;
+    display: flex; align-items: baseline; justify-content: space-between;
+  }
+  .param-block .label .hint { color: var(--muted-foreground); text-transform: none; letter-spacing: 0; font-size: 11px; }
+  .sphere-rail {
+    display: flex; align-items: stretch;
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+  }
+  .sphere-cell {
+    flex: 1;
+    padding: 8px 4px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--foreground);
+    cursor: pointer;
+    border-right: 1px solid var(--hairline);
+    background: var(--card);
+    transition: background var(--duration-snap), color var(--duration-snap);
+  }
+  .sphere-cell:last-child { border-right: 0; }
+  .sphere-cell:hover { background: var(--brand-50); color: var(--brand); }
+  .sphere-cell.zero { color: var(--muted-foreground); font-weight: 500; }
+  .sphere-cell.is-active { background: var(--brand); color: #fff; }
+
+  /* Special needs cards */
+  .needs-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  }
+  .need-card {
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    padding: 10px;
+    background: var(--card);
+    cursor: pointer;
+    display: flex; flex-direction: column; gap: 4px;
+    transition: border-color var(--duration-snap), background var(--duration-snap);
+  }
+  .need-card:hover { border-color: var(--brand); background: var(--brand-50); }
+  .need-card .icon-row { display: flex; align-items: center; justify-content: space-between; }
+  .need-card .ico { width: 16px; height: 16px; color: var(--brand); }
+  .need-card .name { font-size: 12.5px; color: var(--foreground); font-weight: 500; line-height: 1.2; }
+  .need-card .ct { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted-foreground); }
+
+  /* Brand grid */
+  .brand-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+  }
+  .brand-card {
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    padding: 10px;
+    background: var(--card);
+    cursor: pointer;
+    transition: border-color var(--duration-snap);
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .brand-card:hover { border-color: var(--brand); }
+  .brand-card .name { font-family: var(--font-serif); font-size: 15px; line-height: 1.1; color: var(--foreground); }
+  .brand-card .ct { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted-foreground); }
+
+  /* Right rail: helper */
+  .helper {
+    background: var(--ink);
+    color: #fff;
+    border-radius: var(--r-lg);
+    padding: 16px;
+    display: flex; flex-direction: column;
+    gap: 12px;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  .helper .eyebrow { color: oklch(0.78 0.04 28); }
+  .helper h3 {
+    font-size: 18px;
+    line-height: 1.15;
+    color: #fff;
+  }
+  .helper p { font-size: 12.5px; color: oklch(0.85 0.008 250); margin: 0; line-height: 1.5; }
+  .helper .actions {
+    margin-top: auto;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .helper .btn-primary {
+    background: var(--brand);
+    color: #fff;
+    border: 0;
+    border-radius: 100px;
+    padding: 11px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .helper .btn-ghost {
+    border: 1px solid oklch(0.85 0.008 250 / 0.25);
+    color: #fff;
+    border-radius: 100px;
+    padding: 10px 18px;
+    font-size: 13px;
+    display: inline-flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .helper .btn-ghost:hover { border-color: #fff; }
+  .helper .badge {
+    align-self: flex-start;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: oklch(0.40 0.160 28);
+    padding: 3px 9px;
+    border-radius: 100px;
+  }
+
+  /* Bottom strip: useful links / promo */
+  .util-strip {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hairline);
+    display: flex; align-items: center; gap: 20px;
+    flex-wrap: wrap;
+  }
+  .util-strip .util {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12.5px;
+    color: var(--foreground);
+  }
+  .util-strip .util .ico { color: var(--brand); }
+  .util-strip .util:hover { color: var(--brand); }
+  .util-strip .div { width: 1px; height: 14px; background: var(--hairline); }
+
+  /* ─── TYPE 3: GLASSES LENSES (technical) ───────────── */
+  .mega-glasses .body {
+    display: grid;
+    grid-template-columns: 1.25fr 1fr 1fr 1fr;
+    gap: 32px;
+  }
+  .lens-type-stack { display: flex; flex-direction: column; gap: 6px; }
+  .lens-type-row {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    background: var(--card);
+    cursor: pointer;
+    transition: border-color var(--duration-snap), background var(--duration-snap);
+  }
+  .lens-type-row:hover { border-color: var(--brand); background: var(--brand-50); }
+  .lens-type-row .glyph {
+    width: 36px; height: 32px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: var(--r-sm);
+    background: var(--cream);
+    color: var(--brand);
+    border: 1px solid var(--hairline);
+  }
+  .lens-type-row .name { font-size: 13.5px; font-weight: 500; line-height: 1.2; }
+  .lens-type-row .sub { font-size: 11.5px; color: var(--muted-foreground); margin-top: 1px; }
+  .lens-type-row .ct {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--muted-foreground);
+    text-align: right;
+  }
+
+  /* Manufacturer column */
+  .mfg-stack { display: flex; flex-direction: column; gap: 8px; }
+  .mfg-card {
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    padding: 10px 12px;
+    background: var(--card);
+    display: flex; align-items: center; justify-content: space-between;
+    transition: border-color var(--duration-snap);
+    cursor: pointer;
+  }
+  .mfg-card:hover { border-color: var(--brand); }
+  .mfg-card .name { font-family: var(--font-serif); font-size: 17px; }
+  .mfg-card .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted-foreground); }
+  .mfg-card .tag-mini {
+    font-family: var(--font-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    background: var(--brand-50);
+    color: var(--brand);
+  }
+
+  /* Tech / coatings — pill grid */
+  .tag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+  /* Purpose cards */
+  .purpose-stack { display: flex; flex-direction: column; gap: 6px; }
+  .purpose-card {
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    padding: 9px 11px;
+    background: var(--card);
+    display: flex; align-items: center; gap: 10px;
+    transition: border-color var(--duration-snap), background var(--duration-snap);
+    cursor: pointer;
+  }
+  .purpose-card:hover { border-color: var(--brand); background: var(--brand-50); }
+  .purpose-card .ico { width: 16px; height: 16px; color: var(--brand); flex-shrink: 0; }
+  .purpose-card .name { font-size: 12.5px; }
+  .purpose-card .ct { margin-left: auto; font-family: var(--font-mono); font-size: 10.5px; color: var(--muted-foreground); }
+
+  /* Glasses-lens helper: prescription style */
+  .rx-helper {
+    background: var(--cream);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    border: 1px solid var(--hairline);
+    display: flex; flex-direction: column; gap: 10px;
+    height: 100%;
+  }
+  .rx-helper .eyebrow { font-size: 10px; }
+  .rx-helper h3 { font-size: 18px; line-height: 1.15; }
+  .rx-helper p { font-size: 12.5px; color: var(--muted-foreground); margin: 0; line-height: 1.5; }
+  .rx-helper .rx-form {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+    padding: 10px;
+    background: var(--card);
+    border: 1px dashed var(--border);
+    border-radius: var(--r-sm);
+  }
+  .rx-helper .rx-form .field {
+    display: flex; flex-direction: column;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+  }
+  .rx-helper .rx-form .field .lbl {
+    color: var(--muted-foreground);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .rx-helper .rx-form .field .val { font-size: 14px; color: var(--foreground); }
+  .rx-helper .btn-primary {
+    background: var(--brand);
+    color: #fff;
+    border-radius: 100px;
+    padding: 11px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-flex; align-items: center; justify-content: space-between; gap: 8px;
+    margin-top: auto;
+  }
+
+  /* ─── Dropdown toggle controls (interactive) ─────────── */
+  details.demo {
+    margin: 0;
+  }
+  details.demo > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  details.demo > summary::-webkit-details-marker { display: none; }
+  details.demo[open] .nav-item .caret { transform: rotate(180deg); color: var(--brand); }
+  details.demo[open] .nav-item { color: var(--brand); border-bottom-color: var(--brand); }
+
+  /* ─── In‑situ container & spacing ───────────────────── */
+  .review-stage {
+    padding: 32px 0 60px;
+  }
+  .stage-header {
+    display: flex; align-items: baseline; gap: 18px;
+    margin: 0 0 16px;
+  }
+  .stage-header h2 {
+    font-family: var(--font-serif);
+    font-size: 22px;
+    line-height: 1;
+  }
+  .stage-header .num {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--brand);
+    letter-spacing: 0.14em;
+  }
+  .stage-header .desc {
+    font-size: 13px;
+    color: var(--muted-foreground);
+    line-height: 1.5;
+  }
+  .stage-frame {
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 0;
+    background: oklch(0.99 0.004 80);
+    overflow: hidden;
+  }
+  .stage-frame .site-header { border-bottom: 1px solid var(--hairline); }
+
+  /* Floating note callouts */
+  .design-notes {
+    margin-top: 18px;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  .design-note {
+    border-left: 2px solid var(--brand);
+    padding: 0 0 0 12px;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--muted-foreground);
+  }
+  .design-note strong { color: var(--foreground); font-weight: 600; display: block; margin-bottom: 2px; font-size: 12.5px; }
+
+  @media (max-width: 1100px) {
+    .mega-frames .body, .mega-contact .body, .mega-glasses .body { grid-template-columns: 1fr 1fr; }
+    .review-grid { grid-template-columns: 1fr 1fr; }
+    .design-notes { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ─── Review banner ──────────────────────────────────── -->
+  <header class="review-banner">
+    <div class="container">
+      <span class="eyebrow">Header · Mega-menu redesign</span>
+      <h1>Фильтры в выпадающем меню категорий</h1>
+      <p>
+        Унифицированный скелет для трёх категорий: <strong>оправы &amp; солнцезащитные</strong> (визуальный),
+        <strong>контактные линзы</strong> (параметрический) и <strong>линзы для очков</strong> (технический).
+        Общая сетка, типографика, плотность и микро-взаимодействия — варьируется только наполнение колонок.
+      </p>
+      <div class="review-grid">
+        <div class="review-cell">
+          <span class="tag tag-keep">Сохранено</span>
+          <h4>Брендовая лента, иерархия, ссылка «Смотреть всё»</h4>
+          <p>Бренды по-прежнему живут отдельной полосой внизу; CTA «Смотреть всё» — пилюля‑контур в шапке меню.</p>
+        </div>
+        <div class="review-cell">
+          <span class="tag tag-adjust">Изменено</span>
+          <h4>Общий каркас вместо двух разных шаблонов</h4>
+          <p>Раньше — два разных layout’а (showcase + classic). Сейчас один: «3 фильтр-колонки + контекстный rail справа».</p>
+        </div>
+        <div class="review-cell">
+          <span class="tag tag-add">Добавлено</span>
+          <h4>Контекстный rail: featured / помощник / Rx-форма</h4>
+          <p>В каждом меню справа — блок, имеющий смысл именно для этой категории, а не повторение фильтров.</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═════════════════════════════════════════════════════
+       SECTION 1 — Frames & Sunglasses
+       ═════════════════════════════════════════════════════ -->
+  <div class="section-label">
+    <strong>Тип 1.</strong> Оправы и солнцезащитные — визуальный мега-меню (один шаблон на обе категории, отличается только заголовком и счётчиками)
+  </div>
+
+  <div class="review-stage">
+    <div class="container">
+      <div class="stage-header">
+        <span class="num">01</span>
+        <h2>Frames &amp; Sunglasses</h2>
+        <span class="desc">«Форма», «Пол», «Конструкция», «Материал» — то, по чему люди реально выбирают оправу глазами.</span>
+      </div>
+
+      <div class="stage-frame">
+        <!-- Faux site header -->
+        <div class="site-header">
+          <div class="container">
+            <div class="header-row">
+              <div class="brand-mark">ОПТИКА <span class="pct">100%</span></div>
+              <div class="header-actions">
+                <span class="header-action"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg> Поиск</span>
+                <span class="header-action"><svg class="ico" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1A5.5 5.5 0 103.2 12.4l8.8 8.8 8.8-8.8a5.5 5.5 0 000-7.8z"/></svg></span>
+                <span class="header-action"><svg class="ico" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg> Корзина</span>
+              </div>
+            </div>
+            <nav class="nav-row">
+              <div class="nav-item is-open">
+                Оправы
+                <svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="nav-item">Солнцезащитные<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Контактные линзы<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Линзы для очков<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Аксессуары<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Услуги<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Магазины</div>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Mega panel: Frames -->
+        <div class="mega mega-frames">
+          <div class="container">
+            <div class="mega-inner">
+
+              <!-- Head -->
+              <div class="mega-head">
+                <div class="title-line">
+                  <h2><em>Оправы.</em> Выберите по форме, размеру и материалу</h2>
+                  <span class="count">1284 модели · 11 брендов</span>
+                </div>
+                <a class="head-cta" href="#">
+                  Смотреть все оправы
+                  <svg class="ico" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+              </div>
+
+              <!-- Body -->
+              <div class="body">
+
+                <!-- COL 1: SHAPE -->
+                <div>
+                  <div class="col-title">
+                    <span class="name">Форма</span>
+                    <a class="all" href="#">12 форм →</a>
+                  </div>
+                  <div class="shape-grid">
+                    <a class="shape-tile" href="#">
+                      <span class="ct">214</span>
+                      <svg class="shape" viewBox="0 0 60 22"><rect x="2" y="3" width="22" height="16" rx="3"/><rect x="36" y="3" width="22" height="16" rx="3"/><path d="M24 11h12"/></svg>
+                      <span class="label">Прямоугольные</span>
+                    </a>
+                    <a class="shape-tile" href="#">
+                      <span class="ct">186</span>
+                      <svg class="shape" viewBox="0 0 60 22"><rect x="2" y="3" width="22" height="16" rx="1"/><rect x="36" y="3" width="22" height="16" rx="1"/><path d="M24 11h12"/></svg>
+                      <span class="label">Квадратные</span>
+                    </a>
+                    <a class="shape-tile" href="#">
+                      <span class="ct">142</span>
+                      <svg class="shape" viewBox="0 0 60 22"><ellipse cx="13" cy="11" rx="11" ry="8"/><ellipse cx="47" cy="11" rx="11" ry="8"/><path d="M24 11h12"/></svg>
+                      <span class="label">Овальные</span>
+                    </a>
+                    <a class="shape-tile" href="#">
+                      <span class="ct">98</span>
+                      <svg class="shape" viewBox="0 0 60 22"><circle cx="13" cy="11" r="9"/><circle cx="47" cy="11" r="9"/><path d="M22 11h16"/></svg>
+                      <span class="label">Круглые</span>
+                    </a>
+                    <a class="shape-tile" href="#">
+                      <span class="ct">76</span>
+                      <svg class="shape" viewBox="0 0 60 22"><path d="M2 6 q11 -6 22 0 v9 q-11 6 -22 0 z"/><path d="M36 6 q11 -6 22 0 v9 q-11 6 -22 0 z"/><path d="M24 11h12"/></svg>
+                      <span class="label">Авиаторы</span>
+                    </a>
+                    <a class="shape-tile" href="#">
+                      <span class="ct">64</span>
+                      <svg class="shape" viewBox="0 0 60 22"><path d="M2 5 h22 v6 q-3 7 -11 7 q-8 0 -11 -7 z"/><path d="M36 5 h22 v6 q-3 7 -11 7 q-8 0 -11 -7 z"/><path d="M24 8h12"/></svg>
+                      <span class="label">Клабмастер</span>
+                    </a>
+                    <a class="shape-tile" href="#">
+                      <span class="ct">52</span>
+                      <svg class="shape" viewBox="0 0 60 22"><path d="M2 5 q4 -4 11 -4 q7 0 11 6 v9 q-3 4 -11 4 q-8 0 -11 -6 z"/><path d="M36 5 q4 -4 11 -4 q7 0 11 6 v9 q-3 4 -11 4 q-8 0 -11 -6 z"/></svg>
+                      <span class="label">Бабочка</span>
+                    </a>
+                    <a class="shape-tile" href="#">
+                      <span class="ct">48</span>
+                      <svg class="shape" viewBox="0 0 60 22"><path d="M2 8 l11 -5 l11 5 v6 l-11 5 l-11 -5 z"/><path d="M36 8 l11 -5 l11 5 v6 l-11 5 l-11 -5 z"/></svg>
+                      <span class="label">Геометрия</span>
+                    </a>
+                    <a class="shape-tile" href="#">
+                      <span class="ct">36</span>
+                      <svg class="shape" viewBox="0 0 60 22"><path d="M2 7 q0 -5 6 -5 h44 q6 0 6 5 v8 q0 5 -6 5 h-44 q-6 0 -6 -5 z"/></svg>
+                      <span class="label">Маска</span>
+                    </a>
+                    <a class="shape-tile" href="#">
+                      <span class="ct">29</span>
+                      <svg class="shape" viewBox="0 0 60 22"><path d="M2 8 q5 -7 12 -5 q5 1 10 7 l10 0 q5 -6 10 -7 q7 -2 12 5 v6 q-5 7 -12 5 q-5 -1 -10 -7 l-10 0 q-5 6 -10 7 q-7 2 -12 -5 z"/></svg>
+                      <span class="label">Спорт</span>
+                    </a>
+                    <a class="shape-tile" href="#">
+                      <span class="ct">22</span>
+                      <svg class="shape" viewBox="0 0 60 22"><path d="M2 5 q3 -3 11 -3 q8 0 11 3 v9 q-3 5 -11 5 q-8 0 -11 -5 z"/><path d="M36 5 q3 -3 11 -3 q8 0 11 3 v9 q-3 5 -11 5 q-8 0 -11 -5 z"/></svg>
+                      <span class="label">Трапеция</span>
+                    </a>
+                    <a class="shape-tile" href="#">
+                      <span class="ct">18</span>
+                      <svg class="shape" viewBox="0 0 60 22"><path d="M2 3 h22 v6 q-3 9 -11 9 q-8 0 -11 -9 z"/><path d="M36 3 h22 v6 q-3 9 -11 9 q-8 0 -11 -9 z"/></svg>
+                      <span class="label">Лектор</span>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- COL 2: Gender + Construction + Cliponly -->
+                <div>
+                  <div class="col-title">
+                    <span class="name">Пол / возраст</span>
+                    <a class="all" href="#">Все →</a>
+                  </div>
+                  <div class="gender-stack">
+                    <a class="gender-card" href="#">
+                      <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="9" r="4"/><path d="M5 21c0-4 3-7 7-7s7 3 7 7"/></svg>
+                      <span>Мужские</span>
+                      <span style="margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--muted-foreground)">412</span>
+                    </a>
+                    <a class="gender-card" href="#">
+                      <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M12 12v8M9 17h6"/></svg>
+                      <span>Женские</span>
+                      <span style="margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--muted-foreground)">488</span>
+                    </a>
+                    <a class="gender-card" href="#">
+                      <svg class="ico" viewBox="0 0 24 24"><circle cx="9" cy="9" r="3"/><circle cx="16" cy="9" r="3"/><path d="M4 20c0-3 2-5 5-5s5 2 5 5M11 20c0-3 2-5 5-5s5 2 5 5"/></svg>
+                      <span>Унисекс</span>
+                      <span style="margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--muted-foreground)">204</span>
+                    </a>
+                    <a class="gender-card" href="#">
+                      <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="10" r="3"/><path d="M7 21c0-3 2-5 5-5s5 2 5 5"/><path d="M9 4l3-2 3 2"/></svg>
+                      <span>Детские</span>
+                      <span style="margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--muted-foreground)">180</span>
+                    </a>
+                  </div>
+
+                  <div class="material-extra">
+                    <div class="label">Конструкция</div>
+                    <div class="construction-stack">
+                      <a class="row-link" href="#">
+                        <span class="glyph"><svg viewBox="0 0 60 14" style="width:34px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6"><path d="M2 4 q0 -2 3 -2 h20 q3 0 3 2 v6 q0 2 -3 2 h-20 q-3 0 -3 -2 z"/><path d="M32 4 q0 -2 3 -2 h20 q3 0 3 2 v6 q0 2 -3 2 h-20 q-3 0 -3 -2 z"/></svg></span>
+                        Ободковые<span class="count">684</span><span class="arrow">→</span>
+                      </a>
+                      <a class="row-link" href="#">
+                        <span class="glyph"><svg viewBox="0 0 60 14" style="width:34px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6"><path d="M2 9 h26"/><path d="M32 9 h26"/></svg></span>
+                        Безободковые<span class="count">142</span><span class="arrow">→</span>
+                      </a>
+                      <a class="row-link" href="#">
+                        <span class="glyph"><svg viewBox="0 0 60 14" style="width:34px;height:14px;stroke:currentColor;fill:none;stroke-width:1.6"><path d="M2 4 q0 -2 3 -2 h20 q3 0 3 2"/><path d="M2 4 v6 q0 2 3 2 h20 q3 0 3 -2 v-6"/><path d="M32 4 q0 -2 3 -2 h20 q3 0 3 2"/><path d="M32 4 v6 q0 2 3 2 h20 q3 0 3 -2 v-6"/></svg></span>
+                        Полуободковые<span class="count">96</span><span class="arrow">→</span>
+                      </a>
+                      <a class="row-link" href="#">
+                        <span class="glyph"><svg class="ico" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+                        Clip-on<span class="count">28</span><span class="arrow">→</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- COL 3: Material + Color + Price -->
+                <div>
+                  <div class="col-title">
+                    <span class="name">Материал</span>
+                    <a class="all" href="#">Все →</a>
+                  </div>
+                  <div class="chip-cloud">
+                    <a class="chip" href="#">Ацетат <span class="count">412</span></a>
+                    <a class="chip" href="#">Титан <span class="count">218</span></a>
+                    <a class="chip" href="#">Пластик <span class="count">196</span></a>
+                    <a class="chip" href="#">TR-90 <span class="count">142</span></a>
+                    <a class="chip" href="#">Нейлон <span class="count">88</span></a>
+                    <a class="chip" href="#">Pebax <span class="count">42</span></a>
+                    <a class="chip" href="#">Комбинированный <span class="count">186</span></a>
+                  </div>
+
+                  <div class="material-extra">
+                    <div class="label">Цена</div>
+                    <div class="price-presets">
+                      <button class="price-preset"><strong>Доступные</strong><span class="price">до 5 000 ₽</span></button>
+                      <button class="price-preset"><strong>Средний</strong><span class="price">5 — 12 000 ₽</span></button>
+                      <button class="price-preset"><strong>Премиум</strong><span class="price">12 — 25 000 ₽</span></button>
+                      <button class="price-preset"><strong>Дизайнерские</strong><span class="price">от 25 000 ₽</span></button>
+                    </div>
+                  </div>
+
+                  <div class="material-extra">
+                    <div class="label">Тег коллекции</div>
+                    <div class="chip-cloud">
+                      <a class="chip" href="#">Новинки</a>
+                      <a class="chip" href="#">Хит сезона</a>
+                      <a class="chip" href="#">Скидка</a>
+                      <a class="chip" href="#">Винтаж</a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- RIGHT RAIL: Featured drop -->
+                <aside class="featured">
+                  <span class="eyebrow">Сентябрьская подборка</span>
+                  <h3>O.D.L. — собственный дизайн</h3>
+                  <div class="photo">product · O.D.L. Anselm Oval</div>
+                  <p>Ацетатные оправы, отточенный овал, петли с пружиной. Делаем сами в Петербурге — отсюда цена.</p>
+                  <div class="cta-row">
+                    <span class="price">от 8 900 ₽</span>
+                    <a class="cta" href="#">К коллекции <svg class="ico" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+                  </div>
+                </aside>
+
+              </div>
+
+              <!-- Brand strip -->
+              <div class="brand-strip">
+                <span class="lbl">Бренды</span>
+                <div class="logos">
+                  <a class="brand-pill is-featured" href="#">O.D.L.</a>
+                  <a class="brand-pill" href="#">Lionsheart</a>
+                  <a class="brand-pill" href="#">Stepper</a>
+                  <a class="brand-pill" href="#">Silhouette</a>
+                  <a class="brand-pill" href="#">Polaroid</a>
+                  <a class="brand-pill" href="#">Furla</a>
+                  <a class="brand-pill" href="#">Guess</a>
+                  <a class="brand-pill" href="#">Safilo</a>
+                  <a class="brand-pill" href="#">Okula</a>
+                  <a class="brand-pill" href="#">Juniorlook</a>
+                  <a class="brand-pill" href="#">Fisher-Price</a>
+                </div>
+                <a class="more" href="#">Все 11 →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="design-notes">
+        <div class="design-note"><strong>Иконка формы — мини-набросок самой оправы</strong>Не «обобщённый» прямоугольник, а узнаваемый двухлинзовый силуэт; читается даже на мелком масштабе.</div>
+        <div class="design-note"><strong>Счётчик в углу плитки</strong>Сразу видно, какие формы реально живые: «Прямоугольные · 214» против «Лектор · 18». Помогает не идти в пустую категорию.</div>
+        <div class="design-note"><strong>Featured rail вместо ещё одного столбца фильтров</strong>Когда у пользователя нет конкретного запроса — «O.D.L. сентябрьская подборка» работает как точка входа.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════
+       SECTION 2 — Contact lenses
+       ═════════════════════════════════════════════════════ -->
+  <div class="section-label">
+    <strong>Тип 2.</strong> Контактные линзы — параметрический мега-меню (режим, оптическая сила, особенности, бренд)
+  </div>
+
+  <div class="review-stage">
+    <div class="container">
+      <div class="stage-header">
+        <span class="num">02</span>
+        <h2>Contact Lenses</h2>
+        <span class="desc">Здесь форма не работает. Люди приходят с рецептом — нужно дать им «срез по параметрам» и понятные ярлыки «торические / цветные / для сухих глаз».</span>
+      </div>
+
+      <div class="stage-frame">
+        <div class="site-header">
+          <div class="container">
+            <div class="header-row">
+              <div class="brand-mark">ОПТИКА <span class="pct">100%</span></div>
+              <div class="header-actions">
+                <span class="header-action"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg> Поиск</span>
+                <span class="header-action"><svg class="ico" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1A5.5 5.5 0 103.2 12.4l8.8 8.8 8.8-8.8a5.5 5.5 0 000-7.8z"/></svg></span>
+                <span class="header-action"><svg class="ico" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg> Корзина</span>
+              </div>
+            </div>
+            <nav class="nav-row">
+              <div class="nav-item">Оправы<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Солнцезащитные<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item is-open">Контактные линзы<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Линзы для очков<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Аксессуары<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Услуги<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Магазины</div>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Mega panel: contact lenses -->
+        <div class="mega mega-contact">
+          <div class="container">
+            <div class="mega-inner">
+              <div class="mega-head">
+                <div class="title-line">
+                  <h2><em>Контактные линзы.</em> По режиму ношения, силе и особенностям</h2>
+                  <span class="count">342 SKU · 4 бренда</span>
+                </div>
+                <a class="head-cta" href="#">
+                  Все линзы
+                  <svg class="ico" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+              </div>
+
+              <div class="body">
+
+                <!-- COL 1: Replacement cycle -->
+                <div>
+                  <div class="col-title">
+                    <span class="name">Режим / замена</span>
+                    <a class="all" href="#">Все →</a>
+                  </div>
+                  <div class="cycle-stack">
+                    <a class="cycle-card" href="#">
+                      <span class="glyph">1д</span>
+                      <span class="meta">
+                        <span class="name">Однодневные</span>
+                        <span class="sub">Новые на каждый день</span>
+                      </span>
+                      <span class="ct">142</span>
+                    </a>
+                    <a class="cycle-card" href="#">
+                      <span class="glyph">14д</span>
+                      <span class="meta">
+                        <span class="name">Двухнедельные</span>
+                        <span class="sub">Гибкий или дневной режим</span>
+                      </span>
+                      <span class="ct">68</span>
+                    </a>
+                    <a class="cycle-card" href="#">
+                      <span class="glyph">1м</span>
+                      <span class="meta">
+                        <span class="name">Месячные</span>
+                        <span class="sub">Дневной режим с уходом</span>
+                      </span>
+                      <span class="ct">96</span>
+                    </a>
+                    <a class="cycle-card" href="#">
+                      <span class="glyph">3м</span>
+                      <span class="meta">
+                        <span class="name">Квартальные</span>
+                        <span class="sub">Долгий цикл, MPS-уход</span>
+                      </span>
+                      <span class="ct">36</span>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- COL 2: Optical parameters -->
+                <div>
+                  <div class="col-title">
+                    <span class="name">Параметры</span>
+                    <a class="all" href="#">Полный калькулятор →</a>
+                  </div>
+
+                  <div class="param-block" style="margin-top:0;padding-top:0;border-top:0">
+                    <div class="label">Сфера <span class="hint">D, диоптрии</span></div>
+                    <div class="sphere-rail">
+                      <a class="sphere-cell" href="#">−6.00</a>
+                      <a class="sphere-cell" href="#">−4.00</a>
+                      <a class="sphere-cell" href="#">−2.00</a>
+                      <a class="sphere-cell" href="#">−1.00</a>
+                      <a class="sphere-cell zero" href="#">0</a>
+                      <a class="sphere-cell" href="#">+1.00</a>
+                      <a class="sphere-cell" href="#">+3.00</a>
+                    </div>
+                  </div>
+
+                  <div class="param-block">
+                    <div class="label">Цилиндр / ось <span class="hint">для астигматизма</span></div>
+                    <div class="chip-cloud">
+                      <a class="chip" href="#">−0.75</a>
+                      <a class="chip" href="#">−1.25</a>
+                      <a class="chip" href="#">−1.75</a>
+                      <a class="chip" href="#">−2.25</a>
+                      <a class="chip" href="#">Своя ось °</a>
+                    </div>
+                  </div>
+
+                  <div class="param-block">
+                    <div class="label">Аддидация <span class="hint">мультифокальные</span></div>
+                    <div class="chip-cloud">
+                      <a class="chip" href="#">Low</a>
+                      <a class="chip" href="#">Med</a>
+                      <a class="chip" href="#">High</a>
+                    </div>
+                  </div>
+
+                  <div class="param-block">
+                    <div class="label">Радиус кривизны (BC)</div>
+                    <div class="chip-cloud">
+                      <a class="chip" href="#">8.4</a>
+                      <a class="chip" href="#">8.6</a>
+                      <a class="chip" href="#">8.7</a>
+                      <a class="chip" href="#">9.0</a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- COL 3: Special needs + Brand -->
+                <div>
+                  <div class="col-title">
+                    <span class="name">Особенности</span>
+                    <a class="all" href="#">Все →</a>
+                  </div>
+                  <div class="needs-grid">
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <svg class="ico" viewBox="0 0 24 24"><path d="M2.5 12C3.7 8 7.5 5 12 5s8.3 3 9.5 7c-1.2 4-5 7-9.5 7s-8.3-3-9.5-7z"/><circle cx="12" cy="12" r="2"/></svg>
+                        <span class="ct">38</span>
+                      </span>
+                      <span class="name">Для сухих глаз</span>
+                    </a>
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>
+                        <span class="ct">52</span>
+                      </span>
+                      <span class="name">Торические</span>
+                    </a>
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg>
+                        <span class="ct">24</span>
+                      </span>
+                      <span class="name">Мульти­фокальные</span>
+                    </a>
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12a9 9 0 0118 0"/></svg>
+                        <span class="ct">18</span>
+                      </span>
+                      <span class="name">Цветные</span>
+                    </a>
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <svg class="ico" viewBox="0 0 24 24"><path d="M5 4l14 16M5 20L19 4"/></svg>
+                        <span class="ct">12</span>
+                      </span>
+                      <span class="name">UV-защита</span>
+                    </a>
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></svg>
+                        <span class="ct">6</span>
+                      </span>
+                      <span class="name">Гибридные</span>
+                    </a>
+                  </div>
+
+                  <div class="param-block">
+                    <div class="label">Бренд</div>
+                    <div class="brand-grid">
+                      <a class="brand-card" href="#">
+                        <span class="name">Acuvue</span>
+                        <span class="ct">142 SKU</span>
+                      </a>
+                      <a class="brand-card" href="#">
+                        <span class="name">Cooper­Vision</span>
+                        <span class="ct">96 SKU</span>
+                      </a>
+                      <a class="brand-card" href="#">
+                        <span class="name">Bausch+Lomb</span>
+                        <span class="ct">62 SKU</span>
+                      </a>
+                      <a class="brand-card" href="#">
+                        <span class="name">Alcon</span>
+                        <span class="ct">42 SKU</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- RIGHT RAIL: dark helper -->
+                <aside class="helper">
+                  <span class="badge">Не знаете параметры?</span>
+                  <h3>Подбор линз с офтальмологом</h3>
+                  <p>Бесплатная подборка в салоне за 20 минут. Принесите рецепт или сдайте на месте.</p>
+                  <div class="actions">
+                    <a class="btn-primary" href="#">
+                      Записаться в салон
+                      <svg class="ico" viewBox="0 0 24 24" style="width:14px;height:14px;color:#fff"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                    <a class="btn-ghost" href="#">
+                      Загрузить рецепт
+                      <svg class="ico" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M14 3v5h5M5 21h14V8l-5-5H5z"/></svg>
+                    </a>
+                  </div>
+                </aside>
+              </div>
+
+              <!-- Utility strip -->
+              <div class="util-strip">
+                <a class="util" href="#">
+                  <svg class="ico" viewBox="0 0 24 24"><path d="M20 8v12H4V8M2 4h20v4H2zM10 12h4"/></svg>
+                  Подписка на линзы −15%
+                </a>
+                <span class="div"></span>
+                <a class="util" href="#">
+                  <svg class="ico" viewBox="0 0 24 24"><path d="M21 12l-9 9-9-9 9-9 9 9z"/><path d="M9 12l2 2 4-4"/></svg>
+                  Все растворы и уход
+                </a>
+                <span class="div"></span>
+                <a class="util" href="#">
+                  <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  Доставка ко вторнику
+                </a>
+                <span class="div"></span>
+                <a class="util" href="#">
+                  <svg class="ico" viewBox="0 0 24 24"><path d="M4 4h16v4l-6 8v4h-4v-4L4 8z"/></svg>
+                  Гид по подбору
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="design-notes">
+        <div class="design-note"><strong>«Сфера» — это шкала, а не список</strong>Кнопки‑ячейки с моноширинным шрифтом; ноль помечен серым. Это сразу даёт ощущение «диоптрийной линейки».</div>
+        <div class="design-note"><strong>«Особенности» — карточки‑тэги, а не пилюли</strong>Торические и мультифокальные — это маршруты на отдельные сегменты каталога, им место как самостоятельным карточкам со счётчиками.</div>
+        <div class="design-note"><strong>Тёмный rail справа — точка входа в подбор</strong>Контраст с белым меню. Это не реклама — это альтернативный путь для тех, кто не знает свой рецепт.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═════════════════════════════════════════════════════
+       SECTION 3 — Glasses lenses
+       ═════════════════════════════════════════════════════ -->
+  <div class="section-label">
+    <strong>Тип 3.</strong> Линзы для очков — технический мега-меню (тип, производитель, технологии, назначение)
+  </div>
+
+  <div class="review-stage">
+    <div class="container">
+      <div class="stage-header">
+        <span class="num">03</span>
+        <h2>Glasses Lenses</h2>
+        <span class="desc">Самая «инженерная» категория: однофокальные / прогрессивные, индексы преломления, покрытия, технологии (Stellest, MiyoSmart). Шапка решает за пользователя — «куда я попал».</span>
+      </div>
+
+      <div class="stage-frame">
+        <div class="site-header">
+          <div class="container">
+            <div class="header-row">
+              <div class="brand-mark">ОПТИКА <span class="pct">100%</span></div>
+              <div class="header-actions">
+                <span class="header-action"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg> Поиск</span>
+                <span class="header-action"><svg class="ico" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1A5.5 5.5 0 103.2 12.4l8.8 8.8 8.8-8.8a5.5 5.5 0 000-7.8z"/></svg></span>
+                <span class="header-action"><svg class="ico" viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/></svg> Корзина</span>
+              </div>
+            </div>
+            <nav class="nav-row">
+              <div class="nav-item">Оправы<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Солнцезащитные<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Контактные линзы<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item is-open">Линзы для очков<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Аксессуары<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Услуги<svg class="caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="nav-item">Магазины</div>
+            </nav>
+          </div>
+        </div>
+
+        <!-- Mega panel: glasses lenses -->
+        <div class="mega mega-glasses">
+          <div class="container">
+            <div class="mega-inner">
+              <div class="mega-head">
+                <div class="title-line">
+                  <h2><em>Линзы для очков.</em> Тип, производитель, технологии</h2>
+                  <span class="count">186 моделей · 3 производителя</span>
+                </div>
+                <a class="head-cta" href="#">
+                  Все линзы
+                  <svg class="ico" viewBox="0 0 24 24" style="width:14px;height:14px"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </a>
+              </div>
+
+              <div class="body">
+
+                <!-- COL 1: Lens type -->
+                <div>
+                  <div class="col-title">
+                    <span class="name">Тип линзы</span>
+                    <a class="all" href="#">Все →</a>
+                  </div>
+                  <div class="lens-type-stack">
+                    <a class="lens-type-row" href="#">
+                      <span class="glyph"><svg viewBox="0 0 30 22" style="width:24px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="15" cy="11" r="8"/></svg></span>
+                      <span><span class="name">Однофокальные</span><span class="sub">Одна оптическая зона</span></span>
+                      <span class="ct">82</span>
+                    </a>
+                    <a class="lens-type-row" href="#">
+                      <span class="glyph"><svg viewBox="0 0 30 22" style="width:24px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="15" cy="11" r="8"/><path d="M15 3v16M7 11h16"/></svg></span>
+                      <span><span class="name">Прогрессивные</span><span class="sub">Плавный переход даль↔близь</span></span>
+                      <span class="ct">42</span>
+                    </a>
+                    <a class="lens-type-row" href="#">
+                      <span class="glyph"><svg viewBox="0 0 30 22" style="width:24px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="15" cy="11" r="8"/><path d="M7 13h16"/></svg></span>
+                      <span><span class="name">Бифокальные</span><span class="sub">Две зоны с границей</span></span>
+                      <span class="ct">14</span>
+                    </a>
+                    <a class="lens-type-row" href="#">
+                      <span class="glyph"><svg viewBox="0 0 30 22" style="width:24px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="15" cy="11" r="8"/><circle cx="15" cy="11" r="4"/></svg></span>
+                      <span><span class="name">Офисные</span><span class="sub">До 4 м, для работы</span></span>
+                      <span class="ct">18</span>
+                    </a>
+                    <a class="lens-type-row" href="#">
+                      <span class="glyph"><svg viewBox="0 0 30 22" style="width:24px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="15" cy="11" r="8"/><path d="M15 3v3M15 16v3M3 11h3M24 11h3M6.5 4.5l2 2M21.5 17.5l2 2M21.5 4.5l-2 2M6.5 17.5l2 -2"/></svg></span>
+                      <span><span class="name">Фотохромные</span><span class="sub">Темнеют на солнце</span></span>
+                      <span class="ct">22</span>
+                    </a>
+                    <a class="lens-type-row" href="#">
+                      <span class="glyph"><svg viewBox="0 0 30 22" style="width:24px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8"><circle cx="15" cy="11" r="8"/><circle cx="15" cy="11" r="2"/><path d="M11 7l8 8M19 7l-8 8"/></svg></span>
+                      <span><span class="name">Детские</span><span class="sub">MiyoSmart, Stellest</span></span>
+                      <span class="ct">8</span>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- COL 2: Manufacturer -->
+                <div>
+                  <div class="col-title">
+                    <span class="name">Производитель</span>
+                    <a class="all" href="#">Все →</a>
+                  </div>
+                  <div class="mfg-stack">
+                    <a class="mfg-card" href="#">
+                      <span>
+                        <span class="name">ZEISS</span>
+                        <span class="meta">Германия · 68 моделей</span>
+                      </span>
+                      <span class="tag-mini">Premium</span>
+                    </a>
+                    <a class="mfg-card" href="#">
+                      <span>
+                        <span class="name">Essilor</span>
+                        <span class="meta">Франция · 82 модели</span>
+                      </span>
+                      <span class="tag-mini">Топ</span>
+                    </a>
+                    <a class="mfg-card" href="#">
+                      <span>
+                        <span class="name">Hoya</span>
+                        <span class="meta">Япония · 36 моделей</span>
+                      </span>
+                      <span class="tag-mini">Премиум</span>
+                    </a>
+                  </div>
+
+                  <div class="param-block">
+                    <div class="label">Индекс преломления</div>
+                    <div class="chip-cloud">
+                      <a class="chip" href="#">1.50</a>
+                      <a class="chip" href="#">1.56</a>
+                      <a class="chip" href="#">1.60</a>
+                      <a class="chip" href="#">1.67</a>
+                      <a class="chip" href="#">1.74</a>
+                    </div>
+                  </div>
+
+                  <div class="param-block">
+                    <div class="label">Материал</div>
+                    <div class="chip-cloud">
+                      <a class="chip" href="#">Полимер</a>
+                      <a class="chip" href="#">Поликарбонат</a>
+                      <a class="chip" href="#">Trivex</a>
+                      <a class="chip" href="#">Стекло</a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- COL 3: Technologies / coatings -->
+                <div>
+                  <div class="col-title">
+                    <span class="name">Технологии</span>
+                    <a class="all" href="#">Все →</a>
+                  </div>
+                  <div class="tag-grid">
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--brand);letter-spacing:0.1em">CRIZAL</span>
+                        <span class="ct">42</span>
+                      </span>
+                      <span class="name">Антибликовое</span>
+                    </a>
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--brand);letter-spacing:0.1em">EYEZEN</span>
+                        <span class="ct">26</span>
+                      </span>
+                      <span class="name">Для гаджетов</span>
+                    </a>
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--brand);letter-spacing:0.1em">STELLEST</span>
+                        <span class="ct">8</span>
+                      </span>
+                      <span class="name">Контроль миопии</span>
+                    </a>
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--brand);letter-spacing:0.1em">VARILUX</span>
+                        <span class="ct">22</span>
+                      </span>
+                      <span class="name">Прогрессивы</span>
+                    </a>
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--brand);letter-spacing:0.1em">MIYOSMART</span>
+                        <span class="ct">6</span>
+                      </span>
+                      <span class="name">Для детей</span>
+                    </a>
+                    <a class="need-card" href="#">
+                      <span class="icon-row">
+                        <span style="font-family:var(--font-mono);font-size:10px;color:var(--brand);letter-spacing:0.1em">UV-PRO</span>
+                        <span class="ct">62</span>
+                      </span>
+                      <span class="name">УФ-защита</span>
+                    </a>
+                  </div>
+
+                  <div class="param-block">
+                    <div class="label">Покрытия</div>
+                    <div class="chip-cloud">
+                      <a class="chip" href="#">Антиблик</a>
+                      <a class="chip" href="#">Hard-coat</a>
+                      <a class="chip" href="#">Гидрофоб</a>
+                      <a class="chip" href="#">Blue-cut</a>
+                      <a class="chip" href="#">Hi-Vision</a>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- COL 4: Purpose / Rx helper -->
+                <div>
+                  <div class="col-title">
+                    <span class="name">Назначение</span>
+                    <a class="all" href="#">Все →</a>
+                  </div>
+                  <div class="purpose-stack">
+                    <a class="purpose-card" href="#">
+                      <svg class="ico" viewBox="0 0 24 24"><path d="M4 4h16v12H4z"/><path d="M8 20h8M12 16v4"/></svg>
+                      <span class="name">Для работы за ПК</span>
+                      <span class="ct">38</span>
+                    </a>
+                    <a class="purpose-card" href="#">
+                      <svg class="ico" viewBox="0 0 24 24"><circle cx="6" cy="17" r="3"/><circle cx="18" cy="17" r="3"/><path d="M6 17l3-10h6l3 10"/></svg>
+                      <span class="name">Для вождения</span>
+                      <span class="ct">24</span>
+                    </a>
+                    <a class="purpose-card" href="#">
+                      <svg class="ico" viewBox="0 0 24 24"><path d="M4 4l8 4 8-4M4 4v14l8 4 8-4V4M12 8v14"/></svg>
+                      <span class="name">Для чтения</span>
+                      <span class="ct">42</span>
+                    </a>
+                    <a class="purpose-card" href="#">
+                      <svg class="ico" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg>
+                      <span class="name">Универсальные</span>
+                      <span class="ct">62</span>
+                    </a>
+                    <a class="purpose-card" href="#">
+                      <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M8 16q4 2 8 0"/></svg>
+                      <span class="name">Детские</span>
+                      <span class="ct">14</span>
+                    </a>
+                  </div>
+
+                  <!-- Rx form mini -->
+                  <aside class="rx-helper" style="margin-top:18px;padding:14px">
+                    <span class="eyebrow" style="font-size:10px">Подбор по рецепту</span>
+                    <h3 style="font-size:16px">Введите свой рецепт</h3>
+                    <div class="rx-form">
+                      <div class="field"><span class="lbl">Sph R</span><span class="val">−2.50</span></div>
+                      <div class="field"><span class="lbl">Sph L</span><span class="val">−2.75</span></div>
+                      <div class="field"><span class="lbl">Cyl R</span><span class="val">−0.75</span></div>
+                      <div class="field"><span class="lbl">Cyl L</span><span class="val">—</span></div>
+                    </div>
+                    <a class="btn-primary" href="#" style="background:var(--brand);color:#fff;border-radius:100px;padding:10px 16px;font-size:12.5px;font-weight:600;display:inline-flex;align-items:center;justify-content:space-between;gap:8px">
+                      Подобрать линзы
+                      <svg class="ico" viewBox="0 0 24 24" style="width:14px;height:14px;color:#fff"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                  </aside>
+                </div>
+
+              </div>
+
+              <!-- Utility strip -->
+              <div class="util-strip">
+                <a class="util" href="#">
+                  <svg class="ico" viewBox="0 0 24 24"><path d="M21 12l-9 9-9-9 9-9 9 9z"/><path d="M9 12l2 2 4-4"/></svg>
+                  Установка линз в свою оправу
+                </a>
+                <span class="div"></span>
+                <a class="util" href="#">
+                  <svg class="ico" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+                  Гид: индекс vs толщина
+                </a>
+                <span class="div"></span>
+                <a class="util" href="#">
+                  <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  Срок изготовления 3–5 дней
+                </a>
+                <span class="div"></span>
+                <a class="util" href="#">
+                  <svg class="ico" viewBox="0 0 24 24"><path d="M4 4h16v4l-6 8v4h-4v-4L4 8z"/></svg>
+                  Кабинет диагностики
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="design-notes">
+        <div class="design-note"><strong>Тип линзы — самая первая колонка</strong>В технической категории решение «однофокальные / прогрессивные» — это первый разрез выбора. Поэтому он широкий и с иконками-схемами.</div>
+        <div class="design-note"><strong>Технологии оформлены как полу‑брендовые тэги</strong>«CRIZAL», «STELLEST», «MIYOSMART» в моноширинном капсе — это сами по себе маркетинговые имена, узнавание важнее иконки.</div>
+        <div class="design-note"><strong>Rx-форма прямо в дропдауне</strong>Пользователь, набравший рецепт, попадает не в общий каталог, а на отфильтрованную выдачу под свои параметры.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 60px;"></div>
+
+</body>
+</html>

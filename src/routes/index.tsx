@@ -1712,6 +1712,12 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
           transform:translateY(-2px);
           box-shadow:var(--shadow-md)!important;
         }
+        .o100-lens-scroller{
+          padding-top:24px;
+          padding-bottom:32px;
+          margin-top:-24px;
+          margin-bottom:-24px;
+        }
       `}</style>
       <Reveal className="flex items-end justify-between gap-4 mb-8 lg:mb-10">
         <div>
@@ -1784,7 +1790,7 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
       <Reveal delay={120}>
         <div
           ref={scroller}
-          className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-8 -mb-6 -mx-4 px-4 lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory o100-lens-scroller -mx-4 px-4 lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {products.map((product) => (
             <div

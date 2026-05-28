@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Оптика 100% — Главный баннер с рассрочкой</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --background: oklch(0.985 0.004 80);
+    --foreground: oklch(0.18 0.01 250);
+    --muted: oklch(0.94 0.008 75);
+    --muted-foreground: oklch(0.5 0.015 250);
+    --border: oklch(0.9 0.008 75);
+    --brand: #c94040;
+    --brand-foreground: oklch(0.985 0.004 80);
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Cormorant Garamond', 'Times New Roman', serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    color: var(--foreground);
+    background: var(--background);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ───── Header ───── */
+  .o100-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px clamp(24px, 5vw, 64px);
+    background: var(--background);
+    border-bottom: 1px solid color-mix(in oklab, var(--foreground) 6%, transparent);
+  }
+  .o100-logo {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 56px; height: 36px;
+    border: 2px solid var(--brand);
+    border-radius: 6px;
+    color: var(--brand);
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+  }
+  .o100-nav {
+    display: flex; align-items: center; gap: 28px;
+    font-size: 14px; font-weight: 500;
+  }
+  .o100-nav a {
+    color: var(--foreground); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 4px;
+    transition: color 0.15s ease;
+  }
+  .o100-nav a:hover { color: var(--brand); }
+  .o100-nav .chev { width: 10px; height: 10px; opacity: 0.55; }
+  .o100-icons { display: flex; align-items: center; gap: 14px; }
+  .o100-icons button, .o100-icons a {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    background: transparent; border: 0; cursor: pointer;
+    color: var(--foreground);
+    border-radius: 50%;
+    transition: background 0.15s ease;
+  }
+  .o100-icons button:hover, .o100-icons a:hover { background: color-mix(in oklab, var(--foreground) 5%, transparent); }
+  .o100-icons svg { width: 20px; height: 20px; }
+
+  /* ───── Hero ───── */
+  .o100-hero {
+    position: relative; overflow: hidden;
+    width: 100%;
+    background: oklch(0.94 0.012 70);
+  }
+  .o100-hero-bg {
+    position: absolute; inset: 0; z-index: 0;
+  }
+  .o100-hero-bg img {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover; object-position: right center;
+  }
+  .o100-hero-sun {
+    position: absolute; z-index: 1;
+    top: 5%; right: 5%;
+    width: 520px; height: 520px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,225,170,0.85) 0%, rgba(255,195,130,0.45) 35%, rgba(255,170,110,0) 72%);
+    mix-blend-mode: screen;
+    filter: blur(48px);
+    pointer-events: none;
+  }
+  .o100-hero-wash {
+    position: absolute; inset: 0; z-index: 2;
+    background: linear-gradient(90deg,
+      rgba(245,239,231,0.96) 0%,
+      rgba(245,239,231,0.82) 30%,
+      rgba(245,239,231,0.35) 55%,
+      rgba(245,239,231,0) 75%);
+    pointer-events: none;
+  }
+
+  .o100-hero-inner {
+    position: relative; z-index: 3;
+    max-width: 1280px; margin: 0 auto;
+    display: flex; align-items: center;
+    min-height: clamp(440px, 56vw, 680px);
+    padding: clamp(48px, 8vw, 96px) clamp(24px, 5vw, 64px);
+  }
+  .o100-hero-content { max-width: 560px; }
+
+  .o100-eyebrow {
+    display: inline-block;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.18em;
+    color: var(--brand);
+    margin-bottom: 20px;
+  }
+  .o100-h1 {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: clamp(40px, 6vw, 72px);
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    color: var(--foreground);
+    margin: 0 0 24px;
+  }
+  .o100-h1 .accent { color: var(--brand); }
+  .o100-lead {
+    font-size: 18px; line-height: 1.55;
+    color: var(--muted-foreground);
+    max-width: 460px;
+    margin: 0 0 32px;
+  }
+  .o100-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+  .o100-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 28px;
+    font-size: 14px; font-weight: 600;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    cursor: pointer; text-decoration: none;
+    transition: opacity 0.15s ease, background 0.15s ease, color 0.15s ease;
+  }
+  .o100-btn-primary {
+    background: var(--brand); color: #fff;
+  }
+  .o100-btn-primary:hover { opacity: 0.9; }
+  .o100-btn-outline {
+    background: transparent;
+    color: var(--foreground);
+    border-color: var(--foreground);
+  }
+  .o100-btn-outline:hover { background: var(--foreground); color: var(--background); }
+
+  /* ───── Stats row ───── */
+  .o100-stats {
+    margin-top: 40px;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    max-width: 680px;
+  }
+  .o100-stat {
+    display: flex; align-items: flex-start; gap: 10px;
+    text-decoration: none; color: inherit;
+  }
+  .o100-stat-icon {
+    flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: color-mix(in oklab, var(--brand) 12%, transparent);
+    color: var(--brand);
+  }
+  .o100-stat-icon svg { width: 16px; height: 16px; stroke-width: 1.75; }
+  .o100-stat-icon img { width: 19px; height: 11px; object-fit: contain; }
+  .o100-stat-body { display: flex; flex-direction: column; min-width: 0; }
+  .o100-stat-value {
+    font-family: var(--font-serif);
+    font-weight: 700;
+    font-size: 18px;
+    line-height: 1.1;
+    color: var(--foreground);
+  }
+  .o100-stat-label {
+    font-size: 12px; line-height: 1.35;
+    color: var(--muted-foreground);
+    margin-top: 2px;
+  }
+
+  /* ───── Installment chip — matches stat-pill style ───── */
+  a.o100-stat.is-installment {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  a.o100-stat.is-installment:hover { transform: translateY(-1px); }
+  a.o100-stat.is-installment:hover .o100-stat-icon {
+    background: color-mix(in oklab, var(--brand) 20%, transparent);
+  }
+  .o100-stat-icon--installment {
+    background: color-mix(in oklab, var(--brand) 12%, transparent);
+    overflow: hidden;
+  }
+  .o100-stat-icon--installment img {
+    width: 16px; height: 20px; object-fit: contain;
+  }
+  /* faint underline hint on the link */
+  a.o100-stat.is-installment .o100-stat-value {
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.2s ease;
+  }
+  a.o100-stat.is-installment:hover .o100-stat-value {
+    border-bottom-color: color-mix(in oklab, var(--brand) 45%, transparent);
+  }
+
+  /* ───── Notes panel (design context) ───── */
+  .notes {
+    max-width: 1280px; margin: 0 auto;
+    padding: 32px clamp(24px, 5vw, 64px) 64px;
+    font-size: 13px; color: var(--muted-foreground);
+    line-height: 1.6;
+  }
+  .notes h3 {
+    font-family: var(--font-serif); font-weight: 700;
+    font-size: 18px; color: var(--foreground);
+    margin: 0 0 8px;
+  }
+  .notes code {
+    background: var(--muted);
+    padding: 2px 6px; border-radius: 4px;
+    font-size: 12px; color: var(--foreground);
+  }
+
+  @media (max-width: 760px) {
+    .o100-nav { display: none; }
+    .o100-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     HEADER
+     ═══════════════════════════════════════════════════════ -->
+<header class="o100-header">
+  <a href="/" class="o100-logo">100<small style="font-size:0.55em; vertical-align:0.4em;">%</small></a>
+  <nav class="o100-nav">
+    <a href="#">Оправы <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></a>
+    <a href="#">Солнцезащитные <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></a>
+    <a href="#">Контактные линзы <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></a>
+    <a href="#">Линзы для очков <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></a>
+    <a href="#">Аксессуары</a>
+    <a href="#">Услуги</a>
+    <a href="#">Салоны</a>
+  </nav>
+  <div class="o100-icons">
+    <button aria-label="Поиск"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg></button>
+    <a href="#" aria-label="Личный кабинет"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></a>
+    <a href="#" aria-label="Избранное"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></a>
+    <a href="#" aria-label="Корзина"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></a>
+  </div>
+</header>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════════════════════ -->
+<section class="o100-hero">
+  <div class="o100-hero-bg">
+    <img src="uploads/1305banner.png" alt="" onerror="this.src='uploads/2nd_banner.png'">
+  </div>
+  <div class="o100-hero-sun" aria-hidden="true"></div>
+  <div class="o100-hero-wash" aria-hidden="true"></div>
+
+  <div class="o100-hero-inner">
+    <div class="o100-hero-content">
+      <span class="o100-eyebrow">Новая коллекция · Лето 2026</span>
+      <h1 class="o100-h1">
+        Видеть мир<br>
+        на <span class="accent">100%</span>
+      </h1>
+      <p class="o100-lead">
+        Современные очки, профессиональный подбор и&nbsp;забота о&nbsp;вашем зрении.
+      </p>
+
+      <div class="o100-ctas">
+        <button type="button" class="o100-btn o100-btn-primary">Записаться на проверку</button>
+        <a href="#" class="o100-btn o100-btn-outline">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M2.402 2.652a.25.25 0 0 0-.25.25v2a.75.75 0 1 1-1.5 0v-2c0-.966.784-1.75 1.75-1.75h2a.75.75 0 1 1 0 1.5h-2Zm11.146.25a.25.25 0 0 0-.25-.25h-2a.75.75 0 0 1 0-1.5h2c.967 0 1.75.784 1.75 1.75v2a.75.75 0 0 1-1.5 0v-2ZM2.402 14.048a.25.25 0 0 1-.25-.25v-2a.75.75 0 1 0-1.5 0v2c0 .966.784 1.75 1.75 1.75h2a.75.75 0 0 0 0-1.5h-2Zm10.896 0a.25.25 0 0 0 .25-.25v-2a.75.75 0 0 1 1.5 0v2a1.75 1.75 0 0 1-1.75 1.75h-2a.75.75 0 0 1 0-1.5h2ZM8 7.25a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm0 1.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Zm-3.75 4.5a3.75 3.75 0 1 1 7.5 0h-1.5a2.25 2.25 0 1 0-4.5 0h-1.5Z"/>
+          </svg>
+          Примерить онлайн
+        </a>
+      </div>
+
+      <!-- Stats row — installment chip replaces "2 cities" -->
+      <div class="o100-stats">
+
+        <div class="o100-stat">
+          <span class="o100-stat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </span>
+          <div class="o100-stat-body">
+            <strong class="o100-stat-value">11 000+</strong>
+            <span class="o100-stat-label">довольных клиентов</span>
+          </div>
+        </div>
+
+        <!-- ★ INSTALLMENT — replaces "2 города" -->
+        <a href="/tinkoff" class="o100-stat is-installment" aria-label="Рассрочка 0-0-3 от Т-Банка, без переплат">
+          <span class="o100-stat-icon o100-stat-icon--installment" aria-hidden="true">
+            <img src="uploads/t_icon_red.png" alt="">
+          </span>
+          <div class="o100-stat-body">
+            <strong class="o100-stat-value">0&#8209;0&#8209;3</strong>
+            <span class="o100-stat-label">рассрочка от Т&#8209;Банка</span>
+          </div>
+        </a>
+
+        <div class="o100-stat">
+          <span class="o100-stat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+          </span>
+          <div class="o100-stat-body">
+            <strong class="o100-stat-value">20+ лет</strong>
+            <span class="o100-stat-label">заботы о вашем зрении</span>
+          </div>
+        </div>
+
+        <div class="o100-stat">
+          <span class="o100-stat-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H15"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+          </span>
+          <div class="o100-stat-body">
+            <strong class="o100-stat-value">Доставка</strong>
+            <span class="o100-stat-label">по всей России</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════
+     DESIGN NOTES (not part of production)
+     ═══════════════════════════════════════════════════════ -->
+<section class="notes">
+  <h3>Что изменилось</h3>
+  <p>
+    В сетке статистики под героем второй слот <code>2 города · салоны оптики</code>
+    заменён на ссылку-чип <code>0‑0‑3 · рассрочка от Т‑Банка</code>. Чип использует
+    ту же визуальную систему, что и остальные элементы строки: круглая иконка 32&times;32
+    с фоном <code>color-mix(in oklab, var(--brand) 12%, transparent)</code>, серифный
+    заголовок 18&nbsp;px, подпись 12&nbsp;px цветом <code>--muted-foreground</code>.
+    В иконку вставлена T‑Bank‑метка (<code>/t_icon_red.png</code>); при наведении чип
+    приподнимается на 1&nbsp;px и фон бейджа усиливается до 20%. Клик ведёт на
+    <code>/tinkoff</code> — отдельную страницу рассрочки, которая уже существует в проекте.
+  </p>
+  <h3>Где менять в коде</h3>
+  <p>
+    <code>src/routes/index.tsx</code> → массив <code>HERO_STATS</code> (примерно 51-я строка).
+    Замените второй объект на:
+  </p>
+  <pre style="background: var(--muted); padding: 14px; border-radius: 8px; overflow:auto; font-size: 12px; color: var(--foreground); line-height: 1.5;">
+{
+  value: "0‑0‑3",
+  label: "рассрочка от Т‑Банка",
+  iconSrc: "/t_icon_red.png",
+  iconAlt: "Рассрочка 0-0-3 от Т-Банка",
+  href: "/tinkoff",
+}</pre>
+  <p>
+    В JSX‑рендере карточки внутри <code>HERO_STATS.map</code>, если поле <code>href</code>
+    есть — оборачиваем элемент в <code>&lt;Link to={s.href}&gt;</code>, иначе оставляем <code>&lt;div&gt;</code>.
+  </p>
+</section>
+
+</body>
+</html>

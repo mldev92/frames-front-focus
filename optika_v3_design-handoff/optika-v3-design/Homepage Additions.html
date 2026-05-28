@@ -226,7 +226,7 @@
   .bts-image {
     position: absolute;
     inset: 0;
-    background-image: url('assets/main_banner_v2.png');
+    background-image: url('assets/2nd_banner.png');
     background-size: cover;
     background-position: right center;
     z-index: 0;
@@ -353,16 +353,17 @@
   .lens-photo {
     position: relative;
     aspect-ratio: 1 / 1;
-    background: var(--cream);
+    background: #fff;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
+    border-bottom: 1px solid var(--border);
   }
   .lens-photo .placeholder {
     width: 64%; aspect-ratio: 1.4 / 1;
     border-radius: 6px;
     background-image: repeating-linear-gradient(135deg,
-      oklch(0.93 0.01 80) 0 6px,
-      oklch(0.97 0.008 80) 6px 12px);
+      oklch(0.96 0.006 80) 0 6px,
+      oklch(0.985 0.004 80) 6px 12px);
     border: 1px solid var(--border);
     position: relative;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
