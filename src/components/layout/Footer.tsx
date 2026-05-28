@@ -1,5 +1,5 @@
-import { Link } from "@tanstack/react-router";
 import { Instagram, Send, Youtube } from "lucide-react";
+import { SiteLogo } from "./SiteLogo";
 
 const COLS = [
   {
@@ -47,24 +47,16 @@ export function Footer() {
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 mb-12">
           <div className="col-span-2">
-            <Link to="/" className="flex items-center" aria-label="ОПТИКА 100%">
-              <img
-                src="/100_proc_logo.jpg"
-                alt="ОПТИКА 100%"
-                className="h-10 w-auto object-contain"
-              />
-            </Link>
+            <SiteLogo imageClassName="h-10 sm:h-12" loading="lazy" />
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
-              Сеть оптических салонов и интернет-магазин. Подбор очков и контактных линз с
-              полным циклом услуг.
+              Сеть оптических салонов и интернет-магазин. Подбор очков и контактных линз с полным
+              циклом услуг.
             </p>
           </div>
 
           {COLS.map((col) => (
             <div key={col.title}>
-              <div className="font-serif text-sm uppercase tracking-wider mb-4">
-                {col.title}
-              </div>
+              <div className="font-serif text-sm uppercase tracking-wider mb-4">{col.title}</div>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 {col.links.map(([label, href]) => (
                   <li key={href}>
@@ -86,13 +78,25 @@ export function Footer() {
             </a>
           </div>
           <div className="flex gap-4">
-            <a href="#" aria-label="Instagram" className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors">
+            <a
+              href="#"
+              aria-label="Instagram"
+              className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
+            >
               <Instagram className="h-5 w-5" />
             </a>
-            <a href="#" aria-label="Telegram" className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors">
+            <a
+              href="#"
+              aria-label="Telegram"
+              className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
+            >
               <Send className="h-5 w-5" />
             </a>
-            <a href="#" aria-label="YouTube" className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors">
+            <a
+              href="#"
+              aria-label="YouTube"
+              className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
+            >
               <Youtube className="h-5 w-5" />
             </a>
           </div>

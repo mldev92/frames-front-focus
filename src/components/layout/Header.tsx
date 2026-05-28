@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
 import { HEADER_NAV_ITEMS, HeaderMegaPanel, isMegaNavItem } from "./HeaderMegaMenu";
+import { SiteLogo } from "./SiteLogo";
 
 const CITIES = ["Санкт-Петербург", "Новокузнецк", "Россия"] as const;
 type City = (typeof CITIES)[number];
@@ -218,13 +219,7 @@ export function Header() {
               <Menu className="h-5 w-5" />
             </button>
 
-            <Link to="/" className="flex shrink-0 items-center" aria-label="ОПТИКА 100%">
-              <img
-                src="/100_proc_logo.jpg"
-                alt="ОПТИКА 100%"
-                className="h-10 w-auto object-contain"
-              />
-            </Link>
+            <SiteLogo imageClassName="h-7 sm:h-9 lg:h-10" />
 
             <nav className="hidden h-full min-w-0 flex-1 items-stretch justify-center gap-1 px-3 lg:flex">
               {HEADER_NAV_ITEMS.map((item) => {
@@ -292,7 +287,10 @@ export function Header() {
                 <User className="h-5 w-5" />
               </Link>
 
-              <button className="relative p-2 transition-colors hover:text-brand" aria-label="Отложенные">
+              <button
+                className="relative p-2 transition-colors hover:text-brand"
+                aria-label="Отложенные"
+              >
                 <Heart className="h-5 w-5" />
                 {mounted && saved.length > 0 && (
                   <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] text-brand-foreground">
@@ -334,18 +332,7 @@ export function Header() {
             onClick={(event) => event.stopPropagation()}
           >
             <div className="mb-8 flex items-center justify-between">
-              <Link
-                to="/"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center"
-                aria-label="ОПТИКА 100%"
-              >
-                <img
-                  src="/100_proc_logo.jpg"
-                  alt="ОПТИКА 100%"
-                  className="h-9 w-auto object-contain"
-                />
-              </Link>
+              <SiteLogo onClick={() => setMobileOpen(false)} imageClassName="h-9" />
               <button onClick={() => setMobileOpen(false)} aria-label="Закрыть">
                 <X className="h-5 w-5" />
               </button>
