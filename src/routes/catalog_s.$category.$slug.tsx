@@ -131,7 +131,11 @@ function ProductPage() {
                     activeImg === i ? "border-brand" : "border-transparent hover:border-border",
                   )}
                 >
-                  <img src={img} alt="" className="max-w-full max-h-full object-contain" />
+                  <img
+                    src={img}
+                    alt=""
+                    className="max-w-full max-h-full object-contain mix-blend-multiply"
+                  />
                 </button>
               ))}
               {showTryOn && (
@@ -149,7 +153,7 @@ function ProductPage() {
               <img
                 src={product.images[activeImg]}
                 alt={product.name}
-                className="max-w-[80%] max-h-[80%] object-contain"
+                className="max-w-[80%] max-h-[80%] object-contain mix-blend-multiply"
               />
               {showTryOn && (
                 <TryOnBadge
@@ -172,7 +176,11 @@ function ProductPage() {
                   activeImg === i ? "border-brand" : "border-transparent",
                 )}
               >
-                <img src={img} alt="" className="max-w-full max-h-full object-contain" />
+                <img
+                  src={img}
+                  alt=""
+                  className="max-w-full max-h-full object-contain mix-blend-multiply"
+                />
               </button>
             ))}
           </div>
