@@ -272,8 +272,8 @@ const FRAME_GENDER_DEFS = [
   { key: "Мужские", label: "Мужские", matches: ["Мужские"] },
   { key: "Женские", label: "Женские", matches: ["Женские"] },
   { key: "Унисекс", label: "Унисекс", matches: ["Унисекс"] },
-  { key: "для мальчиков", label: "для мальчиков", matches: ["Детские"] },
-  { key: "для девочек", label: "для девочек", matches: ["Детские"] },
+  { key: "для мальчиков", label: "для мальчиков", matches: ["Мальчики"] },
+  { key: "для девочек", label: "для девочек", matches: ["Девочки"] },
 ] as const;
 
 const COLOR_SWATCHES: { name: string; hex: string }[] = [
