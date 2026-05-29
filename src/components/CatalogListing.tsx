@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
@@ -22,6 +22,12 @@ interface ListingProps {
   products: Product[];
   facets?: FacetKey[];
   categoryKey?: Category;
+  /**
+   * Seed the active-filter state from outside (e.g. header dropdown deep-link
+   * `?gender=Мужские&shape=Прямоугольные`). Keys are facet ids; values are the
+   * filter keys for that facet (matching FRAME_*_DEFS.key entries).
+   */
+  initialFilters?: Record<string, string[]>;
 }
 
 type AvailabilityKey = "salon" | "warehouse" | "preorder";
@@ -193,9 +199,14 @@ const SHAPE_DEFS: ShapeDef[] = [
   { key: "Клипоны", label: "Клипоны", icon: "clip" },
 ];
 
+// Aliases include every value Bitrix's STIL highload directory actually emits
+// for this shape — verified against the live API. Without them the dropdown
+// label would filter 0 products even though the section is full.
 const FRAME_SHAPE_DEFS: ShapeDef[] = [
-  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp" },
-  { key: "Квадратные", label: "Квадратные", icon: "square", img: "/square.webp" },
+  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp",
+    matches: ["Прямоугольные", "Классические"] },
+  { key: "Квадратные", label: "Квадратные", icon: "square", img: "/square.webp",
+    matches: ["Квадратные", "Квадрат"] },
   {
     key: "Трапеция",
     label: "Трапеция",
@@ -204,18 +215,22 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     imgScale: 1.3,
     matches: ["Трапеция", "Вэйфэрер"],
   },
-  { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp" },
-  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval.webp", matches: ["Овальные", "Панто"] },
+  { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp",
+    matches: ["Круглые", "Круглая"] },
+  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval.webp",
+    matches: ["Овальные", "Овал", "Панто"] },
   {
     key: "Клабмастер",
     label: "Клабмастер",
     icon: "browline",
     img: "/clubman_shape.webp",
     imgScale: 1.3,
-    matches: ["Клабмастер", "Броулайн", "Броулайнеры"],
+    matches: ["Клабмастер", "Clubmaster", "Броулайн", "Броулайнеры"],
   },
-  { key: "Авиатор", label: "Авиатор", icon: "aviator", img: "/aviator.webp", matches: ["Авиатор", "Авиаторы"] },
-  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric.webp", matches: ["Геометрические", "Гексагональные"] },
+  { key: "Авиатор", label: "Авиатор", icon: "aviator", img: "/aviator.webp",
+    matches: ["Авиатор", "Авиаторы", "Aviator"] },
+  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric.webp",
+    matches: ["Геометрические", "Гексагональные", "Многоугольник"] },
   {
     key: "Маска",
     label: "Маска",
@@ -620,8 +635,21 @@ export function CatalogListing({
   products,
   facets = [],
   categoryKey,
+  initialFilters,
 }: ListingProps) {
-  const [active, setActive] = useState<Record<string, Set<string>>>({});
+  const seedActive = (): Record<string, Set<string>> => {
+    if (!initialFilters) return {};
+    const out: Record<string, Set<string>> = {};
+    for (const [k, vals] of Object.entries(initialFilters)) {
+      if (vals && vals.length) out[k] = new Set(vals);
+    }
+    return out;
+  };
+  const [active, setActive] = useState<Record<string, Set<string>>>(seedActive);
+  // Re-seed when the URL search params change (dropdown → catalog navigation
+  // keeps the same route component, so useState alone wouldn't pick it up).
+  const initialKey = JSON.stringify(initialFilters ?? {});
+  useEffect(() => { setActive(seedActive()); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [initialKey]);
   const [sort, setSort] = useState<"featured" | "price-asc" | "price-desc">("featured");
   const [mobileFilters, setMobileFilters] = useState(false);
   const [tryOn, setTryOn] = useState(false);
@@ -782,7 +810,12 @@ export function CatalogListing({
         if (!set || set.size === 0) return true;
         if (isFramesCategory && k === "shape") {
           return [...set].some((picked) => {
-            const aliases = FRAME_SHAPE_DEFS.find((d) => d.key === picked)?.matches ?? [picked];
+            // Header dropdown may emit a value that is one of the def's aliases
+            // rather than its key (e.g. "Авиаторы" plural vs key "Авиатор").
+            const def =
+              FRAME_SHAPE_DEFS.find((d) => d.key === picked) ??
+              FRAME_SHAPE_DEFS.find((d) => d.matches?.some((m) => normalize(m) === normalize(picked)));
+            const aliases = def?.matches ?? [picked];
             return aliases.some((a) => normalize(a) === normalize(p.shape));
           });
         }
@@ -796,12 +829,25 @@ export function CatalogListing({
         }
         if (isFramesCategory && k === "gender") {
           return [...set].some((picked) => {
-            const aliases = FRAME_GENDER_DEFS.find((d) => d.key === picked)?.matches ?? [picked];
+            // "Детские" (dropdown parent) → match both boys and girls.
+            if (normalize(picked) === normalize("Детские")) {
+              return ["Мальчики", "Девочки", "Детские"].some(
+                (a) => normalize(a) === normalize(p.gender),
+              );
+            }
+            const def =
+              FRAME_GENDER_DEFS.find((d) => d.key === picked) ??
+              FRAME_GENDER_DEFS.find((d) => d.matches?.some((m) => normalize(m) === normalize(picked)));
+            const aliases = def?.matches ?? [picked];
             return aliases.some((a) => normalize(a) === normalize(p.gender));
           });
         }
+        // Generic facet (brand, etc.) — case-insensitive compare so a dropdown
+        // link like ?brand=Stepper matches the API's "STEPPER".
         const v = (p as unknown as Record<string, string | undefined>)[k];
-        return v ? set.has(v) : false;
+        if (!v) return false;
+        const nv = normalize(v);
+        return [...set].some((picked) => normalize(picked) === nv);
       });
     });
     if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
