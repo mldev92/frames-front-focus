@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
 import { Heart, ChevronRight, Truck, ShieldCheck, RotateCcw, Check } from "lucide-react";
 import { toast } from "sonner";
-import { getProduct, products } from "@/data/products";
+import { getProduct, getRelated } from "@/lib/api/bitrix";
 import { catalogHref } from "@/data/categories";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
@@ -21,10 +21,11 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/catalog_s/$category/$slug")({
-  loader: ({ params }) => {
-    const product = getProduct(params.slug);
+  loader: async ({ params }) => {
+    const product = await getProduct(params.slug);
     if (!product) throw notFound();
-    return { product };
+    const related = await getRelated(params.category, params.slug, 4);
+    return { product, related };
   },
   head: ({ loaderData }) => {
     if (!loaderData) return { meta: [{ title: "Товар · ОПТИКА 100%" }] };
@@ -52,8 +53,8 @@ export const Route = createFileRoute("/catalog_s/$category/$slug")({
 });
 
 function ProductPage() {
-  const data = Route.useLoaderData() as { product: Product };
-  const { product } = data;
+  const data = Route.useLoaderData() as { product: Product; related: Product[] };
+  const { product, related } = data;
   const { add, toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
   const [color, setColor] = useState(product.colors?.[0]?.name);
@@ -82,10 +83,6 @@ function ProductPage() {
   const showInstallment =
     (isFrameLike && product.price > 3500) ||
     (product.category === "kontaktnye-linzy" && isMisight);
-  const related = products
-    .filter((p) => p.category === product.category && p.slug !== product.slug)
-    .slice(0, 4);
-
   const includedFeatures = [
     "Однодневная сборка в салоне",
     "Бесплатная подгонка по лицу",

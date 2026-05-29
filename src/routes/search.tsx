@@ -1,13 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
-import { products } from "@/data/products";
+import { searchProducts } from "@/lib/api/bitrix";
+import type { Product } from "@/data/types";
 import { ProductCard } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/search")({
   validateSearch: (s: Record<string, unknown>): { q: string } => ({
     q: typeof s.q === "string" ? s.q : "",
   }),
+  loaderDeps: ({ search }) => ({ q: search.q }),
+  loader: async ({ deps }) => ({ results: await searchProducts(deps.q) }),
   head: () => ({
     meta: [
       { title: "Поиск · ОПТИКА 100%" },
@@ -19,17 +22,11 @@ export const Route = createFileRoute("/search")({
 
 function SearchPage() {
   const { q } = Route.useSearch();
+  const { results } = Route.useLoaderData() as { results: Product[] };
   const navigate = Route.useNavigate();
   const [query, setQuery] = useState(q);
 
-  const term = query.trim().toLowerCase();
-  const results = term
-    ? products.filter(
-        (p) =>
-          p.name.toLowerCase().includes(term) ||
-          p.brand.toLowerCase().includes(term),
-      )
-    : [];
+  const term = q.trim();
 
   return (
     <div className="mx-auto max-w-7xl px-4 lg:px-8 py-12">
