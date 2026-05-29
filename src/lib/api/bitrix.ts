@@ -69,10 +69,42 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
   }
 }
 
-/** Full paginated response (when total/pages are needed). */
+/** Full paginated response (real total/pages from the endpoint). */
 export async function getProductsPage(categoryOrSegment: string, q: ProductQuery = {}): Promise<ProductsResponse> {
-  const products = await getProducts(categoryOrSegment, q);
-  return { products, total: products.length, page: q.page ?? 1, pages: 1 };
+  if (!BASE) {
+    const cat = toCategory(categoryOrSegment) ?? (categoryOrSegment as Category);
+    const products = mockByCategory(cat);
+    return { products, total: products.length, page: 1, pages: 1 };
+  }
+  const params = new URLSearchParams({ category: categoryOrSegment });
+  for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== "") params.set(k, String(v));
+  return fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
+}
+
+/**
+ * Fetch EVERY product for a category by paging through the endpoint.
+ * The server caps `limit` at 96, so a 399-item section needs ~5 requests:
+ * page 1 reveals `pages`, then 2..N are fetched in parallel.
+ */
+export async function getAllProducts(categoryOrSegment: string, q: ProductQuery = {}): Promise<Product[]> {
+  if (!BASE) {
+    const cat = toCategory(categoryOrSegment) ?? (categoryOrSegment as Category);
+    return mockByCategory(cat);
+  }
+  try {
+    const first = await getProductsPage(categoryOrSegment, { ...q, page: 1, limit: 96 });
+    if (first.pages <= 1) return first.products;
+    const rest = await Promise.all(
+      Array.from({ length: first.pages - 1 }, (_, i) =>
+        getProductsPage(categoryOrSegment, { ...q, page: i + 2, limit: 96 }).then((r) => r.products),
+      ),
+    );
+    return [...first.products, ...rest.flat()];
+  } catch (e) {
+    console.error("[bitrix] getAllProducts fallback:", e);
+    const cat = toCategory(categoryOrSegment) ?? (categoryOrSegment as Category);
+    return mockByCategory(cat);
+  }
 }
 
 /** Single product by slug (element CODE). Returns null when not found. */

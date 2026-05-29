@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CatalogListing } from "@/components/CatalogListing";
-import { getProducts } from "@/lib/api/bitrix";
+import { getAllProducts } from "@/lib/api/bitrix";
 import { segmentToCategory } from "@/data/categories";
 import { catalogConfig } from "./catalog_s.$category";
 import type { Category, Product } from "@/data/types";
@@ -10,7 +10,9 @@ import type { Category, Product } from "@/data/types";
 // and renders <Outlet />, which delivers this component.
 export const Route = createFileRoute("/catalog_s/$category/")({
   loader: async ({ params }) => {
-    const products = await getProducts(params.category, { limit: 96 });
+    // Fetch the full section (all pages), so the catalog shows every active
+    // frame the Bitrix admin lists — not just the first 96.
+    const products = await getAllProducts(params.category);
     return { products };
   },
   head: ({ params }) => {
