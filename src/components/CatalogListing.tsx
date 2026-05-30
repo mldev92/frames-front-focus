@@ -681,7 +681,10 @@ export function CatalogListing({
     "Индастриал",
     "Скандинавские",
   ];
-  const isFramesCategory = categoryKey === "opravy";
+  // Both opravy and sunglasses share the same Bitrix iblock structure
+  // (gender from sections, STIL/MATERIAL_OPRAVY directories), so they both
+  // use the FRAME_* defs for filter aliasing, facet rendering and counts.
+  const isFramesCategory = categoryKey === "opravy" || categoryKey === "solntsezashchitnye";
 
   // ── Extra filter state (category-specific) ────────────────────────────────
   const extras = categoryKey ? CATEGORY_EXTRAS[categoryKey] : [];
