@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UslugiRouteImport } from './routes/uslugi'
 import { Route as TinkoffRouteImport } from './routes/tinkoff'
+import { Route as StellestKatalogSLinzamiRouteImport } from './routes/stellest-katalog-s-linzami'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as RequisitesRouteImport } from './routes/requisites'
 import { Route as RemontOchkovRouteImport } from './routes/remont-ochkov'
@@ -43,6 +44,11 @@ const UslugiRoute = UslugiRouteImport.update({
 const TinkoffRoute = TinkoffRouteImport.update({
   id: '/tinkoff',
   path: '/tinkoff',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StellestKatalogSLinzamiRoute = StellestKatalogSLinzamiRouteImport.update({
+  id: '/stellest-katalog-s-linzami',
+  path: '/stellest-katalog-s-linzami',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -179,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/remont-ochkov': typeof RemontOchkovRoute
   '/requisites': typeof RequisitesRoute
   '/search': typeof SearchRoute
+  '/stellest-katalog-s-linzami': typeof StellestKatalogSLinzamiRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$category': typeof BlogCategoryRouteWithChildren
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/remont-ochkov': typeof RemontOchkovRoute
   '/requisites': typeof RequisitesRoute
   '/search': typeof SearchRoute
+  '/stellest-katalog-s-linzami': typeof StellestKatalogSLinzamiRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
@@ -232,6 +240,7 @@ export interface FileRoutesById {
   '/remont-ochkov': typeof RemontOchkovRoute
   '/requisites': typeof RequisitesRoute
   '/search': typeof SearchRoute
+  '/stellest-katalog-s-linzami': typeof StellestKatalogSLinzamiRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$category': typeof BlogCategoryRouteWithChildren
@@ -261,6 +270,7 @@ export interface FileRouteTypes {
     | '/remont-ochkov'
     | '/requisites'
     | '/search'
+    | '/stellest-katalog-s-linzami'
     | '/tinkoff'
     | '/uslugi'
     | '/blog/$category'
@@ -288,6 +298,7 @@ export interface FileRouteTypes {
     | '/remont-ochkov'
     | '/requisites'
     | '/search'
+    | '/stellest-katalog-s-linzami'
     | '/tinkoff'
     | '/uslugi'
     | '/uslugi/$slug'
@@ -313,6 +324,7 @@ export interface FileRouteTypes {
     | '/remont-ochkov'
     | '/requisites'
     | '/search'
+    | '/stellest-katalog-s-linzami'
     | '/tinkoff'
     | '/uslugi'
     | '/blog/$category'
@@ -341,6 +353,7 @@ export interface RootRouteChildren {
   RemontOchkovRoute: typeof RemontOchkovRoute
   RequisitesRoute: typeof RequisitesRoute
   SearchRoute: typeof SearchRoute
+  StellestKatalogSLinzamiRoute: typeof StellestKatalogSLinzamiRoute
   TinkoffRoute: typeof TinkoffRoute
   UslugiRoute: typeof UslugiRouteWithChildren
   Catalog_sCategoryRoute: typeof Catalog_sCategoryRouteWithChildren
@@ -360,6 +373,13 @@ declare module '@tanstack/react-router' {
       path: '/tinkoff'
       fullPath: '/tinkoff'
       preLoaderRoute: typeof TinkoffRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/stellest-katalog-s-linzami': {
+      id: '/stellest-katalog-s-linzami'
+      path: '/stellest-katalog-s-linzami'
+      fullPath: '/stellest-katalog-s-linzami'
+      preLoaderRoute: typeof StellestKatalogSLinzamiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -591,6 +611,7 @@ const rootRouteChildren: RootRouteChildren = {
   RemontOchkovRoute: RemontOchkovRoute,
   RequisitesRoute: RequisitesRoute,
   SearchRoute: SearchRoute,
+  StellestKatalogSLinzamiRoute: StellestKatalogSLinzamiRoute,
   TinkoffRoute: TinkoffRoute,
   UslugiRoute: UslugiRouteWithChildren,
   Catalog_sCategoryRoute: Catalog_sCategoryRouteWithChildren,
