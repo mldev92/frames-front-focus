@@ -178,7 +178,7 @@ html { scroll-behavior: smooth; }
   display: grid; grid-template-columns: 1fr; align-items: center; gap: 40px;
 }
 @media (min-width: 1024px) {
-  .hero-grid { grid-template-columns: 1.05fr 1fr; padding: 0 32px; gap: 56px; }
+  .hero-grid { grid-template-columns: 0.9fr 1.1fr; padding: 0 32px; gap: 40px; }
 }
 .hero-copy { padding: 56px 0; }
 @media (min-width: 1024px) { .hero-copy { padding: 88px 0; } }
@@ -201,10 +201,10 @@ html { scroll-behavior: smooth; }
 .hero-stat strong { display: block; font-family: var(--font-serif); font-size: 30px; font-weight: 600; color: var(--brand); line-height: 1; }
 .hero-stat span { display: block; font-size: 13px; color: var(--muted-foreground); margin-top: 6px; max-width: 150px; }
 
-.hero-visual { position: relative; align-self: stretch; min-height: 380px; }
+.hero-visual { position: relative; align-self: stretch; min-height: 420px; }
 @media (max-width: 1023px) { .hero-visual { min-height: 320px; margin-bottom: 8px; } }
-.hero-photo { position: absolute; inset: 0; }
-.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.hero-photo { position: absolute; inset: 0; overflow: hidden; border-radius: 20px; background: #efe8df; }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 70% top; }
 .hero-float {
   position: absolute; left: 24px; bottom: 24px; z-index: 2;
   background: color-mix(in oklab, var(--card) 92%, transparent);
