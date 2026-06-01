@@ -275,11 +275,54 @@ html { scroll-behavior: smooth; }
 
 /* Single real certificate */
 .cert-single { position: relative; z-index: 2; }
+.cert-carousel { position: relative; z-index: 2; min-width: 0; }
+.cert-track { position: relative; overflow: hidden; }
+.cert-slide { display: none; }
+.cert-slide.active { display: block; animation: certFade 240ms ease-out; }
+@keyframes certFade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .cert-frame {
   background: #fff; border-radius: 14px; padding: 10px; box-shadow: var(--shadow-lg);
   border: 1px solid rgba(255,255,255,0.15);
 }
 .cert-frame img { width: 100%; height: auto; border-radius: 8px; display: block; }
+.cert-placeholder {
+  aspect-ratio: 3 / 4; display: grid; place-items: center; text-align: center;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.94), rgba(255,255,255,0.86)),
+    repeating-linear-gradient(135deg, oklch(0.93 0.01 80) 0 8px, oklch(0.98 0.004 80) 8px 16px);
+}
+.cert-placeholder span {
+  font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--muted-foreground);
+}
+.cert-controls {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  margin-top: 16px;
+}
+.cert-arrow {
+  width: 40px; height: 40px; flex: 0 0 40px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,0.08); color: #fff;
+  border: 1px solid rgba(255,255,255,0.18);
+  transition: background var(--duration-snap), color var(--duration-snap), transform var(--duration-snap), border-color var(--duration-snap);
+}
+.cert-arrow:hover { background: #fff; color: var(--ink); border-color: #fff; transform: translateY(-1px); }
+.cert-arrow:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+.cert-arrow svg {
+  width: 20px; height: 20px; display: block;
+  stroke: currentColor; fill: none; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round;
+}
+.cert-dots { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.cert-dot {
+  width: 8px; height: 8px; border-radius: 999px;
+  background: rgba(255,255,255,0.28); border: 1px solid rgba(255,255,255,0.18);
+  transition: width var(--duration-snap), background var(--duration-snap), border-color var(--duration-snap);
+}
+.cert-dot.active { width: 24px; background: #fff; border-color: #fff; }
+.cert-dot:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .cert-caption { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
 .cert-caption .cert-verify {
   flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
