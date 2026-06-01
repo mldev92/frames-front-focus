@@ -690,20 +690,25 @@ html { scroll-behavior: smooth; }
 /* ═══════════════════════════════════════════════════════════
    STEPS (how to get lenses)
    ═══════════════════════════════════════════════════════════ */
+.steps-section { padding-top: 0; }
+.steps-hero-img { width: 100%; overflow: hidden; }
+.steps-hero-img img { width: 100%; height: auto; display: block; object-fit: cover; max-height: 480px; }
+
 .steps-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; counter-reset: step; }
 @media (max-width: 900px) { .steps-row { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 520px) { .steps-row { grid-template-columns: 1fr; } }
 .step-card {
   background: var(--card); border: 1px solid var(--border); border-radius: 18px;
-  padding: 26px; display: flex; flex-direction: column; gap: 12px; text-align: center;
+  padding: 30px 26px; display: flex; flex-direction: column; gap: 12px; text-align: center;
   counter-increment: step; position: relative;
+  box-shadow: var(--shadow-sm);
 }
 .step-card::before {
-  content: counter(step); font-family: var(--font-serif); font-size: 28px; font-weight: 700;
-  color: var(--brand); margin-bottom: 4px;
+  content: counter(step); font-family: var(--font-serif); font-size: 36px; font-weight: 700;
+  color: var(--brand); margin-bottom: 4px; font-style: italic;
 }
-.step-card h4 { font-family: var(--font-sans); font-size: 15px; font-weight: 600; color: var(--foreground); }
-.step-card p { font-size: 13.5px; line-height: 1.5; color: var(--muted-foreground); }
+.step-card h4 { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: var(--foreground); }
+.step-card p { font-size: 14px; line-height: 1.55; color: var(--muted-foreground); }
 
 /* ═══════════════════════════════════════════════════════════
    FAQ ACCORDION
@@ -756,6 +761,16 @@ html { scroll-behavior: smooth; }
 /* ═══════════════════════════════════════════════════════════
    PREVENTION
    ═══════════════════════════════════════════════════════════ */
+.prev-section { overflow: hidden; }
+.prev-hero { display: grid; grid-template-columns: 1fr; gap: 32px; margin-bottom: 44px; align-items: center; }
+@media (min-width: 900px) { .prev-hero { grid-template-columns: 1fr 1fr; gap: 48px; } }
+.prev-hero-copy .eyebrow { display: block; margin-bottom: 14px; }
+.prev-hero-copy h2 { font-size: clamp(28px, 3.6vw, 44px); font-weight: 600; line-height: 1.08; color: var(--foreground); margin-bottom: 20px; }
+.prev-hero-copy p { font-size: 17px; line-height: 1.6; color: var(--muted-foreground); max-width: 480px; }
+.prev-hero-photo { position: relative; }
+.prev-hero-photo img { width: 100%; height: auto; display: block; border-radius: 20px; object-fit: cover; max-height: 380px; }
+@media (min-width: 900px) { .prev-hero-photo img { max-height: none; } }
+
 .prev-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
 @media (max-width: 1023px) { .prev-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 520px) { .prev-grid { grid-template-columns: 1fr; } }
@@ -765,14 +780,19 @@ html { scroll-behavior: smooth; }
   transition: transform var(--duration-snap), box-shadow var(--duration-snap);
 }
 .prev-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.prev-card .ic-circle { width: 48px; height: 48px; border-radius: 12px; background: color-mix(in oklab, var(--brand) 9%, transparent); color: var(--brand); display: grid; place-items: center; }
-.prev-card .ic-circle svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.prev-card h3 { font-size: 18px; font-weight: 500; color: var(--foreground); }
+.prev-icon {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: color-mix(in oklab, var(--brand) 9%, transparent);
+  color: var(--brand); display: grid; place-items: center;
+}
+.prev-icon svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.prev-card h3 { font-size: 18px; font-weight: 600; color: var(--foreground); font-family: var(--font-sans); }
 .prev-card p { font-size: 14px; line-height: 1.6; color: var(--muted-foreground); }
-.prev-card .prev-stat { font-family: var(--font-serif); font-size: 15px; color: var(--brand); font-weight: 600; }
+.prev-card .prev-stat { font-family: var(--font-serif); font-size: 15px; color: var(--brand); font-weight: 600; margin-top: auto; }
 .prev-note {
-  margin-top: 32px; font-size: 13px; color: var(--muted-foreground); line-height: 1.6;
-  background: var(--surface); border: 1px dashed var(--border); border-radius: 14px; padding: 18px 22px;
+  margin-top: 32px; font-size: 14px; color: var(--muted-foreground); line-height: 1.6;
+  background: color-mix(in oklab, var(--foreground) 4%, transparent);
+  border: 1px solid var(--border); border-radius: 14px; padding: 20px 24px;
 }
 .prev-note strong { color: var(--foreground); }
 
