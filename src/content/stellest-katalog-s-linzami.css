@@ -5,6 +5,7 @@
    signature brand red #c94040, 16/20px radii, pill buttons.
    ═══════════════════════════════════════════════════════════ */
 
+
 .stellest-page {
   --background: oklch(0.985 0.004 80);
   --foreground: oklch(0.18 0.01 250);
@@ -47,11 +48,11 @@ html { scroll-behavior: smooth; }
   -webkit-font-smoothing: antialiased;
   line-height: 1.5;
 }
-.stellest-page h1, .stellest-page h2, .stellest-page h3, .stellest-page h4, .stellest-page .font-serif { font-family: var(--font-serif); letter-spacing: -0.01em; line-height: 1.1; }
-.stellest-page a { color: inherit; text-decoration: none; }
-.stellest-page button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
-.stellest-page img { display: block; max-width: 100%; }
-.stellest-page em { font-style: italic; }
+.stellest-page :where(h1, h2, h3, h4, .font-serif) { font-family: var(--font-serif); letter-spacing: -0.01em; line-height: 1.1; }
+.stellest-page :where(a) { color: inherit; text-decoration: none; }
+.stellest-page :where(button) { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+.stellest-page :where(img) { display: block; max-width: 100%; }
+.stellest-page :where(em) { font-style: italic; }
 
 .container { max-width: var(--container); margin: 0 auto; padding: 0 24px; }
 @media (min-width: 1024px) { .container { padding: 0 32px; } }
@@ -273,13 +274,35 @@ html { scroll-behavior: smooth; }
 .cert-card .cert-name { font-size: 13px; font-weight: 600; color: #fff; line-height: 1.3; }
 .cert-card .cert-issuer { font-size: 11.5px; color: rgba(255,255,255,0.5); margin-top: -6px; }
 
-/* Single real certificate */
-.cert-single { position: relative; z-index: 2; }
+/* Single real certificate → carousel */
+.cert-carousel { position: relative; z-index: 2; }
+.cert-track { position: relative; overflow: hidden; border-radius: 14px; }
+.cert-slide { display: none; }
+.cert-slide.active { display: block; }
 .cert-frame {
   background: #fff; border-radius: 14px; padding: 10px; box-shadow: var(--shadow-lg);
   border: 1px solid rgba(255,255,255,0.15);
 }
 .cert-frame img { width: 100%; height: auto; border-radius: 8px; display: block; }
+.cert-placeholder {
+  aspect-ratio: 1.42 / 1; display: grid; place-items: center;
+  background: rgba(255,255,255,0.08); border: 2px dashed rgba(255,255,255,0.2);
+}
+.cert-placeholder span { font-size: 15px; color: rgba(255,255,255,0.35); font-weight: 500; }
+.cert-controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 16px; }
+.cert-arrow {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.7); cursor: pointer;
+  display: grid; place-items: center; transition: all 0.2s;
+}
+.cert-arrow:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.cert-arrow svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.cert-dots { display: flex; gap: 8px; }
+.cert-dot {
+  width: 10px; height: 10px; border-radius: 50%; border: none; cursor: pointer;
+  background: rgba(255,255,255,0.2); transition: all 0.2s;
+}
+.cert-dot.active { background: var(--brand); transform: scale(1.2); }
 .cert-caption { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
 .cert-caption .cert-verify {
   flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
@@ -329,7 +352,7 @@ html { scroll-behavior: smooth; }
 /* ═══════════════════════════════════════════════════════════
    COATINGS (3) — info cards with product links
    ═══════════════════════════════════════════════════════════ */
-.coat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.coat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
 @media (max-width: 900px) { .coat-grid { grid-template-columns: 1fr; gap: 20px; } }
 .coat-card {
   background: var(--card); border: 1px solid var(--border); border-radius: 20px;
@@ -575,8 +598,8 @@ html { scroll-behavior: smooth; }
 .treat-label-left { left: 18px; }
 .treat-label-right { right: 18px; text-align: right; }
 
-/* 5 cards: 3 top + 2 bottom */
-.treat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+/* 4 cards: 2 + 2 */
+.treat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 @media (max-width: 900px) { .treat-grid { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .treat-grid { grid-template-columns: 1fr; } }
 .treat-card {

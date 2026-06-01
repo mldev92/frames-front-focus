@@ -149,6 +149,35 @@ function StellestCatalogPage() {
       addClick(button, quizReset);
     });
 
+    root.querySelectorAll<HTMLElement>(".cert-carousel").forEach((carousel) => {
+      const slides = Array.from(carousel.querySelectorAll<HTMLElement>(".cert-slide"));
+      const dots = Array.from(carousel.querySelectorAll<HTMLButtonElement>(".cert-dot"));
+      let current = Math.max(
+        0,
+        slides.findIndex((slide) => slide.classList.contains("active")),
+      );
+
+      const goTo = (index: number) => {
+        if (!slides.length) return;
+
+        slides[current]?.classList.remove("active");
+        dots[current]?.classList.remove("active");
+        current = (index + slides.length) % slides.length;
+        slides[current].classList.add("active");
+        dots[current]?.classList.add("active");
+      };
+
+      const prev = carousel.querySelector<HTMLButtonElement>(".cert-prev");
+      const next = carousel.querySelector<HTMLButtonElement>(".cert-next");
+
+      if (prev) addClick(prev, () => goTo(current - 1));
+      if (next) addClick(next, () => goTo(current + 1));
+
+      dots.forEach((dot, index) => {
+        addClick(dot, () => goTo(Number(dot.dataset.idx ?? index)));
+      });
+    });
+
     root.querySelectorAll<HTMLButtonElement>(".faq-q").forEach((button) => {
       addClick(button, () => {
         const item = button.closest(".faq-item");
