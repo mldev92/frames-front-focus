@@ -1,3 +1,10 @@
+/* ═══════════════════════════════════════════════════════════
+   ОПТИКА 100% — Контроль миопии / Stellest page
+   Tokens lifted 1:1 from src/styles.css (the live design system):
+   Inter + Fraunces + JetBrains Mono, cream editorial palette,
+   signature brand red #c94040, 16/20px radii, pill buttons.
+   ═══════════════════════════════════════════════════════════ */
+
 .stellest-page {
   --background: oklch(0.985 0.004 80);
   --foreground: oklch(0.18 0.01 250);
@@ -398,7 +405,7 @@ html { scroll-behavior: smooth; }
 }
 .quiz-wrap::before {
   content: ''; position: absolute; inset: 0; z-index: 0;
-  background: url("/stellest/quiz-background.png") center / cover no-repeat;
+  background: url('/stellest/quiz-background.png') center / cover no-repeat;
   filter: blur(2px) brightness(1.35) saturate(0.4) sepia(0.25);
   opacity: 0.22;
 }
