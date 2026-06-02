@@ -24,7 +24,9 @@ export interface Product {
   colors?: ProductColor[];
   shape?: string;
   material?: string;
-  gender?: "Мужские" | "Женские" | "Унисекс" | "Детские";
+  gender?: "Мужские" | "Женские" | "Унисекс" | "Детские" | "Мальчики" | "Девочки";
+  /** Frame construction (Ободок / Полуободок/Леска / Втулки/винты). */
+  construction?: string;
   size?: "Узкие" | "Средние" | "Широкие";
   badges?: Badge[];
   description: string;

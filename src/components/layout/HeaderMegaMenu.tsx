@@ -1,4 +1,6 @@
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { getMenuCounts } from "@/lib/api/bitrix";
 import {
   ArrowRight,
   BookOpen,
@@ -21,6 +23,57 @@ import {
 } from "lucide-react";
 import { catalogHref } from "@/data/categories";
 import { cn } from "@/lib/utils";
+
+// ── Live dropdown counts ────────────────────────────────────────────────────
+// Every count chip used to ship a hardcoded string ("96", "412", …). We now
+// derive the chip's count from /api/store/menu_counts.php by parsing the
+// chip's href: /catalog_s/<segment>/?facet=value . React Query dedupes the
+// fetch across the whole panel so opening either Frames or Sunglasses
+// triggers just one HTTP call per category.
+function useLiveChipCount(href: string | undefined, fallback?: string): string | undefined {
+  const parsed = useMemo(() => {
+    if (!href) return null;
+    const facet = href.match(/^\/catalog_s\/([^/?]+)\/?\?([^=&]+)=([^&]+)/);
+    if (facet) {
+      return { category: facet[1], facet: facet[2], value: decodeURIComponent(facet[3]) };
+    }
+    const cat = href.match(/^\/catalog_s\/([^/?]+)\//);
+    if (cat) return { category: cat[1], facet: null as string | null, value: null as string | null };
+    return null;
+  }, [href]);
+
+  const { data } = useQuery({
+    queryKey: ["menu-counts", parsed?.category],
+    queryFn: () => getMenuCounts(parsed!.category),
+    enabled: !!parsed?.category,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  if (!data || !parsed) return fallback;
+  if (!parsed.facet || parsed.value == null) return String(data.total);
+
+  if (parsed.facet === "brand") {
+    const v = parsed.value.toLowerCase();
+    const hit = data.brand.find((b) => b.name.toLowerCase() === v);
+    return hit ? String(hit.count) : "0";
+  }
+  const buckets: Record<string, Record<string, number> | undefined> = {
+    gender: data.gender,
+    shape: data.shape,
+    construction: data.construction,
+    material: data.material,
+  };
+  const bucket = buckets[parsed.facet];
+  if (!bucket) return fallback;
+  const v = parsed.value.toLowerCase();
+  const key = Object.keys(bucket).find((k) => k.toLowerCase() === v);
+  return String(key ? bucket[key] : 0);
+}
+
+function ChipCount({ href, fallback }: { href?: string; fallback?: string }) {
+  const live = useLiveChipCount(href, fallback);
+  return live === undefined ? null : <>{live}</>;
+}
 
 type FrameCategory = "opravy" | "solntsezashchitnye";
 
@@ -850,7 +903,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                     className="group relative flex aspect-[1/0.82] flex-col items-center justify-between rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 text-center transition-all hover:-translate-y-0.5 hover:border-brand hover:bg-brand-50"
                   >
                     <span className="absolute right-3 top-2 font-mono text-[9.5px] text-muted-foreground">
-                      {item.count}
+                      <ChipCount href={item.href} fallback={item.count} />
                     </span>
                     <span className="mt-2 flex w-full items-center justify-center">{item.icon}</span>
                     <span className="text-[11.5px] font-medium leading-tight text-foreground transition-colors group-hover:text-brand">
@@ -875,7 +928,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                   >
                     {item.icon}
                     <span className="font-medium">{item.label}</span>
-                    <span className="ml-auto font-mono text-[10px] text-muted-foreground">{item.count}</span>
+                    <span className="ml-auto font-mono text-[10px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                   </a>
                 ))}
               </div>
@@ -890,7 +943,9 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                     href={menu.kidsGroup.href}
                     className="text-[11px] text-muted-foreground transition-colors hover:text-brand"
                   >
-                    {`Все ${menu.kidsGroup.count} →`}
+                    {`Все `}
+                    <ChipCount href={menu.kidsGroup.href} fallback={menu.kidsGroup.count} />
+                    {` →`}
                   </a>
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -911,7 +966,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                           {item.meta}
                         </span>
                       </span>
-                      <span className="font-mono text-[10px] text-muted-foreground">{item.count}</span>
+                      <span className="font-mono text-[10px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                     </a>
                   ))}
                 </div>
@@ -930,7 +985,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                     >
                       {item.icon}
                       <span>{item.label}</span>
-                      <span className="ml-auto font-mono text-[11px] text-muted-foreground">{item.count}</span>
+                      <span className="ml-auto font-mono text-[11px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                       <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100 group-hover:text-brand" />
                     </a>
                   ))}
@@ -944,7 +999,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                 {menu.materials.map((item) => (
                   <a key={item.label} href={item.href} className={chipClass}>
                     <span>{item.label}</span>
-                    {item.count && <span className="font-mono text-[10px] text-muted-foreground">{item.count}</span>}
+                    {item.count && <span className="font-mono text-[10px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>}
                   </a>
                 ))}
               </div>
@@ -1084,7 +1139,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                       <span className="block text-[13.5px] font-medium text-foreground">{item.label}</span>
                       <span className="mt-0.5 block text-[11.5px] text-muted-foreground">{item.meta}</span>
                     </span>
-                    <span className="font-mono text-[11px] text-muted-foreground">{item.count}</span>
+                    <span className="font-mono text-[11px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                   </a>
                 ))}
               </div>
@@ -1171,7 +1226,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                   >
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <span className="text-brand">{item.icon}</span>
-                      <span className="font-mono text-[10.5px] text-muted-foreground">{item.count}</span>
+                      <span className="font-mono text-[10.5px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                     </div>
                     <span className="text-[12.5px] font-medium leading-tight text-foreground transition-colors group-hover:text-brand">
                       {item.label}
@@ -1192,7 +1247,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                       className="rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 transition-colors hover:border-brand hover:bg-brand-50"
                     >
                       <span className="block text-[13px] font-semibold text-foreground">{item.label}</span>
-                      <span className="mt-1 block font-mono text-[10.5px] text-muted-foreground">{item.count}</span>
+                      <span className="mt-1 block font-mono text-[10.5px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                     </a>
                   ))}
                 </div>
@@ -1284,7 +1339,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                       </span>
                       <span className="mt-0.5 block text-[11.5px] text-muted-foreground">{item.meta}</span>
                     </span>
-                    <span className="font-mono text-[11px] text-muted-foreground">{item.count}</span>
+                    <span className="font-mono text-[11px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                   </a>
                 ))}
               </div>
@@ -1350,7 +1405,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                   >
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-brand">{item.meta}</span>
-                      <span className="font-mono text-[10.5px] text-muted-foreground">{item.count}</span>
+                      <span className="font-mono text-[10.5px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                     </div>
                     <span className="text-[12.5px] font-medium text-foreground transition-colors group-hover:text-brand">
                       {item.label}
@@ -1386,7 +1441,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                     <span className="flex-1 text-[12.5px] font-medium text-foreground transition-colors group-hover:text-brand">
                       {item.label}
                     </span>
-                    <span className="font-mono text-[10.5px] text-muted-foreground">{item.count}</span>
+                    <span className="font-mono text-[10.5px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                   </a>
                 ))}
               </div>

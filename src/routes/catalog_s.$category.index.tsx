@@ -10,12 +10,13 @@ import type { Category, Product } from "@/data/types";
 // /catalog_s/opravy?gender=Мужские&shape=Прямоугольные . The catalog reads them
 // here and seeds the listing's active-filter state.
 const catalogSearchSchema = z.object({
-  gender:   z.string().optional(),
-  color:    z.string().optional(),
-  shape:    z.string().optional(),
-  size:     z.string().optional(),
-  brand:    z.string().optional(),
-  material: z.string().optional(),
+  gender:       z.string().optional(),
+  color:        z.string().optional(),
+  shape:        z.string().optional(),
+  size:         z.string().optional(),
+  brand:        z.string().optional(),
+  material:     z.string().optional(),
+  construction: z.string().optional(),
 });
 type CatalogSearch = z.infer<typeof catalogSearchSchema>;
 
@@ -56,7 +57,7 @@ function CatalogPage() {
   // Header dropdown → catalog. Each present param becomes an active filter on
   // that facet. Comma-separated values allow ?shape=Прямоугольные,Квадратные .
   const initialFilters: Record<string, string[]> = {};
-  for (const k of ["gender", "color", "shape", "size", "brand", "material"] as const) {
+  for (const k of ["gender", "color", "shape", "size", "brand", "material", "construction"] as const) {
     const v = search[k];
     if (v) {
       const parts = v.split(",").map((s) => s.trim()).filter(Boolean);

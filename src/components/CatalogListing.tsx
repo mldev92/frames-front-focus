@@ -283,6 +283,15 @@ const FRAME_MATERIAL_MATCHES: Record<(typeof FRAME_MATERIAL_DEFS)[number], strin
   Комбинированный: ["Комбинированный", "Комбинированные", "Ацетат + металл"],
 };
 
+// Maps the dropdown's construction label → KONSTRUKTSIYA directory name on
+// Bitrix. Clip-on is intentionally absent: in Bitrix it's a STIL value, so the
+// dropdown link for Clip-on points at ?shape=Clip, not ?construction=Clip-on.
+const FRAME_CONSTRUCTION_DEFS: { key: string; matches: string[] }[] = [
+  { key: "Ободковые",     matches: ["Ободок", "Ободковые"] },
+  { key: "Полуободковые", matches: ["Полуободок/Леска", "Полуободковые"] },
+  { key: "Безободковые",  matches: ["Втулки/винты", "Безободковые"] },
+];
+
 const FRAME_GENDER_DEFS = [
   { key: "Мужские", label: "Мужские", matches: ["Мужские"] },
   { key: "Женские", label: "Женские", matches: ["Женские"] },
@@ -829,6 +838,17 @@ export function CatalogListing({
               values.some((v) => v.includes(normalize(alias))),
             ),
           );
+        }
+        if (isFramesCategory && k === "construction") {
+          return [...set].some((picked) => {
+            const def =
+              FRAME_CONSTRUCTION_DEFS.find((d) => d.key === picked) ??
+              FRAME_CONSTRUCTION_DEFS.find((d) =>
+                d.matches.some((m) => normalize(m) === normalize(picked)),
+              );
+            const aliases = def?.matches ?? [picked];
+            return aliases.some((a) => normalize(a) === normalize(p.construction));
+          });
         }
         if (isFramesCategory && k === "gender") {
           return [...set].some((picked) => {

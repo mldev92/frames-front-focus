@@ -129,6 +129,27 @@ export async function getRelated(categoryOrSegment: string, excludeSlug: string,
   return list.filter((p) => p.slug !== excludeSlug).slice(0, limit);
 }
 
+/** Live counts for the header dropdown — one fetch per category. */
+export interface MenuCounts {
+  category: string;
+  total: number;
+  gender:       Record<string, number>;
+  shape:        Record<string, number>;
+  construction: Record<string, number>;
+  material:     Record<string, number>;
+  brand:        { name: string; count: number }[];
+}
+
+export async function getMenuCounts(category: string): Promise<MenuCounts | null> {
+  if (!BASE) return null;
+  try {
+    return await fetchJson<MenuCounts>(`menu_counts.php?category=${encodeURIComponent(category)}`);
+  } catch (e) {
+    console.error("[bitrix] getMenuCounts:", e);
+    return null;
+  }
+}
+
 /** Name/article substring search. */
 export async function searchProducts(query: string, limit = 24): Promise<Product[]> {
   const q = query.trim();
