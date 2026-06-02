@@ -35,7 +35,14 @@ function useLiveChipCount(href: string | undefined, fallback?: string): string |
     if (!href) return null;
     const facet = href.match(/^\/catalog_s\/([^/?]+)\/?\?([^=&]+)=([^&]+)/);
     if (facet) {
-      return { category: facet[1], facet: facet[2], value: decodeURIComponent(facet[3]) };
+      // URLSearchParams encodes spaces as "+", but decodeURIComponent leaves
+      // "+" alone. Normalize "+"→" " before decoding so the value matches the
+      // bucket keys ("для мальчиков", not "для+мальчиков").
+      return {
+        category: facet[1],
+        facet: facet[2],
+        value: decodeURIComponent(facet[3].replace(/\+/g, " ")),
+      };
     }
     const cat = href.match(/^\/catalog_s\/([^/?]+)\//);
     if (cat) return { category: cat[1], facet: null as string | null, value: null as string | null };
