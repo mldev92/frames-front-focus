@@ -377,9 +377,9 @@ const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
       key: "construction",
       title: "Конструкция",
       options: [
-        "Безободковая",
-        "Ободковая",
-        "Полуободковая",
+        "Безободковые",
+        "Ободковые",
+        "Полуободковые",
       ],
     },
     {
@@ -417,9 +417,9 @@ const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
       key: "construction",
       title: "Конструкция",
       options: [
-        "Безободковая",
-        "Ободковая",
-        "Полуободковая",
+        "Безободковые",
+        "Ободковые",
+        "Полуободковые",
       ],
     },
     {
@@ -1605,8 +1605,13 @@ export function CatalogListing({
           <FilterSection key={block.key} title={block.title} defaultOpen={false}>
             <div className="space-y-2">
               {block.options.map((opt) => {
-                const checked = extraChecks[block.key]?.has(opt) ?? false;
                 const isConstruction = block.key === "construction";
+                // Construction is wired into the main `active` filter set (not
+                // extraChecks), so the dropdown URL ?construction=Ободковые
+                // both seeds this checkbox AND actually filters the products.
+                const checked = isConstruction
+                  ? active.construction?.has(opt) ?? false
+                  : extraChecks[block.key]?.has(opt) ?? false;
                 const constructionLower = opt.toLowerCase();
                 const constructionIcon = isConstruction
                   ? constructionLower.includes("безобод")
@@ -1625,7 +1630,8 @@ export function CatalogListing({
                     aria-checked={checked}
                     onClick={(e) => {
                       e.preventDefault();
-                      toggleExtra(block.key, opt);
+                      if (isConstruction) toggle("construction", opt);
+                      else toggleExtra(block.key, opt);
                     }}
                     onMouseDown={(e) => e.preventDefault()}
                     className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
