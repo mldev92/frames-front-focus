@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { AppointmentModal } from "@/components/AppointmentModal";
 
 import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
 import stellestHtml from "@/content/stellest-katalog-s-linzami.html?raw";
@@ -21,6 +22,7 @@ export const Route = createFileRoute("/stellest-katalog-s-linzami")({
 });
 
 function StellestCatalogPage() {
+  const [aptOpen, setAptOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -191,6 +193,13 @@ function StellestCatalogPage() {
       });
     });
 
+    root.querySelectorAll<HTMLAnchorElement>("[data-open-appointment]").forEach((link) => {
+      addClick(link, (event) => {
+        event.preventDefault();
+        setAptOpen(true);
+      });
+    });
+
     return () => cleanups.forEach((cleanup) => cleanup());
   }, []);
 
@@ -202,6 +211,7 @@ function StellestCatalogPage() {
         className="stellest-page"
         dangerouslySetInnerHTML={{ __html: stellestHtml }}
       />
+      <AppointmentModal open={aptOpen} onOpenChange={setAptOpen} />
     </>
   );
 }
