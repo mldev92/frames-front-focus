@@ -477,12 +477,12 @@ const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
   ],
   "kontaktnye-linzy": [
     { kind: "discount" },
-    {
-      kind: "checkbox",
-      key: "design",
-      title: "Дизайн",
-      options: ["Асферический", "Сферический", "Торические"],
-    },
+    // Дизайн + Срок замены are rendered by the dedicated lens-facet blocks
+    // (wired into `active` + Bitrix data). Stale duplicates dropped:
+    //   - 'design'       → "Дизайн"          (already in active-wired block)
+    //   - 'wearMode'     → "Режим ношения"   (Bitrix WEAR_MODE = гибкий/дневной,
+    //                                          not the chip user expects)
+    //   - 'replacement'  → "Замена через"    (same data as new Срок замены)
     {
       kind: "range",
       key: "sphere",
@@ -508,13 +508,6 @@ const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
       title: "Аддидация",
       options: ["Low (+0.75…+1.25)", "Med (+1.50…+2.00)", "High (+2.25…+2.50)"],
     },
-    { kind: "checkbox", key: "wearMode", title: "Режим ношения", options: ["Гибкий", "Дневной"] },
-    {
-      kind: "checkbox",
-      key: "replacement",
-      title: "Замена через",
-      options: ["1 день", "2 недели", "1 месяц", "3 месяца"],
-    },
     {
       kind: "range",
       key: "baseCurve",
@@ -527,18 +520,9 @@ const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
   ],
   "linzy-dlya-ochkov": [
     { kind: "discount" },
-    {
-      kind: "checkbox",
-      key: "lensClass",
-      title: "Тип линзы",
-      options: ["Однофокальные", "Офисные", "Прогрессивные", "Бифокальные"],
-    },
-    {
-      kind: "checkbox",
-      key: "lensTypeBrand",
-      title: "Тип",
-      options: ["Crizal", "Stellest", "Eyezen", "Varilux", "MiyoSmart"],
-    },
+    // Тип линзы + Дизайн live in the active-wired lens-facet blocks. Stale
+    // duplicates dropped: 'lensClass' / 'lensDesign'. 'lensTypeBrand' is a
+    // tech / brand split with no Bitrix mapping yet — also removed.
     {
       kind: "checkbox",
       key: "material",
@@ -550,12 +534,6 @@ const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
       key: "thickness",
       title: "Толщина линзы",
       options: ["1.50", "1.56", "1.60", "1.67", "1.74"],
-    },
-    {
-      kind: "checkbox",
-      key: "lensDesign",
-      title: "Дизайн линзы",
-      options: ["Сферический", "Асферический", "Двойной асферический"],
     },
     {
       kind: "range",
