@@ -9,6 +9,15 @@ import type { Category, Product } from "@/data/types";
 // Header dropdown deep-links the catalog with these facet query params, e.g.
 // /catalog_s/opravy?gender=Мужские&shape=Прямоугольные . The catalog reads them
 // here and seeds the listing's active-filter state.
+//
+// TanStack Router's default search parser auto-converts JSON-ish tokens, so
+// `?bc=8.4` arrives as the *number* 8.4 — z.string() would throw. The
+// prescription chips (sphere/cylinder/axis/addition/bc/index) all hit this,
+// so each of those entries is wrapped in this preprocess to string-ify any
+// numeric value the parser handed us before the string check runs.
+const numOrStr = z
+  .preprocess((v) => (typeof v === "number" ? String(v) : v), z.string())
+  .optional();
 const catalogSearchSchema = z.object({
   gender:       z.string().optional(),
   color:        z.string().optional(),
@@ -22,11 +31,12 @@ const catalogSearchSchema = z.object({
   lensType:     z.string().optional(),
   design:       z.string().optional(),
   purpose:      z.string().optional(),
-  sphere:       z.string().optional(),
-  axis:         z.string().optional(),
-  addition:     z.string().optional(),
-  bc:           z.string().optional(),
-  index:        z.string().optional(),
+  sphere:       numOrStr,
+  cylinder:     numOrStr,
+  axis:         numOrStr,
+  addition:     numOrStr,
+  bc:           numOrStr,
+  index:        numOrStr,
   technology:   z.string().optional(),
   coating:      z.string().optional(),
   tag:          z.string().optional(),
@@ -72,8 +82,8 @@ function CatalogPage() {
   const initialFilters: Record<string, string[]> = {};
   for (const k of [
     "gender", "color", "shape", "size", "brand", "material", "construction",
-    "wearMode", "lensType", "design", "purpose", "sphere", "axis", "addition",
-    "bc", "index", "technology", "coating", "tag",
+    "wearMode", "lensType", "design", "purpose", "sphere", "cylinder", "axis",
+    "addition", "bc", "index", "technology", "coating", "tag",
   ] as const) {
     const v = search[k];
     if (v) {

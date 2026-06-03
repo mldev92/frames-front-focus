@@ -317,6 +317,25 @@ const LENS_TYPE_DEFS: { key: string; matches: string[] }[] = [
   { key: "Perifocal",     matches: ["Perifocal"] },
 ];
 
+// Prescription chip groups — values mirror the contact-lens header dropdown.
+// These are presentation-only for now (no Bitrix data backs the per-value
+// filter), so no per-chip count is shown. URL deep-links seed `active[k]` and
+// the matching chip lights up; clicking a chip updates the URL.
+const LENS_SPHERE_DEFS   = ["−6.00", "−4.00", "−2.00", "−1.00", "0", "+1.00", "+3.00"];
+const LENS_CYLINDER_DEFS = ["−0.75", "−1.25", "−1.75", "−2.25"];
+const LENS_ADDITION_DEFS = ["Low", "Med", "High"];
+const LENS_BC_DEFS       = ["8.4", "8.6", "8.7", "9.0"];
+
+// Loose equality for chip-group lookups. Header dropdown labels use the
+// typographic minus U+2212 ("−"); URL bars and manual input use ASCII "-".
+// Comparing strictly would fail half the lookups. Lowercase too so brand /
+// addition chips match either case.
+function eqLoose(a: string | undefined, b: string | undefined): boolean {
+  const norm = (s: string | undefined) =>
+    (s ?? "").toLowerCase().replace(/−/g, "-").trim();
+  return norm(a) === norm(b);
+}
+
 const FRAME_GENDER_DEFS = [
   { key: "Мужские", label: "Мужские", matches: ["Мужские"] },
   { key: "Женские", label: "Женские", matches: ["Женские"] },
@@ -477,46 +496,14 @@ const CATEGORY_EXTRAS: Record<Category, ExtraBlock[]> = {
   ],
   "kontaktnye-linzy": [
     { kind: "discount" },
-    // Дизайн + Срок замены are rendered by the dedicated lens-facet blocks
-    // (wired into `active` + Bitrix data). Stale duplicates dropped:
-    //   - 'design'       → "Дизайн"          (already in active-wired block)
-    //   - 'wearMode'     → "Режим ношения"   (Bitrix WEAR_MODE = гибкий/дневной,
-    //                                          not the chip user expects)
-    //   - 'replacement'  → "Замена через"    (same data as new Срок замены)
-    {
-      kind: "range",
-      key: "sphere",
-      title: "Оптическая сила (сфера)",
-      min: -20,
-      max: 15,
-      step: 0.25,
-      unit: "D",
-    },
-    {
-      kind: "range",
-      key: "cylinder",
-      title: "Оптическая сила цилиндра",
-      min: -5.75,
-      max: -0.75,
-      step: 0.25,
-      unit: "D",
-    },
-    { kind: "range", key: "axis", title: "Ось", min: 10, max: 180, step: 10, unit: "°" },
-    {
-      kind: "checkbox",
-      key: "addition",
-      title: "Аддидация",
-      options: ["Low (+0.75…+1.25)", "Med (+1.50…+2.00)", "High (+2.25…+2.50)"],
-    },
-    {
-      kind: "range",
-      key: "baseCurve",
-      title: "Радиус кривизны",
-      min: 8.0,
-      max: 9.2,
-      step: 0.1,
-      unit: "мм",
-    },
+    // All prescription facets (Сфера / Цилиндр / Ось / Аддидация / BC) are
+    // rendered by the active-wired chip-group lens block below — see
+    // lensBlocks in the FilterContent. Old range sliders / checkbox here had
+    // (a) the wrong key for BC (was 'baseCurve', URL is 'bc'),
+    // (b) labels that didn't match the dropdown chips ('Low (+0.75…+1.25)'
+    //      vs 'Low'),
+    // (c) UX that couldn't show a single picked URL value as "selected".
+    // Same dedup pattern as design / wearMode / replacement.
   ],
   "linzy-dlya-ochkov": [
     { kind: "discount" },
@@ -893,6 +880,7 @@ export function CatalogListing({
         };
         return [...set].some((picked) => {
           if (normalize(picked) === nv) return true;
+          if (eqLoose(picked, v)) return true;
           const aliases = FACET_ALIASES[k]?.[normalize(picked)] ?? [];
           return aliases.some((a) => normalize(a) === nv);
         });
@@ -1761,6 +1749,69 @@ export function CatalogListing({
           </FilterSection>
         ));
       })()}
+
+      {/* Prescription chip-groups (contact lenses only). Single discrete
+          value per facet — chips light up when the URL deep-links them. */}
+      {categoryKey === "kontaktnye-linzy" && (() => {
+        const rxBlocks: { facet: string; title: string; defs: readonly string[] }[] = [
+          { facet: "sphere",   title: "Сфера",                defs: LENS_SPHERE_DEFS },
+          { facet: "cylinder", title: "Цилиндр",              defs: LENS_CYLINDER_DEFS },
+          { facet: "addition", title: "Аддидация",            defs: LENS_ADDITION_DEFS },
+          { facet: "bc",       title: "Радиус кривизны (BC)", defs: LENS_BC_DEFS },
+        ];
+        return rxBlocks.map(({ facet, title, defs }) => (
+          <FilterSection key={facet} title={title}>
+            <div className="flex flex-wrap gap-2">
+              {defs.map((value) => {
+                const checked =
+                  [...(active[facet] ?? [])].some((picked) => eqLoose(picked, value));
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => toggle(facet, value)}
+                    className={cn(
+                      "inline-flex items-center rounded-full border px-3 py-1.5 text-xs transition-all",
+                      checked
+                        ? "border-ink bg-ink text-primary-foreground"
+                        : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
+                    )}
+                    style={{
+                      transitionDuration: "var(--duration-snap)",
+                      transitionTimingFunction: "var(--ease-editorial)",
+                    }}
+                  >
+                    {value}
+                  </button>
+                );
+              })}
+            </div>
+          </FilterSection>
+        ));
+      })()}
+
+      {/* Ось — free text input rather than a chip group (1–180° range with
+          no sensible discrete set; the dropdown's "Своя ось °" chip lands
+          here as ?axis=custom which we just visualise as an empty input). */}
+      {categoryKey === "kontaktnye-linzy" && (
+        <FilterSection key="axis" title="Ось">
+          <input
+            type="text"
+            inputMode="numeric"
+            placeholder="например 90°"
+            value={[...(active.axis ?? [])].find((v) => v !== "custom") ?? ""}
+            onChange={(e) => {
+              const v = e.target.value.trim();
+              setActive((prev) => {
+                const next = { ...prev };
+                next.axis = new Set(v ? [v] : []);
+                return next;
+              });
+            }}
+            className="w-full bg-background border border-border rounded-full px-3 py-2 text-sm outline-none focus:border-ink/50 transition-all"
+          />
+        </FilterSection>
+      )}
 
       {/* Bottom spacer so the last section is never clipped by sticky Apply on mobile */}
       <div aria-hidden className="h-20 lg:h-4" />

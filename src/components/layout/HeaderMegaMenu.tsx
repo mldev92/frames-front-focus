@@ -679,10 +679,12 @@ const CONTACT_MENU: ContactMegaMenu = {
     { label: "+3.00", href: menuHref("kontaktnye-linzy", { sphere: "+3.00" }) },
   ],
   cylinder: [
-    { label: "−0.75", href: menuHref("kontaktnye-linzy", { axis: "−0.75" }) },
-    { label: "−1.25", href: menuHref("kontaktnye-linzy", { axis: "−1.25" }) },
-    { label: "−1.75", href: menuHref("kontaktnye-linzy", { axis: "−1.75" }) },
-    { label: "−2.25", href: menuHref("kontaktnye-linzy", { axis: "−2.25" }) },
+    // Numeric values are cylinder dioptre — go in ?cylinder=. The free-text
+    // "Своя ось" intentionally stays on ?axis= because that's the axis angle.
+    { label: "−0.75", href: menuHref("kontaktnye-linzy", { cylinder: "−0.75" }) },
+    { label: "−1.25", href: menuHref("kontaktnye-linzy", { cylinder: "−1.25" }) },
+    { label: "−1.75", href: menuHref("kontaktnye-linzy", { cylinder: "−1.75" }) },
+    { label: "−2.25", href: menuHref("kontaktnye-linzy", { cylinder: "−2.25" }) },
     { label: "Своя ось °", href: menuHref("kontaktnye-linzy", { axis: "custom" }) },
   ],
   addition: [
