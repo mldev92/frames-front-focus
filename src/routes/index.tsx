@@ -42,7 +42,7 @@ export const Route = createFileRoute("/")({
         content:
           "Большой выбор оправ и линз, услуги клиники зрения, салоны в центре Санкт-Петербурга.",
       },
-      { property: "og:image", content: "/new_main_banner.png" },
+      { property: "og:image", content: "/main_banner_3.png" },
     ],
   }),
   component: MainV2Page,
@@ -313,9 +313,9 @@ function MainV2Page() {
           }
         `}</style>
 
-        {/* Banner A — new_main_banner.png */}
+        {/* Banner A — main_banner_3.png */}
         <img
-          src="/new_main_banner.png"
+          src="/main_banner_3.png"
           alt=""
           style={{
             position: "absolute",
