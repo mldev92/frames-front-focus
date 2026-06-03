@@ -313,9 +313,9 @@ function MainV2Page() {
           }
         `}</style>
 
-        {/* Banner A — main_banner_3.png */}
+        {/* Banner A — new_main_banner.png */}
         <img
-          src="/main_banner_3.png"
+          src="/new_main_banner.png"
           alt=""
           style={{
             position: "absolute",
@@ -331,9 +331,9 @@ function MainV2Page() {
             willChange: "filter, transform, opacity",
           }}
         />
-        {/* Banner B — 100_full_reconstruction_v3_image_1.png */}
+        {/* Banner B — main_banner_3.png */}
         <img
-          src="/2nd_banner.png"
+          src="/main_banner_3.png"
           alt=""
           style={{
             position: "absolute",
