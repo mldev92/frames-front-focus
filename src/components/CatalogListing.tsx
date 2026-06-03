@@ -865,12 +865,34 @@ export function CatalogListing({
             return aliases.some((a) => normalize(a) === normalize(p.gender));
           });
         }
-        // Generic facet (brand, etc.) — case-insensitive compare so a dropdown
-        // link like ?brand=Stepper matches the API's "STEPPER".
+        // Generic facet (brand, wearMode, design, lensType, …) — case-insensitive
+        // compare. The dropdown chip labels diverge from Bitrix raw values for a
+        // few facets (Однодневные → "1 день", Сферические → "Сферический"); the
+        // alias map below mirrors the server's products.php so URL = chip = filter
+        // all line up. Without the aliases, the generic compare on line above
+        // would reject every "1 день" product when the URL says "Однодневные".
         const v = (p as unknown as Record<string, string | undefined>)[k];
         if (!v) return false;
         const nv = normalize(v);
-        return [...set].some((picked) => normalize(picked) === nv);
+        const FACET_ALIASES: Record<string, Record<string, string[]>> = {
+          wearMode: {
+            "однодневные":   ["1 день"],
+            "двухнедельные": ["2 недели"],
+            "месячные":      ["1 месяц"],
+            "квартальные":   ["3 месяца"],
+          },
+          design: {
+            "сферические":   ["Сферический"],
+            "асферические":  ["Асферический"],
+            "торические":    ["Торические"],
+            "индивидуальные": ["Индивидуальный"],
+          },
+        };
+        return [...set].some((picked) => {
+          if (normalize(picked) === nv) return true;
+          const aliases = FACET_ALIASES[k]?.[normalize(picked)] ?? [];
+          return aliases.some((a) => normalize(a) === nv);
+        });
       });
     });
     if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);

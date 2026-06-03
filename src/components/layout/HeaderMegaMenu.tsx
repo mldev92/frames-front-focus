@@ -73,6 +73,7 @@ function useLiveChipCount(href: string | undefined, fallback?: string): string |
     wearMode: (data as { wearMode?: Record<string, number> }).wearMode,
     lensType: (data as { lensType?: Record<string, number> }).lensType,
     lensMaterial: (data as { lensMaterial?: Record<string, number> }).lensMaterial,
+    design:   (data as { design?: Record<string, number> }).design,
   };
   const bucket = buckets[parsed.facet];
   if (!bucket) return fallback;
@@ -636,8 +637,8 @@ const CONTACT_MENU: ContactMegaMenu = {
   allHref: catalogHref("kontaktnye-linzy"),
   allLabel: "Все линзы",
   titleEmphasis: "Контактные линзы.",
-  title: "По режиму ношения, силе и особенностям",
-  summary: "342 SKU · 4 бренда",
+  title: "По режиму ношения, дизайну и силе",
+  summary: "",
   contactModes: [
     {
       label: "Однодневные",
@@ -695,41 +696,26 @@ const CONTACT_MENU: ContactMegaMenu = {
     { label: "8.7", href: menuHref("kontaktnye-linzy", { bc: "8.7" }) },
     { label: "9.0", href: menuHref("kontaktnye-linzy", { bc: "9.0" }) },
   ],
+  // Дизайн — the only contact-lens "type" facet that actually maps to a
+  // Bitrix property (DESIGN). The previous 6 chips (Для сухих глаз, UV-
+  // защита, Гибридные, …) didn't correspond to any stored data.
   needs: [
     {
-      label: "Для сухих глаз",
-      count: "38",
-      href: menuHref("kontaktnye-linzy", { lensType: "Для сухих глаз" }),
-      icon: <Droplets className="h-4 w-4" />,
-    },
-    {
-      label: "Торические",
-      count: "52",
-      href: menuHref("kontaktnye-linzy", { lensType: "Торические" }),
+      label: "Сферические",
+      count: "0",
+      href: menuHref("kontaktnye-linzy", { design: "Сферические" }),
       icon: <Circle className="h-4 w-4" />,
     },
     {
-      label: "Мультифокальные",
-      count: "24",
-      href: menuHref("kontaktnye-linzy", { lensType: "Мультифокальные" }),
+      label: "Асферические",
+      count: "0",
+      href: menuHref("kontaktnye-linzy", { design: "Асферические" }),
       icon: <Layers className="h-4 w-4" />,
     },
     {
-      label: "Цветные",
-      count: "18",
-      href: menuHref("kontaktnye-linzy", { lensType: "Цветные" }),
-      icon: <Palette className="h-4 w-4" />,
-    },
-    {
-      label: "UV-защита",
-      count: "12",
-      href: menuHref("kontaktnye-linzy", { lensType: "UV-защита" }),
-      icon: <Sun className="h-4 w-4" />,
-    },
-    {
-      label: "Гибридные",
-      count: "6",
-      href: menuHref("kontaktnye-linzy", { lensType: "Гибридные" }),
+      label: "Торические",
+      count: "0",
+      href: menuHref("kontaktnye-linzy", { design: "Торические" }),
       icon: <ShieldCheck className="h-4 w-4" />,
     },
   ],
@@ -1227,7 +1213,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Особенности", "Все →")}
+              {sectionHeader("Дизайн", "Все →")}
               <div className="grid grid-cols-2 gap-2">
                 {menu.needs.map((item) => (
                   <a

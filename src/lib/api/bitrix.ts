@@ -142,6 +142,7 @@ export interface MenuCounts {
   wearMode?:    Record<string, number>;
   lensType?:    Record<string, number>;
   lensMaterial?: Record<string, number>;
+  design?:      Record<string, number>;
   brand:        { name: string; count: number }[];
 }
 

@@ -20,6 +20,7 @@ const catalogSearchSchema = z.object({
   // Contact lenses + eyeglass lenses dropdown facets
   wearMode:     z.string().optional(),
   lensType:     z.string().optional(),
+  design:       z.string().optional(),
   purpose:      z.string().optional(),
   sphere:       z.string().optional(),
   axis:         z.string().optional(),
@@ -71,8 +72,8 @@ function CatalogPage() {
   const initialFilters: Record<string, string[]> = {};
   for (const k of [
     "gender", "color", "shape", "size", "brand", "material", "construction",
-    "wearMode", "lensType", "purpose", "sphere", "axis", "addition", "bc",
-    "index", "technology", "coating", "tag",
+    "wearMode", "lensType", "design", "purpose", "sphere", "axis", "addition",
+    "bc", "index", "technology", "coating", "tag",
   ] as const) {
     const v = search[k];
     if (v) {
