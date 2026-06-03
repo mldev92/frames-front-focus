@@ -950,59 +950,73 @@ export function CatalogListing({
 
   const FilterContent = (
     <div className="text-sm">
-      {/* Header */}
-      <div className="flex items-end justify-between pb-5 border-b border-border/70">
-        <div className="flex items-baseline gap-2">
-          <SlidersHorizontal className="h-3.5 w-3.5 text-foreground/60" />
-          <span className="font-serif text-[20px] leading-none font-normal text-foreground">
-            Фильтры
-          </span>
-        </div>
-        <button
-          onClick={clearAll}
-          className="group/reset inline-flex items-center gap-1 text-[11px] uppercase font-sans font-medium text-muted-foreground hover:text-foreground transition-colors"
-          style={{ letterSpacing: "0.08em" }}
-        >
-          <X
-            className="h-3 w-3 transition-transform group-hover/reset:rotate-90"
-            style={{ transitionDuration: "var(--duration-snap)" }}
-          />
-          <span>Сбросить</span>
-        </button>
-      </div>
-
-      {/* Search */}
-      <div className="relative mb-4">
-        <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Поиск..."
-          className="w-full bg-background border border-border rounded-full pl-9 pr-3 py-2 text-sm outline-none focus:border-ink/50 transition-all"
-          onFocus={(e) => {
-            e.currentTarget.style.boxShadow = "0 0 0 3px oklch(0.18 0.01 250 / 0.08)";
-          }}
-          onBlur={(e) => {
-            e.currentTarget.style.boxShadow = "none";
-          }}
-        />
-      </div>
-
-      {/* Sort by */}
-      <div className="flex items-center gap-3 pb-2">
-        <span className="text-sm font-medium shrink-0">Сортировать</span>
-        <div className="relative flex-1">
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as typeof sort)}
-            className="w-full appearance-none bg-card border border-border rounded-full pl-3 pr-8 py-2 text-sm cursor-pointer outline-none focus:border-ink/50"
+      {/* Sticky head — Header + Search + Sort stay pinned to the top of the
+          sidebar scroll viewport so reset/search/sort are always reachable. */}
+      <div
+        className="sticky z-20 bg-background pt-1 pb-3"
+        style={{
+          top: 0,
+          marginLeft: "-12px",
+          marginRight: "-12px",
+          paddingLeft: "12px",
+          paddingRight: "12px",
+          boxShadow: "0 8px 8px -8px rgba(33,24,18,0.08)",
+        }}
+      >
+        {/* Header */}
+        <div className="flex items-end justify-between pb-4 border-b border-border/70">
+          <div className="flex items-baseline gap-2">
+            <SlidersHorizontal className="h-3.5 w-3.5 text-foreground/60" />
+            <span className="font-serif text-[20px] leading-none font-normal text-foreground">
+              Фильтры
+            </span>
+          </div>
+          <button
+            onClick={clearAll}
+            className="group/reset inline-flex items-center gap-1 text-[11px] uppercase font-sans font-medium text-muted-foreground hover:text-foreground transition-colors"
+            style={{ letterSpacing: "0.08em" }}
           >
-            <option value="featured">Популярные</option>
-            <option value="price-asc">Сначала дешёвые</option>
-            <option value="price-desc">Сначала дорогие</option>
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <X
+              className="h-3 w-3 transition-transform group-hover/reset:rotate-90"
+              style={{ transitionDuration: "var(--duration-snap)" }}
+            />
+            <span>Сбросить</span>
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="relative mt-3 mb-3">
+          <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Поиск..."
+            className="w-full bg-background border border-border rounded-full pl-9 pr-3 py-2 text-sm outline-none focus:border-ink/50 transition-all"
+            onFocus={(e) => {
+              e.currentTarget.style.boxShadow = "0 0 0 3px oklch(0.18 0.01 250 / 0.08)";
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.boxShadow = "none";
+            }}
+          />
+        </div>
+
+        {/* Sort by */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm font-medium shrink-0">Сортировать</span>
+          <div className="relative flex-1">
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as typeof sort)}
+              className="w-full appearance-none bg-card border border-border rounded-full pl-3 pr-8 py-2 text-sm cursor-pointer outline-none focus:border-ink/50"
+            >
+              <option value="featured">Популярные</option>
+              <option value="price-asc">Сначала дешёвые</option>
+              <option value="price-desc">Сначала дорогие</option>
+            </select>
+            <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          </div>
         </div>
       </div>
 
@@ -1602,7 +1616,7 @@ export function CatalogListing({
         }
         // checkbox
         return (
-          <FilterSection key={block.key} title={block.title} defaultOpen={false}>
+          <FilterSection key={block.key} title={block.title}>
             <div className="space-y-2">
               {block.options.map((opt) => {
                 const isConstruction = block.key === "construction";
