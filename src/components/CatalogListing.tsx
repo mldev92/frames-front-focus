@@ -292,6 +292,31 @@ const FRAME_CONSTRUCTION_DEFS: { key: string; matches: string[] }[] = [
   { key: "Безободковые",  matches: ["Втулки/винты", "Безободковые"] },
 ];
 
+// Lens facet defs — sidebar checkbox blocks for contact / eyeglass lens
+// categories. `key` is the URL value (= dropdown chip label = menu_counts key);
+// `matches[]` aliases the URL value onto Bitrix raw values so the client
+// re-filter and the count compare both hit (e.g. "Однодневные" → "1 день").
+const LENS_DESIGN_DEFS: { key: string; matches: string[] }[] = [
+  { key: "Сферические",   matches: ["Сферический", "Сферические"] },
+  { key: "Асферические",  matches: ["Асферический", "Асферические"] },
+  { key: "Торические",    matches: ["Торические"] },
+  { key: "Индивидуальные", matches: ["Индивидуальный", "Индивидуальные"] },
+];
+const LENS_WEAR_MODE_DEFS: { key: string; matches: string[] }[] = [
+  { key: "Однодневные",   matches: ["1 день", "Однодневные"] },
+  { key: "Двухнедельные", matches: ["2 недели", "Двухнедельные"] },
+  { key: "Месячные",      matches: ["1 месяц", "Месячные"] },
+  { key: "Квартальные",   matches: ["3 месяца", "Квартальные"] },
+];
+const LENS_TYPE_DEFS: { key: string; matches: string[] }[] = [
+  { key: "Однофокальные", matches: ["Однофокальные"] },
+  { key: "Прогрессивные", matches: ["Прогрессивные"] },
+  { key: "Офисные",       matches: ["Офисные"] },
+  { key: "Бифокальные",   matches: ["Бифокальные"] },
+  { key: "Фотохромные",   matches: ["Фотохромные"] },
+  { key: "Perifocal",     matches: ["Perifocal"] },
+];
+
 const FRAME_GENDER_DEFS = [
   { key: "Мужские", label: "Мужские", matches: ["Мужские"] },
   { key: "Женские", label: "Женские", matches: ["Женские"] },
@@ -1702,6 +1727,62 @@ export function CatalogListing({
           </FilterSection>
         );
       })}
+
+      {/* Lens-category facet checkboxes (wired into `active`, not extraChecks,
+          so URL ?design=Торические seeds the checkbox AND filters the grid,
+          mirroring the Конструкция pattern). */}
+      {(() => {
+        const lensBlocks: { facet: "design" | "wearMode" | "lensType"; title: string; defs: typeof LENS_DESIGN_DEFS }[] = [];
+        const isContacts     = categoryKey === "kontaktnye-linzy";
+        const isGlassesLens  = categoryKey === "linzy-dlya-ochkov";
+        if (isContacts || isGlassesLens) lensBlocks.push({ facet: "design", title: "Дизайн", defs: LENS_DESIGN_DEFS });
+        if (isContacts)                  lensBlocks.push({ facet: "wearMode", title: "Срок замены", defs: LENS_WEAR_MODE_DEFS });
+        if (isGlassesLens)               lensBlocks.push({ facet: "lensType", title: "Тип линзы", defs: LENS_TYPE_DEFS });
+
+        const countFor = (facet: string, def: { matches: string[] }) =>
+          products.filter((p) => {
+            const v = (p as unknown as Record<string, string | undefined>)[facet];
+            if (!v) return false;
+            const nv = normalize(v);
+            return def.matches.some((m) => normalize(m) === nv);
+          }).length;
+
+        return lensBlocks.map(({ facet, title, defs }) => (
+          <FilterSection key={facet} title={title}>
+            <div className="space-y-2">
+              {defs.map((def) => {
+                const checked = active[facet]?.has(def.key) ?? false;
+                const c = countFor(facet, def);
+                return (
+                  <button
+                    key={def.key}
+                    type="button"
+                    role="checkbox"
+                    aria-checked={checked}
+                    onClick={(e) => { e.preventDefault(); toggle(facet, def.key); }}
+                    onMouseDown={(e) => e.preventDefault()}
+                    className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
+                    style={{ borderRadius: "4px", padding: "2px 4px", margin: "0 -4px", background: "none", border: "none" }}
+                  >
+                    <span
+                      className={cn(
+                        "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
+                        checked
+                          ? "border-ink bg-ink text-primary-foreground"
+                          : "border-border bg-card group-hover:border-foreground/40",
+                      )}
+                    >
+                      {checked && <Check className="h-3 w-3" strokeWidth={3} />}
+                    </span>
+                    <span className="flex-1 text-sm">{def.key}</span>
+                    <span className="text-xs text-muted-foreground">({c})</span>
+                  </button>
+                );
+              })}
+            </div>
+          </FilterSection>
+        ));
+      })()}
 
       {/* Bottom spacer so the last section is never clipped by sticky Apply on mobile */}
       <div aria-hidden className="h-20 lg:h-4" />
