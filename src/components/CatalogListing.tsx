@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { Children, useEffect, useMemo, useState } from "react";
 import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
@@ -1009,7 +1009,7 @@ export function CatalogListing({
       {/* Frame shape — tile grid */}
       {vis.shape && hasFacet("shape") && (
         <FilterSection key="shape" title="Форма">
-          <div className="grid grid-cols-2 gap-2">
+          <CollapsibleList initialCount={6} className="grid grid-cols-2 gap-2">
             {shapeDefsForRender.map((s) => {
               const value = s.key;
               const checked = active.shape?.has(value) ?? false;
@@ -1051,7 +1051,7 @@ export function CatalogListing({
                 </button>
               );
             })}
-          </div>
+          </CollapsibleList>
         </FilterSection>
       )}
 
@@ -1090,7 +1090,7 @@ export function CatalogListing({
       {/* Color — compact swatch grid */}
       {vis.color && (
         <FilterSection key="color" title="Цвет">
-          <div className="grid grid-cols-1 gap-2 py-1">
+          <CollapsibleList initialCount={4} className="grid grid-cols-1 gap-2 py-1">
             {COLOR_SWATCHES.map((c) => {
               const sel = selectedColors.has(c.name);
               return (
@@ -1129,14 +1129,14 @@ export function CatalogListing({
                 </button>
               );
             })}
-          </div>
+          </CollapsibleList>
         </FilterSection>
       )}
 
       {/* Material — checkbox list */}
       {vis.material && hasFacet("material") && (
         <FilterSection key="material" title="Материал">
-          <div className="space-y-2">
+          <CollapsibleList initialCount={4} className="space-y-2">
             {(isFramesCategory
               ? FRAME_MATERIAL_DEFS.map((m) => [m, frameMaterialCounts[m] ?? 0] as const)
               : Object.entries(facetCounts.material ?? {})
@@ -1177,7 +1177,7 @@ export function CatalogListing({
                 </button>
               );
             })}
-          </div>
+          </CollapsibleList>
         </FilterSection>
       )}
 
@@ -1465,7 +1465,7 @@ export function CatalogListing({
       {/* Style — pills */}
       {vis.style && (
         <FilterSection key="style" title="Стиль">
-          <div className="flex flex-wrap gap-2">
+          <CollapsibleList initialCount={4} className="flex flex-wrap gap-2">
             {STYLE_TAGS.map((s) => {
               const checked = styleTag === s;
               return (
@@ -1488,14 +1488,14 @@ export function CatalogListing({
                 </button>
               );
             })}
-          </div>
+          </CollapsibleList>
         </FilterSection>
       )}
 
       {/* Brands */}
       {vis.brand && hasFacet("brand") && (
-        <FilterSection key="brand" title="Бренды" defaultOpen={false}>
-          <div className="max-h-72 overflow-y-auto pr-1 space-y-2">
+        <FilterSection key="brand" title="Бренды">
+          <CollapsibleList initialCount={4} className="space-y-2">
             {Object.entries(facetCounts.brand ?? {})
               .sort(([a], [b]) => a.localeCompare(b))
               .map(([b, c]) => {
@@ -1535,7 +1535,7 @@ export function CatalogListing({
                   </button>
                 );
               })}
-          </div>
+          </CollapsibleList>
         </FilterSection>
       )}
 
@@ -1543,7 +1543,7 @@ export function CatalogListing({
       {extras.map((block) => {
         if (block.kind === "discount") {
           return (
-            <FilterSection key="discount" title="Скидка, %" defaultOpen={false}>
+            <FilterSection key="discount" title="Скидка, %">
               <div className="flex items-center justify-between mb-3 text-xs text-muted-foreground">
                 <span>от {discount}%</span>
                 <span>до 100%</span>
@@ -1562,7 +1562,7 @@ export function CatalogListing({
         if (block.kind === "range") {
           const v = getRange(block.key, block.min, block.max);
           return (
-            <FilterSection key={block.key} title={block.title} defaultOpen={false}>
+            <FilterSection key={block.key} title={block.title}>
               <div className="flex items-center gap-2 mb-3">
                 <label className="flex-1 flex items-center gap-1 border border-border bg-background rounded-full px-3 py-2">
                   <input
@@ -1926,6 +1926,42 @@ export function CatalogListing({
         </div>
       )}
     </div>
+  );
+}
+
+// Renders the first `initialCount` children, with a "Показать ещё (N)" toggle
+// underneath to reveal the rest. Used to keep long filter lists (color, brand,
+// shape grid, …) compact by default while still keeping every section open.
+function CollapsibleList({
+  children,
+  initialCount,
+  className,
+}: {
+  children: React.ReactNode;
+  initialCount: number;
+  className?: string;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const items = Children.toArray(children);
+  const visible = expanded ? items : items.slice(0, initialCount);
+  const hiddenCount = items.length - initialCount;
+  return (
+    <>
+      <div className={className}>{visible}</div>
+      {hiddenCount > 0 && (
+        <button
+          type="button"
+          onClick={() => setExpanded((e) => !e)}
+          className="mt-3 inline-flex items-center gap-1 text-[11px] uppercase tracking-[0.08em] font-medium text-foreground/60 hover:text-foreground transition-colors"
+          style={{ transitionDuration: "var(--duration-snap)" }}
+        >
+          {expanded ? "Свернуть" : `Показать ещё (${hiddenCount})`}
+          <ChevronDown
+            className={cn("h-3 w-3 transition-transform", expanded && "rotate-180")}
+          />
+        </button>
+      )}
+    </>
   );
 }
 
