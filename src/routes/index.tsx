@@ -1011,7 +1011,7 @@ function MainV2Page() {
                   здоровья глаз.
                 </p>
                 <a
-                  href={serviceHref("diagnostika")}
+                  href="/stellest-katalog-s-linzami/"
                   className="inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold text-white self-start hover:opacity-90 transition-opacity"
                   style={{ background: "var(--brand)" }}
                 >

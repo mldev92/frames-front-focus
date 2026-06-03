@@ -17,6 +17,7 @@ const COLS = [
     links: [
       ["Запись к врачу", "/uslugi/priem-vracha"],
       ["Диагностика зрения", "/uslugi/diagnostika"],
+      ["Stellest каталог с линзами", "/stellest-katalog-s-linzami/"],
       ["Подбор очков", "/uslugi/podbor-ochkov"],
       ["Ремонт очков", "/uslugi/remont"],
     ],
