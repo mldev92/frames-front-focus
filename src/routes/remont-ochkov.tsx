@@ -1,18 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { getService } from "@/data/services";
-import { ServiceDetail } from "@/components/ServiceDetail";
-
-const service = getService("remont")!;
+import { RepairPage } from "@/components/pages/RepairPage";
 
 export const Route = createFileRoute("/remont-ochkov")({
   head: () => ({
     meta: [
-      { title: `${service.title} · ОПТИКА 100%` },
-      { name: "description", content: service.short },
-      { property: "og:title", content: service.title },
-      { property: "og:description", content: service.short },
-      { property: "og:image", content: service.image },
+      { title: "Ремонт очков в Санкт-Петербурге · ОПТИКА 100%" },
+      {
+        name: "description",
+        content:
+          "Ремонт очков в Санкт-Петербурге: замена заушников, носоупоров, винтов, правка оправы, установка линз и чистка очков в салоне ОПТИКА 100%.",
+      },
+      { property: "og:title", content: "Ремонт очков в Санкт-Петербурге · ОПТИКА 100%" },
+      {
+        property: "og:description",
+        content:
+          "Возвращаем очкам комфорт и надёжность. Сертифицированные запчасти, профессиональное оборудование и срочный ремонт в салоне.",
+      },
+      { property: "og:image", content: "/remont_hero.png" },
     ],
   }),
-  component: () => <ServiceDetail service={service} />,
+  component: RepairPage,
 });
