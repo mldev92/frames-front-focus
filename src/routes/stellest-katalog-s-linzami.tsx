@@ -193,8 +193,8 @@ function StellestCatalogPage() {
       });
     });
 
-    root.querySelectorAll<HTMLAnchorElement>("[data-open-appointment]").forEach((link) => {
-      addClick(link, (event) => {
+    root.querySelectorAll<HTMLElement>("[data-open-appointment]").forEach((trigger) => {
+      addClick(trigger, (event) => {
         event.preventDefault();
         setAptOpen(true);
       });
