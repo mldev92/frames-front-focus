@@ -69,6 +69,10 @@ function useLiveChipCount(href: string | undefined, fallback?: string): string |
     shape: data.shape,
     construction: data.construction,
     material: data.material,
+    // Contact-lens + eyeglass-lens facets
+    wearMode: (data as { wearMode?: Record<string, number> }).wearMode,
+    lensType: (data as { lensType?: Record<string, number> }).lensType,
+    lensMaterial: (data as { lensMaterial?: Record<string, number> }).lensMaterial,
   };
   const bucket = buckets[parsed.facet];
   if (!bucket) return fallback;

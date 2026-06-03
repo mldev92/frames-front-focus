@@ -137,6 +137,11 @@ export interface MenuCounts {
   shape:        Record<string, number>;
   construction: Record<string, number>;
   material:     Record<string, number>;
+  // Contact lenses + eyeglass lenses (filled for kontaktnye_linzy_ /
+  // linzy_dlya_ochkov, empty/absent for frames).
+  wearMode?:    Record<string, number>;
+  lensType?:    Record<string, number>;
+  lensMaterial?: Record<string, number>;
   brand:        { name: string; count: number }[];
 }
 

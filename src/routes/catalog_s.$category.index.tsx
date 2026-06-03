@@ -17,6 +17,18 @@ const catalogSearchSchema = z.object({
   brand:        z.string().optional(),
   material:     z.string().optional(),
   construction: z.string().optional(),
+  // Contact lenses + eyeglass lenses dropdown facets
+  wearMode:     z.string().optional(),
+  lensType:     z.string().optional(),
+  purpose:      z.string().optional(),
+  sphere:       z.string().optional(),
+  axis:         z.string().optional(),
+  addition:     z.string().optional(),
+  bc:           z.string().optional(),
+  index:        z.string().optional(),
+  technology:   z.string().optional(),
+  coating:      z.string().optional(),
+  tag:          z.string().optional(),
 });
 type CatalogSearch = z.infer<typeof catalogSearchSchema>;
 
@@ -57,7 +69,11 @@ function CatalogPage() {
   // Header dropdown → catalog. Each present param becomes an active filter on
   // that facet. Comma-separated values allow ?shape=Прямоугольные,Квадратные .
   const initialFilters: Record<string, string[]> = {};
-  for (const k of ["gender", "color", "shape", "size", "brand", "material", "construction"] as const) {
+  for (const k of [
+    "gender", "color", "shape", "size", "brand", "material", "construction",
+    "wearMode", "lensType", "purpose", "sphere", "axis", "addition", "bc",
+    "index", "technology", "coating", "tag",
+  ] as const) {
     const v = search[k];
     if (v) {
       const parts = v.split(",").map((s) => s.trim()).filter(Boolean);
