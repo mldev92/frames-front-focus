@@ -35,6 +35,7 @@ import { Route as Catalog_sCategoryIndexRouteImport } from './routes/catalog_s.$
 import { Route as BlogCategoryIndexRouteImport } from './routes/blog.$category.index'
 import { Route as Catalog_sCategorySlugRouteImport } from './routes/catalog_s.$category.$slug'
 import { Route as BlogCategorySlugRouteImport } from './routes/blog.$category.$slug'
+import { Route as BlogCategorySlugIndexRouteImport } from './routes/blog.$category.$slug.index'
 
 const UslugiRoute = UslugiRouteImport.update({
   id: '/uslugi',
@@ -167,6 +168,11 @@ const BlogCategorySlugRoute = BlogCategorySlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => BlogCategoryRoute,
 } as any)
+const BlogCategorySlugIndexRoute = BlogCategorySlugIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogCategorySlugRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -191,10 +197,11 @@ export interface FileRoutesByFullPath {
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
-  '/blog/$category/$slug': typeof BlogCategorySlugRoute
+  '/blog/$category/$slug': typeof BlogCategorySlugRouteWithChildren
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
   '/catalog_s/$category/': typeof Catalog_sCategoryIndexRoute
+  '/blog/$category/$slug/': typeof BlogCategorySlugIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -217,10 +224,10 @@ export interface FileRoutesByTo {
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
-  '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category': typeof BlogCategoryIndexRoute
   '/catalog_s/$category': typeof Catalog_sCategoryIndexRoute
+  '/blog/$category/$slug': typeof BlogCategorySlugIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -246,10 +253,11 @@ export interface FileRoutesById {
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
-  '/blog/$category/$slug': typeof BlogCategorySlugRoute
+  '/blog/$category/$slug': typeof BlogCategorySlugRouteWithChildren
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
   '/catalog_s/$category/': typeof Catalog_sCategoryIndexRoute
+  '/blog/$category/$slug/': typeof BlogCategorySlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -280,6 +288,7 @@ export interface FileRouteTypes {
     | '/catalog_s/$category/$slug'
     | '/blog/$category/'
     | '/catalog_s/$category/'
+    | '/blog/$category/$slug/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -302,10 +311,10 @@ export interface FileRouteTypes {
     | '/tinkoff'
     | '/uslugi'
     | '/uslugi/$slug'
-    | '/blog/$category/$slug'
     | '/catalog_s/$category/$slug'
     | '/blog/$category'
     | '/catalog_s/$category'
+    | '/blog/$category/$slug'
   id:
     | '__root__'
     | '/'
@@ -334,6 +343,7 @@ export interface FileRouteTypes {
     | '/catalog_s/$category/$slug'
     | '/blog/$category/'
     | '/catalog_s/$category/'
+    | '/blog/$category/$slug/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -543,16 +553,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogCategorySlugRouteImport
       parentRoute: typeof BlogCategoryRoute
     }
+    '/blog/$category/$slug/': {
+      id: '/blog/$category/$slug/'
+      path: '/'
+      fullPath: '/blog/$category/$slug/'
+      preLoaderRoute: typeof BlogCategorySlugIndexRouteImport
+      parentRoute: typeof BlogCategorySlugRoute
+    }
   }
 }
 
+interface BlogCategorySlugRouteChildren {
+  BlogCategorySlugIndexRoute: typeof BlogCategorySlugIndexRoute
+}
+
+const BlogCategorySlugRouteChildren: BlogCategorySlugRouteChildren = {
+  BlogCategorySlugIndexRoute: BlogCategorySlugIndexRoute,
+}
+
+const BlogCategorySlugRouteWithChildren =
+  BlogCategorySlugRoute._addFileChildren(BlogCategorySlugRouteChildren)
+
 interface BlogCategoryRouteChildren {
-  BlogCategorySlugRoute: typeof BlogCategorySlugRoute
+  BlogCategorySlugRoute: typeof BlogCategorySlugRouteWithChildren
   BlogCategoryIndexRoute: typeof BlogCategoryIndexRoute
 }
 
 const BlogCategoryRouteChildren: BlogCategoryRouteChildren = {
-  BlogCategorySlugRoute: BlogCategorySlugRoute,
+  BlogCategorySlugRoute: BlogCategorySlugRouteWithChildren,
   BlogCategoryIndexRoute: BlogCategoryIndexRoute,
 }
 
