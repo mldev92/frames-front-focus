@@ -1,7 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { getArticle, getArticlesByCategory } from "@/data/articles";
 import type { Article } from "@/data/types";
+
+import lensCoatingsCss from "@/content/pokrytiya-linz-dlya-ochkov.css?raw";
+import lensCoatingsHtml from "@/content/pokrytiya-linz-dlya-ochkov.html?raw";
+
+const LENS_COATINGS_CATEGORY = "linzy-dlya-ochkov";
+const LENS_COATINGS_SLUG = "pokrytiya-linz-dlya-ochkov";
 
 export const Route = createFileRoute("/blog/$category/$slug")({
   loader: ({ params }) => {
@@ -29,6 +36,14 @@ export const Route = createFileRoute("/blog/$category/$slug")({
 function ArticlePage() {
   const data = Route.useLoaderData() as { article: Article };
   const { article } = data;
+
+  if (
+    article.categorySlug === LENS_COATINGS_CATEGORY &&
+    article.slug === LENS_COATINGS_SLUG
+  ) {
+    return <LensCoatingsArticlePage />;
+  }
+
   const more = getArticlesByCategory(article.categorySlug)
     .filter((a) => a.slug !== article.slug)
     .slice(0, 3);
@@ -105,5 +120,68 @@ function ArticlePage() {
         </div>
       </section>
     </article>
+  );
+}
+
+function LensCoatingsArticlePage() {
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    const cleanups: Array<() => void> = [];
+    const revealEls = Array.from(root.querySelectorAll<HTMLElement>(".reveal"));
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.12 },
+      );
+
+      revealEls.forEach((el) => observer.observe(el));
+      cleanups.push(() => observer.disconnect());
+    } else {
+      revealEls.forEach((el) => el.classList.add("is-visible"));
+    }
+
+    const handleTocClick = (event: Event) => {
+      event.preventDefault();
+
+      const link = event.currentTarget as HTMLAnchorElement;
+      const href = link.getAttribute("href");
+      if (!href) return;
+
+      const target = root.querySelector<HTMLElement>(href);
+      if (!target) return;
+
+      const y = target.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    };
+
+    root.querySelectorAll<HTMLAnchorElement>('.toc-list a[href^="#"]').forEach((link) => {
+      link.addEventListener("click", handleTocClick);
+      cleanups.push(() => link.removeEventListener("click", handleTocClick));
+    });
+
+    return () => cleanups.forEach((cleanup) => cleanup());
+  }, []);
+
+  return (
+    <>
+      <style>{lensCoatingsCss}</style>
+      <article
+        ref={rootRef}
+        className="lens-coatings-page"
+        dangerouslySetInnerHTML={{ __html: lensCoatingsHtml }}
+      />
+    </>
   );
 }

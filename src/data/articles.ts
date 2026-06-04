@@ -16,7 +16,11 @@ const AUTHORS = ["Анна Соколова", "Иван Петров", "Мари
 // NOTE: article bodies below are placeholders; migrate the real copy from the
 // live site (/blog/linzy-dlya-ochkov/{slug}/) in a content pass.
 const RAW: [string, string, string][] = [
-  ["pokrytiya-linz-dlya-ochkov", "Покрытия очковых линз", "Какие покрытия защищают линзы и зачем они нужны."],
+  [
+    "pokrytiya-linz-dlya-ochkov",
+    "Покрытия линз для очков",
+    "Какие покрытия делают очковые линзы комфортнее, защищают от бликов, царапин и помогают выбрать линзы под ваш образ жизни.",
+  ],
   ["vidy-ochkovykh-linz", "Виды линз для очков", "Однофокальные, прогрессивные, офисные — как разобраться."],
   ["asfericheskie-linzy-dlya-ochkov", "Асферические линзы для очков", "Тоньше, легче и с меньшими искажениями по краям."],
   ["ofisnye-linzy", "Офисные линзы", "Комфорт зрения на средних и близких дистанциях в течение дня."],
@@ -36,7 +40,7 @@ const RAW: [string, string, string][] = [
 ];
 
 const LOCAL_COVERS: Record<number, string> = {
-  0: "/blog_pokrytie.jpg",
+  0: "/article-pokrytiya-linz/pokrytie_hero.png",
   1: "/blog_vidy_linz.jpg",
   2: "/blog_asphericheskie.jpg",
 };

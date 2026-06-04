@@ -1,0 +1,511 @@
+/* Lens coatings article page. Scoped so the imported handoff styles do not leak into the app shell. */
+.lens-coatings-page {
+  --background: oklch(0.985 0.004 80);
+  --foreground: oklch(0.18 0.01 250);
+  --surface: oklch(0.96 0.008 75);
+  --cream: oklch(0.965 0.015 85);
+  --card: oklch(1 0 0);
+  --ink: oklch(0.18 0.01 250);
+  --muted-foreground: oklch(0.5 0.015 250);
+  --border: oklch(0.9 0.008 80);
+  --brand: #c94040;
+  --brand-50: oklch(0.97 0.018 28);
+  --brand-100: oklch(0.94 0.038 28);
+  --brand-200: oklch(0.88 0.075 28);
+  --brand-700: oklch(0.40 0.160 28);
+  --success: oklch(0.55 0.13 150);
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --shadow-xs: 0 1px 2px oklch(0.22 0.02 60 / 0.045);
+  --shadow-sm: 0 1px 2px oklch(0.22 0.02 60 / 0.05), 0 2px 6px oklch(0.22 0.02 60 / 0.04);
+  --shadow-md: 0 2px 4px oklch(0.22 0.02 60 / 0.045), 0 8px 20px oklch(0.22 0.02 60 / 0.06);
+  --shadow-lg: 0 4px 10px oklch(0.22 0.02 60 / 0.06), 0 18px 40px oklch(0.22 0.02 60 / 0.09);
+  --ease-editorial: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-snap: 200ms;
+  --duration-flow: 360ms;
+  --container: 1280px;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+.lens-coatings-page *,
+.lens-coatings-page *::before,
+.lens-coatings-page *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.lens-coatings-page :where(h1, h2, h3, h4, .font-serif) {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
+.lens-coatings-page :where(a) { color: inherit; text-decoration: none; }
+.lens-coatings-page :where(button) { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+.lens-coatings-page :where(img) { display: block; max-width: 100%; }
+.lens-coatings-page :where(em) { font-style: italic; }
+
+.lens-coatings-page .container { max-width: var(--container); margin: 0 auto; padding: 0 24px; }
+@media (min-width: 1024px) { .lens-coatings-page .container { padding: 0 32px; } }
+
+.lens-coatings-page .eyebrow {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+
+.lens-coatings-page .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 100px;
+  padding: 13px 26px;
+  border: 1px solid transparent;
+  transition: all var(--duration-snap) var(--ease-editorial);
+  cursor: pointer;
+}
+.lens-coatings-page .btn-primary { background: var(--brand); color: #fff; }
+.lens-coatings-page .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+.lens-coatings-page .btn-secondary { background: transparent; color: var(--foreground); border-color: var(--foreground); }
+.lens-coatings-page .btn-secondary:hover { background: var(--foreground); color: var(--background); }
+.lens-coatings-page .btn-ghost { color: var(--brand); padding: 8px 0; }
+.lens-coatings-page .btn-ghost:hover { gap: 12px; }
+
+.lens-coatings-page .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 700ms ease-out, transform 700ms ease-out;
+}
+.lens-coatings-page .reveal.is-visible { opacity: 1; transform: translateY(0); }
+@media (prefers-reduced-motion: reduce) {
+  .lens-coatings-page .reveal { opacity: 1; transform: none; transition: none; }
+}
+
+.lens-coatings-page .promo-band {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(100deg, var(--brand) 0%, oklch(0.46 0.17 28) 100%);
+  color: #fff;
+  display: flex;
+  align-items: stretch;
+}
+.lens-coatings-page .promo-ship {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 22px;
+  background: rgba(0, 0, 0, 0.16);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  z-index: 2;
+}
+.lens-coatings-page .promo-ship svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.lens-coatings-page .promo-ship span small {
+  display: block;
+  font-weight: 400;
+  font-size: 10.5px;
+  opacity: 0.75;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.lens-coatings-page .promo-marquee { flex: 1; overflow: hidden; position: relative; display: flex; align-items: center; }
+.lens-coatings-page .promo-track {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  white-space: nowrap;
+  animation: lensCoatingsPromoScroll 38s linear infinite;
+}
+.lens-coatings-page .promo-band:hover .promo-track { animation-play-state: paused; }
+.lens-coatings-page .promo-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 28px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+.lens-coatings-page .promo-item .star { color: oklch(0.92 0.05 90); font-size: 12px; }
+.lens-coatings-page .promo-item b { font-weight: 700; }
+.lens-coatings-page .promo-item .sep { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 255, 255, 0.45); }
+@keyframes lensCoatingsPromoScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) { .lens-coatings-page .promo-track { animation: none; } }
+@media (max-width: 720px) {
+  .lens-coatings-page .promo-ship span small { display: none; }
+  .lens-coatings-page .promo-ship { padding: 0 14px; font-size: 12px; }
+}
+
+.lens-coatings-page .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 34px; }
+.lens-coatings-page .section { padding: clamp(56px, 7vw, 96px) 0; }
+.lens-coatings-page .section-cream { background: var(--cream); }
+.lens-coatings-page .section-head { max-width: 720px; margin-bottom: 44px; }
+.lens-coatings-page .section-head.center { margin-left: auto; margin-right: auto; text-align: center; }
+.lens-coatings-page .section-head .eyebrow { display: block; margin-bottom: 14px; }
+.lens-coatings-page .section-head h2 { font-size: clamp(28px, 3.6vw, 44px); font-weight: 600; line-height: 1.08; color: var(--foreground); }
+.lens-coatings-page .section-head p { font-size: 17px; line-height: 1.6; color: var(--muted-foreground); margin-top: 16px; }
+
+.lens-coatings-page .consult {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1fr;
+  box-shadow: var(--shadow-md);
+}
+@media (min-width: 900px) { .lens-coatings-page .consult { grid-template-columns: 1.05fr 0.95fr; } }
+.lens-coatings-page .consult-copy { padding: clamp(36px, 5vw, 64px); }
+.lens-coatings-page .consult-copy h2 { font-size: clamp(28px, 3.4vw, 44px); font-weight: 600; line-height: 1.06; margin: 14px 0 16px; }
+.lens-coatings-page .consult-copy p { font-size: 16px; line-height: 1.6; color: var(--muted-foreground); max-width: 440px; margin-bottom: 28px; }
+.lens-coatings-page .consult-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+.lens-coatings-page .consult-list { display: flex; flex-direction: column; gap: 12px; margin: 26px 0 0; }
+.lens-coatings-page .consult-list li { display: flex; align-items: flex-start; gap: 11px; font-size: 14.5px; color: var(--foreground); list-style: none; }
+.lens-coatings-page .consult-list .tick { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: color-mix(in oklab, var(--brand) 12%, transparent); color: var(--brand); display: grid; place-items: center; margin-top: 1px; }
+.lens-coatings-page .consult-list .tick svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.lens-coatings-page .consult-photo { position: relative; min-height: 300px; }
+.lens-coatings-page .consult-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+/* ── Article page specifics ─────────────────────────────── */
+
+/* Breadcrumb */
+.lens-coatings-page .breadcrumb {
+  max-width: var(--container); margin: 0 auto; padding: 16px 24px;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--muted-foreground);
+}
+@media (min-width: 1024px) { .lens-coatings-page .breadcrumb { padding: 16px 32px; } }
+.lens-coatings-page .breadcrumb a { transition: color var(--duration-snap); }
+.lens-coatings-page .breadcrumb a:hover { color: var(--foreground); }
+.lens-coatings-page .breadcrumb .sep { font-size: 10px; opacity: 0.5; }
+.lens-coatings-page .breadcrumb .current { color: var(--foreground); font-weight: 500; }
+
+/* Article Hero — full-bleed image with gradient fade */
+.lens-coatings-page .art-hero { background: var(--cream); overflow: hidden; position: relative; }
+.lens-coatings-page .art-hero-inner {
+  max-width: var(--container); margin: 0 auto; position: relative;
+  min-height: 420px;
+}
+@media (min-width: 1024px) { .lens-coatings-page .art-hero-inner { min-height: 520px; } }
+
+/* Full-bleed photo on the right */
+.lens-coatings-page .art-hero-visual {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: 60%; overflow: hidden;
+}
+@media (max-width: 1023px) {
+.lens-coatings-page .art-hero-visual {
+    position: relative; width: 100%; height: 300px;
+  }
+}
+.lens-coatings-page .art-hero-visual img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+/* Gradient fade from cream into image */
+.lens-coatings-page .art-hero-visual::before {
+  content: ''; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(to right,
+    var(--cream) 0%,
+    color-mix(in oklab, var(--cream) 80%, transparent) 12%,
+    color-mix(in oklab, var(--cream) 30%, transparent) 30%,
+    transparent 55%
+  );
+  pointer-events: none;
+}
+@media (max-width: 1023px) {
+.lens-coatings-page .art-hero-visual::before {
+    background: linear-gradient(to top,
+      var(--cream) 0%,
+      color-mix(in oklab, var(--cream) 60%, transparent) 30%,
+      transparent 70%
+    );
+  }
+}
+
+/* Text over the left side */
+.lens-coatings-page .art-hero-copy {
+  position: relative; z-index: 2;
+  padding: 56px 24px 48px; max-width: 480px;
+}
+@media (min-width: 1024px) { .lens-coatings-page .art-hero-copy { padding: 80px 32px 72px; } }
+.lens-coatings-page .art-hero h1 {
+  font-size: clamp(34px, 4.8vw, 56px); font-weight: 600; line-height: 1.06;
+  letter-spacing: -0.02em; color: var(--foreground); margin: 14px 0 20px;
+}
+.lens-coatings-page .art-hero h1 em { font-style: normal; color: var(--brand); }
+.lens-coatings-page .art-hero-lead {
+  font-size: 17px; line-height: 1.6; color: var(--muted-foreground);
+  max-width: 420px; margin-bottom: 32px;
+}
+
+/* TOC */
+.lens-coatings-page .toc-section { padding: 32px 0 0; }
+.lens-coatings-page .toc-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 28px 32px;
+}
+.lens-coatings-page .toc-card h3 {
+  font-size: 15px; font-weight: 600; color: var(--foreground);
+  margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.lens-coatings-page .toc-list {
+  list-style: none; padding: 0; margin: 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px 32px;
+}
+@media (max-width: 700px) { .lens-coatings-page .toc-list { grid-template-columns: 1fr; } }
+.lens-coatings-page .toc-list li { display: flex; align-items: baseline; gap: 10px; }
+.lens-coatings-page .toc-list a {
+  font-size: 14.5px; line-height: 1.5; color: var(--muted-foreground);
+  transition: color var(--duration-snap);
+  text-decoration: none; border-bottom: 1px solid transparent;
+}
+.lens-coatings-page .toc-list a:hover { color: var(--brand); border-bottom-color: color-mix(in oklab, var(--brand) 30%, transparent); }
+.lens-coatings-page .toc-num {
+  font-size: 12px; font-weight: 600; color: var(--brand);
+  min-width: 20px; font-variant-numeric: tabular-nums;
+}
+
+/* Article body */
+.lens-coatings-page .art-section { padding: clamp(48px, 6vw, 80px) 0; }
+.lens-coatings-page .art-section + .art-section { padding-top: 0; }
+.lens-coatings-page .art-section.art-bg { background: var(--cream); padding-top: clamp(48px, 6vw, 80px); }
+.lens-coatings-page .art-section.art-bg + .art-section.art-bg { padding-top: 0; }
+
+/* Two-column content block */
+.lens-coatings-page .art-block {
+  display: grid; grid-template-columns: 1fr; gap: 40px; align-items: start;
+}
+@media (min-width: 860px) { .lens-coatings-page .art-block { grid-template-columns: 1fr 1fr; gap: 56px; } }
+.lens-coatings-page .art-block.reverse .art-text { order: 1; }
+.lens-coatings-page .art-block.reverse .art-media { order: 2; }
+@media (min-width: 860px) {
+.lens-coatings-page .art-block.reverse .art-text { order: 2; }
+.lens-coatings-page .art-block.reverse .art-media { order: 1; }
+}
+
+.lens-coatings-page .art-text h2 {
+  font-size: clamp(26px, 3.2vw, 38px); font-weight: 600; line-height: 1.1;
+  letter-spacing: -0.01em; color: var(--foreground); margin-bottom: 20px;
+}
+.lens-coatings-page .art-text h3 {
+  font-size: clamp(20px, 2.4vw, 26px); font-weight: 600; line-height: 1.2;
+  color: var(--foreground); margin: 28px 0 14px;
+}
+.lens-coatings-page .art-text h3:first-child { margin-top: 0; }
+.lens-coatings-page .art-text p {
+  font-size: 15.5px; line-height: 1.7; color: var(--muted-foreground);
+  margin-bottom: 14px; text-wrap: pretty;
+}
+.lens-coatings-page .art-text p:last-child { margin-bottom: 0; }
+.lens-coatings-page .art-text strong { color: var(--foreground); font-weight: 600; }
+.lens-coatings-page .art-text em.highlight {
+  font-style: normal; background: color-mix(in oklab, var(--brand) 10%, transparent);
+  padding: 2px 6px; border-radius: 4px; color: var(--brand); font-weight: 500;
+}
+
+/* Article image card */
+.lens-coatings-page .art-media-card {
+  border-radius: 20px; overflow: hidden; background: var(--surface);
+  border: 1px solid var(--border);
+}
+.lens-coatings-page .art-media-card img { width: 100%; height: auto; display: block; }
+.lens-coatings-page .art-media-caption {
+  padding: 16px 20px; font-size: 13px; color: var(--muted-foreground);
+  line-height: 1.45; border-top: 1px solid var(--border);
+}
+
+/* Full-width article heading */
+.lens-coatings-page .art-head {
+  margin-bottom: 32px;
+}
+.lens-coatings-page .art-head h2 {
+  font-size: clamp(26px, 3.4vw, 40px); font-weight: 600; line-height: 1.1;
+  color: var(--foreground); margin-bottom: 12px;
+}
+.lens-coatings-page .art-head p {
+  font-size: 16px; line-height: 1.6; color: var(--muted-foreground); max-width: 640px;
+}
+
+/* Feature cards grid */
+.lens-coatings-page .feat-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+}
+@media (max-width: 900px) { .lens-coatings-page .feat-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .lens-coatings-page .feat-grid { grid-template-columns: 1fr; } }
+.lens-coatings-page .feat-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+  padding: 28px 24px; display: flex; flex-direction: column; gap: 14px;
+  overflow: hidden;
+  transition: transform var(--duration-snap), box-shadow var(--duration-snap);
+}
+.lens-coatings-page .feat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+.lens-coatings-page .feat-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: color-mix(in oklab, var(--brand) 9%, transparent);
+  color: var(--brand); display: grid; place-items: center; flex-shrink: 0;
+}
+.lens-coatings-page .feat-icon svg {
+  width: 22px; height: 22px; stroke: currentColor; fill: none;
+  stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
+}
+.lens-coatings-page .feat-card h3 { font-size: 16px; font-weight: 600; color: var(--foreground); line-height: 1.3; }
+.lens-coatings-page .feat-card p { font-size: 14px; line-height: 1.6; color: var(--muted-foreground); }
+.lens-coatings-page .feat-card-img-wrap {
+  position: relative; margin: -28px -24px 0 -24px;
+  width: calc(100% + 48px); overflow: hidden;
+}
+.lens-coatings-page .feat-card-img-wrap::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 64px;
+  background: linear-gradient(to top, var(--card) 0%, transparent 100%);
+  pointer-events: none;
+}
+.lens-coatings-page .feat-card-img-wrap img {
+  width: 100%; height: 210px; object-fit: cover; display: block;
+}
+/* Legacy direct img (no wrapper) */
+.lens-coatings-page .feat-card-img {
+  margin: -28px -24px 0 -24px; width: calc(100% + 48px); height: 180px;
+  object-fit: cover; display: block;
+}
+
+/* Checklist style */
+.lens-coatings-page .art-checklist {
+  list-style: none; padding: 0; margin: 16px 0 0;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.lens-coatings-page .art-checklist li {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 15px; line-height: 1.55; color: var(--muted-foreground);
+}
+.lens-coatings-page .art-checklist .tick {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: color-mix(in oklab, var(--brand) 12%, transparent);
+  color: var(--brand); display: grid; place-items: center; flex-shrink: 0;
+  margin-top: 2px;
+}
+.lens-coatings-page .art-checklist .tick svg {
+  width: 13px; height: 13px; stroke: currentColor; fill: none;
+  stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* Numbered list */
+.lens-coatings-page .art-numbered {
+  list-style: none; padding: 0; margin: 20px 0 0;
+  display: flex; flex-direction: column; gap: 12px;
+  counter-reset: numbered;
+}
+.lens-coatings-page .art-numbered li {
+  counter-increment: numbered;
+  display: flex; gap: 14px; align-items: flex-start;
+  font-size: 15px; line-height: 1.6; color: var(--muted-foreground);
+}
+.lens-coatings-page .art-numbered li::before {
+  content: counter(numbered);
+  font-size: 13px; font-weight: 700; color: var(--brand);
+  min-width: 28px; height: 28px; border-radius: 50%;
+  border: 1.5px solid color-mix(in oklab, var(--brand) 25%, transparent);
+  display: grid; place-items: center; flex-shrink: 0; margin-top: 1px;
+}
+
+/* Info callout */
+.lens-coatings-page .art-callout {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: color-mix(in oklab, var(--brand) 5%, var(--card));
+  border: 1px solid color-mix(in oklab, var(--brand) 15%, transparent);
+  border-radius: 14px; padding: 20px 24px; margin-top: 24px;
+}
+.lens-coatings-page .art-callout svg {
+  width: 20px; height: 20px; stroke: var(--brand); fill: none;
+  stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
+  flex-shrink: 0; margin-top: 2px;
+}
+.lens-coatings-page .art-callout p { font-size: 14.5px; line-height: 1.6; color: var(--muted-foreground); margin: 0; }
+.lens-coatings-page .art-callout strong { color: var(--foreground); }
+
+/* Care tips grid */
+.lens-coatings-page .care-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px;
+}
+@media (max-width: 600px) { .lens-coatings-page .care-grid { grid-template-columns: 1fr; } }
+.lens-coatings-page .care-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 14px; padding: 18px 20px;
+  transition: transform var(--duration-snap);
+}
+.lens-coatings-page .care-item:hover { transform: translateY(-2px); }
+.lens-coatings-page .care-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: color-mix(in oklab, var(--brand) 9%, transparent);
+  color: var(--brand); display: grid; place-items: center; flex-shrink: 0;
+}
+.lens-coatings-page .care-icon svg {
+  width: 18px; height: 18px; stroke: currentColor; fill: none;
+  stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round;
+}
+.lens-coatings-page .care-item p { font-size: 14px; line-height: 1.5; color: var(--muted-foreground); margin: 0; }
+
+/* Conclusion band */
+.lens-coatings-page .conclusion-band {
+  background: var(--foreground); color: white; border-radius: 20px;
+  padding: clamp(40px, 5vw, 64px); position: relative; overflow: hidden;
+}
+.lens-coatings-page .conclusion-band::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 30% 0%, oklch(0.35 0.06 250 / 0.5) 0%, transparent 60%);
+  pointer-events: none;
+}
+.lens-coatings-page .conclusion-band > * { position: relative; }
+.lens-coatings-page .conclusion-band h2 {
+  font-size: clamp(24px, 3vw, 36px); font-weight: 600; line-height: 1.15;
+  color: white; margin-bottom: 20px;
+}
+.lens-coatings-page .conclusion-band p {
+  font-size: 15.5px; line-height: 1.7; color: oklch(0.82 0 0);
+  max-width: 700px; margin-bottom: 14px;
+}
+.lens-coatings-page .conclusion-band p:last-of-type { margin-bottom: 0; }
+
+/* Separator dot */
+.lens-coatings-page .art-sep {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 8px 0;
+}
+.lens-coatings-page .art-sep span {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: color-mix(in oklab, var(--brand) 30%, transparent);
+}
+
+/* Image placeholder for sections without images yet */
+.lens-coatings-page .img-placeholder {
+  width: 100%; aspect-ratio: 4/3; border-radius: 20px;
+  background: linear-gradient(135deg, oklch(0.95 0.01 80), oklch(0.92 0.02 200));
+  display: grid; place-items: center;
+  border: 1px solid var(--border);
+}
+.lens-coatings-page .img-placeholder span {
+  font-size: 13px; color: var(--muted-foreground); opacity: 0.6;
+}
