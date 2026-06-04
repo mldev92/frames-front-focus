@@ -250,6 +250,17 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes paymentPromoScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.payment-promo-track {
+  animation: paymentPromoScroll 38s linear infinite;
+}
+.payment-promo-track:hover {
+  animation-play-state: paused;
+}
+
 /* Hero background — animated gradient */
 .hero-bg {
   position: absolute; inset: 0; z-index: 0;
@@ -374,6 +385,7 @@
   .hero-particle { animation: none !important; }
   .hero-photo-frame { animation: none !important; }
   .hero-photo-glow { animation: none !important; }
+  .payment-promo-track { animation: none !important; }
   .hero-eyebrow, .hero-h1, .hero-lead, .hero-ctas, .hero-stats, .hero-visual { animation: none !important; opacity: 1 !important; }
 }
 

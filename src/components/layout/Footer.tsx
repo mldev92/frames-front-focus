@@ -34,7 +34,7 @@ const COLS = [
   {
     title: "Помощь",
     links: [
-      ["Доставка и оплата", "/payment/"],
+      ["Оплата и получение", "/payment/"],
       ["Гарантия", "/payment/"],
       ["Контакты", "/contacts/"],
       ["Политика конфиденциальности", "/politika-konfidentsialnosti/"],
@@ -61,7 +61,7 @@ export function Footer() {
               <div className="font-serif text-sm uppercase tracking-wider mb-4">{col.title}</div>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 {col.links.map(([label, href]) => (
-                  <li key={href}>
+                  <li key={`${label}-${href}`}>
                     <a href={href} className="hover:text-foreground transition-colors">
                       {label}
                     </a>
