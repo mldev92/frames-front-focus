@@ -103,10 +103,23 @@ function PaymentPage() {
             src="/payment/payment-hero.png"
             alt="Оплата и получение заказа в ОПТИКА 100%"
             className="h-full w-full object-cover"
-            style={{ filter: "brightness(0.84) contrast(1.03) saturate(0.96)" }}
+            style={{ filter: "brightness(0.78) contrast(1.06) saturate(0.94)" }}
             loading="eager"
           />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-cream via-cream/55 to-transparent md:bg-gradient-to-r md:from-cream md:via-cream/65 md:to-transparent" />
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(to top, var(--cream) 0%, color-mix(in oklab, var(--cream) 58%, transparent) 24%, transparent 58%), linear-gradient(to top, rgba(30, 24, 18, 0.32) 0%, rgba(30, 24, 18, 0.14) 32%, transparent 62%)",
+            }}
+          />
+          <div
+            className="pointer-events-none absolute inset-0 hidden md:block"
+            style={{
+              background:
+                "linear-gradient(to right, var(--cream) 0%, color-mix(in oklab, var(--cream) 88%, transparent) 9%, color-mix(in oklab, var(--cream) 38%, transparent) 20%, transparent 31%)",
+            }}
+          />
         </Reveal>
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 py-12 md:min-h-[520px] md:py-20 lg:px-8">
