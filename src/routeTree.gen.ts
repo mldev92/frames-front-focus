@@ -35,7 +35,7 @@ import { Route as Catalog_sCategoryIndexRouteImport } from './routes/catalog_s.$
 import { Route as BlogCategoryIndexRouteImport } from './routes/blog.$category.index'
 import { Route as Catalog_sCategorySlugRouteImport } from './routes/catalog_s.$category.$slug'
 import { Route as BlogCategorySlugRouteImport } from './routes/blog.$category.$slug'
-import { Route as BlogCategorySlugIndexRouteImport } from './routes/blog.$category.$slug.index'
+import { Route as BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRouteImport } from './routes/blog.linzy-dlya-ochkov.pokrytiya-linz-dlya-ochkov.index'
 
 const UslugiRoute = UslugiRouteImport.update({
   id: '/uslugi',
@@ -168,11 +168,12 @@ const BlogCategorySlugRoute = BlogCategorySlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => BlogCategoryRoute,
 } as any)
-const BlogCategorySlugIndexRoute = BlogCategorySlugIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => BlogCategorySlugRoute,
-} as any)
+const BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute =
+  BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRouteImport.update({
+    id: '/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/',
+    path: '/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/',
+    getParentRoute: () => BlogRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -197,11 +198,11 @@ export interface FileRoutesByFullPath {
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
-  '/blog/$category/$slug': typeof BlogCategorySlugRouteWithChildren
+  '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
   '/catalog_s/$category/': typeof Catalog_sCategoryIndexRoute
-  '/blog/$category/$slug/': typeof BlogCategorySlugIndexRoute
+  '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/': typeof BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -224,10 +225,11 @@ export interface FileRoutesByTo {
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
+  '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category': typeof BlogCategoryIndexRoute
   '/catalog_s/$category': typeof Catalog_sCategoryIndexRoute
-  '/blog/$category/$slug': typeof BlogCategorySlugIndexRoute
+  '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov': typeof BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -253,11 +255,11 @@ export interface FileRoutesById {
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
-  '/blog/$category/$slug': typeof BlogCategorySlugRouteWithChildren
+  '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
   '/catalog_s/$category/': typeof Catalog_sCategoryIndexRoute
-  '/blog/$category/$slug/': typeof BlogCategorySlugIndexRoute
+  '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/': typeof BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -288,7 +290,7 @@ export interface FileRouteTypes {
     | '/catalog_s/$category/$slug'
     | '/blog/$category/'
     | '/catalog_s/$category/'
-    | '/blog/$category/$slug/'
+    | '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -311,10 +313,11 @@ export interface FileRouteTypes {
     | '/tinkoff'
     | '/uslugi'
     | '/uslugi/$slug'
+    | '/blog/$category/$slug'
     | '/catalog_s/$category/$slug'
     | '/blog/$category'
     | '/catalog_s/$category'
-    | '/blog/$category/$slug'
+    | '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov'
   id:
     | '__root__'
     | '/'
@@ -343,7 +346,7 @@ export interface FileRouteTypes {
     | '/catalog_s/$category/$slug'
     | '/blog/$category/'
     | '/catalog_s/$category/'
-    | '/blog/$category/$slug/'
+    | '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -553,34 +556,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogCategorySlugRouteImport
       parentRoute: typeof BlogCategoryRoute
     }
-    '/blog/$category/$slug/': {
-      id: '/blog/$category/$slug/'
-      path: '/'
-      fullPath: '/blog/$category/$slug/'
-      preLoaderRoute: typeof BlogCategorySlugIndexRouteImport
-      parentRoute: typeof BlogCategorySlugRoute
+    '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/': {
+      id: '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/'
+      path: '/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov'
+      fullPath: '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/'
+      preLoaderRoute: typeof BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRouteImport
+      parentRoute: typeof BlogRoute
     }
   }
 }
 
-interface BlogCategorySlugRouteChildren {
-  BlogCategorySlugIndexRoute: typeof BlogCategorySlugIndexRoute
-}
-
-const BlogCategorySlugRouteChildren: BlogCategorySlugRouteChildren = {
-  BlogCategorySlugIndexRoute: BlogCategorySlugIndexRoute,
-}
-
-const BlogCategorySlugRouteWithChildren =
-  BlogCategorySlugRoute._addFileChildren(BlogCategorySlugRouteChildren)
-
 interface BlogCategoryRouteChildren {
-  BlogCategorySlugRoute: typeof BlogCategorySlugRouteWithChildren
+  BlogCategorySlugRoute: typeof BlogCategorySlugRoute
   BlogCategoryIndexRoute: typeof BlogCategoryIndexRoute
 }
 
 const BlogCategoryRouteChildren: BlogCategoryRouteChildren = {
-  BlogCategorySlugRoute: BlogCategorySlugRouteWithChildren,
+  BlogCategorySlugRoute: BlogCategorySlugRoute,
   BlogCategoryIndexRoute: BlogCategoryIndexRoute,
 }
 
@@ -590,10 +582,13 @@ const BlogCategoryRouteWithChildren = BlogCategoryRoute._addFileChildren(
 
 interface BlogRouteChildren {
   BlogCategoryRoute: typeof BlogCategoryRouteWithChildren
+  BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute: typeof BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute
 }
 
 const BlogRouteChildren: BlogRouteChildren = {
   BlogCategoryRoute: BlogCategoryRouteWithChildren,
+  BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute:
+    BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute,
 }
 
 const BlogRouteWithChildren = BlogRoute._addFileChildren(BlogRouteChildren)
