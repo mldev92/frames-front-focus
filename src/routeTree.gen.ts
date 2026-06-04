@@ -28,6 +28,7 @@ import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BasketRouteImport } from './routes/basket'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as UslugiSlugRouteImport } from './routes/uslugi.$slug'
 import { Route as Catalog_sCategoryRouteImport } from './routes/catalog_s.$category'
 import { Route as BlogCategoryRouteImport } from './routes/blog.$category'
@@ -133,6 +134,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => BlogRoute,
+} as any)
 const UslugiSlugRoute = UslugiSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
@@ -198,6 +204,7 @@ export interface FileRoutesByFullPath {
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
@@ -207,7 +214,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/basket': typeof BasketRoute
-  '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
@@ -225,6 +231,7 @@ export interface FileRoutesByTo {
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
+  '/blog': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category': typeof BlogCategoryIndexRoute
@@ -255,6 +262,7 @@ export interface FileRoutesById {
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/uslugi/$slug': typeof UslugiSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
@@ -286,6 +294,7 @@ export interface FileRouteTypes {
     | '/blog/$category'
     | '/catalog_s/$category'
     | '/uslugi/$slug'
+    | '/blog/'
     | '/blog/$category/$slug'
     | '/catalog_s/$category/$slug'
     | '/blog/$category/'
@@ -295,7 +304,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/basket'
-    | '/blog'
     | '/checkout'
     | '/contacts'
     | '/kabinet-diagnostiki-spb'
@@ -313,6 +321,7 @@ export interface FileRouteTypes {
     | '/tinkoff'
     | '/uslugi'
     | '/uslugi/$slug'
+    | '/blog'
     | '/blog/$category/$slug'
     | '/catalog_s/$category/$slug'
     | '/blog/$category'
@@ -342,6 +351,7 @@ export interface FileRouteTypes {
     | '/blog/$category'
     | '/catalog_s/$category'
     | '/uslugi/$slug'
+    | '/blog/'
     | '/blog/$category/$slug'
     | '/catalog_s/$category/$slug'
     | '/blog/$category/'
@@ -507,6 +517,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog/': {
+      id: '/blog/'
+      path: '/'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof BlogRoute
+    }
     '/uslugi/$slug': {
       id: '/uslugi/$slug'
       path: '/$slug'
@@ -582,11 +599,13 @@ const BlogCategoryRouteWithChildren = BlogCategoryRoute._addFileChildren(
 
 interface BlogRouteChildren {
   BlogCategoryRoute: typeof BlogCategoryRouteWithChildren
+  BlogIndexRoute: typeof BlogIndexRoute
   BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute: typeof BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute
 }
 
 const BlogRouteChildren: BlogRouteChildren = {
   BlogCategoryRoute: BlogCategoryRouteWithChildren,
+  BlogIndexRoute: BlogIndexRoute,
   BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute:
     BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute,
 }
