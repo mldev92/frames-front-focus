@@ -28,6 +28,7 @@ const COLS = [
       ["О нас", "/o-nas"],
       ["Салоны", "/contacts/"],
       ["Журнал", "/blog/"],
+      ["Покрытия очковых линз", "/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/"],
     ],
   },
   {
