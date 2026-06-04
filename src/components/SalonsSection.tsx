@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { ArrowRight, Phone, Clock, MapPin } from "lucide-react";
+import { ContactActionButtons, yandexMapsSearchHref } from "@/components/ContactActionButtons";
 
 type City = "spb" | "nk";
+
+const SPB_PHONE_LABEL = "+7 (812) 100-00-00";
+const SPB_PHONE_HREF = "tel:+78121000000";
+const NK_PHONE_LABEL = "8-800-351-2185";
+const NK_PHONE_HREF = "tel:88003512185";
 
 const MetroBadge = () => (
   <span
@@ -198,6 +204,9 @@ interface SalonCardProps {
   yandexStars: number;
   twogisScore: string;
   twogisStars: number;
+  routeHref: string;
+  phoneHref: string;
+  phoneLabel: string;
   twogisHalf?: boolean;
   wide?: boolean;
 }
@@ -215,6 +224,9 @@ const SalonCard = ({
   yandexStars,
   twogisScore,
   twogisStars,
+  routeHref,
+  phoneHref,
+  phoneLabel,
   twogisHalf,
   wide,
 }: SalonCardProps) => (
@@ -282,6 +294,13 @@ const SalonCard = ({
           </div>
         )}
       </div>
+
+      <ContactActionButtons
+        routeHref={routeHref}
+        phoneHref={phoneHref}
+        phoneLabel={phoneLabel}
+        className="mb-5"
+      />
 
       <div
         style={{
@@ -411,7 +430,7 @@ export function SalonsSection() {
                 name="Салон оптики на ул. Кирочная, 17"
                 addressNote="Центр города, рядом с метро Чернышевская"
                 hours="Ежедневно с 10:00 до 20:00"
-                phone="8-800-351-2185"
+                phone={SPB_PHONE_LABEL}
                 metro
                 metroName="Чернышевская"
                 imageLabel="фото салона СПб"
@@ -420,6 +439,9 @@ export function SalonsSection() {
                 yandexStars={5}
                 twogisScore="5.0"
                 twogisStars={5}
+                routeHref={yandexMapsSearchHref("Санкт-Петербург, ул. Кирочная, 17")}
+                phoneHref={SPB_PHONE_HREF}
+                phoneLabel={SPB_PHONE_LABEL}
               />
             </div>
           </div>
@@ -437,47 +459,63 @@ export function SalonsSection() {
                 name="ул. Тореза, 32"
                 addressNote="Заводской район · ост. Рынок"
                 hours="Ежедневно с 9:30 до 19:30"
+                phone={NK_PHONE_LABEL}
                 imageLabel="фото · ул. Тореза"
                 imageSrc="/salon_toreza.jpg"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="4.8"
                 twogisStars={4}
+                routeHref={yandexMapsSearchHref("Новокузнецк, ул. Тореза, 32")}
+                phoneHref={NK_PHONE_HREF}
+                phoneLabel={NK_PHONE_LABEL}
                 twogisHalf
               />
               <SalonCard
                 name="пр. Шахтёров, 12"
                 addressNote="Новобайдаевский район"
                 hours="Ежедневно с 9:30 до 19:00"
+                phone={NK_PHONE_LABEL}
                 imageLabel="фото · пр. Шахтёров"
                 imageSrc="/salon_shahterov.jpg"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="5.0"
                 twogisStars={5}
+                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Шахтёров, 12")}
+                phoneHref={NK_PHONE_HREF}
+                phoneLabel={NK_PHONE_LABEL}
               />
               <SalonCard
                 name="пр. Бардина, 42"
                 addressNote="Центральный район · Дом Быта, отдельный вход с левого торца"
                 hours="Ежедневно с 9:30 до 19:30"
+                phone={NK_PHONE_LABEL}
                 imageLabel="фото · пр. Бардина"
                 imageSrc="/salon_bardina.jpg"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="4.8"
                 twogisStars={4}
+                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Бардина, 42")}
+                phoneHref={NK_PHONE_HREF}
+                phoneLabel={NK_PHONE_LABEL}
                 twogisHalf
               />
               <SalonCard
                 name="пр. Запсибовцев, 37"
                 addressNote="Новоильинский район · ост. Роддом"
                 hours="Ежедневно с 9:30 до 19:30"
+                phone={NK_PHONE_LABEL}
                 imageLabel="фото · пр. Запсибовцев"
                 imageSrc="/salon_zabsibov.jpg"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="4.8"
                 twogisStars={4}
+                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Запсибовцев, 37")}
+                phoneHref={NK_PHONE_HREF}
+                phoneLabel={NK_PHONE_LABEL}
                 twogisHalf
               />
             </div>

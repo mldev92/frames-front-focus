@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppointmentModal } from "@/components/AppointmentModal";
+import { ContactActionButtons, yandexMapsSearchHref } from "@/components/ContactActionButtons";
 
 export const Route = createFileRoute("/contacts")({
   head: () => ({
@@ -82,6 +83,11 @@ function CurrencyIcon({ size = 14 }: { size?: number }) {
 }
 
 // ── Reusable sub-components ──────────────────────────────────────────────────
+
+const SPB_PHONE_LABEL = "+7 (812) 100-00-00";
+const SPB_PHONE_HREF = "tel:+78121000000";
+const NK_PHONE_LABEL = "8-800-351-2185";
+const NK_PHONE_HREF = "tel:88003512185";
 
 function PayBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
@@ -190,9 +196,22 @@ interface SalonCardProps {
   hours: string;
   yandex: string;
   twoGis: string;
+  routeHref: string;
+  phoneHref: string;
+  phoneLabel: string;
 }
 
-function SalonCard({ address, note, metro, hours, yandex, twoGis }: SalonCardProps) {
+function SalonCard({
+  address,
+  note,
+  metro,
+  hours,
+  yandex,
+  twoGis,
+  routeHref,
+  phoneHref,
+  phoneLabel,
+}: SalonCardProps) {
   return (
     <div style={{
       background: "var(--card)",
@@ -238,6 +257,12 @@ function SalonCard({ address, note, metro, hours, yandex, twoGis }: SalonCardPro
             <ClockIcon color="var(--muted-foreground)" size={16} />
             <span style={{ fontSize: 14, color: "var(--muted-foreground)" }}>{hours}</span>
           </div>
+          <ContactActionButtons
+            routeHref={routeHref}
+            phoneHref={phoneHref}
+            phoneLabel={phoneLabel}
+            className="mb-5"
+          />
           <RatingRow yandex={yandex} twoGis={twoGis} />
         </div>
         {paymentBadges}
@@ -375,6 +400,9 @@ function ContactsPage() {
               hours="Ежедневно с 10:00 до 20:00"
               yandex="5.0"
               twoGis="5.0"
+              routeHref={yandexMapsSearchHref("Санкт-Петербург, ул. Кирочная, 17")}
+              phoneHref={SPB_PHONE_HREF}
+              phoneLabel={SPB_PHONE_LABEL}
             />
           </div>
         )}
@@ -389,12 +417,18 @@ function ContactsPage() {
                 hours="Ежедневно с 9:30 до 19:30"
                 yandex="5.0"
                 twoGis="4.8"
+                routeHref={yandexMapsSearchHref("Новокузнецк, ул. Тореза, 32")}
+                phoneHref={NK_PHONE_HREF}
+                phoneLabel={NK_PHONE_LABEL}
               />
               <SalonCard
                 address="Новобайдаевский район — пр. Шахтёров, 12"
                 hours="Ежедневно с 9:30 до 19:00"
                 yandex="5.0"
                 twoGis="5.0"
+                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Шахтёров, 12")}
+                phoneHref={NK_PHONE_HREF}
+                phoneLabel={NK_PHONE_LABEL}
               />
               <SalonCard
                 address="Центральный район, пр. Бардина, 42 (Дом Быта)"
@@ -402,12 +436,18 @@ function ContactsPage() {
                 hours="Ежедневно с 9:30 до 19:30"
                 yandex="5.0"
                 twoGis="4.8"
+                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Бардина, 42")}
+                phoneHref={NK_PHONE_HREF}
+                phoneLabel={NK_PHONE_LABEL}
               />
               <SalonCard
                 address="Новоильинский район, пр. Запсибовцев, 37 (ост. Роддом)"
                 hours="Ежедневно с 9:30 до 19:30"
                 yandex="5.0"
                 twoGis="4.8"
+                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Запсибовцев, 37")}
+                phoneHref={NK_PHONE_HREF}
+                phoneLabel={NK_PHONE_LABEL}
               />
             </div>
           </div>
