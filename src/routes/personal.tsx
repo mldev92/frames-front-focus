@@ -50,6 +50,7 @@ const dashboardCards = [
     badge: 2,
     Icon: Package,
     action: "orders",
+    href: "/personal/orders",
   },
   {
     title: (
@@ -64,6 +65,7 @@ const dashboardCards = [
     imagePosition: "center 30%",
     Icon: UserRound,
     action: "profile",
+    href: null,
   },
   {
     title: (
@@ -78,6 +80,7 @@ const dashboardCards = [
     imagePosition: "center 55%",
     Icon: History,
     action: "history",
+    href: null,
   },
 ] as const;
 
@@ -209,14 +212,9 @@ function PersonalPage() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:py-16 lg:px-8 lg:py-20">
         <div className="grid gap-5 md:grid-cols-2">
           {dashboardCards.map(
-            ({ title, subtitle, image, imagePosition, badge, Icon, action }, index) => (
-              <Reveal key={action} delay={index * 70}>
-                <button
-                  type="button"
-                  onClick={showComingSoon}
-                  className="group relative flex min-h-[280px] w-full overflow-hidden rounded-[20px] text-left text-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:min-h-[320px]"
-                  aria-label={`${subtitle}. Открыть раздел`}
-                >
+            ({ title, subtitle, image, imagePosition, badge, Icon, action, href }, index) => {
+              const content = (
+                <>
                   <img
                     src={image}
                     alt=""
@@ -249,9 +247,32 @@ function PersonalPage() {
                       Перейти
                     </span>
                   </span>
-                </button>
-              </Reveal>
-            ),
+                </>
+              );
+
+              return (
+                <Reveal key={action} delay={index * 70}>
+                  {href ? (
+                    <Link
+                      to={href}
+                      className="group relative flex min-h-[280px] w-full overflow-hidden rounded-[20px] text-left text-white no-underline shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:min-h-[320px]"
+                      aria-label={`${subtitle}. Открыть раздел`}
+                    >
+                      {content}
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={showComingSoon}
+                      className="group relative flex min-h-[280px] w-full overflow-hidden rounded-[20px] text-left text-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:min-h-[320px]"
+                      aria-label={`${subtitle}. Открыть раздел`}
+                    >
+                      {content}
+                    </button>
+                  )}
+                </Reveal>
+              );
+            },
           )}
 
           <Reveal delay={210}>
@@ -335,13 +356,12 @@ function PersonalPage() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={showComingSoon}
+          <Link
+            to="/personal/orders"
             className="inline-flex items-center justify-center rounded-full border-[1.5px] border-brand bg-card px-7 py-3.5 text-sm font-semibold text-brand transition-all hover:-translate-y-0.5 hover:bg-brand hover:text-white"
           >
             Подробнее о заказе
-          </button>
+          </Link>
         </Reveal>
       </section>
 

@@ -30,6 +30,7 @@ import { Route as BasketRouteImport } from './routes/basket'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as UslugiSlugRouteImport } from './routes/uslugi.$slug'
+import { Route as PersonalOrdersRouteImport } from './routes/personal_.orders'
 import { Route as Catalog_sCategoryRouteImport } from './routes/catalog_s.$category'
 import { Route as BlogCategoryRouteImport } from './routes/blog.$category'
 import { Route as Catalog_sCategoryIndexRouteImport } from './routes/catalog_s.$category.index'
@@ -144,6 +145,11 @@ const UslugiSlugRoute = UslugiSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => UslugiRoute,
 } as any)
+const PersonalOrdersRoute = PersonalOrdersRouteImport.update({
+  id: '/personal_/orders',
+  path: '/personal/orders',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Catalog_sCategoryRoute = Catalog_sCategoryRouteImport.update({
   id: '/catalog_s/$category',
   path: '/catalog_s/$category',
@@ -203,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
+  '/personal/orders': typeof PersonalOrdersRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
@@ -230,6 +237,7 @@ export interface FileRoutesByTo {
   '/stellest-katalog-s-linzami': typeof StellestKatalogSLinzamiRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
+  '/personal/orders': typeof PersonalOrdersRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
@@ -261,6 +269,7 @@ export interface FileRoutesById {
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
+  '/personal_/orders': typeof PersonalOrdersRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
@@ -293,6 +302,7 @@ export interface FileRouteTypes {
     | '/uslugi'
     | '/blog/$category'
     | '/catalog_s/$category'
+    | '/personal/orders'
     | '/uslugi/$slug'
     | '/blog/'
     | '/blog/$category/$slug'
@@ -320,6 +330,7 @@ export interface FileRouteTypes {
     | '/stellest-katalog-s-linzami'
     | '/tinkoff'
     | '/uslugi'
+    | '/personal/orders'
     | '/uslugi/$slug'
     | '/blog'
     | '/blog/$category/$slug'
@@ -350,6 +361,7 @@ export interface FileRouteTypes {
     | '/uslugi'
     | '/blog/$category'
     | '/catalog_s/$category'
+    | '/personal_/orders'
     | '/uslugi/$slug'
     | '/blog/'
     | '/blog/$category/$slug'
@@ -380,6 +392,7 @@ export interface RootRouteChildren {
   TinkoffRoute: typeof TinkoffRoute
   UslugiRoute: typeof UslugiRouteWithChildren
   Catalog_sCategoryRoute: typeof Catalog_sCategoryRouteWithChildren
+  PersonalOrdersRoute: typeof PersonalOrdersRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -531,6 +544,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UslugiSlugRouteImport
       parentRoute: typeof UslugiRoute
     }
+    '/personal_/orders': {
+      id: '/personal_/orders'
+      path: '/personal/orders'
+      fullPath: '/personal/orders'
+      preLoaderRoute: typeof PersonalOrdersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/catalog_s/$category': {
       id: '/catalog_s/$category'
       path: '/catalog_s/$category'
@@ -657,6 +677,7 @@ const rootRouteChildren: RootRouteChildren = {
   TinkoffRoute: TinkoffRoute,
   UslugiRoute: UslugiRouteWithChildren,
   Catalog_sCategoryRoute: Catalog_sCategoryRouteWithChildren,
+  PersonalOrdersRoute: PersonalOrdersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
