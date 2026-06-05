@@ -252,7 +252,7 @@ function PrivateDataPage() {
                   >
                     <label
                       htmlFor={field.key}
-                      className="text-base font-semibold tracking-[-0.005em] text-foreground"
+                      className="text-base font-semibold tracking-[-0.005em] text-foreground md:col-start-1 md:row-start-1"
                     >
                       {field.label}
                       <span className="ml-1 text-brand" aria-hidden="true">
@@ -278,7 +278,7 @@ function PrivateDataPage() {
                       aria-invalid={Boolean(error)}
                       aria-describedby={error ? errorId : hintId}
                       className={cn(
-                        "min-h-[58px] w-full rounded-xl border bg-surface px-5 py-4 text-base leading-snug text-foreground outline-none transition placeholder:text-muted-foreground/75 hover:border-foreground/20 focus:border-brand focus:bg-card focus:ring-3 focus:ring-brand/10",
+                        "min-h-[58px] w-full rounded-xl border bg-surface px-5 py-4 text-base leading-snug text-foreground outline-none transition placeholder:text-muted-foreground/75 hover:border-foreground/20 focus:border-brand focus:bg-card focus:ring-3 focus:ring-brand/10 md:col-start-1 md:row-start-2",
                         error ? "border-brand ring-3 ring-brand/10" : "border-border",
                       )}
                     />
