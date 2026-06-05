@@ -1,13 +1,16 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 import { AlertCircle, Check, CircleX, FileText, Info, RotateCcw, Truck, Eye } from "lucide-react";
 import { type LucideIcon } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Reveal } from "@/components/Reveal";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/personal_/orders")({
+  validateSearch: (search: Record<string, unknown>): { filter_history?: "Y" } => ({
+    filter_history: search.filter_history === "Y" ? "Y" : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Мои заказы · ОПТИКА 100%" },
@@ -302,7 +305,25 @@ function OrderCard({ order, index }: { order: Order; index: number }) {
 }
 
 function OrdersPage() {
-  const [filter, setFilter] = useState<OrderFilter>("all");
+  const { filter_history: filterHistory } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const [filter, setFilter] = useState<OrderFilter>(filterHistory === "Y" ? "done" : "all");
+
+  useEffect(() => {
+    setFilter((current) => {
+      if (filterHistory === "Y") return "done";
+      return current === "done" ? "all" : current;
+    });
+  }, [filterHistory]);
+
+  function selectFilter(nextFilter: OrderFilter) {
+    setFilter(nextFilter);
+    void navigate({
+      search: nextFilter === "done" ? { filter_history: "Y" } : {},
+      replace: true,
+    });
+  }
+
   const visibleOrders =
     filter === "all" ? orders : orders.filter((order) => order.state === filter);
 
@@ -336,7 +357,7 @@ function OrdersPage() {
               <button
                 key={item.value}
                 type="button"
-                onClick={() => setFilter(item.value)}
+                onClick={() => selectFilter(item.value)}
                 aria-pressed={filter === item.value}
                 className={cn(
                   "rounded-full border px-[18px] py-2.5 text-[13.5px] font-medium transition-all",
