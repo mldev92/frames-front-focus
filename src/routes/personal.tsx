@@ -364,6 +364,7 @@ function PersonalPage() {
 
           <Link
             to="/personal/orders"
+            search={{ filter_current: "Y" }}
             className="inline-flex items-center justify-center rounded-full border-[1.5px] border-brand bg-card px-7 py-3.5 text-sm font-semibold text-brand transition-all hover:-translate-y-0.5 hover:bg-brand hover:text-white"
           >
             Подробнее о заказе
