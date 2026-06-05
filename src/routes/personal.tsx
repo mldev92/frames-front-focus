@@ -65,7 +65,7 @@ const dashboardCards = [
     imagePosition: "center 30%",
     Icon: UserRound,
     action: "profile",
-    href: null,
+    href: "/personal/private",
   },
   {
     title: (

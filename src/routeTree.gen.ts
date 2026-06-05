@@ -30,6 +30,7 @@ import { Route as BasketRouteImport } from './routes/basket'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as UslugiSlugRouteImport } from './routes/uslugi.$slug'
+import { Route as PersonalPrivateRouteImport } from './routes/personal_.private'
 import { Route as PersonalOrdersRouteImport } from './routes/personal_.orders'
 import { Route as Catalog_sCategoryRouteImport } from './routes/catalog_s.$category'
 import { Route as BlogCategoryRouteImport } from './routes/blog.$category'
@@ -145,6 +146,11 @@ const UslugiSlugRoute = UslugiSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => UslugiRoute,
 } as any)
+const PersonalPrivateRoute = PersonalPrivateRouteImport.update({
+  id: '/personal_/private',
+  path: '/personal/private',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PersonalOrdersRoute = PersonalOrdersRouteImport.update({
   id: '/personal_/orders',
   path: '/personal/orders',
@@ -210,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/personal/orders': typeof PersonalOrdersRoute
+  '/personal/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
@@ -238,6 +245,7 @@ export interface FileRoutesByTo {
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/personal/orders': typeof PersonalOrdersRoute
+  '/personal/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
@@ -270,6 +278,7 @@ export interface FileRoutesById {
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/personal_/orders': typeof PersonalOrdersRoute
+  '/personal_/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
@@ -303,6 +312,7 @@ export interface FileRouteTypes {
     | '/blog/$category'
     | '/catalog_s/$category'
     | '/personal/orders'
+    | '/personal/private'
     | '/uslugi/$slug'
     | '/blog/'
     | '/blog/$category/$slug'
@@ -331,6 +341,7 @@ export interface FileRouteTypes {
     | '/tinkoff'
     | '/uslugi'
     | '/personal/orders'
+    | '/personal/private'
     | '/uslugi/$slug'
     | '/blog'
     | '/blog/$category/$slug'
@@ -362,6 +373,7 @@ export interface FileRouteTypes {
     | '/blog/$category'
     | '/catalog_s/$category'
     | '/personal_/orders'
+    | '/personal_/private'
     | '/uslugi/$slug'
     | '/blog/'
     | '/blog/$category/$slug'
@@ -393,6 +405,7 @@ export interface RootRouteChildren {
   UslugiRoute: typeof UslugiRouteWithChildren
   Catalog_sCategoryRoute: typeof Catalog_sCategoryRouteWithChildren
   PersonalOrdersRoute: typeof PersonalOrdersRoute
+  PersonalPrivateRoute: typeof PersonalPrivateRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -544,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UslugiSlugRouteImport
       parentRoute: typeof UslugiRoute
     }
+    '/personal_/private': {
+      id: '/personal_/private'
+      path: '/personal/private'
+      fullPath: '/personal/private'
+      preLoaderRoute: typeof PersonalPrivateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/personal_/orders': {
       id: '/personal_/orders'
       path: '/personal/orders'
@@ -678,6 +698,7 @@ const rootRouteChildren: RootRouteChildren = {
   UslugiRoute: UslugiRouteWithChildren,
   Catalog_sCategoryRoute: Catalog_sCategoryRouteWithChildren,
   PersonalOrdersRoute: PersonalOrdersRoute,
+  PersonalPrivateRoute: PersonalPrivateRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
