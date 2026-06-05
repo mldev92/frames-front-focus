@@ -51,6 +51,7 @@ const dashboardCards = [
     Icon: Package,
     action: "orders",
     href: "/personal/orders",
+    search: { filter_current: "Y" as const },
   },
   {
     title: (

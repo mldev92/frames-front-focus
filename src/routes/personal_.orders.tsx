@@ -8,7 +8,10 @@ import { Reveal } from "@/components/Reveal";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/personal_/orders")({
-  validateSearch: (search: Record<string, unknown>): { filter_history?: "Y" } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { filter_current?: "Y"; filter_history?: "Y" } => ({
+    filter_current: search.filter_current === "Y" ? "Y" : undefined,
     filter_history: search.filter_history === "Y" ? "Y" : undefined,
   }),
   head: () => ({
@@ -305,21 +308,31 @@ function OrderCard({ order, index }: { order: Order; index: number }) {
 }
 
 function OrdersPage() {
-  const { filter_history: filterHistory } = Route.useSearch();
+  const { filter_current: filterCurrent, filter_history: filterHistory } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const [filter, setFilter] = useState<OrderFilter>(filterHistory === "Y" ? "done" : "all");
+  const [filter, setFilter] = useState<OrderFilter>(
+    filterHistory === "Y" ? "done" : filterCurrent === "Y" ? "progress" : "all",
+  );
 
   useEffect(() => {
-    setFilter((current) => {
-      if (filterHistory === "Y") return "done";
-      return current === "done" ? "all" : current;
-    });
-  }, [filterHistory]);
+    if (filterHistory === "Y") {
+      setFilter("done");
+    } else if (filterCurrent === "Y") {
+      setFilter("progress");
+    } else {
+      setFilter("all");
+    }
+  }, [filterCurrent, filterHistory]);
 
   function selectFilter(nextFilter: OrderFilter) {
     setFilter(nextFilter);
     void navigate({
-      search: nextFilter === "done" ? { filter_history: "Y" } : {},
+      search:
+        nextFilter === "done"
+          ? { filter_history: "Y" }
+          : nextFilter === "progress"
+            ? { filter_current: "Y" }
+            : {},
       replace: true,
     });
   }
