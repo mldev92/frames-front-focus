@@ -70,7 +70,7 @@ export function CatalogBanner({ banner }: CatalogBannerProps) {
             {banner.eyebrow}
           </span>
 
-          <span className="font-serif text-[21px] leading-[1.04] tracking-[-0.015em] text-cream [text-shadow:0_1px_18px_oklch(0.16_0.012_250/0.35)] sm:text-[25px] lg:text-[28px]">
+          <span className="max-w-full font-serif text-[21px] leading-[1.04] tracking-[-0.015em] text-cream [text-shadow:0_1px_18px_oklch(0.16_0.012_250/0.35)] sm:text-[25px] lg:text-[28px]">
             {banner.title}
           </span>
 
@@ -82,7 +82,7 @@ export function CatalogBanner({ banner }: CatalogBannerProps) {
 
           <span
             className={cn(
-              "catalog-banner__cta mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-medium sm:mt-4 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-[12px] lg:mt-[18px] lg:px-[18px] lg:text-[13px]",
+              "catalog-banner__cta mt-3 inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-medium sm:mt-4 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-[12px] lg:mt-[18px] lg:px-[18px] lg:text-[13px]",
               variant.cta,
             )}
           >
