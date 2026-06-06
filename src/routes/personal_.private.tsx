@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { Reveal } from "@/components/Reveal";
 import { cn } from "@/lib/utils";
+import { getMe, saveProfile } from "@/lib/api/account";
 
 export const Route = createFileRoute("/personal_/private")({
   head: () => ({
@@ -153,12 +154,13 @@ function validateProfile(profile: ProfileData) {
 
 function PrivateDataPage() {
   const [profile, setProfile] = useState<ProfileData>({
-    fullName: "Александр Иванович Петров",
-    phone: "+7 (903) 909-60-99",
+    fullName: "",
+    phone: "",
     email: "",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof ProfileData, string>>>({});
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const savedTimer = useRef<number | null>(null);
 
   useEffect(
@@ -170,7 +172,28 @@ function PrivateDataPage() {
     [],
   );
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  // Prefill from the logged-in user; bounce to /auth/ when not authorized.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const me = await getMe().catch(() => ({ authorized: false }) as Awaited<ReturnType<typeof getMe>>);
+      if (!alive) return;
+      if (!me.authorized) {
+        window.location.assign("/auth/");
+        return;
+      }
+      setProfile({
+        fullName: me.fullName ?? "",
+        phone: me.phone ?? "",
+        email: me.email ?? "",
+      });
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const nextErrors = validateProfile(profile);
     setErrors(nextErrors);
@@ -182,10 +205,29 @@ function PrivateDataPage() {
       return;
     }
 
-    setSaved(true);
-    toast.success("Изменения сохранены", {
-      description: "Демо-форма не отправляет личные данные.",
+    // fullName is stored as "Фамилия Имя Отчество" (lastName firstName secondName).
+    const parts = profile.fullName.trim().split(/\s+/);
+    const [lastName = "", firstName = "", ...rest] = parts;
+    const secondName = rest.join(" ");
+
+    setSaving(true);
+    const res = await saveProfile({
+      firstName,
+      lastName,
+      secondName,
+      email: profile.email.trim(),
+      phone: profile.phone.trim(),
     });
+    setSaving(false);
+
+    if (!res.ok) {
+      setSaved(false);
+      toast.error(res.error ?? "Не удалось сохранить изменения");
+      return;
+    }
+
+    setSaved(true);
+    toast.success("Изменения сохранены");
 
     if (savedTimer.current !== null) {
       window.clearTimeout(savedTimer.current);
@@ -298,10 +340,11 @@ function PrivateDataPage() {
               <div className="flex flex-wrap items-center gap-4 pt-1">
                 <button
                   type="submit"
-                  className="inline-flex min-h-12 items-center justify-center gap-2.5 rounded-xl border-[1.5px] border-brand bg-brand px-7 py-3.5 text-[15px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md"
+                  disabled={saving}
+                  className="inline-flex min-h-12 items-center justify-center gap-2.5 rounded-xl border-[1.5px] border-brand bg-brand px-7 py-3.5 text-[15px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md disabled:opacity-60"
                 >
                   <Save className="h-[17px] w-[17px]" strokeWidth={2} />
-                  Сохранить изменения
+                  {saving ? "Сохраняем…" : "Сохранить изменения"}
                 </button>
                 <span
                   className={cn(

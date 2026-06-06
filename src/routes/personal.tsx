@@ -13,7 +13,8 @@ import { type FormEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Reveal } from "@/components/Reveal";
-import { useCart } from "@/lib/store/cart";
+import { useCart, formatPrice } from "@/lib/store/cart";
+import { getMe, getOrders, type CabinetOrder, type Me } from "@/lib/api/account";
 
 export const Route = createFileRoute("/personal")({
   head: () => ({
@@ -97,6 +98,14 @@ function formatCartItems(count: number) {
   return `${count} товаров`;
 }
 
+function formatOrders(count: number) {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) return `${count} заказ`;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return `${count} заказа`;
+  return `${count} заказов`;
+}
+
 function showComingSoon() {
   toast.info("Раздел скоро появится", {
     description: "Сейчас мы подключаем данные личного кабинета.",
@@ -108,10 +117,36 @@ function PersonalPage() {
   const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
+  const [me, setMe] = useState<Me | null>(null);
+  const [orders, setOrders] = useState<CabinetOrder[]>([]);
 
   useEffect(() => setMounted(true), []);
 
+  // Per-user data is fetched client-side so the Bitrix session cookie is sent.
+  // Logged-out users are bounced to the native /auth/ page.
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const profile = await getMe().catch(() => ({ authorized: false }) as Me);
+      if (!alive) return;
+      if (!profile.authorized) {
+        window.location.assign("/auth/");
+        return;
+      }
+      setMe(profile);
+      const list = await getOrders("all").catch(() => []);
+      if (alive) setOrders(list);
+    })();
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const cartCount = mounted ? totals().count : 0;
+  const currentCount = orders.filter((o) => o.state === "progress").length;
+  const lastOrder = orders[0] ?? null;
+  const greetingName = me?.firstName?.trim() || "в кабинете";
+  const bonus = me?.bonus ?? 0;
 
   function handleNewsletterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -175,37 +210,34 @@ function PersonalPage() {
             <h1 className="mt-4 font-serif text-4xl font-semibold leading-[1.02] tracking-[-0.02em] text-foreground sm:text-5xl lg:text-[66px]">
               Здравствуйте,
               <br />
-              <span className="text-brand">Александр</span>
+              <span className="text-brand">{greetingName}</span>
             </h1>
             <p className="mt-5 max-w-[420px] text-base leading-relaxed text-muted-foreground sm:text-lg">
               Управляйте заказами, личными данными и покупками в одном месте.
             </p>
 
             <div className="mt-7 flex flex-wrap items-center gap-4 sm:gap-6">
-              <div className="inline-flex items-center gap-3 rounded-full border border-border bg-card py-2 pl-2.5 pr-5 shadow-xs">
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-brand/10 text-brand">
-                  <Star className="h-4 w-4" strokeWidth={1.8} />
-                </span>
-                <span className="leading-tight">
-                  <strong className="block font-serif text-[17px] font-semibold text-foreground">
-                    1 250 ₽
-                  </strong>
-                  <span className="text-[11.5px] text-muted-foreground">Бонусные баллы</span>
-                </span>
-              </div>
+              {bonus > 0 ? (
+                <div className="inline-flex items-center gap-3 rounded-full border border-border bg-card py-2 pl-2.5 pr-5 shadow-xs">
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-brand/10 text-brand">
+                    <Star className="h-4 w-4" strokeWidth={1.8} />
+                  </span>
+                  <span className="leading-tight">
+                    <strong className="block font-serif text-[17px] font-semibold text-foreground">
+                      {formatPrice(bonus)}
+                    </strong>
+                    <span className="text-[11.5px] text-muted-foreground">Бонусные баллы</span>
+                  </span>
+                </div>
+              ) : null}
 
-              <button
-                type="button"
-                onClick={() =>
-                  toast.info("Выход пока недоступен", {
-                    description: "Авторизация будет подключена вместе с личными данными.",
-                  })
-                }
-                className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-brand"
+              <a
+                href="/?logout=yes"
+                className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-brand no-underline"
               >
                 <LogOut className="h-4 w-4" strokeWidth={1.8} />
                 Выйти
-              </button>
+              </a>
             </div>
           </Reveal>
         </div>
@@ -218,6 +250,12 @@ function PersonalPage() {
               { title, subtitle, image, imagePosition, badge, Icon, action, href, ...card },
               index,
             ) => {
+              // The "Текущие заказы" card reflects the live count.
+              const isOrdersCard = action === "orders";
+              const liveBadge = isOrdersCard ? currentCount || undefined : badge;
+              const liveSubtitle = isOrdersCard
+                ? `${formatOrders(currentCount)} в обработке`
+                : subtitle;
               const content = (
                 <>
                   <img
@@ -228,9 +266,9 @@ function PersonalPage() {
                     loading="lazy"
                   />
                   <span className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/35 to-black/80" />
-                  {badge ? (
+                  {liveBadge ? (
                     <span className="absolute right-5 top-5 z-10 grid h-9 min-w-9 place-items-center rounded-full bg-brand px-2 text-[15px] font-bold shadow-[0_4px_14px_rgba(201,64,64,0.45)]">
-                      {badge}
+                      {liveBadge}
                     </span>
                   ) : null}
                   <span className="relative z-10 flex w-full flex-col p-7 sm:p-8">
@@ -243,7 +281,7 @@ function PersonalPage() {
                       {title}
                     </span>
                     <span className="mt-2.5 text-[14.5px] font-medium text-white/85">
-                      {subtitle}
+                      {liveSubtitle}
                     </span>
                     <span className="mt-auto inline-flex items-center gap-3.5 pt-7 text-[15px] font-semibold">
                       <span className="grid h-[46px] w-[46px] place-items-center rounded-full border border-white/60 transition-all group-hover:translate-x-0.5 group-hover:border-brand group-hover:bg-brand">
@@ -323,54 +361,72 @@ function PersonalPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 pb-12 sm:pb-16 lg:px-8 lg:pb-20">
-        <Reveal className="grid items-center gap-7 rounded-[20px] border border-border bg-card p-6 shadow-sm sm:p-8 lg:grid-cols-[1.5fr_auto_auto_auto] lg:gap-10 lg:p-10">
-          <div className="flex items-start gap-4 sm:gap-5">
-            <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand/10 text-brand sm:h-[60px] sm:w-[60px]">
-              <Box className="h-7 w-7" strokeWidth={1.6} />
-            </span>
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand">
-                Последний заказ
-              </div>
-              <div className="mt-2.5 font-serif text-2xl font-semibold leading-tight text-foreground">
-                Заказ #45871
-              </div>
-              <div className="mt-1 text-[15px] text-muted-foreground">
-                Очки Ray-Ban RX 5121 2000
-              </div>
-              <div className="mt-3 text-sm text-foreground">
-                Статус: <strong className="font-semibold text-success">Передан в доставку</strong>
+      {lastOrder ? (
+        <section className="mx-auto max-w-7xl px-4 pb-12 sm:pb-16 lg:px-8 lg:pb-20">
+          <Reveal className="grid items-center gap-7 rounded-[20px] border border-border bg-card p-6 shadow-sm sm:p-8 lg:grid-cols-[1.5fr_auto_auto_auto] lg:gap-10 lg:p-10">
+            <div className="flex items-start gap-4 sm:gap-5">
+              <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand/10 text-brand sm:h-[60px] sm:w-[60px]">
+                <Box className="h-7 w-7" strokeWidth={1.6} />
+              </span>
+              <div>
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-brand">
+                  Последний заказ
+                </div>
+                <div className="mt-2.5 font-serif text-2xl font-semibold leading-tight text-foreground">
+                  Заказ №{lastOrder.id}
+                </div>
+                {lastOrder.items[0] ? (
+                  <div className="mt-1 text-[15px] text-muted-foreground">
+                    {lastOrder.items[0].name}
+                    {lastOrder.itemCount > 1 ? ` и ещё ${lastOrder.itemCount - 1}` : ""}
+                  </div>
+                ) : null}
+                <div className="mt-3 text-sm text-foreground">
+                  Статус:{" "}
+                  <strong
+                    className={
+                      lastOrder.state === "canceled"
+                        ? "font-semibold text-brand"
+                        : lastOrder.state === "done"
+                          ? "font-semibold text-success"
+                          : "font-semibold text-foreground"
+                    }
+                  >
+                    {lastOrder.stateLabel}
+                  </strong>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex gap-8 sm:gap-12 lg:contents">
-            <div>
-              <div className="text-xs uppercase tracking-[0.04em] text-muted-foreground">
-                Дата заказа
+            <div className="flex gap-8 sm:gap-12 lg:contents">
+              <div>
+                <div className="text-xs uppercase tracking-[0.04em] text-muted-foreground">
+                  Дата заказа
+                </div>
+                <div className="mt-1 whitespace-nowrap font-serif text-xl font-semibold text-foreground">
+                  {lastOrder.date}
+                </div>
               </div>
-              <div className="mt-1 whitespace-nowrap font-serif text-xl font-semibold text-foreground">
-                12 мая 2024
+              <div>
+                <div className="text-xs uppercase tracking-[0.04em] text-muted-foreground">
+                  Сумма
+                </div>
+                <div className="mt-1 whitespace-nowrap font-serif text-xl font-semibold text-foreground">
+                  {formatPrice(lastOrder.total)}
+                </div>
               </div>
             </div>
-            <div>
-              <div className="text-xs uppercase tracking-[0.04em] text-muted-foreground">Сумма</div>
-              <div className="mt-1 whitespace-nowrap font-serif text-xl font-semibold text-foreground">
-                12 790 ₽
-              </div>
-            </div>
-          </div>
 
-          <Link
-            to="/personal/orders"
-            search={{ filter_current: "Y" }}
-            className="inline-flex items-center justify-center rounded-full border-[1.5px] border-brand bg-card px-7 py-3.5 text-sm font-semibold text-brand transition-all hover:-translate-y-0.5 hover:bg-brand hover:text-white"
-          >
-            Подробнее о заказе
-          </Link>
-        </Reveal>
-      </section>
+            <Link
+              to="/personal/orders"
+              search={lastOrder.state === "progress" ? { filter_current: "Y" } : { filter_history: "Y" }}
+              className="inline-flex items-center justify-center rounded-full border-[1.5px] border-brand bg-card px-7 py-3.5 text-sm font-semibold text-brand transition-all hover:-translate-y-0.5 hover:bg-brand hover:text-white"
+            >
+              Подробнее о заказе
+            </Link>
+          </Reveal>
+        </section>
+      ) : null}
 
       <section className="-mb-24 bg-cream">
         <div className="mx-auto grid max-w-7xl items-center gap-9 px-4 py-14 md:grid-cols-2 md:gap-16 lg:px-8 lg:py-20">
