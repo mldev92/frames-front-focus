@@ -1,8 +1,11 @@
+import type { CSSProperties } from "react";
 import type { CatalogBannerData } from "@/data/catalog-banners";
 import { cn } from "@/lib/utils";
 
 interface CatalogBannerProps {
   banner: CatalogBannerData;
+  className?: string;
+  style?: CSSProperties;
 }
 
 const variantClasses: Record<
@@ -31,11 +34,11 @@ const variantClasses: Record<
   },
 };
 
-export function CatalogBanner({ banner }: CatalogBannerProps) {
+export function CatalogBanner({ banner, className, style }: CatalogBannerProps) {
   const variant = variantClasses[banner.variant];
 
   return (
-    <div className="h-full min-h-0">
+    <div className={cn("h-full min-h-0", className)} style={style}>
       <a
         href={banner.href}
         className="catalog-banner group/banner relative isolate block h-full min-h-[260px] overflow-hidden rounded-md bg-ink text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background"

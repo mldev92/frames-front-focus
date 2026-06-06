@@ -5,7 +5,6 @@ import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
 import { getCatalogBanners } from "@/data/catalog-banners";
 import type { Product, Category } from "@/data/types";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { GenderIcon, genderToIconKind } from "@/components/ui/GenderIcon";
 
@@ -40,6 +39,21 @@ type GridCols = 2 | 3 | 4;
 
 const CORPORATE_EMAIL = "info@optika100.com";
 const normalize = (v?: string) => (v ?? "").trim().toLowerCase();
+
+function getBannerCount(productCount: number, columns: GridCols) {
+  let remainingProducts = productCount;
+  let row = 1;
+  let banners = 0;
+
+  while (remainingProducts > 0) {
+    const hasBanner = row % 2 === 0;
+    if (hasBanner) banners += 1;
+    remainingProducts -= columns - (hasBanner ? 1 : 0);
+    row += 1;
+  }
+
+  return banners;
+}
 
 // ── Frame shape icons — 64×24 grid, stroke 1.5, round joins ─────────────────
 const ShapeIcon = ({ d }: { d: string }) => (
@@ -658,7 +672,6 @@ export function CatalogListing({
   const [selectedColors, setSelectedColors] = useState<Set<string>>(new Set());
   const [gridCols, setGridCols] = useState<GridCols>(3);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const isMobile = useIsMobile();
 
   const priceBounds = useMemo(() => {
     const ps = products.map((p) => p.price);
@@ -941,8 +954,9 @@ export function CatalogListing({
   }
 
   const catalogCells = useMemo(() => {
-    const columns = isMobile ? 2 : gridCols;
+    const columns = 2;
     const banners = getCatalogBanners(categoryKey);
+    const desktopBannerCount = getBannerCount(filtered.length, gridCols);
     const cells: React.ReactNode[] = [];
     let productIndex = 0;
     let bannerIndex = 0;
@@ -953,7 +967,14 @@ export function CatalogListing({
 
       if (hasBanner) {
         const banner = banners[bannerIndex % banners.length];
-        cells.push(<CatalogBanner key={`catalog-banner-${row}-${banner.id}`} banner={banner} />);
+        cells.push(
+          <CatalogBanner
+            key={`catalog-banner-${row}-${banner.id}`}
+            banner={banner}
+            className={bannerIndex >= desktopBannerCount ? "md:hidden" : undefined}
+            style={{ gridColumn: 1, gridRow: row }}
+          />,
+        );
         bannerIndex += 1;
       }
 
@@ -974,7 +995,7 @@ export function CatalogListing({
     }
 
     return cells;
-  }, [categoryKey, filtered, gridCols, isMobile]);
+  }, [categoryKey, filtered, gridCols]);
 
   const hasFacet = (k: FacetKey) => facets.includes(k);
   const handlePreorderSubmit = (e: React.FormEvent) => {
