@@ -10,25 +10,25 @@ const STEPS = [
     n: "01",
     t: "Выбираете оправу",
     d: "Каталог под ваш стиль и форму лица",
-    img: "/main1example.jpeg",
+    img: "/main1example.webp",
   },
   {
     n: "02",
     t: "Подбираем линзы",
     d: "Диагностика и рекомендация оптометриста",
-    img: "/services2_vision_diagnostics.png",
+    img: "/services2_vision_diagnostics.webp",
   },
   {
     n: "03",
     t: "Примеряете онлайн",
     d: "Виртуальная примерка прямо в браузере",
-    img: "/services3_selection_of_glasses.png",
+    img: "/services3_selection_of_glasses.webp",
   },
   {
     n: "04",
     t: "Доставим бесплатно",
     d: "По СПб от 5 000 ₽ — курьером до двери",
-    img: "/main3example.jpeg",
+    img: "/main3example.webp",
   },
 ];
 

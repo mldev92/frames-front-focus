@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 const LOGO = {
   alt: "ОПТИКА 100% ONLINE",
   height: 614,
-  src: "/logo_2_parts.png",
+  src: "/logo_2_parts.webp",
   width: 2111,
 };
 

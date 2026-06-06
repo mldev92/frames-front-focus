@@ -37,7 +37,7 @@ function TinkoffPage() {
       <div
         className="mb-10 rounded-2xl bg-[#f5f5f5] p-10"
         style={{
-          backgroundImage: "url('/tinkoff_bg_3.png')",
+          backgroundImage: "url('/tinkoff_bg_3.webp')",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "right bottom",
           backgroundSize: "auto 95%",

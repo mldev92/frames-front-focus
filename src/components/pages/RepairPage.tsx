@@ -176,7 +176,7 @@ export function RepairPage() {
           <Reveal className="pb-4 lg:h-full lg:min-h-[420px] lg:py-8" delay={120}>
             <div className="h-[280px] overflow-hidden rounded-2xl bg-accent sm:h-[360px] lg:h-full">
               <img
-                src="/remont_hero.png"
+                src="/remont_hero.webp"
                 alt="Мастер ремонтирует очки"
                 className="h-full w-full object-cover"
                 loading="eager"

@@ -15,7 +15,7 @@ export const Route = createFileRoute("/stellest-katalog-s-linzami")({
           "Контроль миопии у детей: линзы Essilor Stellest, MiSight 1 Day, диагностика и наблюдение в ОПТИКА 100%.",
       },
       { property: "og:title", content: "Контроль миопии Stellest · ОПТИКА 100%" },
-      { property: "og:image", content: "/stellest/hero-child-stellest.png" },
+      { property: "og:image", content: "/stellest/hero-child-stellest.webp" },
     ],
   }),
   component: StellestCatalogPage,

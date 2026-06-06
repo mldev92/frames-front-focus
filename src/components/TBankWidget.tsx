@@ -12,7 +12,7 @@ export function TBankWidget() {
         onClick={() => setOpen(true)}
         className="mt-3 flex w-fit items-center gap-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 transition-colors hover:bg-red-100"
       >
-        <img src="/t_icon_red.png" alt="Т" className="h-9 w-8 shrink-0" />
+        <img src="/t_icon_red.webp" alt="Т" className="h-9 w-8 shrink-0" />
         <div className="text-left">
           <div className="text-sm text-gray-700">
             рассрочка <strong>0‑0‑3</strong> от Т‑банка
@@ -31,7 +31,7 @@ export function TBankWidget() {
             {/* Header */}
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <img src="/t_icon_red.png" alt="Т" className="h-10 w-9" />
+                <img src="/t_icon_red.webp" alt="Т" className="h-10 w-9" />
                 <span className="text-xl font-bold tracking-widest">БАНК</span>
               </div>
               <button

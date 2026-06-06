@@ -29,7 +29,7 @@ export const Route = createFileRoute("/payment")({
         content:
           "Удобная оплата и получение заказов ОПТИКА 100%: СДЭК, самовывоз, наличные, карты и онлайн-оплата.",
       },
-      { property: "og:image", content: "/payment/payment-hero.png" },
+      { property: "og:image", content: "/payment/payment-hero.webp" },
     ],
   }),
   component: PaymentPage,
@@ -50,19 +50,19 @@ const paymentMethods: IconItem[] = [
 const deliveryCards = [
   {
     title: "СДЭК с доставкой до пункта выдачи заказов",
-    image: "/payment/cdek-pickup.png",
+    image: "/payment/cdek-pickup.webp",
     alt: "Пункт выдачи заказов СДЭК",
     Icon: MapPin,
   },
   {
     title: "СДЭК с доставкой до адреса",
-    image: "/payment/cdek-courier.png",
+    image: "/payment/cdek-courier.webp",
     alt: "Курьерская доставка СДЭК до адреса",
     Icon: Home,
   },
   {
     title: "Самовывоз",
-    image: "/payment/salon-pickup.png",
+    image: "/payment/salon-pickup.webp",
     alt: "Салон ОПТИКА 100% для самовывоза заказа",
     Icon: Store,
   },
@@ -100,7 +100,7 @@ function PaymentPage() {
       <section className="relative overflow-hidden bg-cream">
         <Reveal className="relative h-[300px] md:absolute md:inset-y-0 md:right-0 md:h-auto md:w-[68%]">
           <img
-            src="/payment/payment-hero.png"
+            src="/payment/payment-hero.webp"
             alt="Оплата и получение заказа в ОПТИКА 100%"
             className="h-full w-full object-cover object-center"
             style={{ filter: "brightness(0.96) contrast(1.08) saturate(1.03)" }}

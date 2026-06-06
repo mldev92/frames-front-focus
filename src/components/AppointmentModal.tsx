@@ -11,9 +11,9 @@ type Direction = "forward" | "back";
 
 // ─── Step meta ────────────────────────────────────────────────────────────────
 const STEPS = [
-  { label: "Филиал и возраст", img: "/services1_online_appointment_doctor.png" },
-  { label: "Услуга и время", img: "/services3_selection_of_glasses.png" },
-  { label: "Ваши данные", img: "/services2_vision_diagnostics.png" },
+  { label: "Филиал и возраст", img: "/services1_online_appointment_doctor.webp" },
+  { label: "Услуга и время", img: "/services3_selection_of_glasses.webp" },
+  { label: "Ваши данные", img: "/services2_vision_diagnostics.webp" },
 ];
 
 // ─── Services ─────────────────────────────────────────────────────────────────

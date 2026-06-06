@@ -536,19 +536,19 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Ободковые",
         count: "684",
         href: frameHref(category, { construction: "Ободковые" }),
-        icon: frameConstructionAssetIcon("/obodkovaea.png", "Ободковые"),
+        icon: frameConstructionAssetIcon("/obodkovaea.webp", "Ободковые"),
       },
       {
         label: "Безободковые",
         count: "142",
         href: frameHref(category, { construction: "Безободковые" }),
-        icon: frameConstructionAssetIcon("/bezobodkovaea.png", "Безободковые"),
+        icon: frameConstructionAssetIcon("/bezobodkovaea.webp", "Безободковые"),
       },
       {
         label: "Полуободковые",
         count: "96",
         href: frameHref(category, { construction: "Полуободковые" }),
-        icon: frameConstructionAssetIcon("/poluobodkovaea.png", "Полуободковые"),
+        icon: frameConstructionAssetIcon("/poluobodkovaea.webp", "Полуободковые"),
       },
       {
         label: "Clip-on",
@@ -625,7 +625,7 @@ const SUNGLASSES_MENU = buildFrameMega("solntsezashchitnye", {
     title: "Лёгкие формы на каждый день",
     description:
       "Поляризация, мягкие линзы и универсальные формы для города, отпуска и вождения. Сборка подборки без перегруженных логотипов.",
-    imageSrc: "/categ_sunglasses_v4.png",
+    imageSrc: "/categ_sunglasses_v4.webp",
     imageAlt: "Подборка солнцезащитных очков",
     price: "от 6 900 ₽",
     ctaHref: "/catalog_s/solntsezashchitnye_ochki/",

@@ -33,17 +33,17 @@ export const Route = createFileRoute("/main-v2")({
         content:
           "Большой выбор оправ и линз, услуги клиники зрения, салоны в центре Санкт-Петербурга.",
       },
-      { property: "og:image", content: "/main_banner_v4.jpg" },
+      { property: "og:image", content: "/main_banner_v4.webp" },
     ],
   }),
   component: HomePage,
 });
 
 const SERVICE_IMAGES = [
-  "/services1_online_appointment_doctor.png",
-  "/services2_vision_diagnostics.png",
-  "/services3_selection_of_glasses.png",
-  "/services4_glasses_repair.png",
+  "/services1_online_appointment_doctor.webp",
+  "/services2_vision_diagnostics.webp",
+  "/services3_selection_of_glasses.webp",
+  "/services4_glasses_repair.webp",
 ];
 const SERVICE_LIST = [
   { slug: "priem-vracha", title: "Запись к врачу" },
@@ -112,7 +112,7 @@ function HomePage() {
         {/* Full-size banner image */}
         <div className="absolute inset-0 z-[1]">
           <img
-            src="/main_banner_v4.jpg"
+            src="/main_banner_v4.webp"
             alt=""
             className="w-full h-full object-cover"
           />
@@ -288,7 +288,7 @@ function HomePage() {
           </Reveal>
           <Reveal delay={140} className="aspect-[4/3] rounded-2xl overflow-hidden">
             <img
-              src="/main_bottom_child_banner.png"
+              src="/main_bottom_child_banner.webp"
               alt="Кабинет контроля миопии"
               className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
             />

@@ -423,7 +423,7 @@ export function SalonsSection() {
         {/* SPB */}
         {city === "spb" && (
           <div className="salon-city-panel">
-            <MapPlaceholder city="Санкт-Петербург" imageSrc="/map_template.png" />
+            <MapPlaceholder city="Санкт-Петербург" imageSrc="/map_template.webp" />
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, marginBottom: 28 }}>
               <SalonCard
                 wide
@@ -434,7 +434,7 @@ export function SalonsSection() {
                 metro
                 metroName="Чернышевская"
                 imageLabel="фото салона СПб"
-                imageSrc="/salon_kirochnaya.jpg"
+                imageSrc="/salon_kirochnaya.webp"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="5.0"
@@ -461,7 +461,7 @@ export function SalonsSection() {
                 hours="Ежедневно с 9:30 до 19:30"
                 phone={NK_PHONE_LABEL}
                 imageLabel="фото · ул. Тореза"
-                imageSrc="/salon_toreza.jpg"
+                imageSrc="/salon_toreza.webp"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="4.8"
@@ -477,7 +477,7 @@ export function SalonsSection() {
                 hours="Ежедневно с 9:30 до 19:00"
                 phone={NK_PHONE_LABEL}
                 imageLabel="фото · пр. Шахтёров"
-                imageSrc="/salon_shahterov.jpg"
+                imageSrc="/salon_shahterov.webp"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="5.0"
@@ -492,7 +492,7 @@ export function SalonsSection() {
                 hours="Ежедневно с 9:30 до 19:30"
                 phone={NK_PHONE_LABEL}
                 imageLabel="фото · пр. Бардина"
-                imageSrc="/salon_bardina.jpg"
+                imageSrc="/salon_bardina.webp"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="4.8"
@@ -508,7 +508,7 @@ export function SalonsSection() {
                 hours="Ежедневно с 9:30 до 19:30"
                 phone={NK_PHONE_LABEL}
                 imageLabel="фото · пр. Запсибовцев"
-                imageSrc="/salon_zabsibov.jpg"
+                imageSrc="/salon_zabsibov.webp"
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="4.8"

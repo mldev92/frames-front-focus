@@ -427,7 +427,7 @@
 }
 .quiz-wrap::before {
   content: ''; position: absolute; inset: 0; z-index: 0;
-  background: url('/stellest/quiz-background.png') center / cover no-repeat;
+  background: url('/stellest/quiz-background.webp') center / cover no-repeat;
   filter: blur(2px) brightness(1.35) saturate(0.4) sepia(0.25);
   opacity: 0.22;
 }

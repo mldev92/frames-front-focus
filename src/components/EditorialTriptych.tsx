@@ -10,21 +10,21 @@ type Tile = {
 
 const TILES: Tile[] = [
   {
-    image: "/main1example.jpeg",
+    image: "/main1example.webp",
     eyebrow: "Дизайн из Италии",
     title: "Коллекция Tutto",
     cta: "Смотреть коллекцию",
     href: "/catalog_s/opravy/",
   },
   {
-    image: "/main2example.jpeg",
+    image: "/main2example.webp",
     eyebrow: "В стиле 90-х",
     title: "Винтажные оправы",
     cta: "К оправам",
     href: "/catalog_s/opravy/?shape=Круглые",
   },
   {
-    image: "/main3example.jpeg",
+    image: "/main3example.webp",
     eyebrow: "Создано для движения",
     title: "Спорт и активность",
     cta: "Солнцезащитные",

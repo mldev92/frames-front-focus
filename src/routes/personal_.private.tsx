@@ -20,7 +20,7 @@ export const Route = createFileRoute("/personal_/private")({
         property: "og:description",
         content: "Управляйте контактами и связанными профилями в личном кабинете.",
       },
-      { property: "og:image", content: "/personal/explain-glasses.png" },
+      { property: "og:image", content: "/personal/explain-glasses.webp" },
     ],
   }),
   component: PrivateDataPage,
@@ -366,7 +366,7 @@ function PrivateDataPage() {
           >
             <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[44%] lg:block">
               <img
-                src="/personal/explain-glasses.png"
+                src="/personal/explain-glasses.webp"
                 alt=""
                 className="h-full w-full object-cover object-center"
                 loading="lazy"

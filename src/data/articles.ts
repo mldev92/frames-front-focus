@@ -40,9 +40,9 @@ const RAW: [string, string, string][] = [
 ];
 
 const LOCAL_COVERS: Record<number, string> = {
-  0: "/article-pokrytiya-linz/pokrytie_hero.png",
-  1: "/blog_vidy_linz.jpg",
-  2: "/blog_asphericheskie.jpg",
+  0: "/article-pokrytiya-linz/pokrytie_hero.webp",
+  1: "/blog_vidy_linz.webp",
+  2: "/blog_asphericheskie.webp",
 };
 
 export const articles: Article[] = RAW.map(([slug, title, excerpt], i) => ({

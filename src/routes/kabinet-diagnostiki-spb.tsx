@@ -41,7 +41,7 @@ function KabinetDiagnostikiPage() {
       <section className="relative">
         <div className="overflow-hidden" style={{ aspectRatio: "21/7" }}>
           <img
-            src="/izmenenie_davleniya.jpg"
+            src="/izmenenie_davleniya.webp"
             alt="Диагностика зрения"
             className="w-full h-full object-cover"
           />
@@ -96,7 +96,7 @@ function KabinetDiagnostikiPage() {
           <div className="grid lg:grid-cols-2 gap-8 items-start">
             <div className="aspect-[4/3] bg-accent rounded-2xl overflow-hidden">
               <img
-                src="/pic1.jpg"
+                src="/pic1.webp"
                 alt="Как проходит диагностика"
                 className="w-full h-full object-cover"
               />
@@ -135,7 +135,7 @@ function KabinetDiagnostikiPage() {
           </div>
           <div className="aspect-[4/3] bg-accent rounded-2xl overflow-hidden">
             <img
-              src="/pic3.png"
+              src="/pic3.webp"
               alt="Комплексное обследование зрения"
               className="w-full h-full object-cover"
             />
@@ -149,7 +149,7 @@ function KabinetDiagnostikiPage() {
           <div className="grid lg:grid-cols-[380px_1fr] gap-12 items-center">
             <div className="aspect-[4/3] bg-accent rounded-2xl overflow-hidden">
               <img
-                src="/konsultaciya_oftalmologa.jpg"
+                src="/konsultaciya_oftalmologa.webp"
                 alt="Консультация оптометриста или офтальмолога"
                 className="w-full h-full object-cover"
               />
@@ -194,7 +194,7 @@ function KabinetDiagnostikiPage() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           <div className="order-2 lg:order-1 aspect-[4/3] bg-accent rounded-2xl overflow-hidden">
             <img
-              src="/podbor_linz.jpg"
+              src="/podbor_linz.webp"
               alt="Подбор оптимальной коррекции"
               className="w-full h-full object-cover"
             />
@@ -239,7 +239,7 @@ function KabinetDiagnostikiPage() {
             </div>
             <div className="bg-accent rounded-2xl overflow-hidden" style={{ aspectRatio: "3/4" }}>
               <img
-                src="/izmenenie_davleniya.jpg"
+                src="/izmenenie_davleniya.webp"
                 alt="Диагностика на современном оборудовании"
                 className="w-full h-full object-cover"
               />
@@ -280,7 +280,7 @@ function KabinetDiagnostikiPage() {
           </div>
           <div className="aspect-[4/3] bg-accent rounded-2xl overflow-hidden">
             <img
-              src="/pic6.jpg"
+              src="/pic6.webp"
               alt="Почему стоит проводить диагностику зрения у нас"
               className="w-full h-full object-cover"
             />
@@ -319,7 +319,7 @@ export const Route = createFileRoute("/kabinet-diagnostiki-spb")({
       { title: "Диагностика зрения в Санкт-Петербурге · ОПТИКА 100%" },
       { name: "description", content: "Профессиональная диагностика зрения на современном оборудовании. Авторефрактометрия, тонометрия, биомикроскопия. Запись онлайн." },
       { property: "og:title", content: "Диагностика зрения · ОПТИКА 100%" },
-      { property: "og:image", content: "/izmenenie_davleniya.jpg" },
+      { property: "og:image", content: "/izmenenie_davleniya.webp" },
     ],
   }),
   component: KabinetDiagnostikiPage,

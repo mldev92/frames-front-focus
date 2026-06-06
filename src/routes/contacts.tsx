@@ -393,7 +393,7 @@ function ContactsPage() {
         {/* SPB */}
         {city === "spb" && (
           <div>
-            <MapPlaceholder city="Санкт-Петербург" imageSrc="/map_template.png" />
+            <MapPlaceholder city="Санкт-Петербург" imageSrc="/map_template.webp" />
             <SalonCard
               address="Салон оптики в Санкт-Петербурге, ул. Кирочная, 17"
               metro="Чернышевская"

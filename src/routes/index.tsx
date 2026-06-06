@@ -42,7 +42,7 @@ export const Route = createFileRoute("/")({
         content:
           "Большой выбор оправ и линз, услуги клиники зрения, салоны в центре Санкт-Петербурга.",
       },
-      { property: "og:image", content: "/main_banner_3.png" },
+      { property: "og:image", content: "/main_banner_3.webp" },
     ],
   }),
   component: MainV2Page,
@@ -72,10 +72,10 @@ const TRUST_REASONS = [
 ];
 
 const SERVICE_IMAGES = [
-  "/services1_online_appointment_doctor.png",
-  "/services2_vision_diagnostics.png",
-  "/services3_selection_of_glasses.png",
-  "/services4_glasses_repair.png",
+  "/services1_online_appointment_doctor.webp",
+  "/services2_vision_diagnostics.webp",
+  "/services3_selection_of_glasses.webp",
+  "/services4_glasses_repair.webp",
 ];
 const SERVICE_LIST = [
   { slug: "priem-vracha", title: "Запись к врачу" },
@@ -230,7 +230,7 @@ const CAT_CELLS = [
     slug: "opravy-zhenskie",
     title: "Женские оправы",
     subtitle: "Более 1500 моделей",
-    image: "/new_categories_1.png",
+    image: "/new_categories_1.webp",
     href: catalogHref("opravy"),
     titlePos: "bottom" as const,
   },
@@ -238,7 +238,7 @@ const CAT_CELLS = [
     slug: "solntsezashchitnye",
     title: "Солнцезащитные очки",
     subtitle: "Новые коллекции 2024",
-    image: "/new_categories_2.png",
+    image: "/new_categories_2.webp",
     href: catalogHref("solntsezashchitnye"),
     titlePos: "top" as const,
   },
@@ -246,7 +246,7 @@ const CAT_CELLS = [
     slug: "opravy-muzhskie",
     title: "Мужские оправы",
     subtitle: "Более 1200 моделей",
-    image: "/new_categories_4.png",
+    image: "/new_categories_4.webp",
     href: catalogHref("opravy"),
     titlePos: "bottom" as const,
   },
@@ -254,7 +254,7 @@ const CAT_CELLS = [
     slug: "detskie-ochki",
     title: "Детские оправы",
     subtitle: "Для заботы о будущем",
-    image: "/new_categories_3.png",
+    image: "/new_categories_3.webp",
     href: catalogHref("opravy"),
     titlePos: "bottom" as const,
   },
@@ -315,7 +315,7 @@ function MainV2Page() {
 
         {/* Banner A — new_main_banner.png */}
         <img
-          src="/new_main_banner.png"
+          src="/new_main_banner.webp"
           alt=""
           style={{
             position: "absolute",
@@ -333,7 +333,7 @@ function MainV2Page() {
         />
         {/* Banner B — main_banner_3.png */}
         <img
-          src="/main_banner_3.png"
+          src="/main_banner_3.webp"
           alt=""
           style={{
             position: "absolute",
@@ -499,7 +499,7 @@ function MainV2Page() {
                   className="group flex items-start gap-2.5 text-inherit no-underline transition-transform duration-200 hover:-translate-y-px"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand/10 text-brand transition-colors duration-200 group-hover:bg-brand/15">
-                    <img src="/t_icon_red.png" alt="" loading="lazy" className="h-5 w-4 object-contain" />
+                    <img src="/t_icon_red.webp" alt="" loading="lazy" className="h-5 w-4 object-contain" />
                   </span>
                   <div className="flex min-w-0 flex-col">
                     <strong className="border-b border-dashed border-transparent font-serif text-[18px] leading-[1.1] text-foreground transition-colors group-hover:border-brand/40">
@@ -969,7 +969,7 @@ function MainV2Page() {
               style={{ minHeight: 380 }}
             >
               <img
-                src="/main_bottom_child_banner.png"
+                src="/main_bottom_child_banner.webp"
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
@@ -1330,7 +1330,7 @@ function MainV2BuyTogetherBanner() {
         aria-hidden
         className="o100-bts-img absolute inset-0"
         style={{
-          backgroundImage: "url(/main_banner_v2.png)",
+          backgroundImage: "url(/main_banner_v2.webp)",
           backgroundPosition: "right center",
           backgroundSize: "cover",
           zIndex: 0,
@@ -2108,7 +2108,7 @@ function MainV2SubscriptionBlock() {
         <div className="o100-sub-grid">
           <Reveal>
             <div className="o100-sub-photo">
-              <img src="/category_cont_lenses_v3.png" alt="" />
+              <img src="/category_cont_lenses_v3.webp" alt="" />
               <div
                 aria-hidden
                 className="absolute inset-0"

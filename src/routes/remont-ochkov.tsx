@@ -16,7 +16,7 @@ export const Route = createFileRoute("/remont-ochkov")({
         content:
           "Возвращаем очкам комфорт и надёжность. Сертифицированные запчасти, профессиональное оборудование и срочный ремонт в салоне.",
       },
-      { property: "og:image", content: "/remont_hero.png" },
+      { property: "og:image", content: "/remont_hero.webp" },
     ],
   }),
   component: RepairPage,

@@ -1642,11 +1642,11 @@ export function CatalogListing({
                 const constructionLower = opt.toLowerCase();
                 const constructionIcon = isConstruction
                   ? constructionLower.includes("безобод")
-                    ? "/bezobodkovaea.png"
+                    ? "/bezobodkovaea.webp"
                     : constructionLower.includes("полуобод")
-                    ? "/poluobodkovaea.png"
+                    ? "/poluobodkovaea.webp"
                     : constructionLower.includes("обод")
-                        ? "/obodkovaea.png"
+                        ? "/obodkovaea.webp"
                         : null
                   : null;
                 return (

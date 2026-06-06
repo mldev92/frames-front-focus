@@ -17,7 +17,7 @@ export const Route = createFileRoute("/blog/linzy-dlya-ochkov/pokrytiya-linz-dly
         content:
           "Какие покрытия делают очковые линзы комфортнее, защищают от бликов, царапин и помогают выбрать линзы под ваш образ жизни.",
       },
-      { property: "og:image", content: "/article-pokrytiya-linz/pokrytie_hero.png" },
+      { property: "og:image", content: "/article-pokrytiya-linz/pokrytie_hero.webp" },
       { property: "og:type", content: "article" },
     ],
   }),

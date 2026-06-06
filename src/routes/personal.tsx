@@ -30,7 +30,7 @@ export const Route = createFileRoute("/personal")({
         property: "og:description",
         content: "Управляйте заказами, личными данными и покупками в одном месте.",
       },
-      { property: "og:image", content: "/personal/hero.png" },
+      { property: "og:image", content: "/personal/hero.webp" },
     ],
   }),
   component: PersonalPage,
@@ -46,7 +46,7 @@ const dashboardCards = [
       </>
     ),
     subtitle: "2 заказа в обработке",
-    image: "/personal/orders.png",
+    image: "/personal/orders.webp",
     imagePosition: "center 40%",
     badge: 2,
     Icon: Package,
@@ -63,7 +63,7 @@ const dashboardCards = [
       </>
     ),
     subtitle: "Профиль и контакты",
-    image: "/personal/profile.png",
+    image: "/personal/profile.webp",
     imagePosition: "center 30%",
     Icon: UserRound,
     action: "profile",
@@ -78,7 +78,7 @@ const dashboardCards = [
       </>
     ),
     subtitle: "Все предыдущие покупки",
-    image: "/personal/history.png",
+    image: "/personal/history.webp",
     imagePosition: "center 55%",
     Icon: History,
     action: "history",
@@ -181,7 +181,7 @@ function PersonalPage() {
       <section className="relative overflow-hidden bg-cream">
         <Reveal className="relative h-[240px] sm:h-[300px] lg:absolute lg:inset-y-0 lg:right-0 lg:h-auto lg:w-[60%]">
           <img
-            src="/personal/hero.png"
+            src="/personal/hero.webp"
             alt="Очки, футляр и фирменный пакет ОПТИКА 100%"
             className="h-full w-full object-cover object-[60%_center]"
             loading="eager"
@@ -326,7 +326,7 @@ function PersonalPage() {
               aria-label="Открыть корзину"
             >
               <img
-                src="/personal/cart.png"
+                src="/personal/cart.webp"
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover object-[center_45%] transition-transform duration-700 ease-[var(--ease-editorial)] group-hover:scale-105"
                 loading="lazy"
