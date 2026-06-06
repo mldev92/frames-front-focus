@@ -214,6 +214,40 @@
 }
 .animate-ken-burns { animation: ken-burns 16s ease-out forwards; }
 
+.catalog-banner__image {
+  transition: transform 1200ms var(--ease-editorial);
+  will-change: transform;
+}
+
+.catalog-banner__cta {
+  transition:
+    transform var(--duration-snap) var(--ease-editorial),
+    box-shadow var(--duration-snap) var(--ease-editorial),
+    background-color var(--duration-snap),
+    border-color var(--duration-snap),
+    color var(--duration-snap);
+}
+
+.catalog-banner__arrow {
+  transition: transform var(--duration-snap) var(--ease-editorial);
+}
+
+.catalog-banner:hover .catalog-banner__image,
+.catalog-banner:focus-visible .catalog-banner__image {
+  transform: scale(1.05);
+}
+
+.catalog-banner:hover .catalog-banner__cta,
+.catalog-banner:focus-visible .catalog-banner__cta {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px oklch(0.16 0.012 250 / 0.35);
+}
+
+.catalog-banner:hover .catalog-banner__arrow,
+.catalog-banner:focus-visible .catalog-banner__arrow {
+  transform: translateX(3px);
+}
+
 /* ═══════════════════════════════════════════
    HERO — Animated warm gradient (from reference)
    ═══════════════════════════════════════════ */
@@ -387,6 +421,12 @@
   .hero-photo-glow { animation: none !important; }
   .payment-promo-track { animation: none !important; }
   .hero-eyebrow, .hero-h1, .hero-lead, .hero-ctas, .hero-stats, .hero-visual { animation: none !important; opacity: 1 !important; }
+  .catalog-banner__image,
+  .catalog-banner__cta,
+  .catalog-banner__arrow {
+    transition: none !important;
+    transform: none !important;
+  }
 }
 
 @layer base {

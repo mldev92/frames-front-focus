@@ -1,8 +1,11 @@
 import { Children, useEffect, useMemo, useState } from "react";
 import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
+import { CatalogBanner } from "./CatalogBanner";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
+import { getCatalogBanners } from "@/data/catalog-banners";
 import type { Product, Category } from "@/data/types";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { GenderIcon, genderToIconKind } from "@/components/ui/GenderIcon";
 
@@ -655,6 +658,7 @@ export function CatalogListing({
   const [selectedColors, setSelectedColors] = useState<Set<string>>(new Set());
   const [gridCols, setGridCols] = useState<GridCols>(3);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const isMobile = useIsMobile();
 
   const priceBounds = useMemo(() => {
     const ps = products.map((p) => p.price);
@@ -935,6 +939,42 @@ export function CatalogListing({
   for (const [k, set] of Object.entries(active)) {
     for (const v of set) activeChips.push({ facet: k, value: v });
   }
+
+  const catalogCells = useMemo(() => {
+    const columns = isMobile ? 2 : gridCols;
+    const banners = getCatalogBanners(categoryKey);
+    const cells: React.ReactNode[] = [];
+    let productIndex = 0;
+    let bannerIndex = 0;
+    let row = 1;
+
+    while (productIndex < filtered.length) {
+      const hasBanner = row % 2 === 0 && banners.length > 0;
+
+      if (hasBanner) {
+        const banner = banners[bannerIndex % banners.length];
+        cells.push(<CatalogBanner key={`catalog-banner-${row}-${banner.id}`} banner={banner} />);
+        bannerIndex += 1;
+      }
+
+      const productSlots = columns - (hasBanner ? 1 : 0);
+      for (let slot = 0; slot < productSlots && productIndex < filtered.length; slot += 1) {
+        const product = filtered[productIndex];
+        cells.push(
+          <ProductCard
+            key={product.slug}
+            product={product}
+            compactLensPreview={categoryKey === "kontaktnye-linzy"}
+          />,
+        );
+        productIndex += 1;
+      }
+
+      row += 1;
+    }
+
+    return cells;
+  }, [categoryKey, filtered, gridCols, isMobile]);
 
   const hasFacet = (k: FacetKey) => facets.includes(k);
   const handlePreorderSubmit = (e: React.FormEvent) => {
@@ -2024,13 +2064,7 @@ export function CatalogListing({
                 gridCols === 4 && "grid-cols-2 md:grid-cols-4",
               )}
             >
-              {filtered.map((p) => (
-                <ProductCard
-                  key={p.slug}
-                  product={p}
-                  compactLensPreview={categoryKey === "kontaktnye-linzy"}
-                />
-              ))}
+              {catalogCells}
             </div>
           )}
         </div>
