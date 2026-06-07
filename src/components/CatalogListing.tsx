@@ -55,6 +55,24 @@ function getBannerCount(productCount: number, columns: GridCols) {
   return banners;
 }
 
+function getBannerColumn(category: Category | undefined, row: number, columns: GridCols) {
+  const seed = category ?? "catalog";
+  let hash = 2166136261;
+
+  for (let index = 0; index < seed.length; index += 1) {
+    hash ^= seed.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+
+  hash ^= Math.imul(row, -1640531527);
+  hash ^= Math.imul(columns, 668265263);
+  hash = Math.imul(hash ^ (hash >>> 16), -2048144789);
+  hash = Math.imul(hash ^ (hash >>> 13), -1028477387);
+  hash ^= hash >>> 16;
+
+  return ((hash >>> 0) % columns) + 1;
+}
+
 // ── Frame shape icons — 64×24 grid, stroke 1.5, round joins ─────────────────
 const ShapeIcon = ({ d }: { d: string }) => (
   <svg
@@ -967,12 +985,22 @@ export function CatalogListing({
 
       if (hasBanner) {
         const banner = banners[bannerIndex % banners.length];
+        const mobileColumn = getBannerColumn(categoryKey, row, 2);
+        const desktopColumn = getBannerColumn(categoryKey, row, gridCols);
         cells.push(
           <CatalogBanner
             key={`catalog-banner-${row}-${banner.id}`}
             banner={banner}
-            className={bannerIndex >= desktopBannerCount ? "md:hidden" : undefined}
-            style={{ gridColumn: 1, gridRow: row }}
+            className={cn(
+              bannerIndex >= desktopBannerCount && "md:hidden",
+              mobileColumn === 1 && "col-start-1",
+              mobileColumn === 2 && "col-start-2",
+              desktopColumn === 1 && "md:col-start-1",
+              desktopColumn === 2 && "md:col-start-2",
+              desktopColumn === 3 && "md:col-start-3",
+              desktopColumn === 4 && "md:col-start-4",
+            )}
+            style={{ gridRow: row }}
           />,
         );
         bannerIndex += 1;
