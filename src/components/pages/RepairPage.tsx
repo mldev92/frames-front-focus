@@ -8,10 +8,10 @@ import {
   Info,
   LifeBuoy,
   MapPin,
+  MessageCircle,
   Phone,
   Route,
   ShieldCheck,
-  Sparkles,
   Star,
   Users,
   Wrench,
@@ -51,7 +51,7 @@ const benefits: IconItem[] = [
 const serviceCards = [
   {
     Icon: Glasses,
-    text: "Если заушники ваших очков сломались или потеряли первоначальный вид, мы заменим их на новые, подобрав по форме и цвету к вашей оправе.",
+    text: "Если заушники ваших очков потеряли форму, сломались или перестали обеспечивать комфортную посадку, мы восстановим их функциональность и внешний вид.",
   },
   {
     Icon: Gem,
@@ -126,6 +126,9 @@ const primaryButton =
   "inline-flex items-center justify-center rounded-full bg-brand px-6 py-3 text-sm font-medium text-brand-foreground transition-opacity hover:opacity-90";
 const secondaryButton =
   "inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-medium transition-colors hover:border-foreground hover:bg-foreground hover:text-primary-foreground";
+const repairWhatsappHref = `https://wa.me/78121000000?text=${encodeURIComponent(
+  "Здравствуйте! Хочу уточнить возможность ремонта очков. Сейчас пришлю фото.",
+)}`;
 
 export function RepairPage() {
   return (
@@ -145,17 +148,15 @@ export function RepairPage() {
       <section className="overflow-hidden bg-cream">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 lg:grid-cols-[1fr_1.1fr] lg:gap-12 lg:px-8">
           <Reveal className="py-12 lg:py-20">
-            <div className="mb-4 text-xs font-semibold uppercase text-brand">
-              Услуги мастера
-            </div>
+            <div className="mb-4 text-xs font-semibold uppercase text-brand">Услуги мастера</div>
             <h1 className="font-serif text-4xl leading-[1.06] text-foreground sm:text-5xl lg:text-6xl">
               Ремонт очков
               <br />
               в&nbsp;Санкт-Петербурге
             </h1>
             <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">
-              Мы возвращаем вашим очкам комфорт и надёжность. Используем сертифицированные запчасти
-              и профессиональное оборудование.
+              Качественный ремонт очков с применением оригинальных комплектующих и современного
+              оборудования. Гарантия аккуратной работы и внимания к деталям.
             </p>
 
             <div className="mt-9 grid grid-cols-2 gap-5 sm:grid-cols-4">
@@ -297,7 +298,10 @@ export function RepairPage() {
         <div className="mx-auto flex max-w-7xl flex-col gap-9 px-4 py-10 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div className="flex flex-wrap justify-center gap-8 lg:justify-start">
             {ctaBadges.map(({ title, text, Icon }) => (
-              <div key={title} className="flex max-w-[160px] flex-col items-center gap-2 text-center">
+              <div
+                key={title}
+                className="flex max-w-[160px] flex-col items-center gap-2 text-center"
+              >
                 <Icon className="h-7 w-7 text-muted-foreground" strokeWidth={1.5} />
                 <div className="text-sm font-semibold text-foreground">{title}</div>
                 <div className="text-xs leading-snug text-muted-foreground">{text}</div>
@@ -310,11 +314,12 @@ export function RepairPage() {
               Нужен ремонт очков?
             </h3>
             <p className="max-w-[260px] text-sm leading-relaxed text-muted-foreground">
-              Приходите в удобный вам салон или запишитесь онлайн
+              Приходите в удобный вам салон или пришлите фото в мессенджер для уточнения возможности
+              ремонта
             </p>
-            <a href="/contacts/" className={primaryButton}>
-              <Sparkles className="mr-2 h-4 w-4" />
-              Записаться на ремонт
+            <a href={repairWhatsappHref} className={primaryButton} target="_blank" rel="noreferrer">
+              <MessageCircle className="mr-2 h-4 w-4" />
+              Отправить фото в WhatsApp
             </a>
           </div>
         </div>
