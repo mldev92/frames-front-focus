@@ -421,12 +421,6 @@
   .hero-photo-glow { animation: none !important; }
   .payment-promo-track { animation: none !important; }
   .hero-eyebrow, .hero-h1, .hero-lead, .hero-ctas, .hero-stats, .hero-visual { animation: none !important; opacity: 1 !important; }
-  .catalog-banner__image,
-  .catalog-banner__cta,
-  .catalog-banner__arrow {
-    transition: none !important;
-    transform: none !important;
-  }
 }
 
 @layer base {
