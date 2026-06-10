@@ -1,4 +1,5 @@
 import { createFileRoute, useRouterState } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { CatalogListing } from "@/components/CatalogListing";
 import {
@@ -164,8 +165,13 @@ function CatalogPage() {
   const result = Route.useLoaderData() as LoaderResult;
   const search = Route.useSearch() as CatalogSearch;
   const navigate = Route.useNavigate();
-  const router = useRouterState();
-  const loading = router.status === "pending";
+  // Router pending state differs between the SSR pass and the client's first
+  // hydration render → gate it behind a mounted flag so the initial markup is
+  // identical (no hydration warning); the dim only applies to later navigations.
+  const pending = useRouterState({ select: (s) => s.status === "pending" });
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const loading = mounted && pending;
 
   const category = segmentToCategory[segment] as Category;
   const c = catalogConfig[category];

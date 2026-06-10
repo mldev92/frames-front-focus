@@ -1173,8 +1173,9 @@ export function CatalogListing({
           have; clip-on frames remain reachable via construction="Clip-on". */}
 
       {/* Availability — radios (server facet; preorder hidden until an
-          orderability rule exists on the backend) */}
-      {vis.availability && (
+          orderability rule exists on the backend). Hidden entirely when the
+          server response carries no availability facet for this category. */}
+      {vis.availability && serverFacets.availability && (
         <FilterSection key="availability" title="Наличие">
           <div className="space-y-2" role="radiogroup" aria-label="Наличие">
             {(
@@ -1590,13 +1591,15 @@ export function CatalogListing({
         if (isContacts)                  lensBlocks.push({ facet: "wearMode", title: "Срок замены", defs: LENS_WEAR_MODE_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "lensType", title: "Тип линзы", defs: LENS_TYPE_DEFS });
 
-        const countFor = (facet: string, def: { matches: string[] }) =>
-          products.filter((p) => {
-            const v = (p as unknown as Record<string, string | undefined>)[facet];
-            if (!v) return false;
-            const nv = normalize(v);
-            return def.matches.some((m) => normalize(m) === nv);
-          }).length;
+        // SERVER counts — the page slice (24 items) must never drive counts.
+        // Server facet keys are the canonical chip labels (same def.key set).
+        const countFor = (facet: string, def: { key: string; matches: string[] }) => {
+          const bucket = (serverFacets as Record<string, Record<string, number> | undefined>)[facet];
+          if (!bucket) return 0;
+          if (def.key in bucket) return bucket[def.key];
+          for (const m of def.matches) if (m in bucket) return bucket[m];
+          return 0;
+        };
 
         return lensBlocks.map(({ facet, title, defs }) => (
           <FilterSection key={facet} title={title}>
@@ -1675,9 +1678,10 @@ export function CatalogListing({
         ));
       })()}
 
-      {/* Ось — free text input rather than a chip group (1–180° range with
-          no sensible discrete set; the dropdown's "Своя ось °" chip lands
-          here as ?axis=custom which we just visualise as an empty input). */}
+      {/* Ось — free numeric input, COMMITTED to the URL/API on blur or Enter
+          (the SEL_AXIS enum is 10…180; the server matches numerically). The
+          dropdown's "Своя ось °" chip lands here as ?axis=custom, which the
+          backend ignores — shown as an empty input. */}
       {categoryKey === "kontaktnye-linzy" && (
         <FilterSection key="axis" title="Ось">
           <input
@@ -1686,13 +1690,20 @@ export function CatalogListing({
             placeholder="например 90°"
             value={[...(active.axis ?? [])].find((v) => v !== "custom") ?? ""}
             onChange={(e) => {
-              const v = e.target.value.trim();
+              const v = e.target.value.replace(/[^\d]/g, "").trim();
               setActive((prev) => {
                 const next = { ...prev };
-                next.axis = new Set(v ? [v] : []);
+                if (v) next.axis = new Set([v]); else delete next.axis;
                 return next;
               });
             }}
+            onBlur={() => {
+              const next = { ...active };
+              const v = [...(next.axis ?? [])].find((x) => x !== "custom");
+              if (v) next.axis = new Set([v]); else delete next.axis;
+              emitFilters(next);
+            }}
+            onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
             className="w-full bg-background border border-border rounded-full px-3 py-2 text-sm outline-none focus:border-ink/50 transition-all"
           />
         </FilterSection>
@@ -1709,7 +1720,7 @@ export function CatalogListing({
           className="w-full bg-ink text-primary-foreground rounded-full py-3 text-sm font-medium hover:-translate-y-0.5 hover:shadow-md transition-all"
           style={{ transitionDuration: "var(--duration-snap)" }}
         >
-          Применить фильтры ({filtered.length})
+          Применить фильтры ({data.total})
         </button>
       </div>
     </div>
