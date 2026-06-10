@@ -1,58 +1,110 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { z } from "zod";
 import { CatalogListing } from "@/components/CatalogListing";
-import { getAllProducts } from "@/lib/api/bitrix";
+import {
+  getCatalogPage,
+  IndexNotReadyError,
+  type CatalogPage as CatalogPageData,
+  type CatalogQuery,
+  type FacetKey,
+} from "@/lib/api/bitrix";
 import { segmentToCategory } from "@/data/categories";
 import { catalogConfig } from "./catalog_s.$category";
-import type { Category, Product } from "@/data/types";
+import type { Category } from "@/data/types";
 
-// Header dropdown deep-links the catalog with these facet query params, e.g.
-// /catalog_s/opravy?gender=Мужские&shape=Прямоугольные . The catalog reads them
-// here and seeds the listing's active-filter state.
-//
+// ---------------------------------------------------------------------------
+// Server-driven catalog (A2): the FULL catalog state lives in the URL —
+// page, sort, price range and every supported facet — and the loader issues
+// exactly ONE paged+faceted v2 request per state. Totals, priceBounds and
+// facet counts all come from the server response (never recomputed from the
+// current page slice).
+// ---------------------------------------------------------------------------
+
 // TanStack Router's default search parser auto-converts JSON-ish tokens, so
-// `?bc=8.4` arrives as the *number* 8.4 — z.string() would throw. The
-// prescription chips (sphere/cylinder/axis/addition/bc/index) all hit this,
-// so each of those entries is wrapped in this preprocess to string-ify any
-// numeric value the parser handed us before the string check runs.
+// `?bc=8.4` arrives as the *number* 8.4 — z.string() would throw. Every facet
+// that can carry numeric-looking values is wrapped to string-ify first.
 const numOrStr = z
   .preprocess((v) => (typeof v === "number" ? String(v) : v), z.string())
   .optional();
-const catalogSearchSchema = z.object({
-  gender:       z.string().optional(),
-  color:        z.string().optional(),
-  shape:        z.string().optional(),
-  size:         z.string().optional(),
-  brand:        z.string().optional(),
-  material:     z.string().optional(),
-  construction: z.string().optional(),
-  // Contact lenses + eyeglass lenses dropdown facets
-  wearMode:     z.string().optional(),
-  lensType:     z.string().optional(),
-  design:       z.string().optional(),
-  purpose:      z.string().optional(),
-  sphere:       numOrStr,
-  cylinder:     numOrStr,
-  axis:         numOrStr,
-  addition:     numOrStr,
-  bc:           numOrStr,
-  index:        numOrStr,
-  technology:   z.string().optional(),
-  coating:      z.string().optional(),
-  tag:          z.string().optional(),
-});
-type CatalogSearch = z.infer<typeof catalogSearchSchema>;
 
-// Index route — renders the catalog listing at /catalog_s/$category/
-// The parent layout route (catalog_s.$category.tsx) validates the category
-// and renders <Outlet />, which delivers this component.
+// Facets the server actually filters on (A2_CATALOG_CONTRACT.md). Unsupported
+// params (tag, tryOn, width/temple ranges, q) are intentionally NOT in the
+// schema — they are stripped from the URL instead of silently doing nothing.
+const FACET_PARAMS = [
+  "gender", "color", "shape", "size", "brand", "material", "construction",
+  "wearMode", "lensType", "design", "technology", "purpose", "coating",
+  "index", "sphere", "cylinder", "axis", "addition", "bc", "availability",
+] as const satisfies readonly FacetKey[];
+
+const catalogSearchSchema = z.object({
+  page: z.coerce.number().int().min(1).optional(),
+  sort: z.enum(["price_asc", "price_desc", "name"]).optional(),
+  priceMin: z.coerce.number().int().min(0).optional(),
+  priceMax: z.coerce.number().int().min(0).optional(),
+  gender: z.string().optional(),
+  color: z.string().optional(),
+  shape: z.string().optional(),
+  size: z.string().optional(),
+  brand: z.string().optional(),
+  material: z.string().optional(),
+  construction: z.string().optional(),
+  wearMode: z.string().optional(),
+  lensType: z.string().optional(),
+  design: z.string().optional(),
+  technology: z.string().optional(),
+  purpose: z.string().optional(),
+  coating: z.string().optional(),
+  index: numOrStr,
+  sphere: numOrStr,
+  cylinder: numOrStr,
+  axis: numOrStr,
+  addition: numOrStr,
+  bc: numOrStr,
+  availability: z.string().optional(),
+});
+export type CatalogSearch = z.infer<typeof catalogSearchSchema>;
+
+/** URL search → the multi-select filter map the API client takes. */
+function searchToFilters(search: CatalogSearch): Partial<Record<FacetKey, string[]>> {
+  const filters: Partial<Record<FacetKey, string[]>> = {};
+  for (const k of FACET_PARAMS) {
+    const v = search[k];
+    if (typeof v === "string" && v.trim() !== "") {
+      const parts = v.split(",").map((s) => s.trim()).filter(Boolean);
+      if (parts.length) filters[k] = parts;
+    }
+  }
+  return filters;
+}
+
+type LoaderResult =
+  | { state: "ok"; data: CatalogPageData }
+  | { state: "index_not_ready" }
+  | { state: "error"; message: string };
+
 export const Route = createFileRoute("/catalog_s/$category/")({
   validateSearch: (search: Record<string, unknown>) => catalogSearchSchema.parse(search),
-  loader: async ({ params }) => {
-    // Fetch the full section (all pages), so the catalog shows every active
-    // frame the Bitrix admin lists — not just the first 96.
-    const products = await getAllProducts(params.category);
-    return { products };
+  // One request per distinct catalog state — these deps ARE the state.
+  loaderDeps: ({ search }) => search,
+  loader: async ({ params, deps, abortController }): Promise<LoaderResult> => {
+    const q: CatalogQuery = {
+      page: deps.page ?? 1,
+      limit: 24,
+      sort: deps.sort ?? "default",
+      priceMin: deps.priceMin,
+      priceMax: deps.priceMax,
+      filters: searchToFilters(deps),
+    };
+    try {
+      // abortController.signal cancels the fetch when a newer navigation
+      // supersedes this load (stale requests never race the fresh one).
+      const data = await getCatalogPage(params.category, q, abortController.signal);
+      return { state: "ok", data };
+    } catch (e) {
+      if (e instanceof IndexNotReadyError) return { state: "index_not_ready" };
+      if (e instanceof DOMException && e.name === "AbortError") throw e;
+      return { state: "error", message: e instanceof Error ? e.message : String(e) };
+    }
   },
   head: ({ params }) => {
     const category = segmentToCategory[params.category] as Category | undefined;
@@ -67,39 +119,121 @@ export const Route = createFileRoute("/catalog_s/$category/")({
       ],
     };
   },
+  pendingComponent: CatalogPending,
   component: CatalogPage,
 });
 
+function CatalogPending() {
+  return (
+    <div className="w-full py-24 flex flex-col items-center gap-4 text-muted-foreground">
+      <div
+        className="h-8 w-8 rounded-full border-2 border-border border-t-foreground"
+        style={{ animation: "spin 0.8s linear infinite" }}
+      />
+      <span className="text-sm">Загружаем каталог…</span>
+    </div>
+  );
+}
+
+function CatalogMessage({
+  title,
+  text,
+  onRetry,
+}: {
+  title: string;
+  text: string;
+  onRetry: () => void;
+}) {
+  return (
+    <div className="w-full py-24 text-center">
+      <div className="font-serif text-2xl text-foreground/70 mb-3">{title}</div>
+      <p className="text-sm text-muted-foreground mb-6">{text}</p>
+      <button
+        onClick={onRetry}
+        className="inline-flex items-center gap-2 border border-border rounded-full px-5 py-2.5 text-sm hover:border-ink hover:bg-surface transition-all"
+        style={{ transitionDuration: "var(--duration-snap)" }}
+      >
+        Попробовать снова
+      </button>
+    </div>
+  );
+}
+
 function CatalogPage() {
   const { category: segment } = Route.useParams();
-  const { products } = Route.useLoaderData() as { products: Product[] };
+  const result = Route.useLoaderData() as LoaderResult;
   const search = Route.useSearch() as CatalogSearch;
+  const navigate = Route.useNavigate();
+  const router = useRouterState();
+  const loading = router.status === "pending";
+
   const category = segmentToCategory[segment] as Category;
   const c = catalogConfig[category];
 
-  // Header dropdown → catalog. Each present param becomes an active filter on
-  // that facet. Comma-separated values allow ?shape=Прямоугольные,Квадратные .
-  const initialFilters: Record<string, string[]> = {};
-  for (const k of [
-    "gender", "color", "shape", "size", "brand", "material", "construction",
-    "wearMode", "lensType", "design", "purpose", "sphere", "cylinder", "axis",
-    "addition", "bc", "index", "technology", "coating", "tag",
-  ] as const) {
-    const v = search[k];
-    if (v) {
-      const parts = v.split(",").map((s) => s.trim()).filter(Boolean);
-      if (parts.length) initialFilters[k] = parts;
-    }
+  if (result.state === "index_not_ready") {
+    return (
+      <CatalogMessage
+        title="Каталог обновляется"
+        text="Идёт обновление каталога — это занимает около минуты. Попробуйте обновить страницу."
+        onRetry={() => navigate({ search: (s) => ({ ...s }), replace: true })}
+      />
+    );
   }
+  if (result.state === "error") {
+    return (
+      <CatalogMessage
+        title="Не удалось загрузить каталог"
+        text="Проверьте соединение и попробуйте ещё раз."
+        onRetry={() => navigate({ search: (s) => ({ ...s }), replace: true })}
+      />
+    );
+  }
+
+  const appliedFilters: Record<string, string[]> = searchToFilters(search);
 
   return (
     <CatalogListing
       title={c.title}
       subtitle={c.subtitle}
-      products={products}
+      data={result.data}
       facets={c.facets}
       categoryKey={category}
-      initialFilters={initialFilters}
+      initialFilters={appliedFilters}
+      appliedSort={search.sort ?? "default"}
+      appliedPriceMin={search.priceMin}
+      appliedPriceMax={search.priceMax}
+      page={search.page ?? 1}
+      loading={loading}
+      onStateChange={(next) => {
+        void navigate({
+          search: (prev: CatalogSearch) => {
+            const out: Record<string, unknown> = { ...prev };
+            if (next.filters !== undefined) {
+              // Filters fully replace the facet params; absent keys drop out
+              // of the URL entirely.
+              for (const k of FACET_PARAMS) delete out[k];
+              for (const [k, vals] of Object.entries(next.filters)) {
+                if (vals && vals.length) out[k] = vals.join(",");
+              }
+            }
+            if (next.sort !== undefined) {
+              if (next.sort === "default") delete out.sort; else out.sort = next.sort;
+            }
+            if ("priceMin" in next) {
+              if (next.priceMin === undefined) delete out.priceMin; else out.priceMin = next.priceMin;
+            }
+            if ("priceMax" in next) {
+              if (next.priceMax === undefined) delete out.priceMax; else out.priceMax = next.priceMax;
+            }
+            // Any filter / price / sort change resets pagination; an explicit
+            // page change sets it.
+            const page = next.page ?? 1;
+            if (page <= 1) delete out.page; else out.page = page;
+            return out as CatalogSearch;
+          },
+          resetScroll: next.page !== undefined,
+        });
+      }}
     />
   );
 }

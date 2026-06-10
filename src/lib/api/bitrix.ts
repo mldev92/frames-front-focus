@@ -81,31 +81,9 @@ export async function getProductsPage(categoryOrSegment: string, q: ProductQuery
   return fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
 }
 
-/**
- * Fetch EVERY product for a category by paging through the endpoint.
- * The server caps `limit` at 96, so a 399-item section needs ~5 requests:
- * page 1 reveals `pages`, then 2..N are fetched in parallel.
- */
-export async function getAllProducts(categoryOrSegment: string, q: ProductQuery = {}): Promise<Product[]> {
-  if (!BASE) {
-    const cat = toCategory(categoryOrSegment) ?? (categoryOrSegment as Category);
-    return mockByCategory(cat);
-  }
-  try {
-    const first = await getProductsPage(categoryOrSegment, { ...q, page: 1, limit: 96 });
-    if (first.pages <= 1) return first.products;
-    const rest = await Promise.all(
-      Array.from({ length: first.pages - 1 }, (_, i) =>
-        getProductsPage(categoryOrSegment, { ...q, page: i + 2, limit: 96 }).then((r) => r.products),
-      ),
-    );
-    return [...first.products, ...rest.flat()];
-  } catch (e) {
-    console.error("[bitrix] getAllProducts fallback:", e);
-    const cat = toCategory(categoryOrSegment) ?? (categoryOrSegment as Category);
-    return mockByCategory(cat);
-  }
-}
+// getAllProducts (fetch-every-page fan-out) was REMOVED in A2: with honest
+// totals (opravy=9477) it would issue ~99 requests per catalog visit. The
+// catalog now makes exactly one getCatalogPage request per state.
 
 /** Single product by slug (element CODE). Returns null when not found. */
 export async function getProduct(slug: string): Promise<Product | null> {
