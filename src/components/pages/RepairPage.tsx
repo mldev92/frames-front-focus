@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
+import { CONTACT, PRIMARY_SALON } from "@/data/contact";
 
 type IconItem = {
   title: string;
@@ -126,10 +127,6 @@ const primaryButton =
   "inline-flex items-center justify-center rounded-full bg-brand px-6 py-3 text-sm font-medium text-brand-foreground transition-opacity hover:opacity-90";
 const secondaryButton =
   "inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-medium transition-colors hover:border-foreground hover:bg-foreground hover:text-primary-foreground";
-const repairWhatsappHref = `https://wa.me/78121000000?text=${encodeURIComponent(
-  "Здравствуйте! Хочу уточнить возможность ремонта очков. Сейчас пришлю фото.",
-)}`;
-
 export function RepairPage() {
   return (
     <div className="bg-background">
@@ -251,7 +248,7 @@ export function RepairPage() {
             <h3 className="text-lg font-semibold leading-snug text-foreground">
               Салон оптики «Оптика 100%»
               <br />
-              Санкт-Петербург, ул. Кирочная, 17
+              {PRIMARY_SALON.routeQuery}
             </h3>
 
             <div className="mt-5 space-y-4 text-sm text-muted-foreground">
@@ -267,7 +264,7 @@ export function RepairPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 shrink-0" />
-                <span>+7 (812) 100-00-00</span>
+                <span>{CONTACT.phone.label}</span>
               </div>
             </div>
 
@@ -276,7 +273,7 @@ export function RepairPage() {
                 <Route className="mr-2 h-4 w-4" />
                 Построить маршрут
               </a>
-              <a href="tel:+78121000000" className={secondaryButton}>
+              <a href={CONTACT.phone.href} className={secondaryButton}>
                 <Phone className="mr-2 h-4 w-4" />
                 Позвонить
               </a>
@@ -317,9 +314,9 @@ export function RepairPage() {
               Приходите в удобный вам салон или пришлите фото в мессенджер для уточнения возможности
               ремонта
             </p>
-            <a href={repairWhatsappHref} className={primaryButton} target="_blank" rel="noreferrer">
+            <a href={CONTACT.max.href} className={primaryButton} target="_blank" rel="noreferrer">
               <MessageCircle className="mr-2 h-4 w-4" />
-              Отправить фото в WhatsApp
+              Написать в MAX
             </a>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { Mail, MessageCircle, Send } from "lucide-react";
+import { CONTACT } from "@/data/contact";
 import { SiteLogo } from "./SiteLogo";
 
 const COLS = [
@@ -44,6 +45,8 @@ const COLS = [
 ];
 
 export function Footer() {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="mt-24 pt-16 pb-8" style={{ background: "#FFFEFE" }}>
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
@@ -74,14 +77,14 @@ export function Footer() {
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs text-muted-foreground">
           <div>
-            © 2025 ОПТИКА 100% · ул. Кирочная, 17, СПб ·{" "}
-            <a href="mailto:sale-spb@optika100.com" className="hover:text-foreground">
-              sale-spb@optika100.com
+            © {currentYear} ОПТИКА 100% · ул. Кирочная, 17, СПб ·{" "}
+            <a href={CONTACT.email.href} className="hover:text-foreground">
+              {CONTACT.email.label}
             </a>
           </div>
           <div className="flex gap-4">
             <a
-              href="https://t.me/optika100"
+              href={CONTACT.telegram.href}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="Telegram"
@@ -90,16 +93,16 @@ export function Footer() {
               <Send className="h-5 w-5" />
             </a>
             <a
-              href="https://vk.com/optika100"
+              href={CONTACT.max.href}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="ВКонтакте"
+              aria-label="MAX"
               className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
             >
               <MessageCircle className="h-5 w-5" />
             </a>
             <a
-              href="mailto:sale-spb@optika100.com"
+              href={CONTACT.email.href}
               aria-label="Email"
               className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
             >

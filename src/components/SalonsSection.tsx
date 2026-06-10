@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { ArrowRight, Phone, Clock, MapPin } from "lucide-react";
 import { ContactActionButtons, yandexMapsSearchHref } from "@/components/ContactActionButtons";
+import { CONTACT, NK_SALONS, SPB_SALONS } from "@/data/contact";
 
 type City = "spb" | "nk";
 
-const SPB_PHONE_LABEL = "+7 (812) 100-00-00";
-const SPB_PHONE_HREF = "tel:+78121000000";
-const NK_PHONE_LABEL = "8-800-351-2185";
-const NK_PHONE_HREF = "tel:88003512185";
+const SPB_SALON = SPB_SALONS[0];
 
 const MetroBadge = () => (
   <span
@@ -427,21 +425,21 @@ export function SalonsSection() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, marginBottom: 28 }}>
               <SalonCard
                 wide
-                name="Салон оптики на ул. Кирочная, 17"
+                name={SPB_SALON.address}
                 addressNote="Центр города, рядом с метро Чернышевская"
-                hours="Ежедневно с 10:00 до 20:00"
-                phone={SPB_PHONE_LABEL}
+                hours={SPB_SALON.hours}
+                phone={CONTACT.phone.label}
                 metro
-                metroName="Чернышевская"
-                imageLabel="фото салона СПб"
-                imageSrc="/salon_kirochnaya.webp"
+                metroName={SPB_SALON.metro}
+                imageLabel={SPB_SALON.imageLabel}
+                imageSrc={SPB_SALON.imageSrc}
                 yandexScore="5.0"
                 yandexStars={5}
                 twogisScore="5.0"
                 twogisStars={5}
-                routeHref={yandexMapsSearchHref("Санкт-Петербург, ул. Кирочная, 17")}
-                phoneHref={SPB_PHONE_HREF}
-                phoneLabel={SPB_PHONE_LABEL}
+                routeHref={yandexMapsSearchHref(SPB_SALON.routeQuery)}
+                phoneHref={CONTACT.phone.href}
+                phoneLabel={CONTACT.phone.label}
               />
             </div>
           </div>
@@ -455,69 +453,25 @@ export function SalonsSection() {
               className="salons-grid-2col"
               style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 28 }}
             >
-              <SalonCard
-                name="ул. Тореза, 32"
-                addressNote="Заводской район · ост. Рынок"
-                hours="Ежедневно с 9:30 до 19:30"
-                phone={NK_PHONE_LABEL}
-                imageLabel="фото · ул. Тореза"
-                imageSrc="/salon_toreza.webp"
-                yandexScore="5.0"
-                yandexStars={5}
-                twogisScore="4.8"
-                twogisStars={4}
-                routeHref={yandexMapsSearchHref("Новокузнецк, ул. Тореза, 32")}
-                phoneHref={NK_PHONE_HREF}
-                phoneLabel={NK_PHONE_LABEL}
-                twogisHalf
-              />
-              <SalonCard
-                name="пр. Шахтёров, 12"
-                addressNote="Новобайдаевский район"
-                hours="Ежедневно с 9:30 до 19:00"
-                phone={NK_PHONE_LABEL}
-                imageLabel="фото · пр. Шахтёров"
-                imageSrc="/salon_shahterov.webp"
-                yandexScore="5.0"
-                yandexStars={5}
-                twogisScore="5.0"
-                twogisStars={5}
-                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Шахтёров, 12")}
-                phoneHref={NK_PHONE_HREF}
-                phoneLabel={NK_PHONE_LABEL}
-              />
-              <SalonCard
-                name="пр. Бардина, 42"
-                addressNote="Центральный район · Дом Быта, отдельный вход с левого торца"
-                hours="Ежедневно с 9:30 до 19:30"
-                phone={NK_PHONE_LABEL}
-                imageLabel="фото · пр. Бардина"
-                imageSrc="/salon_bardina.webp"
-                yandexScore="5.0"
-                yandexStars={5}
-                twogisScore="4.8"
-                twogisStars={4}
-                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Бардина, 42")}
-                phoneHref={NK_PHONE_HREF}
-                phoneLabel={NK_PHONE_LABEL}
-                twogisHalf
-              />
-              <SalonCard
-                name="пр. Запсибовцев, 37"
-                addressNote="Новоильинский район · ост. Роддом"
-                hours="Ежедневно с 9:30 до 19:30"
-                phone={NK_PHONE_LABEL}
-                imageLabel="фото · пр. Запсибовцев"
-                imageSrc="/salon_zabsibov.webp"
-                yandexScore="5.0"
-                yandexStars={5}
-                twogisScore="4.8"
-                twogisStars={4}
-                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Запсибовцев, 37")}
-                phoneHref={NK_PHONE_HREF}
-                phoneLabel={NK_PHONE_LABEL}
-                twogisHalf
-              />
+              {NK_SALONS.map((salon, index) => (
+                <SalonCard
+                  key={salon.id}
+                  name={salon.address}
+                  addressNote={salon.name}
+                  hours={salon.hours}
+                  phone={CONTACT.phone.label}
+                  imageLabel={salon.imageLabel}
+                  imageSrc={salon.imageSrc}
+                  yandexScore="5.0"
+                  yandexStars={5}
+                  twogisScore={index === 1 ? "5.0" : "4.8"}
+                  twogisStars={index === 1 ? 5 : 4}
+                  routeHref={yandexMapsSearchHref(salon.routeQuery)}
+                  phoneHref={CONTACT.phone.href}
+                  phoneLabel={CONTACT.phone.label}
+                  twogisHalf={index !== 1}
+                />
+              ))}
             </div>
           </div>
         )}
@@ -539,7 +493,7 @@ export function SalonsSection() {
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <a
-              href="tel:88003512185"
+              href={CONTACT.phone.href}
               className="salon-cta-primary"
               style={{
                 display: "inline-flex",

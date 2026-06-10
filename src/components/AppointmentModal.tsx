@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { salons } from "@/data/salons";
+import { SALONS as salons } from "@/data/contact";
 import { IS_PRIVATE_BETA } from "@/lib/runtime";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, MapPin, ArrowRight, ArrowLeft } from "lucide-react";
@@ -241,7 +241,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                                 <span className="truncate">
                                   {s.address}
                                   <span className="text-foreground/40 text-[11px] ml-2">
-                                    м.&nbsp;{s.metro}
+                                    {s.metro ? <>м.&nbsp;{s.metro}</> : s.cityLabel}
                                   </span>
                                 </span>
                                 {s.id === salonId && <Check className="h-3.5 w-3.5 text-brand shrink-0" />}
@@ -252,7 +252,10 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                       </div>
                       <div className="flex items-center gap-2 px-1 text-[11px] text-foreground/55">
                         <span className="h-1.5 w-1.5 rounded-full bg-success" />
-                        <span>м.&nbsp;{selectedSalon.metro} · Сегодня до&nbsp;21:00</span>
+                        <span>
+                          {selectedSalon.metro ? <>м.&nbsp;{selectedSalon.metro}</> : selectedSalon.cityLabel}
+                          {" · "}Сегодня до&nbsp;{selectedSalon.closesAt}
+                        </span>
                       </div>
                     </div>
 

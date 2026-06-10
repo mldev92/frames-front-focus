@@ -3,6 +3,7 @@ import { Search, User, Heart, ShoppingBag, Menu, X, ChevronDown } from "lucide-r
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
+import { CONTACT, PRIMARY_SALON } from "@/data/contact";
 import { HEADER_NAV_ITEMS, HeaderMegaPanel, isMegaNavItem } from "./HeaderMegaMenu";
 import { SiteLogo } from "./SiteLogo";
 
@@ -184,11 +185,11 @@ export function Header() {
               Заказать звонок
             </button>
             <a
-              href="tel:+78121000000"
+              href={CONTACT.phone.href}
               className="flex items-center gap-2 rounded-full border border-transparent bg-white/10 px-3.5 py-1 text-[13px] font-semibold text-primary-foreground no-underline transition-all hover:border-white/20 hover:bg-white/15"
             >
               <span className="h-1.5 w-1.5 animate-[pulse-ring_2s_infinite] rounded-full bg-success shadow-[0_0_0_0_oklch(0.75_0.18_150/0.6)]" />
-              +7 (812) 100-00-00
+              {CONTACT.phone.label}
               <svg
                 width="11"
                 height="11"
@@ -353,9 +354,9 @@ export function Header() {
             </nav>
 
             <div className="mt-8 space-y-3 text-sm text-muted-foreground">
-              <p>ул. Кирочная, 17 · м. Чернышевская</p>
-              <a href="mailto:sale-spb@optika100.com" className="block">
-                sale-spb@optika100.com
+              <p>ул. Кирочная, 17 · м. {PRIMARY_SALON.metro}</p>
+              <a href={CONTACT.email.href} className="block">
+                {CONTACT.email.label}
               </a>
             </div>
           </div>

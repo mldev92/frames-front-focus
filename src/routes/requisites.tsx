@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { CONTACT, LEGAL_DETAILS } from "@/data/contact";
 
 export const Route = createFileRoute("/requisites")({
   head: () => ({
@@ -14,15 +15,13 @@ export const Route = createFileRoute("/requisites")({
   component: RequisitesPage,
 });
 
-// NOTE: placeholder values — replace with the real legal details from
-// optika100.com/requisites/.
 const rows: [string, string][] = [
-  ["Наименование", "ООО «ОПТИКА 100%»"],
-  ["ИНН", "—"],
-  ["ОГРН", "—"],
-  ["Юридический адрес", "—"],
-  ["Телефон", "8-800-700-0214"],
-  ["E-mail", "sale-spb@optika100.com"],
+  ["Наименование", LEGAL_DETAILS.name],
+  ["ИНН", LEGAL_DETAILS.inn],
+  ["ОГРНИП", LEGAL_DETAILS.ogrnip],
+  ["Адрес", LEGAL_DETAILS.address],
+  ["Телефон", CONTACT.phone.label],
+  ["E-mail", CONTACT.email.label],
 ];
 
 function RequisitesPage() {

@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { IS_PRIVATE_BETA } from "@/lib/runtime";
+import { CONTACT } from "@/data/contact";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -506,7 +507,7 @@ function Checkout() {
             <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
               <TrustBadge icon={<Shield size={15} />} text="Безопасная оплата через защищённое соединение" />
               <TrustBadge icon={<Truck size={15} />} text="Бесплатная доставка при самовывозе" />
-              <TrustBadge icon={<Phone size={15} />} text="Поддержка специалистов 8-800-351-2185" />
+              <TrustBadge icon={<Phone size={15} />} text={`Поддержка специалистов ${CONTACT.phone.label}`} />
             </div>
           </div>
         </aside>

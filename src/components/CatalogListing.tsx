@@ -4,6 +4,7 @@ import { CatalogBanner } from "./CatalogBanner";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
 import { getCatalogBanners } from "@/data/catalog-banners";
+import { CONTACT } from "@/data/contact";
 import type { Category, Product } from "@/data/types";
 import type { CatalogPage, CatalogQuery, FacetKey as ServerFacetKey } from "@/lib/api/bitrix";
 import { cn } from "@/lib/utils";
@@ -54,7 +55,7 @@ type AvailabilityFilter = "all" | AvailabilityKey;
 type ClipOnFilter = "all" | "Да" | "Нет";
 type GridCols = 2 | 3 | 4;
 
-const CORPORATE_EMAIL = "info@optika100.com";
+const CORPORATE_EMAIL = CONTACT.email.label;
 const normalize = (v?: string) => (v ?? "").trim().toLowerCase();
 
 /** 1 … (p-1) p (p+1) … N window for numbered pagination; null = ellipsis. */

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { ContactActionButtons, yandexMapsSearchHref } from "@/components/ContactActionButtons";
+import { CONTACT, NK_SALONS, SPB_SALONS } from "@/data/contact";
 
 export const Route = createFileRoute("/contacts")({
   head: () => ({
@@ -84,10 +85,7 @@ function CurrencyIcon({ size = 14 }: { size?: number }) {
 
 // ── Reusable sub-components ──────────────────────────────────────────────────
 
-const SPB_PHONE_LABEL = "+7 (812) 100-00-00";
-const SPB_PHONE_HREF = "tel:+78121000000";
-const NK_PHONE_LABEL = "8-800-351-2185";
-const NK_PHONE_HREF = "tel:88003512185";
+const SPB_SALON = SPB_SALONS[0];
 
 function PayBadge({ icon, label }: { icon: React.ReactNode; label: string }) {
   return (
@@ -333,7 +331,7 @@ function ContactsPage() {
       {/* CONTACT BAR */}
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px" }}>
         <div className="flex flex-wrap" style={{ gap: 16, marginTop: -28, position: "relative", zIndex: 2 }}>
-          <a href="tel:88003512185" style={pillStyle}
+          <a href={CONTACT.phone.href} style={pillStyle}
             onMouseEnter={e => {
               (e.currentTarget as HTMLAnchorElement).style.boxShadow = "var(--shadow-sm)";
               (e.currentTarget as HTMLAnchorElement).style.borderColor = "oklch(0.82 0.01 80)";
@@ -346,11 +344,11 @@ function ContactsPage() {
             <div style={iconCircle}><PhoneIcon /></div>
             <div>
               <div style={{ fontSize: 13, color: "var(--muted-foreground)" }}>Бесплатный звонок</div>
-              <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-0.01em" }}>8-800-351-2185</div>
+              <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-0.01em" }}>{CONTACT.phone.label}</div>
             </div>
           </a>
 
-          <a href="mailto:info@optika100.com" style={pillStyle}
+          <a href={CONTACT.email.href} style={pillStyle}
             onMouseEnter={e => {
               (e.currentTarget as HTMLAnchorElement).style.boxShadow = "var(--shadow-sm)";
               (e.currentTarget as HTMLAnchorElement).style.borderColor = "oklch(0.82 0.01 80)";
@@ -363,7 +361,7 @@ function ContactsPage() {
             <div style={iconCircle}><EnvelopeIcon /></div>
             <div>
               <div style={{ fontSize: 13, color: "var(--muted-foreground)" }}>Электронная почта</div>
-              <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-0.01em" }}>info@optika100.com</div>
+              <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-0.01em" }}>{CONTACT.email.label}</div>
             </div>
           </a>
 
@@ -395,14 +393,14 @@ function ContactsPage() {
           <div>
             <MapPlaceholder city="Санкт-Петербург" imageSrc="/map_template.webp" />
             <SalonCard
-              address="Салон оптики в Санкт-Петербурге, ул. Кирочная, 17"
-              metro="Чернышевская"
-              hours="Ежедневно с 10:00 до 20:00"
+              address={SPB_SALON.address}
+              metro={SPB_SALON.metro}
+              hours={SPB_SALON.hours}
               yandex="5.0"
               twoGis="5.0"
-              routeHref={yandexMapsSearchHref("Санкт-Петербург, ул. Кирочная, 17")}
-              phoneHref={SPB_PHONE_HREF}
-              phoneLabel={SPB_PHONE_LABEL}
+              routeHref={yandexMapsSearchHref(SPB_SALON.routeQuery)}
+              phoneHref={CONTACT.phone.href}
+              phoneLabel={CONTACT.phone.label}
             />
           </div>
         )}
@@ -412,43 +410,18 @@ function ContactsPage() {
           <div>
             <MapPlaceholder city="Новокузнецк" />
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-              <SalonCard
-                address="Заводской район, ул. Тореза, 32 (ост. Рынок)"
-                hours="Ежедневно с 9:30 до 19:30"
-                yandex="5.0"
-                twoGis="4.8"
-                routeHref={yandexMapsSearchHref("Новокузнецк, ул. Тореза, 32")}
-                phoneHref={NK_PHONE_HREF}
-                phoneLabel={NK_PHONE_LABEL}
-              />
-              <SalonCard
-                address="Новобайдаевский район — пр. Шахтёров, 12"
-                hours="Ежедневно с 9:30 до 19:00"
-                yandex="5.0"
-                twoGis="5.0"
-                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Шахтёров, 12")}
-                phoneHref={NK_PHONE_HREF}
-                phoneLabel={NK_PHONE_LABEL}
-              />
-              <SalonCard
-                address="Центральный район, пр. Бардина, 42 (Дом Быта)"
-                note="отдельный вход с левого торца"
-                hours="Ежедневно с 9:30 до 19:30"
-                yandex="5.0"
-                twoGis="4.8"
-                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Бардина, 42")}
-                phoneHref={NK_PHONE_HREF}
-                phoneLabel={NK_PHONE_LABEL}
-              />
-              <SalonCard
-                address="Новоильинский район, пр. Запсибовцев, 37 (ост. Роддом)"
-                hours="Ежедневно с 9:30 до 19:30"
-                yandex="5.0"
-                twoGis="4.8"
-                routeHref={yandexMapsSearchHref("Новокузнецк, пр. Запсибовцев, 37")}
-                phoneHref={NK_PHONE_HREF}
-                phoneLabel={NK_PHONE_LABEL}
-              />
+              {NK_SALONS.map((salon, index) => (
+                <SalonCard
+                  key={salon.id}
+                  address={salon.address}
+                  hours={salon.hours}
+                  yandex="5.0"
+                  twoGis={index === 1 ? "5.0" : "4.8"}
+                  routeHref={yandexMapsSearchHref(salon.routeQuery)}
+                  phoneHref={CONTACT.phone.href}
+                  phoneLabel={CONTACT.phone.label}
+                />
+              ))}
             </div>
           </div>
         )}
@@ -465,7 +438,7 @@ function ContactsPage() {
           </p>
           <div className="flex flex-wrap justify-center" style={{ gap: 12 }}>
             <a
-              href="tel:88003512185"
+              href={CONTACT.phone.href}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -480,7 +453,7 @@ function ContactsPage() {
               }}
             >
               <PhoneIcon />
-              8-800-351-2185
+              {CONTACT.phone.label}
             </a>
             <button
               type="button"

@@ -23,6 +23,7 @@ import { Calendar, Users, Award, Phone, Send } from "lucide-react";
 import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
+import { CONTACT, PRIMARY_SALON } from "@/data/contact";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -1141,17 +1142,17 @@ function MainV2Page() {
                 Свяжитесь с нами
               </div>
               <a
-                href="tel:+78121000000"
+                href={CONTACT.phone.href}
                 className="text-lg font-semibold text-foreground hover:text-brand transition-colors"
               >
-                +7 (812) 100-00-00
+                {CONTACT.phone.label}
               </a>
-              <p className="text-xs text-muted-foreground mt-1 mb-4">Ежедневно с 10:00 до 21:00</p>
+              <p className="text-xs text-muted-foreground mt-1 mb-4">{PRIMARY_SALON.hours}</p>
               <div className="flex items-center gap-2 mt-auto">
                 {[
-                  { name: "WhatsApp", href: "https://wa.me/78121000000" },
-                  { name: "Telegram", href: "https://t.me/optika100" },
-                  { name: "Viber", href: "viber://chat?number=78121000000" },
+                  { name: "Email", href: CONTACT.email.href },
+                  { name: "Telegram", href: CONTACT.telegram.href },
+                  { name: "MAX", href: CONTACT.max.href },
                 ].map((m) => (
                   <a
                     key={m.name}
