@@ -1,10 +1,11 @@
 import { Children, useEffect, useMemo, useState } from "react";
-import { SlidersHorizontal, X, Search, ChevronDown, Check } from "lucide-react";
+import { SlidersHorizontal, X, ChevronDown, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { CatalogBanner } from "./CatalogBanner";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
 import { getCatalogBanners } from "@/data/catalog-banners";
-import type { Product, Category } from "@/data/types";
+import type { Category, Product } from "@/data/types";
+import type { CatalogPage, CatalogQuery, FacetKey as ServerFacetKey } from "@/lib/api/bitrix";
 import { cn } from "@/lib/utils";
 import { GenderIcon, genderToIconKind } from "@/components/ui/GenderIcon";
 
@@ -18,18 +19,34 @@ type FacetKey =
   | "lensType"
   | "purpose";
 
+/** State delta emitted to the route; the route serialises it into the URL. */
+export interface CatalogStateChange {
+  filters?: Partial<Record<ServerFacetKey, string[]>>;
+  sort?: NonNullable<CatalogQuery["sort"]>;
+  priceMin?: number;
+  priceMax?: number;
+  page?: number;
+}
+
 interface ListingProps {
   title: string;
   subtitle?: string;
-  products: Product[];
+  /** Server-driven catalog page: slice + totals + facet counts + priceBounds. */
+  data: CatalogPage;
   facets?: FacetKey[];
   categoryKey?: Category;
   /**
-   * Seed the active-filter state from outside (e.g. header dropdown deep-link
-   * `?gender=Мужские&shape=Прямоугольные`). Keys are facet ids; values are the
-   * filter keys for that facet (matching FRAME_*_DEFS.key entries).
+   * Applied multi-select filters from the URL (e.g. header dropdown deep-link
+   * `?gender=Мужские&shape=Прямоугольные`). Keys are server facet ids; values
+   * the selected entries (matching FRAME_*_DEFS.key / server labels).
    */
   initialFilters?: Record<string, string[]>;
+  appliedSort: NonNullable<CatalogQuery["sort"]>;
+  appliedPriceMin?: number;
+  appliedPriceMax?: number;
+  page: number;
+  loading?: boolean;
+  onStateChange: (next: CatalogStateChange) => void;
 }
 
 type AvailabilityKey = "salon" | "warehouse" | "preorder";
@@ -39,6 +56,20 @@ type GridCols = 2 | 3 | 4;
 
 const CORPORATE_EMAIL = "info@optika100.com";
 const normalize = (v?: string) => (v ?? "").trim().toLowerCase();
+
+/** 1 … (p-1) p (p+1) … N window for numbered pagination; null = ellipsis. */
+function pageWindow(current: number, total: number): (number | null)[] {
+  const out: (number | null)[] = [];
+  const want = new Set<number>([1, 2, current - 1, current, current + 1, total - 1, total]);
+  let prev = 0;
+  for (let p = 1; p <= total; p++) {
+    if (!want.has(p)) continue;
+    if (prev && p - prev > 1) out.push(null);
+    out.push(p);
+    prev = p;
+  }
+  return out;
+}
 
 function getBannerCount(productCount: number, columns: GridCols) {
   let remainingProducts = productCount;
@@ -666,11 +697,22 @@ const CATEGORY_VISIBILITY: Record<
 export function CatalogListing({
   title,
   subtitle,
-  products,
+  data,
   facets = [],
   categoryKey,
   initialFilters,
+  appliedSort,
+  appliedPriceMin,
+  appliedPriceMax,
+  page,
+  loading,
+  onStateChange,
 }: ListingProps) {
+  // The current page slice — the SERVER already applied every filter; this
+  // component never re-filters it. Totals/counts/bounds also come from `data`.
+  const products = data.products;
+  const serverFacets = data.facets;
+
   const seedActive = (): Record<string, Set<string>> => {
     if (!initialFilters) return {};
     const out: Record<string, Set<string>> = {};
@@ -684,44 +726,67 @@ export function CatalogListing({
   // keeps the same route component, so useState alone wouldn't pick it up).
   const initialKey = JSON.stringify(initialFilters ?? {});
   useEffect(() => { setActive(seedActive()); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [initialKey]);
-  const [sort, setSort] = useState<"featured" | "price-asc" | "price-desc">("featured");
+
+  /** Serialise an active-filter map for the URL and emit it (resets to page 1). */
+  const emitFilters = (next: Record<string, Set<string>>) => {
+    const filters: Partial<Record<ServerFacetKey, string[]>> = {};
+    for (const [k, set] of Object.entries(next)) {
+      if (set && set.size) filters[k as ServerFacetKey] = [...set];
+    }
+    onStateChange({ filters });
+  };
+
+  const sort = appliedSort;
   const [mobileFilters, setMobileFilters] = useState(false);
-  const [tryOn, setTryOn] = useState(false);
-  const [selectedColors, setSelectedColors] = useState<Set<string>>(new Set());
   const [gridCols, setGridCols] = useState<GridCols>(3);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
-  const priceBounds = useMemo(() => {
-    const ps = products.map((p) => p.price);
-    return { min: Math.min(100, ...ps), max: Math.max(...ps, 50000) };
-  }, [products]);
-  const [price, setPrice] = useState<[number, number]>([priceBounds.min, priceBounds.max]);
+  const priceBounds = data.priceBounds;
+  const [price, setPrice] = useState<[number, number]>([
+    appliedPriceMin ?? priceBounds.min,
+    appliedPriceMax ?? priceBounds.max,
+  ]);
+  // Track the applied range from the URL (slider edits stay local until commit).
+  useEffect(() => {
+    setPrice([appliedPriceMin ?? priceBounds.min, appliedPriceMax ?? priceBounds.max]);
+  }, [appliedPriceMin, appliedPriceMax, priceBounds.min, priceBounds.max]);
+  const commitPrice = (v: [number, number]) => {
+    onStateChange({
+      priceMin: v[0] > priceBounds.min ? v[0] : undefined,
+      priceMax: v[1] < priceBounds.max ? v[1] : undefined,
+    });
+  };
 
-  const [sizeWidth] = useState<[number, number]>([1, 165]);
-  const [sizeTemple] = useState<[number, number]>([1, 178]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [availability, setAvailability] = useState<AvailabilityFilter>("all");
-  const [clipOn, setClipOn] = useState<ClipOnFilter>("all");
+  // Width/temple ranges, free-text search, try-on, clip-on and style tags are
+  // HIDDEN for now: the server has no backing filter for them yet, and a
+  // client-side version would only filter the current page slice (wrong).
+  // Availability (salon/warehouse) is a real server facet driven via `active`.
+  const availability: AvailabilityFilter =
+    (active.availability && [...active.availability][0] as AvailabilityKey) || "all";
+  const setAvailability = (v: AvailabilityFilter) => {
+    const next = { ...active };
+    if (v === "all") delete next.availability;
+    else next.availability = new Set([v]);
+    setActive(next);
+    emitFilters(next);
+  };
   const [preorderOpen, setPreorderOpen] = useState(false);
   const [preorderSent, setPreorderSent] = useState(false);
   const [preorderForm, setPreorderForm] = useState({ fullName: "", phone: "", email: "" });
-  const [styleTag, setStyleTag] = useState<string>("Все стили");
-  const STYLE_TAGS = [
-    "Все стили",
-    "Современные",
-    "Минимализм",
-    "Винтаж",
-    "Бохо",
-    "Индастриал",
-    "Скандинавские",
-  ];
   // Both opravy and sunglasses share the same Bitrix iblock structure
   // (gender from sections, STIL/MATERIAL_OPRAVY directories), so they both
   // use the FRAME_* defs for filter aliasing, facet rendering and counts.
   const isFramesCategory = categoryKey === "opravy" || categoryKey === "solntsezashchitnye";
 
   // ── Extra filter state (category-specific) ────────────────────────────────
-  const extras = categoryKey ? CATEGORY_EXTRAS[categoryKey] : [];
+  // Only extras with a REAL server facet behind them are shown; everything
+  // else (discount, mm-ranges, lens material/thickness/photochrome/prescription
+  // sliders, …) is hidden until the backend supports it — a client-side version
+  // would only filter the current page slice.
+  const SUPPORTED_EXTRA_KEYS = new Set(["construction"]);
+  const extras = (categoryKey ? CATEGORY_EXTRAS[categoryKey] : []).filter(
+    (b) => b.kind === "checkbox" && SUPPORTED_EXTRA_KEYS.has(b.key),
+  );
   const vis = categoryKey
     ? CATEGORY_VISIBILITY[categoryKey]
     : {
@@ -742,228 +807,54 @@ export function CatalogListing({
     ranges[key] ?? [min, max];
   const setRange = (key: string, value: [number, number]) =>
     setRanges((p) => ({ ...p, [key]: value }));
-  const toggleExtra = (key: string, val: string) => {
-    setExtraChecks((prev) => {
-      const next = { ...prev };
-      const set = new Set(next[key] ?? []);
-      if (set.has(val)) set.delete(val);
-      else set.add(val);
-      next[key] = set;
-      return next;
-    });
+  // Visible extras map 1:1 onto server facets (construction, …) — same path
+  // as every other facet: update `active`, emit, server re-filters.
+  const toggleExtra = (key: string, val: string) => toggle(key, val);
+
+  // ── ALL counts come from the SERVER facet response (drill-down semantics:
+  //    own facet excluded, other active filters applied). Never recomputed
+  //    from the current page slice. Server keys already match the def keys.
+  const facetCounts = serverFacets as Record<string, Record<string, number>>;
+  const availabilityCounts: Record<AvailabilityKey, number> = {
+    salon: serverFacets.availability?.["salon"] ?? 0,
+    warehouse: serverFacets.availability?.["warehouse"] ?? 0,
+    preorder: 0, // no orderability rule on the backend yet — option hidden
   };
+  const frameShapeCounts = serverFacets.shape ?? {};
+  const frameMaterialCounts = serverFacets.material ?? {};
+  const frameGenderCounts = serverFacets.gender ?? {};
 
-  const facetCounts = useMemo(() => {
-    const out: Record<string, Record<string, number>> = {};
-    for (const f of facets) {
-      const map: Record<string, number> = {};
-      for (const p of products) {
-        const v = (p as unknown as Record<string, string | undefined>)[f];
-        if (v) map[v] = (map[v] ?? 0) + 1;
-      }
-      out[f] = map;
-    }
-    return out;
-  }, [products, facets]);
+  // The SERVER filters and sorts — `filtered` is just the current page slice.
+  // (Filtering / aliasing / sorting all moved behind products.php?v2=1&facets=1;
+  // the alias maps live in one place on the server, _facets.php.)
+  const filtered = products;
 
-  const availabilityCounts = useMemo(() => {
-    const counts: Record<AvailabilityKey, number> = { salon: 0, warehouse: 0, preorder: 0 };
-    for (const p of products) {
-      const tags = getAvailabilityTags(p);
-      if (tags.has("salon")) counts.salon += 1;
-      if (tags.has("warehouse")) counts.warehouse += 1;
-      if (tags.has("preorder")) counts.preorder += 1;
-    }
-    return counts;
-  }, [products]);
-
-  const frameShapeCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const def of FRAME_SHAPE_DEFS) {
-      const aliases = def.matches ?? [def.key];
-      counts[def.key] = products.filter((p) => aliases.some((a) => normalize(a) === normalize(p.shape))).length;
-    }
-    return counts;
-  }, [products]);
-
-  const frameMaterialCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const mat of FRAME_MATERIAL_DEFS) {
-      const aliases = FRAME_MATERIAL_MATCHES[mat];
-      counts[mat] = products.filter((p) => {
-        const values = getProductMaterialValues(p).map((v) => normalize(v));
-        return aliases.some((alias) => values.some((v) => v.includes(normalize(alias))));
-      }).length;
-    }
-    return counts;
-  }, [products]);
-
-  const frameGenderCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    for (const g of FRAME_GENDER_DEFS) {
-      counts[g.key] = products.filter((p) =>
-        g.matches.some((alias) => normalize(alias) === normalize(p.gender)),
-      ).length;
-    }
-    return counts;
-  }, [products]);
-
-  const clipOnCounts = useMemo(() => {
-    let yes = 0;
-    let no = 0;
-    for (const p of products) {
-      if (hasClipOn(p)) yes += 1;
-      else no += 1;
-    }
-    return { yes, no };
-  }, [products]);
-
-  const filtered = useMemo(() => {
-    let list = products.filter((p) => {
-      if (p.price < price[0] || p.price > price[1]) return false;
-      if (tryOn && !p.hasTryOn) return false;
-      const availabilityTags = getAvailabilityTags(p);
-      if (availability !== "all" && !availabilityTags.has(availability)) return false;
-      if (isFramesCategory && clipOn !== "all" && (hasClipOn(p) ? "Да" : "Нет") !== clipOn) return false;
-      if (selectedColors.size > 0) {
-        const names = (p.colors ?? []).map((c) => c.name);
-        if (!names.some((n) => selectedColors.has(n))) return false;
-      }
-      if (searchQuery.trim()) {
-        const q = searchQuery.trim().toLowerCase();
-        const haystack = `${p.name} ${p.brand} ${p.description ?? ""}`.toLowerCase();
-        if (!haystack.includes(q)) return false;
-      }
-      const specMap: Record<string, number> = {};
-      for (const s of p.specs) {
-        const num = parseInt(s.value, 10);
-        if (!isNaN(num)) specMap[s.label] = num;
-      }
-      const width = specMap["Ширина окуляра"];
-      const temple = specMap["Длина дужки"];
-      if (width !== undefined && (width < sizeWidth[0] || width > sizeWidth[1])) return false;
-      if (temple !== undefined && (temple < sizeTemple[0] || temple > sizeTemple[1])) return false;
-      return Object.entries(active).every(([k, set]) => {
-        if (!set || set.size === 0) return true;
-        if (isFramesCategory && k === "shape") {
-          return [...set].some((picked) => {
-            // Header dropdown may emit a value that is one of the def's aliases
-            // rather than its key (e.g. "Авиаторы" plural vs key "Авиатор").
-            const def =
-              FRAME_SHAPE_DEFS.find((d) => d.key === picked) ??
-              FRAME_SHAPE_DEFS.find((d) => d.matches?.some((m) => normalize(m) === normalize(picked)));
-            const aliases = def?.matches ?? [picked];
-            return aliases.some((a) => normalize(a) === normalize(p.shape));
-          });
-        }
-        if (isFramesCategory && k === "material") {
-          const values = getProductMaterialValues(p).map((v) => normalize(v));
-          return [...set].some((picked) =>
-            FRAME_MATERIAL_MATCHES[picked as (typeof FRAME_MATERIAL_DEFS)[number]]?.some((alias) =>
-              values.some((v) => v.includes(normalize(alias))),
-            ),
-          );
-        }
-        if (isFramesCategory && k === "construction") {
-          return [...set].some((picked) => {
-            const def =
-              FRAME_CONSTRUCTION_DEFS.find((d) => d.key === picked) ??
-              FRAME_CONSTRUCTION_DEFS.find((d) =>
-                d.matches.some((m) => normalize(m) === normalize(picked)),
-              );
-            const aliases = def?.matches ?? [picked];
-            return aliases.some((a) => normalize(a) === normalize(p.construction));
-          });
-        }
-        if (isFramesCategory && k === "gender") {
-          return [...set].some((picked) => {
-            // "Детские" (dropdown parent) → match both boys and girls.
-            if (normalize(picked) === normalize("Детские")) {
-              return ["Мальчики", "Девочки", "Детские"].some(
-                (a) => normalize(a) === normalize(p.gender),
-              );
-            }
-            const def =
-              FRAME_GENDER_DEFS.find((d) => d.key === picked) ??
-              FRAME_GENDER_DEFS.find((d) => d.matches?.some((m) => normalize(m) === normalize(picked)));
-            const aliases = def?.matches ?? [picked];
-            return aliases.some((a) => normalize(a) === normalize(p.gender));
-          });
-        }
-        // Generic facet (brand, wearMode, design, lensType, …) — case-insensitive
-        // compare. The dropdown chip labels diverge from Bitrix raw values for a
-        // few facets (Однодневные → "1 день", Сферические → "Сферический"); the
-        // alias map below mirrors the server's products.php so URL = chip = filter
-        // all line up. Without the aliases, the generic compare on line above
-        // would reject every "1 день" product when the URL says "Однодневные".
-        const v = (p as unknown as Record<string, string | undefined>)[k];
-        if (!v) return false;
-        const nv = normalize(v);
-        const FACET_ALIASES: Record<string, Record<string, string[]>> = {
-          wearMode: {
-            "однодневные":   ["1 день"],
-            "двухнедельные": ["2 недели"],
-            "месячные":      ["1 месяц"],
-            "квартальные":   ["3 месяца"],
-          },
-          design: {
-            "сферические":   ["Сферический"],
-            "асферические":  ["Асферический"],
-            "торические":    ["Торические"],
-            "индивидуальные": ["Индивидуальный"],
-          },
-        };
-        return [...set].some((picked) => {
-          if (normalize(picked) === nv) return true;
-          if (eqLoose(picked, v)) return true;
-          const aliases = FACET_ALIASES[k]?.[normalize(picked)] ?? [];
-          return aliases.some((a) => normalize(a) === nv);
-        });
-      });
-    });
-    if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
-    if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
-    return list;
-  }, [
-    products,
-    active,
-    sort,
-    price,
-    tryOn,
-    selectedColors,
-    sizeWidth,
-    sizeTemple,
-    availability,
-    clipOn,
-    isFramesCategory,
-    searchQuery,
-  ]);
-
+  // Toggle a facet value: optimistic local update for instant chip feedback,
+  // then emit — the URL round-trip re-seeds state and refetches the page.
   const toggle = (facet: string, value: string) => {
-    setActive((prev) => {
-      const next = { ...prev };
-      const set = new Set(next[facet] ?? []);
-      if (set.has(value)) set.delete(value);
-      else set.add(value);
-      next[facet] = set;
-      return next;
-    });
+    const next = { ...active };
+    const set = new Set(next[facet] ?? []);
+    if (set.has(value)) set.delete(value);
+    else set.add(value);
+    if (set.size) next[facet] = set; else delete next[facet];
+    setActive(next);
+    emitFilters(next);
   };
+
+  // Color uses the same active map (server facet "color").
+  const selectedColors = active.color ?? new Set<string>();
+  const toggleColor = (name: string) => toggle("color", name);
 
   const clearAll = () => {
     setActive({});
-    setSelectedColors(new Set());
     setPrice([priceBounds.min, priceBounds.max]);
-    setTryOn(false);
-    setAvailability("all");
-    setClipOn("all");
     setPreorderOpen(false);
     setPreorderSent(false);
     setPreorderForm({ fullName: "", phone: "", email: "" });
-    setSearchQuery("");
     setDiscount(0);
     setRanges({});
     setExtraChecks({});
+    onStateChange({ filters: {}, sort: "default", priceMin: undefined, priceMax: undefined });
   };
 
   const activeChips: { facet: string; value: string }[] = [];
@@ -1086,36 +977,21 @@ export function CatalogListing({
           </button>
         </div>
 
-        {/* Search */}
-        <div className="relative mt-3 mb-3">
-          <Search className="h-3.5 w-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Поиск..."
-            className="w-full bg-background border border-border rounded-full pl-9 pr-3 py-2 text-sm outline-none focus:border-ink/50 transition-all"
-            onFocus={(e) => {
-              e.currentTarget.style.boxShadow = "0 0 0 3px oklch(0.18 0.01 250 / 0.08)";
-            }}
-            onBlur={(e) => {
-              e.currentTarget.style.boxShadow = "none";
-            }}
-          />
-        </div>
+        {/* Catalog text search is hidden until it talks to the real search
+            endpoint — a client-side version would only filter this page. */}
 
-        {/* Sort by */}
-        <div className="flex items-center gap-3">
+        {/* Sort by — server-side (sort param in the URL) */}
+        <div className="flex items-center gap-3 mt-3">
           <span className="text-sm font-medium shrink-0">Сортировать</span>
           <div className="relative flex-1">
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value as typeof sort)}
+              onChange={(e) => onStateChange({ sort: e.target.value as typeof sort })}
               className="w-full appearance-none bg-card border border-border rounded-full pl-3 pr-8 py-2 text-sm cursor-pointer outline-none focus:border-ink/50"
             >
-              <option value="featured">Популярные</option>
-              <option value="price-asc">Сначала дешёвые</option>
-              <option value="price-desc">Сначала дорогие</option>
+              <option value="default">Популярные</option>
+              <option value="price_asc">Сначала дешёвые</option>
+              <option value="price_desc">Сначала дорогие</option>
             </select>
             <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
           </div>
@@ -1180,6 +1056,7 @@ export function CatalogListing({
               type="number"
               value={price[0]}
               onChange={(e) => setPrice([Number(e.target.value) || 0, price[1]])}
+              onBlur={() => commitPrice(price)}
               className="w-full bg-transparent outline-none text-sm"
             />
           </label>
@@ -1189,6 +1066,7 @@ export function CatalogListing({
               type="number"
               value={price[1]}
               onChange={(e) => setPrice([price[0], Number(e.target.value) || 0])}
+              onBlur={() => commitPrice(price)}
               className="w-full bg-transparent outline-none text-sm"
             />
           </label>
@@ -1199,6 +1077,7 @@ export function CatalogListing({
           step={100}
           value={price}
           onValueChange={(v) => setPrice([v[0], v[1]] as [number, number])}
+          onValueCommit={(v) => commitPrice([v[0], v[1]] as [number, number])}
           className="mx-2 [&_[role=slider]]:border-ink [&_[role=slider]]:bg-background [&>span:first-child]:bg-ink/10 [&_[data-slot=slider-range]]:bg-ink"
         />
       </FilterSection>
@@ -1213,14 +1092,7 @@ export function CatalogListing({
                 <button
                   key={c.name}
                   type="button"
-                  onClick={() =>
-                    setSelectedColors((prev) => {
-                      const next = new Set(prev);
-                      if (next.has(c.name)) next.delete(c.name);
-                      else next.add(c.name);
-                      return next;
-                    })
-                  }
+                  onClick={() => toggleColor(c.name)}
                   className={cn(
                     "w-full flex items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-all",
                     sel ? "border-ink bg-cream" : "border-border bg-card hover:border-foreground/40",
@@ -1297,55 +1169,11 @@ export function CatalogListing({
         </FilterSection>
       )}
 
-      {/* Clip-On */}
-      {isFramesCategory && (
-        <FilterSection key="clipon" title="Clip-On">
-          <div className="space-y-2" role="radiogroup" aria-label="Clip-On">
-            {(
-              [
-                ["Да", "Да", clipOnCounts.yes],
-                ["Нет", "Нет", clipOnCounts.no],
-              ] as const
-            ).map(([val, label, count]) => {
-              const checked = clipOn === val;
-              return (
-                <button
-                  key={val}
-                  type="button"
-                  role="radio"
-                  aria-checked={checked}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setClipOn((prev) => (prev === val ? "all" : val));
-                  }}
-                  onMouseDown={(e) => e.preventDefault()}
-                  className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
-                  style={{
-                    borderRadius: "4px",
-                    padding: "2px 4px",
-                    margin: "0 -4px",
-                    background: "none",
-                    border: "none",
-                  }}
-                >
-                  <span
-                    className={cn(
-                      "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 transition-colors",
-                      checked ? "border-ink" : "border-border group-hover:border-foreground/40",
-                    )}
-                  >
-                    {checked && <span className="h-2 w-2 rounded-full bg-ink" />}
-                  </span>
-                  <span className="flex-1 text-sm">{label}</span>
-                  <span className="text-xs text-muted-foreground">({count})</span>
-                </button>
-              );
-            })}
-          </div>
-        </FilterSection>
-      )}
+      {/* Clip-On filter is hidden: yes/no needs a negation the server doesn't
+          have; clip-on frames remain reachable via construction="Clip-on". */}
 
-      {/* Availability — radios */}
+      {/* Availability — radios (server facet; preorder hidden until an
+          orderability rule exists on the backend) */}
       {vis.availability && (
         <FilterSection key="availability" title="Наличие">
           <div className="space-y-2" role="radiogroup" aria-label="Наличие">
@@ -1353,7 +1181,6 @@ export function CatalogListing({
               [
                 ["salon", "В наличии в салоне", availabilityCounts.salon],
                 ["warehouse", "В наличии на складе", availabilityCounts.warehouse],
-                ["preorder", "Под заказ", availabilityCounts.preorder],
               ] as const
             ).map(([val, label, count]) => {
               const checked = availability === val;
@@ -1365,11 +1192,7 @@ export function CatalogListing({
                   aria-checked={checked}
                   onClick={(e) => {
                     e.preventDefault();
-                    setAvailability((prev) => (prev === val ? "all" : val));
-                    if (val === "preorder") {
-                      setPreorderOpen(true);
-                      setPreorderSent(false);
-                    }
+                    setAvailability(availability === val ? "all" : val);
                   }}
                   onMouseDown={(e) => e.preventDefault()}
                   className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
@@ -1578,35 +1401,8 @@ export function CatalogListing({
         </FilterSection>
       )}
 
-      {/* Style — pills */}
-      {vis.style && (
-        <FilterSection key="style" title="Стиль">
-          <CollapsibleList initialCount={4} className="flex flex-wrap gap-2">
-            {STYLE_TAGS.map((s) => {
-              const checked = styleTag === s;
-              return (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setStyleTag(s)}
-                  className={cn(
-                    "inline-flex items-center rounded-full border px-3.5 py-1.5 text-xs transition-all",
-                    checked
-                      ? "border-brand bg-brand text-brand-foreground"
-                      : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
-                  )}
-                  style={{
-                    transitionDuration: "var(--duration-snap)",
-                    transitionTimingFunction: "var(--ease-editorial)",
-                  }}
-                >
-                  {s}
-                </button>
-              );
-            })}
-          </CollapsibleList>
-        </FilterSection>
-      )}
+      {/* Style pills (marketing tags) are hidden: no `tag` filter exists on
+          the backend yet, and pills that silently do nothing mislead. */}
 
       {/* Brands */}
       {vis.brand && hasFacet("brand") && (
@@ -1991,12 +1787,13 @@ export function CatalogListing({
             )}
             <div className="flex items-center gap-2 ml-auto">
               <div className="hidden lg:block text-sm text-muted-foreground shrink-0">
-                {filtered.length}{" "}
-                {filtered.length % 10 === 1 && filtered.length !== 11
+                {/* SERVER total — the honest catalog size, not this page's length */}
+                {data.total}{" "}
+                {data.total % 10 === 1 && data.total % 100 !== 11
                   ? "модель"
-                  : filtered.length % 10 >= 2 &&
-                      filtered.length % 10 <= 4 &&
-                      !(filtered.length >= 12 && filtered.length <= 14)
+                  : data.total % 10 >= 2 &&
+                      data.total % 10 <= 4 &&
+                      !(data.total % 100 >= 12 && data.total % 100 <= 14)
                     ? "модели"
                     : "моделей"}
               </div>
@@ -2059,13 +1856,13 @@ export function CatalogListing({
                 </span>
                 <select
                   value={sort}
-                  onChange={(e) => setSort(e.target.value as typeof sort)}
+                  onChange={(e) => onStateChange({ sort: e.target.value as typeof sort })}
                   className="w-[140px] md:w-[236px] appearance-none bg-background border border-border rounded-full h-9 pl-3 md:pl-[112px] pr-9 text-[12px] font-medium tracking-wide cursor-pointer focus:outline-none hover:border-ink focus:border-ink transition-colors"
                   style={{ transitionDuration: "var(--duration-snap)" }}
                 >
-                  <option value="featured">Популярные</option>
-                  <option value="price-asc">Цена ↑</option>
-                  <option value="price-desc">Цена ↓</option>
+                  <option value="default">Популярные</option>
+                  <option value="price_asc">Цена ↑</option>
+                  <option value="price_desc">Цена ↓</option>
                 </select>
                 <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-foreground/60 transition-transform group-hover/sort:text-foreground" />
               </div>
@@ -2090,7 +1887,7 @@ export function CatalogListing({
             </div>
           )}
 
-          {filtered.length === 0 ? (
+          {data.total === 0 ? (
             <div className="py-20 text-center">
               <div className="font-serif text-2xl text-foreground/60 mb-3">Ничего не найдено</div>
               <p className="text-sm text-muted-foreground mb-6">
@@ -2112,9 +1909,54 @@ export function CatalogListing({
                 gridCols === 3 && "grid-cols-2 md:grid-cols-3",
                 gridCols === 4 && "grid-cols-2 md:grid-cols-4",
               )}
+              style={loading ? { opacity: 0.55, pointerEvents: "none", transition: "opacity 0.2s" } : undefined}
             >
               {catalogCells}
             </div>
+          )}
+
+          {/* Numbered pagination — server pages (24/page). */}
+          {data.pages > 1 && (
+            <nav className="mt-12 flex items-center justify-center gap-1.5" aria-label="Страницы">
+              <button
+                type="button"
+                disabled={page <= 1}
+                onClick={() => onStateChange({ page: page - 1 })}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border disabled:opacity-30 hover:border-ink transition-colors"
+                aria-label="Предыдущая страница"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              {pageWindow(page, data.pages).map((p, i) =>
+                p === null ? (
+                  <span key={`gap-${i}`} className="px-1 text-muted-foreground">…</span>
+                ) : (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => onStateChange({ page: p })}
+                    aria-current={p === page ? "page" : undefined}
+                    className={cn(
+                      "inline-flex h-9 min-w-9 items-center justify-center rounded-full border px-2 text-sm transition-colors",
+                      p === page
+                        ? "border-ink bg-ink text-primary-foreground"
+                        : "border-border hover:border-ink",
+                    )}
+                  >
+                    {p}
+                  </button>
+                ),
+              )}
+              <button
+                type="button"
+                disabled={page >= data.pages}
+                onClick={() => onStateChange({ page: page + 1 })}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border disabled:opacity-30 hover:border-ink transition-colors"
+                aria-label="Следующая страница"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </nav>
           )}
         </div>
       </div>
@@ -2148,7 +1990,7 @@ export function CatalogListing({
                 className="flex-1 bg-ink text-primary-foreground py-3 rounded-full text-sm hover:-translate-y-0.5 hover:shadow-md transition-all"
                 style={{ transitionDuration: "var(--duration-snap)" }}
               >
-                Показать ({filtered.length})
+                Показать ({data.total})
               </button>
             </div>
           </div>
