@@ -129,6 +129,72 @@ export async function getRelated(categoryOrSegment: string, excludeSlug: string,
   return list.filter((p) => p.slug !== excludeSlug).slice(0, limit);
 }
 
+// ---------------------------------------------------------------------------
+// v2 server-driven catalog (A2) — one paged, faceted request per catalog view.
+// Backed by the full-catalog index on prod (?v2=1&facets=1): honest totals
+// (opravy=9477, not the 500-capped fallback), drill-down facet counts computed
+// server-side (own-facet excluded, AND across facets, OR within), priceBounds
+// over the filtered set. See A2_CATALOG_CONTRACT.md.
+// ---------------------------------------------------------------------------
+
+export interface CatalogQuery {
+  page?: number;
+  limit?: number;
+  sort?: "default" | "price_asc" | "price_desc" | "name";
+  priceMin?: number;
+  priceMax?: number;
+  /** Multi-select facet selections; values are OR'd within a facet, AND'd across. */
+  filters?: Partial<Record<FacetKey, string[]>>;
+}
+
+export type FacetKey =
+  | "gender" | "shape" | "material" | "construction" | "size" | "brand" | "color"
+  | "wearMode" | "lensType" | "design"
+  | "technology" | "purpose" | "coating" | "index"
+  | "sphere" | "cylinder" | "axis" | "addition" | "bc"
+  | "availability";
+
+export interface CatalogPage {
+  products: Product[];
+  total: number;
+  page: number;
+  pages: number;
+  pageSize: number;
+  priceBounds: { min: number; max: number };
+  /** facet -> value -> count; empty facets are omitted by the server. */
+  facets: Partial<Record<FacetKey, Record<string, number>>>;
+  source: "index" | "fallback";
+}
+
+/** Thrown when the server has no valid catalog index (HTTP 503 index_not_ready). */
+export class IndexNotReadyError extends Error {
+  constructor() { super("catalog index not ready"); this.name = "IndexNotReadyError"; }
+}
+
+/**
+ * One server-driven catalog page: products slice + totals + facet counts in a
+ * single request. No mock fallback — the catalog page owns its error states.
+ */
+export async function getCatalogPage(
+  categoryOrSegment: string,
+  q: CatalogQuery = {},
+  signal?: AbortSignal,
+): Promise<CatalogPage> {
+  const params = new URLSearchParams({ category: categoryOrSegment, v2: "1", facets: "1" });
+  if (q.page) params.set("page", String(q.page));
+  if (q.limit) params.set("limit", String(q.limit));
+  if (q.sort && q.sort !== "default") params.set("sort", q.sort);
+  if (q.priceMin !== undefined) params.set("priceMin", String(q.priceMin));
+  if (q.priceMax !== undefined) params.set("priceMax", String(q.priceMax));
+  for (const [k, vals] of Object.entries(q.filters ?? {})) {
+    if (vals && vals.length) params.set(k, vals.join(","));
+  }
+  const res = await fetch(url(`products.php?${params.toString()}`), { signal });
+  if (res.status === 503) throw new IndexNotReadyError();
+  if (!res.ok) throw new Error(`Bitrix API ${res.status} for catalog page`);
+  return (await res.json()) as CatalogPage;
+}
+
 /** Live counts for the header dropdown — one fetch per category. */
 export interface MenuCounts {
   category: string;
