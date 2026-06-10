@@ -4,6 +4,7 @@ import { type FormEvent, type ReactNode, useEffect, useRef, useState } from "rea
 import { toast } from "sonner";
 
 import { Reveal } from "@/components/Reveal";
+import { authUrl, IS_PRIVATE_BETA } from "@/lib/runtime";
 import { cn } from "@/lib/utils";
 import { getMe, saveProfile } from "@/lib/api/account";
 
@@ -179,7 +180,7 @@ function PrivateDataPage() {
       const me = await getMe().catch(() => ({ authorized: false }) as Awaited<ReturnType<typeof getMe>>);
       if (!alive) return;
       if (!me.authorized) {
-        window.location.assign("/auth/");
+        window.location.assign(authUrl());
         return;
       }
       setProfile({
@@ -195,6 +196,10 @@ function PrivateDataPage() {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (IS_PRIVATE_BETA) {
+      toast.info("Редактирование профиля недоступно в бета-версии");
+      return;
+    }
     const nextErrors = validateProfile(profile);
     setErrors(nextErrors);
 
@@ -281,6 +286,11 @@ function PrivateDataPage() {
       <section className="mx-auto max-w-7xl px-4 pb-20 pt-9 lg:px-8 lg:pb-24 lg:pt-12">
         <div className="flex flex-col gap-6">
           <Reveal className="rounded-[20px] border border-border bg-card p-6 shadow-sm sm:p-8 lg:p-12">
+            {IS_PRIVATE_BETA ? (
+              <p className="mb-7 rounded-xl border border-brand/20 bg-brand/5 px-5 py-4 text-sm text-muted-foreground">
+                Бета-версия показывает данные профиля только для проверки. Изменения отключены.
+              </p>
+            ) : null}
             <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-7 sm:gap-8">
               {fields.map((field) => {
                 const error = errors[field.key];
@@ -305,6 +315,7 @@ function PrivateDataPage() {
                       id={field.key}
                       type={field.type}
                       value={profile[field.key]}
+                      disabled={IS_PRIVATE_BETA}
                       onChange={(event) => {
                         setProfile((current) => ({
                           ...current,
@@ -340,11 +351,15 @@ function PrivateDataPage() {
               <div className="flex flex-wrap items-center gap-4 pt-1">
                 <button
                   type="submit"
-                  disabled={saving}
+                  disabled={saving || IS_PRIVATE_BETA}
                   className="inline-flex min-h-12 items-center justify-center gap-2.5 rounded-xl border-[1.5px] border-brand bg-brand px-7 py-3.5 text-[15px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:opacity-90 hover:shadow-md disabled:opacity-60"
                 >
                   <Save className="h-[17px] w-[17px]" strokeWidth={2} />
-                  {saving ? "Сохраняем…" : "Сохранить изменения"}
+                  {IS_PRIVATE_BETA
+                    ? "Только просмотр в бета"
+                    : saving
+                      ? "Сохраняем…"
+                      : "Сохранить изменения"}
                 </button>
                 <span
                   className={cn(

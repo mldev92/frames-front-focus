@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { salons } from "@/data/salons";
+import { IS_PRIVATE_BETA } from "@/lib/runtime";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, MapPin, ArrowRight, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type AgeType = "adult" | "child";
@@ -103,6 +105,12 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (IS_PRIVATE_BETA) {
+      toast.info("Онлайн-запись недоступна в бета-версии", {
+        description: "Данные не отправлены, запись не создана.",
+      });
+      return;
+    }
     setSent(true);
     setTimeout(() => handleClose(false), 2800);
   }
@@ -385,7 +393,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                         <SecondaryButton onClick={() => go(2)}>
                           <ArrowLeft className="h-4 w-4" /> Назад
                         </SecondaryButton>
-                        <PrimaryButton type="submit">Записаться</PrimaryButton>
+                        <PrimaryButton type="submit">
+                          {IS_PRIVATE_BETA ? "Недоступно в бета" : "Записаться"}
+                        </PrimaryButton>
                       </Footer>
 
                       <p className="text-[10.5px] text-foreground/40 leading-relaxed text-center -mt-1">

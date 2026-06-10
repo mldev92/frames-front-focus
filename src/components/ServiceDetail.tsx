@@ -3,6 +3,7 @@ import { Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { services, serviceHref } from "@/data/services";
 import type { Service } from "@/data/types";
+import { IS_PRIVATE_BETA } from "@/lib/runtime";
 
 export function ServiceDetail({ service }: { service: Service }) {
   const others = services.filter((s) => s.slug !== service.slug);
@@ -75,6 +76,12 @@ export function ServiceDetail({ service }: { service: Service }) {
             className="space-y-3"
             onSubmit={(e) => {
               e.preventDefault();
+              if (IS_PRIVATE_BETA) {
+                toast.info("Запись недоступна в бета-версии", {
+                  description: "Данные не отправлены.",
+                });
+                return;
+              }
               toast.success("Спасибо! Мы перезвоним для подтверждения.");
             }}
           >
@@ -103,7 +110,7 @@ export function ServiceDetail({ service }: { service: Service }) {
               type="submit"
               className="w-full bg-ink text-primary-foreground py-3 rounded-sm hover:opacity-90"
             >
-              Записаться
+              {IS_PRIVATE_BETA ? "Недоступно в бета" : "Записаться"}
             </button>
             <p className="text-xs text-muted-foreground">
               Нажимая кнопку, вы соглашаетесь с обработкой персональных данных.

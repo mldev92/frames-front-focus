@@ -8,6 +8,11 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
   cloudflare: false,
+  vite: {
+    define: {
+      "import.meta.env.VITE_PRIVATE_BETA": JSON.stringify("true"),
+    },
+  },
   tanstackStart: {
     spa: { enabled: true },
     prerender: { enabled: false }, // private beta: no prerender, noindex

@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Reveal } from "@/components/Reveal";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { getMe, getOrders, type CabinetOrder, type Me } from "@/lib/api/account";
+import { authUrl, IS_PRIVATE_BETA } from "@/lib/runtime";
 
 export const Route = createFileRoute("/personal")({
   head: () => ({
@@ -130,7 +131,7 @@ function PersonalPage() {
       const profile = await getMe().catch(() => ({ authorized: false }) as Me);
       if (!alive) return;
       if (!profile.authorized) {
-        window.location.assign("/auth/");
+        window.location.assign(authUrl());
         return;
       }
       setMe(profile);
@@ -150,6 +151,13 @@ function PersonalPage() {
 
   function handleNewsletterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (IS_PRIVATE_BETA) {
+      toast.info("Подписка недоступна в бета-версии", {
+        description: "E-mail не отправлен.",
+      });
+      return;
+    }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       toast.error("Введите корректный e-mail");
@@ -231,13 +239,15 @@ function PersonalPage() {
                 </div>
               ) : null}
 
-              <a
-                href="/?logout=yes"
-                className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-brand no-underline"
-              >
-                <LogOut className="h-4 w-4" strokeWidth={1.8} />
-                Выйти
-              </a>
+              {!IS_PRIVATE_BETA ? (
+                <a
+                  href="/?logout=yes"
+                  className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-brand no-underline"
+                >
+                  <LogOut className="h-4 w-4" strokeWidth={1.8} />
+                  Выйти
+                </a>
+              ) : null}
             </div>
           </Reveal>
         </div>
@@ -460,7 +470,7 @@ function PersonalPage() {
                   type="submit"
                   className="rounded-full bg-brand px-8 py-4 text-[15px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:opacity-90"
                 >
-                  Подписаться
+                  {IS_PRIVATE_BETA ? "Недоступно в бета" : "Подписаться"}
                 </button>
               </div>
 

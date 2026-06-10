@@ -17,6 +17,7 @@ import {
 import { toast } from "sonner";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { IS_PRIVATE_BETA } from "@/lib/runtime";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -61,6 +62,12 @@ function Checkout() {
   const isFree = delivery === "Самовывоз из салона";
 
   const submit = () => {
+    if (IS_PRIVATE_BETA) {
+      toast.info("Оформление заказа недоступно в бета-версии", {
+        description: "Корзина сохранена. Заказ не создан и данные никуда не отправлены.",
+      });
+      return;
+    }
     if (!agreed) {
       toast.error("Необходимо согласиться с условиями");
       return;
@@ -492,7 +499,7 @@ function Checkout() {
               onMouseOver={(e) => (e.currentTarget.style.opacity = "0.85")}
               onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
             >
-              Оформить заказ
+              {IS_PRIVATE_BETA ? "Оформление недоступно в бета" : "Оформить заказ"}
             </button>
 
             {/* Trust badges */}

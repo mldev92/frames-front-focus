@@ -2,7 +2,9 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { IS_PRIVATE_BETA } from "@/lib/runtime";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface CallbackModalProps {
   open: boolean;
@@ -19,6 +21,12 @@ export function CallbackModal({ open, onOpenChange }: CallbackModalProps) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (IS_PRIVATE_BETA) {
+      toast.info("Заказ звонка недоступен в бета-версии", {
+        description: "Контактные данные не отправлены.",
+      });
+      return;
+    }
     setSent(true);
     setTimeout(() => {
       setSent(false);
@@ -91,7 +99,7 @@ export function CallbackModal({ open, onOpenChange }: CallbackModalProps) {
               type="submit"
               className="w-full bg-ink text-primary-foreground rounded-full py-3 text-sm font-medium hover:opacity-90 transition-opacity"
             >
-              Жду звонка
+              {IS_PRIVATE_BETA ? "Недоступно в бета" : "Жду звонка"}
             </button>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               Нажимая кнопку, вы соглашаетесь с обработкой персональных данных.

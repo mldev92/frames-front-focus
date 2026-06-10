@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Reveal } from "@/components/Reveal";
+import { authUrl, IS_PRIVATE_BETA } from "@/lib/runtime";
 import { cn } from "@/lib/utils";
 import { formatPrice, useCart } from "@/lib/store/cart";
 import {
@@ -310,7 +311,7 @@ function OrderCard({
             Скачать чек
           </a>
         ) : null}
-        {order.canCancel ? (
+        {order.canCancel && !IS_PRIVATE_BETA ? (
           <button type="button" onClick={cancel} disabled={busy} className={secondaryButton}>
             <CircleX className="h-4 w-4" strokeWidth={2} />
             {busy ? "Отмена…" : "Отменить заказ"}
@@ -342,7 +343,7 @@ function OrdersPage() {
       const me = await getMe().catch(() => ({ authorized: false }) as Awaited<ReturnType<typeof getMe>>);
       if (!alive) return;
       if (!me.authorized) {
-        window.location.assign("/auth/");
+        window.location.assign(authUrl());
         return;
       }
       const list = await getOrders("all").catch(() => []);
