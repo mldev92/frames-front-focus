@@ -22,6 +22,17 @@ const BASE = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\
 
 const url = (path: string) => `${BASE}/api/store/${path}`;
 
+function normalizeProduct(product: Product): Product {
+  return {
+    ...product,
+    colors: product.colors?.map((color) => ({
+      ...color,
+      // Bitrix directory entries use 70x70 UF_FILE icons as swatches, not product photos.
+      image: color.image?.includes("/upload/uf/") ? undefined : color.image,
+    })),
+  };
+}
+
 async function fetchJson<T>(path: string): Promise<T> {
   const res = await fetch(url(path));
   if (!res.ok) throw new Error(`Bitrix API ${res.status} for ${path}`);
@@ -61,7 +72,7 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
     const params = new URLSearchParams({ category: categoryOrSegment });
     for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== "") params.set(k, String(v));
     const data = await fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
-    return data.products;
+    return data.products.map(normalizeProduct);
   } catch (e) {
     console.error("[bitrix] getProducts fallback:", e);
     const cat = toCategory(categoryOrSegment) ?? (categoryOrSegment as Category);
@@ -78,7 +89,8 @@ export async function getProductsPage(categoryOrSegment: string, q: ProductQuery
   }
   const params = new URLSearchParams({ category: categoryOrSegment });
   for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== "") params.set(k, String(v));
-  return fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
+  const data = await fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
+  return { ...data, products: data.products.map(normalizeProduct) };
 }
 
 // getAllProducts (fetch-every-page fan-out) was REMOVED in A2: with honest
@@ -94,7 +106,7 @@ export async function getProduct(slug: string): Promise<Product | null> {
     if (!res.ok) throw new Error(`Bitrix API ${res.status}`);
     const data = (await res.json()) as Product | { error: string };
     if ("error" in data) return null;
-    return data;
+    return normalizeProduct(data);
   } catch (e) {
     console.error("[bitrix] getProduct fallback:", e);
     return mockGetProduct(slug) ?? null;
@@ -170,7 +182,8 @@ export async function getCatalogPage(
   const res = await fetch(url(`products.php?${params.toString()}`), { signal });
   if (res.status === 503) throw new IndexNotReadyError();
   if (!res.ok) throw new Error(`Bitrix API ${res.status} for catalog page`);
-  return (await res.json()) as CatalogPage;
+  const data = (await res.json()) as CatalogPage;
+  return { ...data, products: data.products.map(normalizeProduct) };
 }
 
 /** Live counts for the header dropdown — one fetch per category. */
@@ -214,7 +227,7 @@ export async function searchProducts(query: string, limit = 24): Promise<Product
     const data = await fetchJson<{ products: Product[]; total: number }>(
       `search.php?q=${encodeURIComponent(q)}&limit=${limit}`,
     );
-    return data.products;
+    return data.products.map(normalizeProduct);
   } catch (e) {
     console.error("[bitrix] searchProducts fallback:", e);
     const t = q.toLowerCase();

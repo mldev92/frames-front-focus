@@ -45,6 +45,7 @@ function CartPage() {
               <img
                 src={l.image}
                 alt={l.name}
+                referrerPolicy="no-referrer"
                 className="w-28 h-28 object-cover bg-surface rounded-sm"
               />
               <div className="flex-1">

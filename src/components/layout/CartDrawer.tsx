@@ -40,6 +40,7 @@ export function CartDrawer() {
                   <img
                     src={l.image}
                     alt={l.name}
+                    referrerPolicy="no-referrer"
                     className="w-20 h-20 object-cover rounded-sm bg-surface"
                   />
                   <div className="flex-1 min-w-0">

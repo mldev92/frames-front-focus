@@ -44,6 +44,7 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
           src={primaryImage}
           alt={product.name}
           loading="lazy"
+          referrerPolicy="no-referrer"
           className={cn(
             "absolute inset-0 w-full h-full object-contain transition-opacity duration-500",
             hasHoverImage ? "opacity-100 group-hover/card:opacity-0" : "opacity-100",
@@ -55,6 +56,7 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
             src={hoverImage}
             alt={product.name}
             loading="lazy"
+            referrerPolicy="no-referrer"
             className="absolute inset-0 w-full h-full object-contain opacity-0 group-hover/card:opacity-100 transition-opacity duration-500"
             style={imagePadding ? { padding: imagePadding } : undefined}
           />

@@ -27,7 +27,7 @@ export const Route = createFileRoute("/catalog_s/$category/$slug")({
     const related = await getRelated(params.category, params.slug, 4);
     return { product, related };
   },
-  head: ({ loaderData }) => {
+  head: ({ loaderData, params }) => {
     if (!loaderData) return { meta: [{ title: "Товар · ОПТИКА 100%" }] };
     const p = loaderData.product;
     return {
@@ -38,6 +38,12 @@ export const Route = createFileRoute("/catalog_s/$category/$slug")({
         { property: "og:description", content: p.description },
         { property: "og:image", content: p.images[0] },
         { property: "og:type", content: "product" },
+      ],
+      links: [
+        {
+          rel: "canonical",
+          href: `https://optika100.com/catalog_s/${params.category}/${params.slug}/`,
+        },
       ],
     };
   },
@@ -136,6 +142,7 @@ function ProductPage() {
                   <img
                     src={img}
                     alt=""
+                    referrerPolicy="no-referrer"
                     className="max-w-full max-h-full object-contain mix-blend-multiply"
                   />
                 </button>
@@ -155,6 +162,7 @@ function ProductPage() {
               <img
                 src={currentImage}
                 alt={product.name}
+                referrerPolicy="no-referrer"
                 className="max-w-[80%] max-h-[80%] object-contain mix-blend-multiply"
               />
               {showTryOn && (
@@ -182,6 +190,7 @@ function ProductPage() {
                 <img
                   src={img}
                   alt=""
+                  referrerPolicy="no-referrer"
                   className="max-w-full max-h-full object-contain mix-blend-multiply"
                 />
               </button>
@@ -309,9 +318,19 @@ function ProductPage() {
             <h1 className="font-serif text-2xl lg:text-3xl mt-1 pr-10">{product.name}</h1>
 
             <div className="mt-2 flex items-center gap-3 text-xs">
-              <span className="inline-flex items-center gap-1.5 text-green-700">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-600" />
-                В наличии
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1.5",
+                  product.inStock === false ? "text-amber-700" : "text-green-700",
+                )}
+              >
+                <span
+                  className={cn(
+                    "w-1.5 h-1.5 rounded-full",
+                    product.inStock === false ? "bg-amber-600" : "bg-green-600",
+                  )}
+                />
+                {product.inStock === false ? "Наличие уточняйте" : "В наличии"}
               </span>
               <span className="text-muted-foreground">Арт. {product.slug}</span>
             </div>

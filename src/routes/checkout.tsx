@@ -252,6 +252,7 @@ function Checkout() {
                       <img
                         src={line.image}
                         alt={line.name}
+                        referrerPolicy="no-referrer"
                         style={{ width: "56px", height: "56px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }}
                       />
                     ) : (
@@ -334,6 +335,7 @@ function Checkout() {
                       <img
                         src={line.image}
                         alt={line.name}
+                        referrerPolicy="no-referrer"
                         style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }}
                       />
                     ) : (

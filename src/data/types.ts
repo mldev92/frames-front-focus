@@ -31,6 +31,7 @@ export interface Product {
   badges?: Badge[];
   description: string;
   specs: { label: string; value: string }[];
+  inStock?: boolean;
   hasTryOn?: boolean;
   /** Jeeliz GlassesDB SKU for virtual try-on. When set, the PDP renders a working VTO button. */
   vtoSku?: string;
