@@ -143,7 +143,7 @@ function RatingRow({ yandex, twoGis }: { yandex: string; twoGis: string }) {
 }
 
 const paymentBadges = (
-  <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
+  <div className="flex flex-wrap items-center gap-2 sm:flex-col sm:items-end">
     <PayBadge icon={<CardIcon />} label="Visa" />
     <PayBadge icon={<CardIcon />} label="MasterCard" />
     <PayBadge icon={<CurrencyIcon />} label="Наличные" />
@@ -211,11 +211,10 @@ function SalonCard({
   phoneLabel,
 }: SalonCardProps) {
   return (
-    <div style={{
+    <div className="p-5 sm:px-8 sm:py-7" style={{
       background: "var(--card)",
       border: "1px solid var(--border)",
       borderRadius: 16,
-      padding: "28px 32px",
       transition: "box-shadow 360ms cubic-bezier(0.22,1,0.36,1), border-color 360ms cubic-bezier(0.22,1,0.36,1)",
     }}
       onMouseEnter={e => {
@@ -227,7 +226,7 @@ function SalonCard({
         (e.currentTarget as HTMLDivElement).style.borderColor = "var(--border)";
       }}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 24, alignItems: "start" }}>
+      <div className="grid grid-cols-1 items-start gap-6 sm:grid-cols-[1fr_auto]">
         <div>
           <h3 style={{ fontSize: 20, fontWeight: 600, margin: "0 0 8px", lineHeight: 1.35 }}>
             {address}
