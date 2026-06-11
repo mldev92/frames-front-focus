@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { X, MessageCircle, Phone, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,12 @@ export function MessengerFAB() {
   const [open, setOpen] = useState(false);
   const [callbackOpen, setCallbackOpen] = useState(false);
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  useEffect(() => {
+    const handler = () => setCallbackOpen(true);
+    document.addEventListener("open-callback", handler);
+    return () => document.removeEventListener("open-callback", handler);
+  }, []);
   const isProductPage = /^\/catalog_s\/[^/]+\/[^/]+\/?$/.test(pathname);
 
   return (
