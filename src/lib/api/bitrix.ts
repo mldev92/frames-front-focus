@@ -224,30 +224,17 @@ export async function getCatalogPage(
   q: CatalogQuery = {},
   signal?: AbortSignal,
 ): Promise<CatalogPage> {
-  const useFacets = q.city !== "nvk";
-  // The NvK live fallback still goes through the old Bitrix section lookup.
-  // Most categories accept the public URL segment unchanged, but contact
-  // lenses are stored there under `kontaktnye_linzy` (no trailing `_`), while
-  // menu_counts.php still expects the public route segment `kontaktnye_linzy_`.
-  const legacyCategory =
-    !useFacets && categoryOrSegment === "kontaktnye_linzy_"
-      ? "kontaktnye_linzy"
-      : categoryOrSegment;
-  const params = new URLSearchParams({ category: legacyCategory });
-  if (useFacets) {
-    params.set("v2", "1");
-    params.set("facets", "1");
-  }
+  const params = new URLSearchParams({ category: categoryOrSegment });
+  params.set("v2", "1");
+  params.set("facets", "1");
   if (q.page) params.set("page", String(q.page));
   if (q.limit) params.set("limit", String(q.limit));
   if (q.sort && q.sort !== "default") params.set("sort", q.sort);
-  if (useFacets && q.priceMin !== undefined) params.set("priceMin", String(q.priceMin));
-  if (useFacets && q.priceMax !== undefined) params.set("priceMax", String(q.priceMax));
+  if (q.priceMin !== undefined) params.set("priceMin", String(q.priceMin));
+  if (q.priceMax !== undefined) params.set("priceMax", String(q.priceMax));
   if (q.city && q.city !== "spb") params.set("city", q.city);
-  if (useFacets) {
-    for (const [k, vals] of Object.entries(q.filters ?? {})) {
-      if (vals && vals.length) params.set(k, vals.join(","));
-    }
+  for (const [k, vals] of Object.entries(q.filters ?? {})) {
+    if (vals && vals.length) params.set(k, vals.join(","));
   }
   const res = await fetch(url(`products.php?${params.toString()}`), { signal });
   if (res.status === 503) throw new IndexNotReadyError();
@@ -258,8 +245,6 @@ export async function getCatalogPage(
     q.city ?? "spb",
   );
   const prices = products.map((product) => product.price).filter((price) => Number.isFinite(price));
-  const fallbackMenuCounts =
-    !useFacets ? await getMenuCounts(categoryOrSegment, q.city ?? "spb") : null;
   return {
     ...data,
     products,
@@ -268,7 +253,7 @@ export async function getCatalogPage(
       min: prices.length ? Math.min(...prices) : 0,
       max: prices.length ? Math.max(...prices) : 0,
     },
-    facets: data.facets ?? (fallbackMenuCounts ? menuCountsToFacets(fallbackMenuCounts) : {}),
+    facets: data.facets ?? {},
   };
 }
 

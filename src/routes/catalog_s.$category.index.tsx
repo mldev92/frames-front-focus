@@ -208,7 +208,7 @@ function CatalogPage() {
     );
   }
 
-  const supportsFacetFiltering = result.data.source === "index";
+  const supportsFacetFiltering = Object.keys(result.data.facets ?? {}).length > 0;
   const appliedFilters: Record<string, string[]> = supportsFacetFiltering ? searchToFilters(search) : {};
 
   return (
