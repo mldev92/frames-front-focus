@@ -215,7 +215,6 @@ function CatalogPage() {
   }
 
   const supportsFacetFiltering = result.data.source === "index";
-  const hasVisibleFacets = supportsFacetFiltering || Object.keys(result.data.facets ?? {}).length > 0;
   const appliedFilters: Record<string, string[]> = supportsFacetFiltering ? searchToFilters(search) : {};
 
   return (
@@ -223,7 +222,7 @@ function CatalogPage() {
       title={c.title}
       subtitle={c.subtitle}
       data={result.data}
-      facets={hasVisibleFacets ? c.facets : []}
+      facets={c.facets ?? []}
       facetFilteringEnabled={supportsFacetFiltering}
       categoryKey={category}
       initialFilters={appliedFilters}
