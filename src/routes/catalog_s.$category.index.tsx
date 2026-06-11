@@ -1,4 +1,4 @@
-import { createFileRoute, useRouterState } from "@tanstack/react-router";
+import { createFileRoute, useRouterState, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { useCityStore } from "@/lib/store/city";
@@ -63,7 +63,6 @@ const catalogSearchSchema = z.object({
   addition: numOrStr,
   bc: numOrStr,
   availability: z.string().optional(),
-  city: z.enum(["spb", "nvk"]).optional(),
 });
 export type CatalogSearch = z.infer<typeof catalogSearchSchema>;
 
@@ -90,13 +89,14 @@ export const Route = createFileRoute("/catalog_s/$category/")({
   // One request per distinct catalog state — these deps ARE the state.
   loaderDeps: ({ search }) => search,
   loader: async ({ params, deps, abortController }): Promise<LoaderResult> => {
+    const city = useCityStore.getState().city;
     const q: CatalogQuery = {
       page: deps.page ?? 1,
       limit: 24,
       sort: deps.sort ?? "default",
       priceMin: deps.priceMin,
       priceMax: deps.priceMax,
-      city: deps.city,
+      city,
       filters: searchToFilters(deps),
     };
     try {
@@ -168,7 +168,8 @@ function CatalogPage() {
   const result = Route.useLoaderData() as LoaderResult;
   const search = Route.useSearch() as CatalogSearch;
   const navigate = Route.useNavigate();
-  const { city: storeCity, hydrated: cityHydrated, setCity: setStoreCity } = useCityStore();
+  const { city: storeCity, hydrated: cityHydrated } = useCityStore();
+  const router = useRouter();
   // Router pending state differs between the SSR pass and the client's first
   // hydration render → gate it behind a mounted flag so the initial markup is
   // identical (no hydration warning); the dim only applies to later navigations.
@@ -177,20 +178,13 @@ function CatalogPage() {
   useEffect(() => setMounted(true), []);
   const loading = mounted && pending;
 
-  // City precedence:
-  // 1. Explicit `?city=` in the URL wins and should hydrate the global store.
-  // 2. When the URL omits `city`, fall back to the persisted store choice.
+  // Re-run the loader when the persisted city changes (or when the store first
+  // hydrates from localStorage and the city differs from the loader's initial guess).
   useEffect(() => {
     if (!cityHydrated) return;
-    if (search.city) {
-      if (storeCity !== search.city) setStoreCity(search.city);
-      return;
-    }
-    if (storeCity !== "spb") {
-      navigate({ search: (s) => ({ ...s, city: storeCity, page: undefined }), replace: true });
-    }
+    router.invalidate();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search.city, storeCity, cityHydrated]);
+  }, [storeCity, cityHydrated]);
 
   const category = segmentToCategory[segment] as Category;
   const c = catalogConfig[category];
