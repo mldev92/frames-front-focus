@@ -19,7 +19,7 @@ const COLS = [
       ["Запись к врачу", "/uslugi/priem-vracha"],
       ["Диагностика зрения", "/kabinet-diagnostiki-spb/"],
       ["Stellest каталог с линзами", "/stellest-katalog-s-linzami/"],
-      ["Подбор очков", "/uslugi/podbor-ochkov"],
+      ["Подбор очков", "/podbor-ochkov/"],
       ["Ремонт очков", "/remont-ochkov/"],
     ],
   },
@@ -36,7 +36,7 @@ const COLS = [
     title: "Помощь",
     links: [
       ["Оплата и получение", "/payment/"],
-      ["Гарантия", "/payment/"],
+      ["Гарантия", "/warranty/"],
       ["Контакты", "/contacts/"],
       ["Политика конфиденциальности", "/politika-konfidentsialnosti/"],
       ["Реквизиты", "/requisites/"],

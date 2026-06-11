@@ -44,9 +44,15 @@ function JournalIndex() {
             <div className="text-xs uppercase tracking-wider text-brand">{a.category}</div>
             <h2 className="font-serif text-xl mt-2 group-hover:text-brand">{a.title}</h2>
             <p className="text-sm text-muted-foreground mt-2">{a.excerpt}</p>
-            <div className="mt-3 text-xs text-muted-foreground">
-              {a.author} · {new Date(a.date).toLocaleDateString("ru-RU")}
-            </div>
+            {!a.isMigrated ? (
+              <div className="mt-3 text-xs text-muted-foreground">
+                Полный текст пока доступен на optika100.com
+              </div>
+            ) : a.author && a.date ? (
+              <div className="mt-3 text-xs text-muted-foreground">
+                {a.author} · {new Date(a.date).toLocaleDateString("ru-RU")}
+              </div>
+            ) : null}
           </Link>
         ))}
       </div>

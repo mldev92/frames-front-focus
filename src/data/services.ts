@@ -1,7 +1,5 @@
 import type { Service } from "./types";
 
-const ph = (seed: string) => `https://picsum.photos/seed/${seed}/1200/800`;
-
 export const services: Service[] = [
   {
     slug: "priem-vracha",
@@ -11,7 +9,7 @@ export const services: Service[] = [
       "Запишитесь на приём к врачу-офтальмологу нашей клиники. Полный осмотр, проверка остроты зрения, подбор очков или контактных линз.",
     price: "от 1 500 ₽",
     duration: "30–45 минут",
-    image: ph("doctor"),
+    image: "/services1_online_appointment_doctor.webp",
     includes: [
       "Сбор анамнеза и жалоб",
       "Проверка остроты зрения",
@@ -55,7 +53,7 @@ export const services: Service[] = [
       "Опытные оптики помогут выбрать форму, цвет и материал оправы с учётом черт лица и образа жизни.",
     price: "Бесплатно при покупке",
     duration: "30 минут",
-    image: ph("podbor"),
+    image: "/services3_selection_of_glasses.webp",
     includes: [
       "Анализ формы лица",
       "Подбор формы и цвета оправы",
@@ -76,7 +74,7 @@ export const services: Service[] = [
       "Замена винтиков, дужек, носоупоров, ультразвуковая чистка, правка геометрии оправы.",
     price: "от 300 ₽",
     duration: "от 15 минут",
-    image: ph("remont"),
+    image: "/services4_glasses_repair.webp",
     includes: [
       "Замена винтов и носоупоров",
       "Пайка металлических оправ",

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist, type StateStorage } from "zustand/middleware";
 import type { Product } from "@/data/types";
 
 export interface CartLine {
@@ -37,6 +37,78 @@ interface CartState {
   toggleSaved: (slug: string) => void;
   totals: () => { count: number; subtotal: number };
 }
+
+const memoryStorage = new Map<string, string>();
+const CART_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
+
+function readCartCookie(name: string) {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const prefix = `${encodeURIComponent(name)}=`;
+  const match = document.cookie
+    .split("; ")
+    .find((entry) => entry.startsWith(prefix));
+
+  return match ? decodeURIComponent(match.slice(prefix.length)) : null;
+}
+
+function writeCartCookie(name: string, value: string) {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}; path=/; max-age=${CART_COOKIE_MAX_AGE}; SameSite=Lax`;
+}
+
+function removeCartCookie(name: string) {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.cookie = `${encodeURIComponent(name)}=; path=/; max-age=0; SameSite=Lax`;
+}
+
+const cartStorage: StateStorage = {
+  getItem: (name) => {
+    if (typeof window === "undefined") {
+      return memoryStorage.get(name) ?? null;
+    }
+
+    try {
+      return window.localStorage.getItem(name) ?? readCartCookie(name);
+    } catch {
+      return readCartCookie(name) ?? memoryStorage.get(name) ?? null;
+    }
+  },
+  setItem: (name, value) => {
+    if (typeof window === "undefined") {
+      memoryStorage.set(name, value);
+      return;
+    }
+
+    try {
+      window.localStorage.setItem(name, value);
+    } catch {}
+
+    writeCartCookie(name, value);
+    memoryStorage.set(name, value);
+  },
+  removeItem: (name) => {
+    if (typeof window === "undefined") {
+      memoryStorage.delete(name);
+      return;
+    }
+
+    try {
+      window.localStorage.removeItem(name);
+    } catch {}
+
+    removeCartCookie(name);
+    memoryStorage.delete(name);
+  },
+};
 
 export const useCart = create<CartState>()(
   persist(
@@ -111,7 +183,10 @@ export const useCart = create<CartState>()(
         };
       },
     }),
-    { name: "optika-cart" },
+    {
+      name: "optika-cart",
+      storage: createJSONStorage(() => cartStorage),
+    },
   ),
 );
 

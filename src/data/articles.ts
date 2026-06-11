@@ -1,7 +1,5 @@
 import type { Article } from "./types";
 
-const ph = (seed: string) => `https://picsum.photos/seed/${seed}/1600/900`;
-
 // Blog categories as published on optika100.com. The live site currently has a
 // single rubric — "Линзы для очков" at /blog/linzy-dlya-ochkov/.
 export const blogCategories: { slug: string; title: string }[] = [
@@ -10,11 +8,17 @@ export const blogCategories: { slug: string; title: string }[] = [
 
 const CATEGORY_SLUG = "linzy-dlya-ochkov";
 const CATEGORY_TITLE = "Линзы для очков";
-const AUTHORS = ["Анна Соколова", "Иван Петров", "Мария Иванова"];
+const MIGRATED_ARTICLE_SLUGS = new Set(["pokrytiya-linz-dlya-ochkov"]);
+const JOURNAL_FALLBACK_COVERS = [
+  "/article-pokrytiya-linz/pokrytie_hero.webp",
+  "/blog_vidy_linz.webp",
+  "/blog_asphericheskie.webp",
+  "/main_journal_1.webp",
+  "/main_journal_2.webp",
+  "/main_journal_3.webp",
+] as const;
 
 // slug / title / excerpt — slugs mirror the live optika100.com article URLs 1:1.
-// NOTE: article bodies below are placeholders; migrate the real copy from the
-// live site (/blog/linzy-dlya-ochkov/{slug}/) in a content pass.
 const RAW: [string, string, string][] = [
   [
     "pokrytiya-linz-dlya-ochkov",
@@ -39,25 +43,23 @@ const RAW: [string, string, string][] = [
   ["essilor-experts-eksperty-sredi-optik", "Essilor Experts — эксперты среди оптик", "Что означает статус Essilor Experts для покупателя."],
 ];
 
-const LOCAL_COVERS: Record<number, string> = {
-  0: "/article-pokrytiya-linz/pokrytie_hero.webp",
-  1: "/blog_vidy_linz.webp",
-  2: "/blog_asphericheskie.webp",
-};
-
 export const articles: Article[] = RAW.map(([slug, title, excerpt], i) => ({
   slug,
   title,
   excerpt,
-  cover: LOCAL_COVERS[i] ?? ph(`lens-article-${i + 1}`),
-  date: new Date(2025, 4, 1 - i * 9).toISOString().slice(0, 10),
-  author: AUTHORS[i % AUTHORS.length],
+  cover: JOURNAL_FALLBACK_COVERS[i % JOURNAL_FALLBACK_COVERS.length],
+  date: slug === "pokrytiya-linz-dlya-ochkov" ? "2026-06-10" : undefined,
+  author: slug === "pokrytiya-linz-dlya-ochkov" ? "Редакция ОПТИКА 100%" : undefined,
   category: CATEGORY_TITLE,
   categorySlug: CATEGORY_SLUG,
-  content: [
-    `${title}. Материал из журнала ОПТИКА 100%.`,
-    "Полный текст статьи переносится с действующего сайта optika100.com.",
-  ],
+  content: slug === "pokrytiya-linz-dlya-ochkov"
+    ? [
+        `${title}. Материал из журнала ОПТИКА 100%.`,
+        "Полный текст статьи перенесен в отдельную редакционную страницу.",
+      ]
+    : [],
+  productionUrl: `https://optika100.com/blog/${CATEGORY_SLUG}/${slug}/`,
+  isMigrated: MIGRATED_ARTICLE_SLUGS.has(slug),
 }));
 
 export const getArticle = (slug: string) => articles.find((a) => a.slug === slug);

@@ -71,13 +71,15 @@ export interface Article {
   title: string;
   excerpt: string;
   cover: string;
-  date: string;
-  author: string;
+  date?: string;
+  author?: string;
   /** Display label for the category chip. */
   category: string;
   /** Live URL segment: /blog/{categorySlug}/{slug}/ */
   categorySlug: string;
   content: string[];
+  productionUrl: string;
+  isMigrated: boolean;
 }
 
 export interface FaqItem {

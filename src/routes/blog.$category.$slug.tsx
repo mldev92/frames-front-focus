@@ -67,9 +67,11 @@ function ArticlePage() {
         <h1 className="font-serif text-4xl lg:text-5xl mt-3 leading-tight">
           {article.title}
         </h1>
-        <div className="mt-4 text-sm text-muted-foreground">
-          {article.author} · {new Date(article.date).toLocaleDateString("ru-RU")}
-        </div>
+        {article.author && article.date ? (
+          <div className="mt-4 text-sm text-muted-foreground">
+            {article.author} · {new Date(article.date).toLocaleDateString("ru-RU")}
+          </div>
+        ) : null}
       </header>
 
       <div className="aspect-[16/9] bg-surface mx-auto max-w-5xl">
@@ -80,11 +82,37 @@ function ArticlePage() {
         />
       </div>
 
-      <div className="mx-auto max-w-3xl px-4 lg:px-8 py-12 space-y-5 text-lg leading-relaxed">
-        {article.content.map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
-      </div>
+      {article.isMigrated ? (
+        <div className="mx-auto max-w-3xl px-4 lg:px-8 py-12 space-y-5 text-lg leading-relaxed">
+          {article.content.map((p, i) => (
+            <p key={i}>{p}</p>
+          ))}
+        </div>
+      ) : (
+        <div className="mx-auto max-w-3xl px-4 lg:px-8 py-12">
+          <div className="rounded-[28px] border border-border bg-cream p-6 sm:p-8">
+            <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand">
+              Контент в переносе
+            </div>
+            <p className="mt-4 text-lg leading-relaxed text-foreground">
+              Полный текст этой статьи пока не перенесен в новый storefront. Актуальная
+              версия опубликована на действующем сайте Optika100.
+            </p>
+            <p className="mt-3 text-base leading-relaxed text-muted-foreground">
+              {article.excerpt}
+            </p>
+            <a
+              href={article.productionUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              Читать на optika100.com
+              <ChevronRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      )}
 
       <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-4 lg:px-8 py-16">

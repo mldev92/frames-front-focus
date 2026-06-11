@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { SALONS as salons } from "@/data/contact";
+import { CONTACT, SALONS as salons } from "@/data/contact";
 import { IS_PRIVATE_BETA } from "@/lib/runtime";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, MapPin, ArrowRight, ArrowLeft } from "lucide-react";
@@ -305,40 +305,59 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                     {/* Time grid */}
                     <div className="space-y-3 flex-1 flex flex-col min-h-0">
                       <FieldLabel>Выберите время</FieldLabel>
-                      <div className="flex-1 overflow-y-auto rounded-2xl border border-border bg-background p-3">
-                        <div className="grid grid-cols-4 gap-2">
-                          {DAYS.map((d) => (
-                            <div key={d.key} className="min-w-0">
-                              <div className="text-center pb-2 mb-2 border-b border-border/70">
-                                <div className="text-[10px] font-bold uppercase tracking-wider text-foreground/60">
-                                  {d.day}
-                                </div>
-                                <div className="text-[10px] text-foreground/40 mt-0.5">{d.date}</div>
-                              </div>
-                              <div className="flex flex-col gap-1.5">
-                                {d.slots.map((t) => {
-                                  const active = slot?.date === d.key && slot.time === t;
-                                  return (
-                                    <button
-                                      key={t}
-                                      type="button"
-                                      onClick={() => setSlot({ date: d.key, time: t })}
-                                      className={cn(
-                                        "text-[11px] font-medium rounded-lg py-1.5 border transition-all",
-                                        active
-                                          ? "bg-ink text-primary-foreground border-ink shadow-sm"
-                                          : "border-border bg-background hover:border-brand hover:text-brand",
-                                      )}
-                                    >
-                                      {t}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ))}
+                      {IS_PRIVATE_BETA ? (
+                        <div className="rounded-2xl border border-border bg-background p-5 text-sm leading-relaxed text-muted-foreground">
+                          <p className="font-medium text-foreground">
+                            Онлайн-слоты в beta пока не подключены к живому расписанию.
+                          </p>
+                          <p className="mt-2">
+                            Мы скрыли демонстрационные временные окна, чтобы storefront не
+                            показывал вымышленные записи. Для согласования времени свяжитесь
+                            с салоном напрямую.
+                          </p>
+                          <a
+                            href={CONTACT.phone.href}
+                            className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                          >
+                            Позвонить: {CONTACT.phone.label}
+                          </a>
                         </div>
-                      </div>
+                      ) : (
+                        <div className="flex-1 overflow-y-auto rounded-2xl border border-border bg-background p-3">
+                          <div className="grid grid-cols-4 gap-2">
+                            {DAYS.map((d) => (
+                              <div key={d.key} className="min-w-0">
+                                <div className="text-center pb-2 mb-2 border-b border-border/70">
+                                  <div className="text-[10px] font-bold uppercase tracking-wider text-foreground/60">
+                                    {d.day}
+                                  </div>
+                                  <div className="text-[10px] text-foreground/40 mt-0.5">{d.date}</div>
+                                </div>
+                                <div className="flex flex-col gap-1.5">
+                                  {d.slots.map((t) => {
+                                    const active = slot?.date === d.key && slot.time === t;
+                                    return (
+                                      <button
+                                        key={t}
+                                        type="button"
+                                        onClick={() => setSlot({ date: d.key, time: t })}
+                                        className={cn(
+                                          "text-[11px] font-medium rounded-lg py-1.5 border transition-all",
+                                          active
+                                            ? "bg-ink text-primary-foreground border-ink shadow-sm"
+                                            : "border-border bg-background hover:border-brand hover:text-brand",
+                                        )}
+                                      >
+                                        {t}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -346,7 +365,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                     <SecondaryButton onClick={() => go(1)}>
                       <ArrowLeft className="h-4 w-4" /> Назад
                     </SecondaryButton>
-                    <PrimaryButton onClick={() => slot && go(3)} disabled={!slot}>
+                    <PrimaryButton onClick={() => slot && go(3)} disabled={IS_PRIVATE_BETA || !slot}>
                       Продолжить
                     </PrimaryButton>
                   </Footer>
