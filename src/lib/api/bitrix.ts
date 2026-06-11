@@ -23,6 +23,41 @@ const BASE = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\
 const url = (path: string) => `${BASE}/api/store/${path}`;
 const productGalleryCache = new Map<string, Promise<string[]>>();
 
+async function hydrateProductGalleries(
+  products: Product[],
+  city: "spb" | "nvk" = "spb",
+): Promise<Product[]> {
+  if (!BASE || products.length === 0) return products;
+  const missing = products.filter((product) => product.images.length < 2);
+  if (missing.length === 0) return products;
+
+  try {
+    const chunks: Product[][] = [];
+    for (let index = 0; index < missing.length; index += 40) {
+      chunks.push(missing.slice(index, index + 40));
+    }
+    const responses = await Promise.all(chunks.map((chunk) => {
+      const params = new URLSearchParams({
+        slugs: chunk.map((product) => product.slug).join(","),
+        city,
+      });
+      return fetchJson<{ galleries: Record<string, string[]> }>(
+        `galleries.php?${params.toString()}`,
+      );
+    }));
+    const galleries = Object.assign({}, ...responses.map((data) => data.galleries));
+    return products.map((product) => {
+      const gallery = galleries[product.slug];
+      if (!gallery?.length) return product;
+      productGalleryCache.set(product.slug, Promise.resolve(gallery));
+      return { ...product, images: gallery };
+    });
+  } catch (error) {
+    console.error("[bitrix] gallery batch unavailable:", error);
+    return products;
+  }
+}
+
 function normalizeProduct(product: Product): Product {
   return {
     ...product,
@@ -73,7 +108,7 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
     const params = new URLSearchParams({ category: categoryOrSegment });
     for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== "") params.set(k, String(v));
     const data = await fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
-    return data.products.map(normalizeProduct);
+    return hydrateProductGalleries(data.products.map(normalizeProduct));
   } catch (e) {
     console.error("[bitrix] getProducts fallback:", e);
     const cat = toCategory(categoryOrSegment) ?? (categoryOrSegment as Category);
@@ -210,7 +245,10 @@ export async function getCatalogPage(
   if (res.status === 503) throw new IndexNotReadyError();
   if (!res.ok) throw new Error(`Bitrix API ${res.status} for catalog page`);
   const data = (await res.json()) as Partial<CatalogPage> & Pick<CatalogPage, "products" | "total" | "page" | "pages" | "source">;
-  const products = data.products.map(normalizeProduct);
+  const products = await hydrateProductGalleries(
+    data.products.map(normalizeProduct),
+    q.city ?? "spb",
+  );
   const prices = products.map((product) => product.price).filter((price) => Number.isFinite(price));
   return {
     ...data,
