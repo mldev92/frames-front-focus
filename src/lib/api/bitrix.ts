@@ -21,6 +21,7 @@ import { segmentToCategory } from "@/data/categories";
 const BASE = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ?? "";
 
 const url = (path: string) => `${BASE}/api/store/${path}`;
+const productGalleryCache = new Map<string, Promise<string[]>>();
 
 function normalizeProduct(product: Product): Product {
   return {
@@ -111,6 +112,23 @@ export async function getProduct(slug: string): Promise<Product | null> {
     console.error("[bitrix] getProduct fallback:", e);
     return mockGetProduct(slug) ?? null;
   }
+}
+
+/**
+ * Fetch the full product gallery on demand for card hover previews.
+ * List responses intentionally stay lightweight, so cards request this only
+ * after the user hovers or focuses them. The promise cache prevents duplicate
+ * requests when the same product appears in multiple carousels/sections.
+ */
+export function getProductGallery(slug: string): Promise<string[]> {
+  const cached = productGalleryCache.get(slug);
+  if (cached) return cached;
+
+  const request = getProduct(slug)
+    .then((product) => product?.images ?? [])
+    .catch(() => []);
+  productGalleryCache.set(slug, request);
+  return request;
 }
 
 /** Related products: same category, excluding the current slug. */

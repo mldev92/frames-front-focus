@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import type { Product } from "@/data/types";
@@ -6,6 +6,7 @@ import { useCart, formatPrice } from "@/lib/store/cart";
 import { categoryToSegment } from "@/data/categories";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { cn } from "@/lib/utils";
+import { getProductGallery } from "@/lib/api/bitrix";
 
 interface ProductCardProps {
   product: Product;
@@ -23,7 +24,9 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
   const [selectedColorName, setSelectedColorName] = useState<string | undefined>();
   const selectedColor = product.colors?.find((item) => item.name === selectedColorName);
   const primaryImage = selectedColor?.image ?? product.images[0];
-  const hoverImage = selectedColor?.image ? undefined : product.images[1];
+  const [fetchedHoverImage, setFetchedHoverImage] = useState<string | undefined>();
+  const galleryRequested = useRef(false);
+  const hoverImage = selectedColor?.image ? undefined : product.images[1] ?? fetchedHoverImage;
   const hasHoverImage = Boolean(hoverImage);
   const [vtoOpen, setVtoOpen] = useState(false);
   const vtoSku = product.vtoSku ?? "rayban_wayfarer_havane_marron";
@@ -33,12 +36,26 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
   const displayColors = product.colors?.slice(0, 3) ?? [];
   const extraCount = (product.colors?.length ?? 0) - displayColors.length;
 
+  const prepareHoverImage = () => {
+    if (selectedColor?.image || hoverImage || galleryRequested.current) return;
+    galleryRequested.current = true;
+    void getProductGallery(product.slug).then((images) => {
+      const candidate = images.find((image) => image && image !== primaryImage);
+      if (!candidate || typeof Image === "undefined") return;
+      const preload = new Image();
+      preload.onload = () => setFetchedHoverImage(candidate);
+      preload.src = candidate;
+    });
+  };
+
   return (
     <div className="group/card">
       <Link
         to="/catalog_s/$category/$slug"
         params={{ category: categoryToSegment[product.category], slug: product.slug }}
         className="block relative aspect-square bg-white rounded-sm overflow-hidden"
+        onMouseEnter={prepareHoverImage}
+        onFocus={prepareHoverImage}
       >
         <img
           src={primaryImage}
@@ -46,8 +63,10 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
           loading="lazy"
           referrerPolicy="no-referrer"
           className={cn(
-            "absolute inset-0 w-full h-full object-contain transition-opacity duration-500",
-            hasHoverImage ? "opacity-100 group-hover/card:opacity-0" : "opacity-100",
+            "absolute inset-0 w-full h-full object-contain transition-all duration-500",
+            hasHoverImage
+              ? "opacity-100 group-hover/card:opacity-0"
+              : "opacity-100 group-hover/card:scale-105",
           )}
           style={imagePadding ? { padding: imagePadding } : undefined}
         />
