@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { CONTACT, SALONS as salons } from "@/data/contact";
 import { cn } from "@/lib/utils";
 import { submitAppointment } from "@/lib/api/bitrix";
+import { IS_PRIVATE_BETA } from "@/lib/runtime";
 import { Check, ChevronDown, MapPin, ArrowRight, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 
@@ -105,6 +106,10 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (IS_PRIVATE_BETA) {
+      toast.info("Онлайн-запись по времени пока недоступна в бета-версии. Позвоните в выбранный салон.");
+      return;
+    }
     const selectedSalonForSubmit = salons.find((s) => s.id === salonId)!;
     const serviceLabel = service === "glasses" ? "Подбор очков" : "Подбор МКЛ";
     try {
@@ -408,7 +413,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                         <SecondaryButton onClick={() => go(2)}>
                           <ArrowLeft className="h-4 w-4" /> Назад
                         </SecondaryButton>
-                        <PrimaryButton type="submit">Записаться</PrimaryButton>
+                        <PrimaryButton type="submit">
+                          {IS_PRIVATE_BETA ? "Запись недоступна в бета" : "Записаться"}
+                        </PrimaryButton>
                       </Footer>
 
                       <p className="text-[10.5px] text-foreground/40 leading-relaxed text-center -mt-1">

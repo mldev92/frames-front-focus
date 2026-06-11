@@ -171,21 +171,39 @@ export async function getCatalogPage(
   q: CatalogQuery = {},
   signal?: AbortSignal,
 ): Promise<CatalogPage> {
-  const params = new URLSearchParams({ category: categoryOrSegment, v2: "1", facets: "1" });
+  const useFacets = q.city !== "nvk";
+  const params = new URLSearchParams({ category: categoryOrSegment });
+  if (useFacets) {
+    params.set("v2", "1");
+    params.set("facets", "1");
+  }
   if (q.page) params.set("page", String(q.page));
   if (q.limit) params.set("limit", String(q.limit));
   if (q.sort && q.sort !== "default") params.set("sort", q.sort);
   if (q.priceMin !== undefined) params.set("priceMin", String(q.priceMin));
   if (q.priceMax !== undefined) params.set("priceMax", String(q.priceMax));
   if (q.city && q.city !== "spb") params.set("city", q.city);
-  for (const [k, vals] of Object.entries(q.filters ?? {})) {
-    if (vals && vals.length) params.set(k, vals.join(","));
+  if (useFacets) {
+    for (const [k, vals] of Object.entries(q.filters ?? {})) {
+      if (vals && vals.length) params.set(k, vals.join(","));
+    }
   }
   const res = await fetch(url(`products.php?${params.toString()}`), { signal });
   if (res.status === 503) throw new IndexNotReadyError();
   if (!res.ok) throw new Error(`Bitrix API ${res.status} for catalog page`);
-  const data = (await res.json()) as CatalogPage;
-  return { ...data, products: data.products.map(normalizeProduct) };
+  const data = (await res.json()) as Partial<CatalogPage> & Pick<CatalogPage, "products" | "total" | "page" | "pages" | "source">;
+  const products = data.products.map(normalizeProduct);
+  const prices = products.map((product) => product.price).filter((price) => Number.isFinite(price));
+  return {
+    ...data,
+    products,
+    pageSize: data.pageSize ?? q.limit ?? products.length,
+    priceBounds: data.priceBounds ?? {
+      min: prices.length ? Math.min(...prices) : 0,
+      max: prices.length ? Math.max(...prices) : 0,
+    },
+    facets: data.facets ?? {},
+  };
 }
 
 /** Live counts for the header dropdown — one fetch per category. */

@@ -208,14 +208,15 @@ function CatalogPage() {
     );
   }
 
-  const appliedFilters: Record<string, string[]> = searchToFilters(search);
+  const supportsFacets = result.data.source === "index";
+  const appliedFilters: Record<string, string[]> = supportsFacets ? searchToFilters(search) : {};
 
   return (
     <CatalogListing
       title={c.title}
       subtitle={c.subtitle}
       data={result.data}
-      facets={c.facets}
+      facets={supportsFacets ? c.facets : []}
       categoryKey={category}
       initialFilters={appliedFilters}
       appliedSort={search.sort ?? "default"}
