@@ -1,12 +1,15 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { services, serviceHref } from "@/data/services";
 import type { Service } from "@/data/types";
-import { IS_PRIVATE_BETA } from "@/lib/runtime";
+import { submitCallback } from "@/lib/api/bitrix";
 
 export function ServiceDetail({ service }: { service: Service }) {
   const others = services.filter((s) => s.slug !== service.slug);
+  const [sdName, setSdName] = useState("");
+  const [sdPhone, setSdPhone] = useState("");
 
   return (
     <div>
@@ -74,26 +77,31 @@ export function ServiceDetail({ service }: { service: Service }) {
           <h3 className="font-serif text-xl mb-4">Записаться</h3>
           <form
             className="space-y-3"
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
-              if (IS_PRIVATE_BETA) {
-                toast.info("Запись недоступна в бета-версии", {
-                  description: "Данные не отправлены.",
-                });
-                return;
+              try {
+                await submitCallback({ name: sdName, phone: sdPhone, comment: `Услуга: ${service.title}` });
+                toast.success("Спасибо! Мы перезвоним для подтверждения.");
+                setSdName("");
+                setSdPhone("");
+              } catch {
+                toast.error("Не удалось отправить заявку. Позвоните нам напрямую.");
               }
-              toast.success("Спасибо! Мы перезвоним для подтверждения.");
             }}
           >
             <input
               required
               placeholder="Имя"
+              value={sdName}
+              onChange={(e) => setSdName(e.target.value)}
               className="w-full bg-background border border-border rounded-sm px-3 py-2.5"
             />
             <input
               required
               type="tel"
               placeholder="Телефон"
+              value={sdPhone}
+              onChange={(e) => setSdPhone(e.target.value)}
               className="w-full bg-background border border-border rounded-sm px-3 py-2.5"
             />
             <input
@@ -110,7 +118,7 @@ export function ServiceDetail({ service }: { service: Service }) {
               type="submit"
               className="w-full bg-ink text-primary-foreground py-3 rounded-sm hover:opacity-90"
             >
-              {IS_PRIVATE_BETA ? "Недоступно в бета" : "Записаться"}
+              Записаться
             </button>
             <p className="text-xs text-muted-foreground">
               Нажимая кнопку, вы соглашаетесь с обработкой персональных данных.

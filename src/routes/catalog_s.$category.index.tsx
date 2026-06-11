@@ -1,6 +1,7 @@
 import { createFileRoute, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { z } from "zod";
+import { useCityStore } from "@/lib/store/city";
 import { CatalogListing } from "@/components/CatalogListing";
 import {
   getCatalogPage,
@@ -62,6 +63,7 @@ const catalogSearchSchema = z.object({
   addition: numOrStr,
   bc: numOrStr,
   availability: z.string().optional(),
+  city: z.enum(["spb", "nvk"]).optional(),
 });
 export type CatalogSearch = z.infer<typeof catalogSearchSchema>;
 
@@ -94,6 +96,7 @@ export const Route = createFileRoute("/catalog_s/$category/")({
       sort: deps.sort ?? "default",
       priceMin: deps.priceMin,
       priceMax: deps.priceMax,
+      city: deps.city,
       filters: searchToFilters(deps),
     };
     try {
@@ -165,6 +168,7 @@ function CatalogPage() {
   const result = Route.useLoaderData() as LoaderResult;
   const search = Route.useSearch() as CatalogSearch;
   const navigate = Route.useNavigate();
+  const { city: storeCity } = useCityStore();
   // Router pending state differs between the SSR pass and the client's first
   // hydration render → gate it behind a mounted flag so the initial markup is
   // identical (no hydration warning); the dim only applies to later navigations.
@@ -172,6 +176,15 @@ function CatalogPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const loading = mounted && pending;
+
+  // Sync global city store → URL so the loader re-runs with the correct iblock
+  useEffect(() => {
+    const urlCity = search.city ?? "spb";
+    if (storeCity !== urlCity) {
+      navigate({ search: (s) => ({ ...s, city: storeCity, page: undefined }), replace: true });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeCity]);
 
   const category = segmentToCategory[segment] as Category;
   const c = catalogConfig[category];

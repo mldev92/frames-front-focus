@@ -133,6 +133,7 @@ export interface CatalogQuery {
   sort?: "default" | "price_asc" | "price_desc" | "name";
   priceMin?: number;
   priceMax?: number;
+  city?: "spb" | "nvk";
   /** Multi-select facet selections; values are OR'd within a facet, AND'd across. */
   filters?: Partial<Record<FacetKey, string[]>>;
 }
@@ -176,6 +177,7 @@ export async function getCatalogPage(
   if (q.sort && q.sort !== "default") params.set("sort", q.sort);
   if (q.priceMin !== undefined) params.set("priceMin", String(q.priceMin));
   if (q.priceMax !== undefined) params.set("priceMax", String(q.priceMax));
+  if (q.city && q.city !== "spb") params.set("city", q.city);
   for (const [k, vals] of Object.entries(q.filters ?? {})) {
     if (vals && vals.length) params.set(k, vals.join(","));
   }
@@ -211,6 +213,46 @@ export async function getMenuCounts(category: string): Promise<MenuCounts | null
     console.error("[bitrix] getMenuCounts:", e);
     return null;
   }
+}
+
+export interface CallbackData {
+  name: string;
+  phone: string;
+  comment?: string;
+}
+
+export interface AppointmentData {
+  name: string;
+  lastName?: string;
+  patronymic?: string;
+  phone: string;
+  dob?: string;
+  salon: string;
+  service: string;
+  date: string;
+  time: string;
+  comment?: string;
+}
+
+async function postJson<T>(path: string, body: unknown): Promise<T> {
+  const res = await fetch(url(path), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { message?: string }).message ?? `HTTP ${res.status}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+export async function submitCallback(data: CallbackData): Promise<void> {
+  await postJson("callback.php", data);
+}
+
+export async function submitAppointment(data: AppointmentData): Promise<void> {
+  await postJson("appointment.php", data);
 }
 
 /** Name/article substring search. */

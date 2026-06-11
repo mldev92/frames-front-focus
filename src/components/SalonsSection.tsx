@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ArrowRight, Phone, Clock, MapPin } from "lucide-react";
+import { ArrowRight, Phone, Clock } from "lucide-react";
 import { ContactActionButtons, yandexMapsSearchHref } from "@/components/ContactActionButtons";
+import { YandexMap } from "@/components/YandexMap";
 import { CONTACT, NK_SALONS, SPB_SALONS } from "@/data/contact";
 
 type City = "spb" | "nk";
@@ -150,44 +151,6 @@ const RatingBadge = ({
   </div>
 );
 
-const MapPlaceholder = ({ city, imageSrc }: { city: string; imageSrc?: string }) => (
-  <div
-    style={{
-      borderRadius: 16,
-      overflow: "hidden",
-      border: "1px solid var(--border)",
-      background: "var(--surface)",
-      height: 240,
-      position: "relative",
-      marginBottom: 28,
-    }}
-  >
-    {imageSrc ? (
-      <img
-        src={imageSrc}
-        alt={`Карта · ${city}`}
-        style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-      />
-    ) : (
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column" as const,
-          gap: 8,
-          color: "var(--muted-foreground)",
-        }}
-      >
-        <MapPin size={36} style={{ opacity: 0.5 }} />
-        <span style={{ fontSize: 14, fontWeight: 500 }}>Яндекс Карта · {city}</span>
-        <span style={{ fontSize: 12, opacity: 0.6 }}>Вставьте iframe Яндекс.Карт</span>
-      </div>
-    )}
-  </div>
-);
 
 interface SalonCardProps {
   name: string;
@@ -421,7 +384,9 @@ export function SalonsSection() {
         {/* SPB */}
         {city === "spb" && (
           <div className="salon-city-panel">
-            <MapPlaceholder city="Санкт-Петербург" imageSrc="/map_template.webp" />
+            <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 28 }}>
+              <YandexMap address="Санкт-Петербург, ул. Кирочная, 17" height={240} zoom={16} />
+            </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, marginBottom: 28 }}>
               <SalonCard
                 wide
@@ -448,7 +413,9 @@ export function SalonsSection() {
         {/* Novokuznetsk */}
         {city === "nk" && (
           <div className="salon-city-panel">
-            <MapPlaceholder city="Новокузнецк" />
+            <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 28 }}>
+              <YandexMap address="Новокузнецк" height={240} zoom={12} />
+            </div>
             <div
               className="salons-grid-2col"
               style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 28 }}

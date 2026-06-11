@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { ContactActionButtons, yandexMapsSearchHref } from "@/components/ContactActionButtons";
+import { YandexMap } from "@/components/YandexMap";
 import { CONTACT, NK_SALONS, SPB_SALONS } from "@/data/contact";
 
 export const Route = createFileRoute("/contacts")({
@@ -149,43 +150,6 @@ const paymentBadges = (
     <PayBadge icon={<CurrencyIcon />} label="Наличные" />
   </div>
 );
-
-function MapPlaceholder({ city, imageSrc }: { city: string; imageSrc?: string }) {
-  return (
-    <div style={{
-      height: 340,
-      borderRadius: 16,
-      overflow: "hidden",
-      border: "1px solid var(--border)",
-      background: "var(--surface)",
-      marginBottom: 40,
-      position: "relative",
-    }}>
-      {imageSrc ? (
-        <img
-          src={imageSrc}
-          alt={`Карта · ${city}`}
-          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-        />
-      ) : (
-        <div style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          gap: 8,
-          color: "var(--muted-foreground)",
-        }}>
-          <MapPinIcon size={40} />
-          <span style={{ fontSize: 14 }}>Яндекс Карта · {city}</span>
-          <span style={{ fontSize: 12, opacity: 0.6 }}>Вставьте iframe Яндекс.Карт</span>
-        </div>
-      )}
-    </div>
-  );
-}
 
 interface SalonCardProps {
   address: string;
@@ -390,7 +354,9 @@ function ContactsPage() {
         {/* SPB */}
         {city === "spb" && (
           <div>
-            <MapPlaceholder city="Санкт-Петербург" imageSrc="/map_template.webp" />
+            <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 40 }}>
+              <YandexMap address="Санкт-Петербург, ул. Кирочная, 17" height={340} zoom={16} />
+            </div>
             <SalonCard
               address={SPB_SALON.address}
               metro={SPB_SALON.metro}
@@ -407,7 +373,9 @@ function ContactsPage() {
         {/* NK */}
         {city === "nk" && (
           <div>
-            <MapPlaceholder city="Новокузнецк" />
+            <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 40 }}>
+              <YandexMap address="Новокузнецк" height={340} zoom={12} />
+            </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {NK_SALONS.map((salon, index) => (
                 <SalonCard

@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { IS_PRIVATE_BETA } from "@/lib/runtime";
 import { cn } from "@/lib/utils";
+import { submitCallback } from "@/lib/api/bitrix";
 import { toast } from "sonner";
 
 interface CallbackModalProps {
@@ -19,22 +19,21 @@ export function CallbackModal({ open, onOpenChange }: CallbackModalProps) {
   const [time, setTime] = useState<string>("Сейчас");
   const [sent, setSent] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (IS_PRIVATE_BETA) {
-      toast.info("Заказ звонка недоступен в бета-версии", {
-        description: "Контактные данные не отправлены.",
-      });
-      return;
+    try {
+      await submitCallback({ name, phone, comment: time !== "Сейчас" ? `Удобное время: ${time}` : undefined });
+      setSent(true);
+      setTimeout(() => {
+        setSent(false);
+        setName("");
+        setPhone("");
+        setTime("Сейчас");
+        onOpenChange(false);
+      }, 2000);
+    } catch (err) {
+      toast.error("Не удалось отправить заявку. Позвоните нам напрямую.");
     }
-    setSent(true);
-    setTimeout(() => {
-      setSent(false);
-      setName("");
-      setPhone("");
-      setTime("Сейчас");
-      onOpenChange(false);
-    }, 2000);
   }
 
   return (
@@ -99,7 +98,7 @@ export function CallbackModal({ open, onOpenChange }: CallbackModalProps) {
               type="submit"
               className="w-full bg-ink text-primary-foreground rounded-full py-3 text-sm font-medium hover:opacity-90 transition-opacity"
             >
-              {IS_PRIVATE_BETA ? "Недоступно в бета" : "Жду звонка"}
+              Жду звонка
             </button>
             <p className="text-[11px] text-muted-foreground leading-relaxed">
               Нажимая кнопку, вы соглашаетесь с обработкой персональных данных.

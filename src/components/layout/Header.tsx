@@ -6,9 +6,13 @@ import { cn } from "@/lib/utils";
 import { CONTACT, PRIMARY_SALON } from "@/data/contact";
 import { HEADER_NAV_ITEMS, HeaderMegaPanel, isMegaNavItem } from "./HeaderMegaMenu";
 import { SiteLogo } from "./SiteLogo";
+import { useCityStore, type CityCode, CITY_LABELS } from "@/lib/store/city";
 
-const CITIES = ["Санкт-Петербург", "Новокузнецк", "Россия"] as const;
-type City = (typeof CITIES)[number];
+const CITIES: { code: CityCode | "russia"; label: string }[] = [
+  { code: "spb", label: "Санкт-Петербург" },
+  { code: "nvk", label: "Новокузнецк" },
+  { code: "russia", label: "Россия" },
+];
 
 const PROMOS = [
   { text: "ДО -40% НА СОЛНЦЕЗАЩИТНЫЕ ОЧКИ", href: "/catalog_s/opravy/vysota-oversize-crystal" },
@@ -32,16 +36,11 @@ export function Header() {
   const [mounted, setMounted] = useState(false);
   const [openMegaHref, setOpenMegaHref] = useState<string | null>(null);
 
-  const [city, setCity] = useState<City>("Санкт-Петербург");
+  const { city: cityCode, setCity: setCityCode } = useCityStore();
   const [cityOpen, setCityOpen] = useState(false);
   const cityRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    const stored = localStorage.getItem("o100-city") as City | null;
-    if (stored && (CITIES as readonly string[]).includes(stored)) setCity(stored);
-  }, []);
 
   useEffect(() => {
     if (!cityOpen) return;
@@ -56,11 +55,12 @@ export function Header() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [cityOpen]);
 
-  function selectCity(nextCity: City) {
-    setCity(nextCity);
-    localStorage.setItem("o100-city", nextCity);
+  function selectCity(code: CityCode | "russia") {
+    if (code !== "russia") setCityCode(code);
     setCityOpen(false);
   }
+
+  const cityLabel = CITY_LABELS[cityCode] ?? cityCode;
 
   const [promoIdx, setPromoIdx] = useState(0);
   const [promoVisible, setPromoVisible] = useState(true);
@@ -104,7 +104,7 @@ export function Header() {
                   <path d="M12 22s8-7.6 8-13a8 8 0 1 0-16 0c0 5.4 8 13 8 13z" />
                   <circle cx="12" cy="9" r="3" />
                 </svg>
-                {city}
+                {cityLabel}
                 <svg
                   width="9"
                   height="9"
@@ -128,31 +128,34 @@ export function Header() {
                   className="absolute left-0 z-50 rounded border border-white/15 bg-ink shadow-xl"
                   style={{ top: "calc(100% + 6px)", minWidth: "180px" }}
                 >
-                  {CITIES.map((item) => (
-                    <button
-                      key={item}
-                      onClick={() => selectCity(item)}
-                      className={cn(
-                        "flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-white/10",
-                        item === city ? "opacity-100" : "opacity-55",
-                      )}
-                    >
-                      <svg
-                        width="9"
-                        height="9"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        style={{ opacity: item === city ? 1 : 0, flexShrink: 0 }}
+                  {CITIES.map(({ code, label }) => {
+                    const isActive = code === cityCode || (code === "russia" && false);
+                    return (
+                      <button
+                        key={code}
+                        onClick={() => selectCity(code)}
+                        className={cn(
+                          "flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-white/10",
+                          isActive ? "opacity-100" : "opacity-55",
+                        )}
                       >
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      {item}
-                    </button>
-                  ))}
+                        <svg
+                          width="9"
+                          height="9"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          style={{ opacity: isActive ? 1 : 0, flexShrink: 0 }}
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>
