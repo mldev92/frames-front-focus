@@ -225,7 +225,15 @@ export async function getCatalogPage(
   signal?: AbortSignal,
 ): Promise<CatalogPage> {
   const useFacets = q.city !== "nvk";
-  const params = new URLSearchParams({ category: categoryOrSegment });
+  // The NvK live fallback still goes through the old Bitrix section lookup.
+  // Most categories accept the public URL segment unchanged, but contact
+  // lenses are stored there under `kontaktnye_linzy` (no trailing `_`), while
+  // menu_counts.php still expects the public route segment `kontaktnye_linzy_`.
+  const legacyCategory =
+    !useFacets && categoryOrSegment === "kontaktnye_linzy_"
+      ? "kontaktnye_linzy"
+      : categoryOrSegment;
+  const params = new URLSearchParams({ category: legacyCategory });
   if (useFacets) {
     params.set("v2", "1");
     params.set("facets", "1");
