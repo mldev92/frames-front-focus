@@ -5,16 +5,24 @@ export type CityCode = "spb" | "nvk";
 
 interface CityStore {
   city: CityCode;
+  hydrated: boolean;
   setCity: (city: CityCode) => void;
+  setHydrated: (hydrated: boolean) => void;
 }
 
 export const useCityStore = create<CityStore>()(
   persist(
     (set) => ({
       city: "spb",
+      hydrated: false,
       setCity: (city) => set({ city }),
+      setHydrated: (hydrated) => set({ hydrated }),
     }),
-    { name: "o100-city-v2" },
+    {
+      name: "o100-city-v2",
+      partialize: (state) => ({ city: state.city }),
+      onRehydrateStorage: () => (state) => state?.setHydrated(true),
+    },
   ),
 );
 
