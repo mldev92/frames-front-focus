@@ -180,8 +180,8 @@ export async function getCatalogPage(
   if (q.page) params.set("page", String(q.page));
   if (q.limit) params.set("limit", String(q.limit));
   if (q.sort && q.sort !== "default") params.set("sort", q.sort);
-  if (q.priceMin !== undefined) params.set("priceMin", String(q.priceMin));
-  if (q.priceMax !== undefined) params.set("priceMax", String(q.priceMax));
+  if (useFacets && q.priceMin !== undefined) params.set("priceMin", String(q.priceMin));
+  if (useFacets && q.priceMax !== undefined) params.set("priceMax", String(q.priceMax));
   if (q.city && q.city !== "spb") params.set("city", q.city);
   if (useFacets) {
     for (const [k, vals] of Object.entries(q.filters ?? {})) {
