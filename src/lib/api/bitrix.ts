@@ -224,7 +224,10 @@ export async function getCatalogPage(
   q: CatalogQuery = {},
   signal?: AbortSignal,
 ): Promise<CatalogPage> {
-  const useFacets = q.city !== "nvk";
+  // Both cities now have the indexed v2 catalog path. Keeping NVK on the
+  // fallback response drops `facets`, which makes the sidebar disappear after
+  // a city switch on beta/prod.
+  const useFacets = true;
   const params = new URLSearchParams({ category: categoryOrSegment });
   if (useFacets) {
     params.set("v2", "1");
