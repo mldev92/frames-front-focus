@@ -68,7 +68,7 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
             "absolute inset-0 w-full h-full object-contain transition-all duration-500",
             hasHoverImage
               ? "opacity-100 group-hover/card:opacity-0"
-              : "opacity-100 group-hover/card:scale-105",
+              : "opacity-100 scale-105 group-hover/card:scale-100",
           )}
           style={imagePadding ? { padding: imagePadding } : undefined}
         />
