@@ -55,7 +55,7 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
       <Link
         to="/catalog_s/$category/$slug"
         params={{ category: categoryToSegment[product.category], slug: product.slug }}
-        className="block relative aspect-square bg-white rounded-sm overflow-hidden"
+        className="block relative aspect-square bg-white rounded-sm overflow-hidden transition-all duration-500 group-hover/card:bg-cream/60 group-hover/card:shadow-sm"
         onMouseEnter={prepareHoverImage}
         onFocus={prepareHoverImage}
       >
@@ -68,7 +68,7 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
             "absolute inset-0 w-full h-full object-contain transition-all duration-500",
             hasHoverImage
               ? "opacity-100 group-hover/card:opacity-0"
-              : "opacity-100 scale-105 group-hover/card:scale-100",
+              : "opacity-100 group-hover/card:-translate-y-1",
           )}
           style={imagePadding ? { padding: imagePadding } : undefined}
         />
