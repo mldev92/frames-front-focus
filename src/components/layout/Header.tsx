@@ -320,7 +320,7 @@ export function Header() {
                 className="absolute inset-x-0 top-full z-50 hidden pt-1 lg:block"
                 onMouseEnter={() => setOpenMegaHref(openMegaItem.href)}
               >
-                <HeaderMegaPanel menu={openMegaItem.mega} />
+                <HeaderMegaPanel menu={openMegaItem.mega!} />
               </div>
             )}
           </div>

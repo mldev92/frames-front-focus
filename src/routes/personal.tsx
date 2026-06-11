@@ -257,11 +257,12 @@ function PersonalPage() {
         <div className="grid gap-5 md:grid-cols-2">
           {dashboardCards.map(
             (
-              { title, subtitle, image, imagePosition, badge, Icon, action, href, ...card },
+              { title, subtitle, image, imagePosition, Icon, action, href, ...card },
               index,
             ) => {
               // The "Текущие заказы" card reflects the live count.
               const isOrdersCard = action === "orders";
+              const badge = "badge" in card ? (card as { badge: number }).badge : undefined;
               const liveBadge = isOrdersCard ? currentCount || undefined : badge;
               const liveSubtitle = isOrdersCard
                 ? `${formatOrders(currentCount)} в обработке`

@@ -1,3 +1,5 @@
+import { type JSX } from "react";
+
 /** Brand name → logo image mapping. Normalized key = lowercase, no spaces. */
 const BRAND_LOGOS: Record<string, string> = {
   "lionsheart": "/lionsheart.orig.webp",

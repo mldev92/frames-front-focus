@@ -1,4 +1,4 @@
-import type { SVGProps } from "react";
+import { type JSX, type SVGProps } from "react";
 
 type GenderKind = "male" | "female" | "boy";
 

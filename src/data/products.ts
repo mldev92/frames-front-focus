@@ -548,18 +548,18 @@ export const products: Product[] = [
   },
 
   // ── Brand-logo showcase ──────────────────────────────────────────────────
-  { slug: "lionsheart-classic", name: "Classic", brand: "Lionsheart", category: "opravy", price: 8900, images: ["/lionsheart.orig.webp"], shape: "Прямоугольные", material: "Ацетат", gender: "Мужские", specs: [] },
-  { slug: "odl-minimal", name: "Minimal", brand: "ODL", category: "opravy", price: 7900, images: ["/odl.orig.webp"], shape: "Круглые", material: "Металл", gender: "Унисекс", specs: [] },
-  { slug: "stepper-sport", name: "Sport", brand: "Stepper", category: "opravy", price: 9500, images: ["/stepper.orig.svg"], shape: "Прямоугольные", material: "Титан", gender: "Мужские", specs: [] },
-  { slug: "st-louise-elegant", name: "Elegant", brand: "St. Louise", category: "opravy", price: 10500, images: ["/st_louise.orig.svg"], shape: "Овальные", material: "Ацетат", gender: "Женские", specs: [] },
-  { slug: "silhouette-ultra", name: "Ultra", brand: "Silhouette", category: "opravy", price: 14900, images: ["/silhouette.orig.svg"], shape: "Прямоугольные", material: "Титан", gender: "Унисекс", specs: [] },
-  { slug: "safilo-urban", name: "Urban", brand: "Safilo", category: "opravy", price: 11900, images: ["/safilo.orig.svg"], shape: "Квадратные", material: "Ацетат", gender: "Мужские", specs: [] },
-  { slug: "polaroid-retro", name: "Retro", brand: "Polaroid", category: "solntsezashchitnye", price: 6900, images: ["/polaroid.orig.svg"], shape: "Круглые", material: "Ацетат", gender: "Унисекс", specs: [] },
-  { slug: "okula-bold", name: "Bold", brand: "Okula", category: "opravy", price: 7200, images: ["/okula.origin.webp"], shape: "Квадратные", material: "Металл", gender: "Мужские", specs: [] },
-  { slug: "juniorlook-kids", name: "Kids", brand: "Juniorlook", category: "opravy", price: 4500, images: ["/juniorlook.origin.webp"], shape: "Круглые", material: "Ацетат", gender: "Детские", specs: [] },
-  { slug: "guess-glam", name: "Glam", brand: "Guess", category: "opravy", price: 9900, images: ["/guess.orig.svg"], shape: "Кошачий глаз", material: "Ацетат", gender: "Женские", specs: [] },
-  { slug: "furla-chic", name: "Chic", brand: "Furla", category: "opravy", price: 13500, images: ["/furla.orig.png"], shape: "Овальные", material: "Ацетат", gender: "Женские", specs: [] },
-  { slug: "fisher-price-kids", name: "Fun Kids", brand: "Fisher-Price", category: "opravy", price: 3800, images: ["/fisher-price.orig.svg"], shape: "Круглые", material: "Ацетат", gender: "Детские", specs: [] },
+  { slug: "lionsheart-classic", name: "Classic", brand: "Lionsheart", category: "opravy", price: 8900, images: ["/lionsheart.orig.webp"], shape: "Прямоугольные", material: "Ацетат", gender: "Мужские", specs: [], description: "" },
+  { slug: "odl-minimal", name: "Minimal", brand: "ODL", category: "opravy", price: 7900, images: ["/odl.orig.webp"], shape: "Круглые", material: "Металл", gender: "Унисекс", specs: [], description: "" },
+  { slug: "stepper-sport", name: "Sport", brand: "Stepper", category: "opravy", price: 9500, images: ["/stepper.orig.svg"], shape: "Прямоугольные", material: "Титан", gender: "Мужские", specs: [], description: "" },
+  { slug: "st-louise-elegant", name: "Elegant", brand: "St. Louise", category: "opravy", price: 10500, images: ["/st_louise.orig.svg"], shape: "Овальные", material: "Ацетат", gender: "Женские", specs: [], description: "" },
+  { slug: "silhouette-ultra", name: "Ultra", brand: "Silhouette", category: "opravy", price: 14900, images: ["/silhouette.orig.svg"], shape: "Прямоугольные", material: "Титан", gender: "Унисекс", specs: [], description: "" },
+  { slug: "safilo-urban", name: "Urban", brand: "Safilo", category: "opravy", price: 11900, images: ["/safilo.orig.svg"], shape: "Квадратные", material: "Ацетат", gender: "Мужские", specs: [], description: "" },
+  { slug: "polaroid-retro", name: "Retro", brand: "Polaroid", category: "solntsezashchitnye", price: 6900, images: ["/polaroid.orig.svg"], shape: "Круглые", material: "Ацетат", gender: "Унисекс", specs: [], description: "" },
+  { slug: "okula-bold", name: "Bold", brand: "Okula", category: "opravy", price: 7200, images: ["/okula.origin.webp"], shape: "Квадратные", material: "Металл", gender: "Мужские", specs: [], description: "" },
+  { slug: "juniorlook-kids", name: "Kids", brand: "Juniorlook", category: "opravy", price: 4500, images: ["/juniorlook.origin.webp"], shape: "Круглые", material: "Ацетат", gender: "Детские", specs: [], description: "" },
+  { slug: "guess-glam", name: "Glam", brand: "Guess", category: "opravy", price: 9900, images: ["/guess.orig.svg"], shape: "Кошачий глаз", material: "Ацетат", gender: "Женские", specs: [], description: "" },
+  { slug: "furla-chic", name: "Chic", brand: "Furla", category: "opravy", price: 13500, images: ["/furla.orig.png"], shape: "Овальные", material: "Ацетат", gender: "Женские", specs: [], description: "" },
+  { slug: "fisher-price-kids", name: "Fun Kids", brand: "Fisher-Price", category: "opravy", price: 3800, images: ["/fisher-price.orig.svg"], shape: "Круглые", material: "Ацетат", gender: "Детские", specs: [], description: "" },
 ];
 
 export const getProduct = (slug: string) => products.find((p) => p.slug === slug);
