@@ -35,6 +35,7 @@ interface ListingProps {
   /** Server-driven catalog page: slice + totals + facet counts + priceBounds. */
   data: CatalogPage;
   facets?: FacetKey[];
+  facetFilteringEnabled?: boolean;
   categoryKey?: Category;
   /**
    * Applied multi-select filters from the URL (e.g. header dropdown deep-link
@@ -700,6 +701,7 @@ export function CatalogListing({
   subtitle,
   data,
   facets = [],
+  facetFilteringEnabled = true,
   categoryKey,
   initialFilters,
   appliedSort,
@@ -833,6 +835,7 @@ export function CatalogListing({
   // Toggle a facet value: optimistic local update for instant chip feedback,
   // then emit — the URL round-trip re-seeds state and refetches the page.
   const toggle = (facet: string, value: string) => {
+    if (!facetFilteringEnabled) return;
     const next = { ...active };
     const set = new Set(next[facet] ?? []);
     if (set.has(value)) set.delete(value);
@@ -977,6 +980,13 @@ export function CatalogListing({
             <span>Сбросить</span>
           </button>
         </div>
+
+        {!facetFilteringEnabled && facets.length > 0 && (
+          <p className="mt-3 text-xs text-muted-foreground">
+            Для Новокузнецка показываем структуру фильтров, но сами фильтры включим после
+            индексации каталога на прод-бэкенде.
+          </p>
+        )}
 
         {/* Catalog text search is hidden until it talks to the real search
             endpoint — a client-side version would only filter this page. */}

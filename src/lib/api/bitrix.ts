@@ -224,10 +224,7 @@ export async function getCatalogPage(
   q: CatalogQuery = {},
   signal?: AbortSignal,
 ): Promise<CatalogPage> {
-  // Both cities now have the indexed v2 catalog path. Keeping NVK on the
-  // fallback response drops `facets`, which makes the sidebar disappear after
-  // a city switch on beta/prod.
-  const useFacets = true;
+  const useFacets = q.city !== "nvk";
   const params = new URLSearchParams({ category: categoryOrSegment });
   if (useFacets) {
     params.set("v2", "1");
@@ -253,6 +250,8 @@ export async function getCatalogPage(
     q.city ?? "spb",
   );
   const prices = products.map((product) => product.price).filter((price) => Number.isFinite(price));
+  const fallbackMenuCounts =
+    !useFacets ? await getMenuCounts(categoryOrSegment, q.city ?? "spb") : null;
   return {
     ...data,
     products,
@@ -261,7 +260,7 @@ export async function getCatalogPage(
       min: prices.length ? Math.min(...prices) : 0,
       max: prices.length ? Math.max(...prices) : 0,
     },
-    facets: data.facets ?? {},
+    facets: data.facets ?? (fallbackMenuCounts ? menuCountsToFacets(fallbackMenuCounts) : {}),
   };
 }
 
@@ -282,14 +281,35 @@ export interface MenuCounts {
   brand:        { name: string; count: number }[];
 }
 
-export async function getMenuCounts(category: string): Promise<MenuCounts | null> {
+export async function getMenuCounts(
+  category: string,
+  city: "spb" | "nvk" = "spb",
+): Promise<MenuCounts | null> {
   if (!BASE) return null;
   try {
-    return await fetchJson<MenuCounts>(`menu_counts.php?category=${encodeURIComponent(category)}`);
+    const params = new URLSearchParams({ category });
+    if (city !== "spb") params.set("city", city);
+    return await fetchJson<MenuCounts>(`menu_counts.php?${params.toString()}`);
   } catch (e) {
     console.error("[bitrix] getMenuCounts:", e);
     return null;
   }
+}
+
+function menuCountsToFacets(menu: MenuCounts): Partial<Record<FacetKey, Record<string, number>>> {
+  const brand: Record<string, number> = {};
+  for (const item of menu.brand) brand[item.name] = item.count;
+
+  return {
+    gender: menu.gender,
+    shape: menu.shape,
+    construction: menu.construction,
+    material: menu.material,
+    wearMode: menu.wearMode,
+    lensType: menu.lensType,
+    design: menu.design,
+    brand,
+  };
 }
 
 export interface CallbackData {

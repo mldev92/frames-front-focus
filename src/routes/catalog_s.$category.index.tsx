@@ -209,15 +209,17 @@ function CatalogPage() {
     );
   }
 
-  const supportsFacets = result.data.source === "index";
-  const appliedFilters: Record<string, string[]> = supportsFacets ? searchToFilters(search) : {};
+  const supportsFacetFiltering = result.data.source === "index";
+  const hasVisibleFacets = supportsFacetFiltering || Object.keys(result.data.facets ?? {}).length > 0;
+  const appliedFilters: Record<string, string[]> = supportsFacetFiltering ? searchToFilters(search) : {};
 
   return (
     <CatalogListing
       title={c.title}
       subtitle={c.subtitle}
       data={result.data}
-      facets={supportsFacets ? c.facets : []}
+      facets={hasVisibleFacets ? c.facets : []}
+      facetFilteringEnabled={supportsFacetFiltering}
       categoryKey={category}
       initialFilters={appliedFilters}
       appliedSort={search.sort ?? "default"}
