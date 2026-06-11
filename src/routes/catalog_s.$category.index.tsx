@@ -168,7 +168,7 @@ function CatalogPage() {
   const result = Route.useLoaderData() as LoaderResult;
   const search = Route.useSearch() as CatalogSearch;
   const navigate = Route.useNavigate();
-  const { city: storeCity, hydrated: cityHydrated } = useCityStore();
+  const { city: storeCity, hydrated: cityHydrated, setCity: setStoreCity } = useCityStore();
   // Router pending state differs between the SSR pass and the client's first
   // hydration render → gate it behind a mounted flag so the initial markup is
   // identical (no hydration warning); the dim only applies to later navigations.
@@ -177,15 +177,20 @@ function CatalogPage() {
   useEffect(() => setMounted(true), []);
   const loading = mounted && pending;
 
-  // Sync global city store → URL so the loader re-runs with the correct iblock
+  // City precedence:
+  // 1. Explicit `?city=` in the URL wins and should hydrate the global store.
+  // 2. When the URL omits `city`, fall back to the persisted store choice.
   useEffect(() => {
     if (!cityHydrated) return;
-    const urlCity = search.city ?? "spb";
-    if (storeCity !== urlCity) {
+    if (search.city) {
+      if (storeCity !== search.city) setStoreCity(search.city);
+      return;
+    }
+    if (storeCity !== "spb") {
       navigate({ search: (s) => ({ ...s, city: storeCity, page: undefined }), replace: true });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storeCity, cityHydrated]);
+  }, [search.city, storeCity, cityHydrated]);
 
   const category = segmentToCategory[segment] as Category;
   const c = catalogConfig[category];
