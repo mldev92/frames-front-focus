@@ -40,7 +40,9 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
     if (selectedColor?.image || hoverImage || galleryRequested.current) return;
     galleryRequested.current = true;
     void getProductGallery(product.slug).then((images) => {
-      const candidate = images.find((image) => image && image !== primaryImage);
+      const candidate =
+        (images[1] && images[1] !== primaryImage ? images[1] : undefined) ??
+        images.find((image) => image && image !== primaryImage);
       if (!candidate || typeof Image === "undefined") return;
       const preload = new Image();
       preload.onload = () => setFetchedHoverImage(candidate);
