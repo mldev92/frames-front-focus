@@ -7,7 +7,6 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
@@ -15,7 +14,6 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { MessengerFAB } from "@/components/MessengerFAB";
-import { useCart } from "@/lib/store/cart";
 
 function NotFoundComponent() {
   return (
@@ -121,11 +119,6 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-
-  useEffect(() => {
-    void useCart.persist.rehydrate();
-  }, []);
-
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col">
