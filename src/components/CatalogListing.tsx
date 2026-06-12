@@ -981,12 +981,6 @@ export function CatalogListing({
           </button>
         </div>
 
-        {!facetFilteringEnabled && facets.length > 0 && (
-          <p className="mt-3 text-xs text-muted-foreground">
-            Для Новокузнецка показываем структуру фильтров, но сами фильтры включим после
-            индексации каталога на прод-бэкенде.
-          </p>
-        )}
 
         {/* Catalog text search is hidden until it talks to the real search
             endpoint — a client-side version would only filter this page. */}
@@ -1911,17 +1905,24 @@ export function CatalogListing({
 
           {data.total === 0 ? (
             <div className="py-20 text-center">
-              <div className="font-serif text-2xl text-foreground/60 mb-3">Ничего не найдено</div>
-              <p className="text-sm text-muted-foreground mb-6">
-                Попробуйте изменить параметры фильтрации
-              </p>
-              <button
-                onClick={clearAll}
-                className="inline-flex items-center gap-2 border border-border rounded-full px-5 py-2.5 text-sm hover:border-ink hover:bg-surface transition-all"
-                style={{ transitionDuration: "var(--duration-snap)" }}
-              >
-                Сбросить все фильтры
-              </button>
+              {activeChips.length > 0 || appliedPriceMin !== undefined || appliedPriceMax !== undefined ? (
+                <>
+                  <div className="font-serif text-2xl text-foreground/60 mb-3">Ничего не найдено</div>
+                  <p className="text-sm text-muted-foreground mb-6">Попробуйте изменить параметры фильтрации</p>
+                  <button
+                    onClick={clearAll}
+                    className="inline-flex items-center gap-2 border border-border rounded-full px-5 py-2.5 text-sm hover:border-ink hover:bg-surface transition-all"
+                    style={{ transitionDuration: "var(--duration-snap)" }}
+                  >
+                    Сбросить все фильтры
+                  </button>
+                </>
+              ) : (
+                <>
+                  <div className="font-serif text-2xl text-foreground/60 mb-3">Раздел недоступен</div>
+                  <p className="text-sm text-muted-foreground">Этот раздел пока недоступен для выбранного города</p>
+                </>
+              )}
             </div>
           ) : (
             <div
