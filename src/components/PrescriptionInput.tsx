@@ -171,15 +171,15 @@ export function PrescriptionInput({ variant = "frames" }: { variant?: Prescripti
 
           {mode === "online" && (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <div className="overflow-x-auto rounded-xl border border-border">
-                <div className="min-w-[540px]">
-                  <div className="grid grid-cols-[92px_repeat(3,1fr)] bg-surface text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              <div className="rounded-xl border border-border">
+                <div>
+                  <div className="grid grid-cols-[72px_repeat(3,minmax(0,1fr))] bg-surface text-[8px] font-semibold uppercase tracking-wide text-muted-foreground sm:grid-cols-[92px_repeat(3,1fr)] sm:text-[10px] sm:tracking-wider">
                     <div />
-                    <div className="border-l border-border px-3 py-2.5">SPH · сфера</div>
-                    <div className="border-l border-border px-3 py-2.5">
+                    <div className="border-l border-border px-1.5 py-2.5 sm:px-3">SPH · сфера</div>
+                    <div className="border-l border-border px-1.5 py-2.5 sm:px-3">
                       {isFrames ? "CYL · цилиндр" : "BC · кривизна"}
                     </div>
-                    <div className="border-l border-border px-3 py-2.5">
+                    <div className="border-l border-border px-1.5 py-2.5 sm:px-3">
                       {isFrames ? "AX · ось" : "DIA · диаметр"}
                     </div>
                   </div>
@@ -291,8 +291,8 @@ function EyeRow({
 }) {
   const isFrames = variant === "frames";
   return (
-    <div className="grid grid-cols-[92px_repeat(3,1fr)] border-t border-border">
-      <div className="flex flex-col justify-center bg-surface px-3 py-3">
+    <div className="grid grid-cols-[72px_repeat(3,minmax(0,1fr))] border-t border-border sm:grid-cols-[92px_repeat(3,1fr)]">
+      <div className="flex flex-col justify-center bg-surface px-2 py-3 sm:px-3">
         <strong className="font-serif text-base">{eye}</strong>
         <span className="text-[10px] text-muted-foreground">{sub}</span>
       </div>
@@ -330,12 +330,12 @@ function RxSelect({
   disabled: boolean;
 }) {
   return (
-    <label className="border-l border-border p-2">
+    <label className="border-l border-border p-1 sm:p-2">
       <select
         value={value}
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full rounded-lg border border-transparent bg-transparent px-2 py-2 text-sm outline-none transition hover:bg-surface focus:border-brand focus:bg-card disabled:cursor-not-allowed disabled:opacity-55"
+        className="w-full rounded-lg border border-transparent bg-transparent px-1 py-2 text-sm outline-none transition hover:bg-surface focus:border-brand focus:bg-card disabled:cursor-not-allowed disabled:opacity-55 sm:px-2"
       >
         <option value="">—</option>
         {values.map((option) => (
