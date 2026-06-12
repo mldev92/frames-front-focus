@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { Heart, ChevronRight, Truck, ShieldCheck, RotateCcw, Check } from "lucide-react";
+import { Heart, ChevronRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { getProduct, getRelated } from "@/lib/api/bitrix";
 import { catalogHref } from "@/data/categories";
@@ -8,16 +8,11 @@ import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { ProductCard } from "@/components/ProductCard";
 import { TryOnBadge, TryOnIcon } from "@/components/TryOnIcon";
-import { PrescriptionInput } from "@/components/PrescriptionInput";
+import { ProductInfoSections } from "@/components/ProductInfoSections";
+import { getProductDisplayBrand } from "@/lib/product";
 import { LensPurposeModal } from "@/components/LensPurposeModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { TBankWidget } from "@/components/TBankWidget";
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/catalog_s/$category/$slug")({
@@ -61,6 +56,7 @@ export const Route = createFileRoute("/catalog_s/$category/$slug")({
 function ProductPage() {
   const data = Route.useLoaderData() as { product: Product; related: Product[] };
   const { product, related } = data;
+  const displayBrand = getProductDisplayBrand(product);
   const { add, toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
   const [color, setColor] = useState(product.colors?.[0]?.name);
@@ -74,31 +70,13 @@ function ProductPage() {
     : product.images;
   const currentImage = galleryImages[activeImg] ?? galleryImages[0] ?? product.images[0];
 
-  const specIcons: Record<string, string> = {
-    "Длина дужки": "/icon_param_glasses_length.svg",
-    "Ширина моста": "/icon_param_bridge_length.svg",
-    "Ширина окуляра": "/icon_param_hinge_distance.svg",
-  };
-
   const isLens = product.category === "kontaktnye-linzy";
-  const isFrameLike =
-    product.category === "opravy" || product.category === "linzy-dlya-ochkov";
+  const isFrameLike = product.category === "opravy" || product.category === "linzy-dlya-ochkov";
   const showTryOn =
     product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
   const isMisight = product.slug.toLowerCase().includes("misight");
   const showInstallment =
-    (isFrameLike && product.price > 3500) ||
-    (product.category === "kontaktnye-linzy" && isMisight);
-  const includedFeatures = [
-    "Однодневная сборка в салоне",
-    "Бесплатная подгонка по лицу",
-    "Покрытие от царапин на 12 месяцев",
-    "Защита от ультрафиолета и бликов",
-    "Жёсткий футляр и салфетка из микрофибры",
-    "Возврат и обмен в течение 14 дней",
-    "Гарантия лучшей цены",
-  ];
-
+    (isFrameLike && product.price > 3500) || (product.category === "kontaktnye-linzy" && isMisight);
   const handlePrimaryCta = () => {
     if (isFrameLike) {
       setLensModal(true);
@@ -109,15 +87,14 @@ function ProductPage() {
   };
 
   return (
-    <div className="px-4 pb-28 pt-8 lg:px-10 lg:pb-8">
+    <div className="product-detail-page px-4 pb-28 pt-8 lg:px-10 lg:pb-8">
       {/* Breadcrumbs */}
       <nav className="text-xs text-muted-foreground mb-6 flex items-center gap-1">
-        <Link to="/" className="hover:text-foreground">Главная</Link>
+        <Link to="/" className="hover:text-foreground">
+          Главная
+        </Link>
         <ChevronRight className="h-3 w-3" />
-        <a
-          href={catalogHref(product.category)}
-          className="hover:text-foreground capitalize"
-        >
+        <a href={catalogHref(product.category)} className="hover:text-foreground capitalize">
           {categoryName(product.category)}
         </a>
         <ChevronRight className="h-3 w-3" />
@@ -158,12 +135,13 @@ function ProductPage() {
               )}
             </div>
 
-            <div className="relative flex-1 bg-surface rounded-lg overflow-hidden flex items-center justify-center min-h-[420px] lg:min-h-[560px]">
+            <div className="group relative flex min-h-[420px] flex-1 items-center justify-center overflow-hidden rounded-xl bg-surface lg:min-h-[560px]">
               <img
+                key={currentImage}
                 src={currentImage}
                 alt={product.name}
                 referrerPolicy="no-referrer"
-                className="max-w-[80%] max-h-[80%] object-contain mix-blend-multiply"
+                className="product-gallery-image max-h-[80%] max-w-[80%] object-contain mix-blend-multiply"
               />
               {showTryOn && (
                 <TryOnBadge
@@ -197,123 +175,26 @@ function ProductPage() {
             ))}
           </div>
 
-          {/* Included for price */}
-          <section className="mt-12">
-            <h2 className="font-serif text-2xl mb-5">
-              Что входит за {formatPrice(product.price)}
-            </h2>
-            <ul className="space-y-3">
-              {includedFeatures.map((f) => (
-                <li key={f} className="flex items-start gap-3 text-sm">
-                  <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand/10 text-brand shrink-0">
-                    <Check className="h-3 w-3" />
-                  </span>
-                  <span>{f}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-
-          {/* Accordion sections */}
-          <Accordion
-            type="multiple"
-            defaultValue={["specs"]}
-            className="mt-10 border-t border-border"
-          >
-            <AccordionItem value="specs">
-              <AccordionTrigger className="text-base py-5">Характеристики</AccordionTrigger>
-              <AccordionContent>
-                <dl className="space-y-2">
-                  {product.specs.map((s) => {
-                    const icon = specIcons[s.label];
-                    return (
-                      <div
-                        key={s.label}
-                        className="flex justify-between border-b border-border pb-2"
-                      >
-                        <dt className="text-muted-foreground flex items-center gap-2">
-                          {icon && (
-                            <img
-                              src={icon}
-                              alt=""
-                              className="opacity-60"
-                              style={{ width: 95, height: 37 }}
-                            />
-                          )}
-                          {s.label}
-                        </dt>
-                        <dd>{s.value}</dd>
-                      </div>
-                    );
-                  })}
-                </dl>
-              </AccordionContent>
-            </AccordionItem>
-
-            {(isLens || isFrameLike) && (
-              <AccordionItem value="rx">
-                <AccordionTrigger className="text-base py-5">
-                  Нужен рецепт?
-                </AccordionTrigger>
-                <AccordionContent>
-                  <PrescriptionInput />
-                </AccordionContent>
-              </AccordionItem>
-            )}
-
-            <AccordionItem value="guide">
-              <AccordionTrigger className="text-base py-5">Как подобрать</AccordionTrigger>
-              <AccordionContent>
-                <p className="text-muted-foreground">
-                  Не уверены в размере? Запишитесь на бесплатный подбор в любом из наших
-                  салонов — оптики помогут с выбором формы и посадкой.
-                </p>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="delivery">
-              <AccordionTrigger className="text-base py-5">
-                Доставка и возврат
-              </AccordionTrigger>
-              <AccordionContent>
-                <ul className="space-y-2 text-muted-foreground">
-                  <li>• Доставка по СПб от 1 дня</li>
-                  <li>• Самовывоз из салонов — бесплатно</li>
-                  <li>• Оплата картой, наличными, СБП</li>
-                  <li>• Возврат и обмен в течение 14 дней</li>
-                </ul>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="brand">
-              <AccordionTrigger className="text-base py-5">
-                О бренде {product.brand}
-              </AccordionTrigger>
-              <AccordionContent>
-                <p className="text-muted-foreground">
-                  {product.brand} — один из брендов, представленных в ОПТИКА 100%. Подробнее
-                  о коллекции и наличии моделей уточняйте у консультантов.
-                </p>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+          <ProductInfoSections
+            product={product}
+            showPrescription={isLens || isFrameLike}
+            prescriptionVariant={isLens ? "contacts" : "frames"}
+          />
         </div>
 
         {/* RIGHT: sticky purchase card */}
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <div className="relative bg-background border border-border rounded-lg shadow-sm p-6">
+          <div className="relative rounded-xl border border-border bg-card p-6 shadow-sm">
             <button
               onClick={() => toggleSaved(product.slug)}
               aria-label="Отложить"
               className="absolute top-4 right-4 p-2 rounded-full hover:bg-surface transition-colors"
             >
-              <Heart
-                className={cn("h-5 w-5", isSaved && "fill-brand text-brand")}
-              />
+              <Heart className={cn("h-5 w-5", isSaved && "fill-brand text-brand")} />
             </button>
 
             <div className="text-xs uppercase tracking-wider text-muted-foreground">
-              {product.brand}
+              {displayBrand}
             </div>
             <h1 className="font-serif text-2xl lg:text-3xl mt-1 pr-10">{product.name}</h1>
 
@@ -357,9 +238,7 @@ function ProductPage() {
                     key={b}
                     className={cn(
                       "text-[10px] uppercase tracking-wider px-2 py-1 rounded-sm",
-                      b === "Скидка"
-                        ? "bg-brand text-brand-foreground"
-                        : "bg-surface",
+                      b === "Скидка" ? "bg-brand text-brand-foreground" : "bg-surface",
                     )}
                   >
                     {b}
@@ -447,7 +326,7 @@ function ProductPage() {
         <div className="mx-auto flex max-w-xl items-center gap-3">
           <div className="min-w-0 flex-1">
             <div className="truncate text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-              {selectedColor ? `Цвет: ${selectedColor.name}` : product.brand}
+              {selectedColor ? `Цвет: ${selectedColor.name}` : displayBrand}
             </div>
             <div className="font-serif text-xl leading-tight">{formatPrice(product.price)}</div>
           </div>
@@ -483,11 +362,7 @@ function ProductPage() {
         }}
       />
       {showTryOn && (
-        <VirtualTryOnModal
-          open={vtoOpen}
-          onClose={() => setVtoOpen(false)}
-          vtoSku={vtoSku}
-        />
+        <VirtualTryOnModal open={vtoOpen} onClose={() => setVtoOpen(false)} vtoSku={vtoSku} />
       )}
     </div>
   );
@@ -495,11 +370,17 @@ function ProductPage() {
 
 function categoryName(c: string) {
   switch (c) {
-    case "opravy": return "Оправы";
-    case "solntsezashchitnye": return "Солнцезащитные";
-    case "kontaktnye-linzy": return "Контактные линзы";
-    case "linzy-dlya-ochkov": return "Линзы для очков";
-    case "aksessuary": return "Аксессуары";
-    default: return c;
+    case "opravy":
+      return "Оправы";
+    case "solntsezashchitnye":
+      return "Солнцезащитные";
+    case "kontaktnye-linzy":
+      return "Контактные линзы";
+    case "linzy-dlya-ochkov":
+      return "Линзы для очков";
+    case "aksessuary":
+      return "Аксессуары";
+    default:
+      return c;
   }
 }

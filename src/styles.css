@@ -412,8 +412,35 @@
   transform: translateY(0);
 }
 
+@keyframes product-image-in {
+  from { opacity: 0; transform: scale(0.985); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.product-gallery-image {
+  animation: product-image-in var(--duration-flow) var(--ease-editorial);
+  transition: transform 900ms var(--ease-editorial);
+}
+
+.product-detail-page .group:hover > .product-gallery-image {
+  transform: scale(1.045);
+}
+
+.product-included-check path {
+  stroke-dasharray: 18;
+  stroke-dashoffset: 18;
+  transition: stroke-dashoffset 500ms var(--ease-editorial) 200ms;
+}
+
+.reveal.is-visible .product-included-check path {
+  stroke-dashoffset: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal, .reveal.is-visible { opacity: 1; transform: none; transition: none; }
+  .product-gallery-image { animation: none; transition: none; }
+  .product-detail-page .group:hover > .product-gallery-image { transform: none; }
+  .product-included-check path { stroke-dashoffset: 0; transition: none; }
   .animate-ken-burns, .animate-flip { animation: none !important; }
   .hero-bg, .hero-bg::before, .hero-bg::after { animation: none !important; }
   .hero-particle { animation: none !important; }
