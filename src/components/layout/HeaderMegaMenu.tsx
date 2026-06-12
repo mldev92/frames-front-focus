@@ -1,6 +1,4 @@
-import { useMemo, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getCatalogPage, type FacetKey } from "@/lib/api/bitrix";
+import { type ReactNode } from "react";
 import { useCityStore } from "@/lib/store/city";
 import {
   ArrowRight,
@@ -24,53 +22,6 @@ import {
 } from "lucide-react";
 import { catalogHref } from "@/data/categories";
 import { cn } from "@/lib/utils";
-
-// ── Live dropdown counts ────────────────────────────────────────────────────
-// Every count chip used to ship a hardcoded string ("96", "412", …). We now
-// derive the chip's count from the same city-aware faceted response used by
-// the catalog page. React Query dedupes every chip in a panel into one request
-// per category and city.
-function useLiveChipCount(href: string | undefined, fallback?: string): string | undefined {
-  const city = useCityStore((state) => state.city);
-  const parsed = useMemo(() => {
-    if (!href) return null;
-    const facet = href.match(/^\/catalog_s\/([^/?]+)\/?\?([^=&]+)=([^&]+)/);
-    if (facet) {
-      // URLSearchParams encodes spaces as "+", but decodeURIComponent leaves
-      // "+" alone. Normalize "+"→" " before decoding so the value matches the
-      // bucket keys ("для мальчиков", not "для+мальчиков").
-      return {
-        category: facet[1],
-        facet: facet[2],
-        value: decodeURIComponent(facet[3].replace(/\+/g, " ")),
-      };
-    }
-    const cat = href.match(/^\/catalog_s\/([^/?]+)\//);
-    if (cat) return { category: cat[1], facet: null as string | null, value: null as string | null };
-    return null;
-  }, [href]);
-
-  const { data } = useQuery({
-    queryKey: ["menu-facets", parsed?.category, city],
-    queryFn: () => getCatalogPage(parsed!.category, { city, limit: 1 }),
-    enabled: !!parsed?.category,
-    staleTime: 5 * 60 * 1000,
-  });
-
-  if (!data || !parsed) return fallback;
-  if (!parsed.facet || parsed.value == null) return String(data.total);
-
-  const bucket = data.facets[parsed.facet as FacetKey];
-  if (!bucket) return fallback;
-  const v = parsed.value.toLowerCase();
-  const key = Object.keys(bucket).find((k) => k.toLowerCase() === v);
-  return String(key ? bucket[key] : 0);
-}
-
-function ChipCount({ href, fallback }: { href?: string; fallback?: string }) {
-  const live = useLiveChipCount(href, fallback);
-  return live === undefined ? null : <>{live}</>;
-}
 
 type FrameCategory = "opravy" | "solntsezashchitnye";
 
@@ -500,7 +451,7 @@ function buildFrameMega(category: FrameCategory, copy: {
       items: [
         {
           label: "Для мальчиков",
-          meta: "3-14 лет",
+          meta: "от 6 мес.",
           count: "96",
           href: frameHref(category, { gender: "для мальчиков" }),
           icon: AudienceIcons.boys,
@@ -508,7 +459,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         },
         {
           label: "Для девочек",
-          meta: "3-14 лет",
+          meta: "от 6 мес.",
           count: "84",
           href: frameHref(category, { gender: "для девочек" }),
           icon: AudienceIcons.girls,
@@ -555,7 +506,7 @@ function buildFrameMega(category: FrameCategory, copy: {
       { label: "Доступные", price: "до 5 000 ₽", href: frameHref(category, { priceTo: "5000" }) },
       { label: "Средний", price: "5 000 — 12 000 ₽", href: frameHref(category, { priceFrom: "5000", priceTo: "12000" }) },
       { label: "Премиум", price: "12 000 — 25 000 ₽", href: frameHref(category, { priceFrom: "12000", priceTo: "25000" }) },
-      { label: "Дизайнерские", price: "от 25 000 ₽", href: frameHref(category, { priceFrom: "25000" }) },
+      { label: "Премиум+", price: "от 25 000 ₽", href: frameHref(category, { priceFrom: "25000" }) },
     ],
     tags: [
       { label: "Новинки", href: frameHref(category, { tag: "Новинки" }) },
@@ -584,7 +535,7 @@ function buildFrameMega(category: FrameCategory, copy: {
 const FRAMES_MENU = buildFrameMega("opravy", {
   titleEmphasis: "Оправы.",
   title: "Выберите по форме, размеру и материалу",
-  summary: "1284 модели · 11 брендов",
+  summary: "Формы, размеры и материалы",
   allLabel: "Смотреть все оправы",
   brandHrefLabel: "Оправы",
   featured: {
@@ -602,7 +553,7 @@ const FRAMES_MENU = buildFrameMega("opravy", {
 const SUNGLASSES_MENU = buildFrameMega("solntsezashchitnye", {
   titleEmphasis: "Солнцезащитные.",
   title: "Форма, поляризация и летние коллекции",
-  summary: "846 моделей · UV-защита · 9 брендов",
+  summary: "UV-защита и поляризация",
   allLabel: "Смотреть все солнцезащитные",
   brandHrefLabel: "Солнцезащитные",
   featured: {
@@ -732,7 +683,7 @@ const GLASSES_MENU: GlassesMegaMenu = {
   allLabel: "Все линзы",
   titleEmphasis: "Линзы для очков.",
   title: "Тип, производитель, технологии",
-  summary: "68 моделей · 9 производителей",
+  summary: "Производители и технологии",
   lensTypes: [
     {
       label: "Однофокальные",
@@ -764,9 +715,9 @@ const GLASSES_MENU: GlassesMegaMenu = {
     },
   ],
   manufacturers: [
-    { label: "ZEISS", meta: "Германия · 2 модели", tag: "Premium", href: menuHref("linzy-dlya-ochkov", { brand: "ZEISS (Германия)" }) },
-    { label: "Essilor", meta: "Франция · 38 моделей", tag: "Топ", href: menuHref("linzy-dlya-ochkov", { brand: "Ессилор (Франция)" }) },
-    { label: "Hoya", meta: "Япония · 11 моделей", tag: "Премиум", href: menuHref("linzy-dlya-ochkov", { brand: "Hoya (Япония)" }) },
+    { label: "ZEISS", meta: "Германия", tag: "Premium", href: menuHref("linzy-dlya-ochkov", { brand: "ZEISS (Германия)" }) },
+    { label: "Essilor", meta: "Франция", tag: "Топ", href: menuHref("linzy-dlya-ochkov", { brand: "Ессилор (Франция)" }) },
+    { label: "Hoya", meta: "Япония", tag: "Премиум", href: menuHref("linzy-dlya-ochkov", { brand: "Hoya (Япония)" }) },
   ],
   indexValues: [
     { label: "1.50", href: menuHref("linzy-dlya-ochkov", { index: "1.5" }) },
@@ -862,9 +813,6 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                     href={item.href}
                     className="group relative flex aspect-[1/0.82] flex-col items-center justify-between rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 text-center transition-all hover:-translate-y-0.5 hover:border-brand hover:bg-brand-50"
                   >
-                    <span className="absolute right-3 top-2 font-mono text-[9.5px] text-muted-foreground">
-                      <ChipCount href={item.href} fallback={item.count} />
-                    </span>
                     <span className="mt-2 flex w-full items-center justify-center">{item.icon}</span>
                     <span className="text-[11.5px] font-medium leading-tight text-foreground transition-colors group-hover:text-brand">
                       {item.label}
@@ -888,7 +836,6 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                   >
                     {item.icon}
                     <span className="font-medium">{item.label}</span>
-                    <span className="ml-auto font-mono text-[10px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                   </a>
                 ))}
               </div>
@@ -903,9 +850,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                     href={menu.kidsGroup.href}
                     className="text-[11px] text-muted-foreground transition-colors hover:text-brand"
                   >
-                    {`Все `}
-                    <ChipCount href={menu.kidsGroup.href} fallback={menu.kidsGroup.count} />
-                    {` →`}
+                    Все →
                   </a>
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -926,7 +871,6 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                           {item.meta}
                         </span>
                       </span>
-                      <span className="font-mono text-[10px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                     </a>
                   ))}
                 </div>
@@ -945,7 +889,6 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                     >
                       {item.icon}
                       <span>{item.label}</span>
-                      <span className="ml-auto font-mono text-[11px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                       <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100 group-hover:text-brand" />
                     </a>
                   ))}
@@ -959,7 +902,6 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                 {menu.materials.map((item) => (
                   <a key={item.label} href={item.href} className={chipClass}>
                     <span>{item.label}</span>
-                    {item.count && <span className="font-mono text-[10px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>}
                   </a>
                 ))}
               </div>
@@ -1048,7 +990,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
               ))}
             </div>
             <a href={menu.brandStripHref} className="shrink-0 text-sm text-muted-foreground transition-colors hover:text-brand">
-              Все 11 →
+              Все бренды →
             </a>
           </div>
         </div>
@@ -1099,7 +1041,6 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                       <span className="block text-[13.5px] font-medium text-foreground">{item.label}</span>
                       <span className="mt-0.5 block text-[11.5px] text-muted-foreground">{item.meta}</span>
                     </span>
-                    <span className="font-mono text-[11px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                   </a>
                 ))}
               </div>
@@ -1186,7 +1127,6 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                   >
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <span className="text-brand">{item.icon}</span>
-                      <span className="font-mono text-[10.5px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                     </div>
                     <span className="text-[12.5px] font-medium leading-tight text-foreground transition-colors group-hover:text-brand">
                       {item.label}
@@ -1207,7 +1147,6 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                       className="rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 transition-colors hover:border-brand hover:bg-brand-50"
                     >
                       <span className="block text-[13px] font-semibold text-foreground">{item.label}</span>
-                      <span className="mt-1 block font-mono text-[10.5px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                     </a>
                   ))}
                 </div>
@@ -1299,7 +1238,6 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                       </span>
                       <span className="mt-0.5 block text-[11.5px] text-muted-foreground">{item.meta}</span>
                     </span>
-                    <span className="font-mono text-[11px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                   </a>
                 ))}
               </div>
@@ -1367,7 +1305,6 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                   >
                     <div className="mb-2 flex items-center justify-between gap-2">
                       <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-brand">{item.meta}</span>
-                      <span className="font-mono text-[10.5px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                     </div>
                     <span className="text-[12.5px] font-medium text-foreground transition-colors group-hover:text-brand">
                       {item.label}
@@ -1403,7 +1340,6 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                     <span className="flex-1 text-[12.5px] font-medium text-foreground transition-colors group-hover:text-brand">
                       {item.label}
                     </span>
-                    <span className="font-mono text-[10.5px] text-muted-foreground"><ChipCount href={item.href} fallback={item.count} /></span>
                   </a>
                 ))}
               </div>
