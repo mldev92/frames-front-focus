@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getMenuCounts } from "@/lib/api/bitrix";
+import { getCatalogPage, type FacetKey } from "@/lib/api/bitrix";
+import { useCityStore } from "@/lib/store/city";
 import {
   ArrowRight,
   BookOpen,
@@ -26,11 +27,11 @@ import { cn } from "@/lib/utils";
 
 // ── Live dropdown counts ────────────────────────────────────────────────────
 // Every count chip used to ship a hardcoded string ("96", "412", …). We now
-// derive the chip's count from /api/store/menu_counts.php by parsing the
-// chip's href: /catalog_s/<segment>/?facet=value . React Query dedupes the
-// fetch across the whole panel so opening either Frames or Sunglasses
-// triggers just one HTTP call per category.
+// derive the chip's count from the same city-aware faceted response used by
+// the catalog page. React Query dedupes every chip in a panel into one request
+// per category and city.
 function useLiveChipCount(href: string | undefined, fallback?: string): string | undefined {
+  const city = useCityStore((state) => state.city);
   const parsed = useMemo(() => {
     if (!href) return null;
     const facet = href.match(/^\/catalog_s\/([^/?]+)\/?\?([^=&]+)=([^&]+)/);
@@ -50,8 +51,8 @@ function useLiveChipCount(href: string | undefined, fallback?: string): string |
   }, [href]);
 
   const { data } = useQuery({
-    queryKey: ["menu-counts", parsed?.category],
-    queryFn: () => getMenuCounts(parsed!.category),
+    queryKey: ["menu-facets", parsed?.category, city],
+    queryFn: () => getCatalogPage(parsed!.category, { city, limit: 1 }),
     enabled: !!parsed?.category,
     staleTime: 5 * 60 * 1000,
   });
@@ -59,23 +60,7 @@ function useLiveChipCount(href: string | undefined, fallback?: string): string |
   if (!data || !parsed) return fallback;
   if (!parsed.facet || parsed.value == null) return String(data.total);
 
-  if (parsed.facet === "brand") {
-    const v = parsed.value.toLowerCase();
-    const hit = data.brand.find((b) => b.name.toLowerCase() === v);
-    return hit ? String(hit.count) : "0";
-  }
-  const buckets: Record<string, Record<string, number> | undefined> = {
-    gender: data.gender,
-    shape: data.shape,
-    construction: data.construction,
-    material: data.material,
-    // Contact-lens + eyeglass-lens facets
-    wearMode: (data as { wearMode?: Record<string, number> }).wearMode,
-    lensType: (data as { lensType?: Record<string, number> }).lensType,
-    lensMaterial: (data as { lensMaterial?: Record<string, number> }).lensMaterial,
-    design:   (data as { design?: Record<string, number> }).design,
-  };
-  const bucket = buckets[parsed.facet];
+  const bucket = data.facets[parsed.facet as FacetKey];
   if (!bucket) return fallback;
   const v = parsed.value.toLowerCase();
   const key = Object.keys(bucket).find((k) => k.toLowerCase() === v);
@@ -747,90 +732,66 @@ const GLASSES_MENU: GlassesMegaMenu = {
   allLabel: "Все линзы",
   titleEmphasis: "Линзы для очков.",
   title: "Тип, производитель, технологии",
-  summary: "186 моделей · 3 производителя",
+  summary: "68 моделей · 9 производителей",
   lensTypes: [
     {
       label: "Однофокальные",
       meta: "Одна оптическая зона",
-      count: "82",
+      count: "41",
       href: menuHref("linzy-dlya-ochkov", { lensType: "Однофокальные" }),
       icon: <LensTypeIcon kind="single" />,
     },
     {
       label: "Прогрессивные",
       meta: "Плавный переход даль↔близь",
-      count: "42",
+      count: "15",
       href: menuHref("linzy-dlya-ochkov", { lensType: "Прогрессивные" }),
       icon: <LensTypeIcon kind="progressive" />,
     },
     {
-      label: "Бифокальные",
-      meta: "Две зоны с границей",
-      count: "14",
-      href: menuHref("linzy-dlya-ochkov", { lensType: "Бифокальные" }),
-      icon: <LensTypeIcon kind="bifocal" />,
-    },
-    {
       label: "Офисные",
       meta: "До 4 м, для работы",
-      count: "18",
+      count: "6",
       href: menuHref("linzy-dlya-ochkov", { lensType: "Офисные" }),
       icon: <LensTypeIcon kind="office" />,
     },
     {
-      label: "Фотохромные",
-      meta: "Темнеют на солнце",
-      count: "22",
-      href: menuHref("linzy-dlya-ochkov", { lensType: "Фотохромные" }),
-      icon: <LensTypeIcon kind="photo" />,
-    },
-    {
-      label: "Детские",
-      meta: "MiyoSmart, Stellest",
-      count: "8",
-      href: menuHref("linzy-dlya-ochkov", { lensType: "Детские" }),
+      label: "Perifocal",
+      meta: "Контроль периферического дефокуса",
+      count: "4",
+      href: menuHref("linzy-dlya-ochkov", { lensType: "Perifocal" }),
       icon: <LensTypeIcon kind="kids" />,
     },
   ],
   manufacturers: [
-    { label: "ZEISS", meta: "Германия · 68 моделей", tag: "Premium", href: menuHref("linzy-dlya-ochkov", { brand: "ZEISS" }) },
-    { label: "Essilor", meta: "Франция · 82 модели", tag: "Топ", href: menuHref("linzy-dlya-ochkov", { brand: "Essilor" }) },
-    { label: "Hoya", meta: "Япония · 36 моделей", tag: "Премиум", href: menuHref("linzy-dlya-ochkov", { brand: "Hoya" }) },
+    { label: "ZEISS", meta: "Германия · 2 модели", tag: "Premium", href: menuHref("linzy-dlya-ochkov", { brand: "ZEISS (Германия)" }) },
+    { label: "Essilor", meta: "Франция · 38 моделей", tag: "Топ", href: menuHref("linzy-dlya-ochkov", { brand: "Ессилор (Франция)" }) },
+    { label: "Hoya", meta: "Япония · 11 моделей", tag: "Премиум", href: menuHref("linzy-dlya-ochkov", { brand: "Hoya (Япония)" }) },
   ],
   indexValues: [
-    { label: "1.50", href: menuHref("linzy-dlya-ochkov", { index: "1.50" }) },
+    { label: "1.50", href: menuHref("linzy-dlya-ochkov", { index: "1.5" }) },
     { label: "1.56", href: menuHref("linzy-dlya-ochkov", { index: "1.56" }) },
-    { label: "1.60", href: menuHref("linzy-dlya-ochkov", { index: "1.60" }) },
+    { label: "1.60", href: menuHref("linzy-dlya-ochkov", { index: "1.6" }) },
     { label: "1.67", href: menuHref("linzy-dlya-ochkov", { index: "1.67" }) },
-    { label: "1.74", href: menuHref("linzy-dlya-ochkov", { index: "1.74" }) },
   ],
-  materials: [
-    { label: "Полимер", href: menuHref("linzy-dlya-ochkov", { material: "Полимер" }) },
-    { label: "Поликарбонат", href: menuHref("linzy-dlya-ochkov", { material: "Поликарбонат" }) },
-    { label: "Trivex", href: menuHref("linzy-dlya-ochkov", { material: "Trivex" }) },
-    { label: "Стекло", href: menuHref("linzy-dlya-ochkov", { material: "Стекло" }) },
-  ],
+  materials: [],
   technologies: [
-    { label: "Антибликовое", count: "42", meta: "CRIZAL", href: menuHref("linzy-dlya-ochkov", { technology: "CRIZAL" }) },
-    { label: "Для гаджетов", count: "26", meta: "EYEZEN", href: menuHref("linzy-dlya-ochkov", { technology: "EYEZEN" }) },
-    { label: "Контроль миопии", count: "8", meta: "STELLEST", href: menuHref("linzy-dlya-ochkov", { technology: "STELLEST" }) },
-    { label: "Прогрессивы", count: "22", meta: "VARILUX", href: menuHref("linzy-dlya-ochkov", { technology: "VARILUX" }) },
-    { label: "Для детей", count: "6", meta: "MIYOSMART", href: menuHref("linzy-dlya-ochkov", { technology: "MIYOSMART" }) },
-    { label: "УФ-защита", count: "62", meta: "UV-PRO", href: menuHref("linzy-dlya-ochkov", { technology: "UV-PRO" }) },
+    { label: "Антибликовые покрытия", count: "33", meta: "CRIZAL", href: menuHref("linzy-dlya-ochkov", { technology: "CRIZAL" }) },
+    { label: "Контроль миопии", count: "3", meta: "STELLEST", href: menuHref("linzy-dlya-ochkov", { technology: "STELLEST" }) },
+    { label: "Прогрессивные линзы", count: "7", meta: "VARILUX", href: menuHref("linzy-dlya-ochkov", { technology: "VARILUX" }) },
   ],
   coatingValues: [
-    { label: "Антиблик", href: menuHref("linzy-dlya-ochkov", { coating: "Антиблик" }) },
-    { label: "Hard-coat", href: menuHref("linzy-dlya-ochkov", { coating: "Hard-coat" }) },
-    { label: "Гидрофоб", href: menuHref("linzy-dlya-ochkov", { coating: "Гидрофоб" }) },
-    { label: "Blue-cut", href: menuHref("linzy-dlya-ochkov", { coating: "Blue-cut" }) },
-    { label: "Hi-Vision", href: menuHref("linzy-dlya-ochkov", { coating: "Hi-Vision" }) },
+    { label: "Антиблик", href: menuHref("linzy-dlya-ochkov", { coating: "Просветляющее (антибликовое)" }) },
+    { label: "Упрочняющее", href: menuHref("linzy-dlya-ochkov", { coating: "Твердое" }) },
+    { label: "Гидрофобное", href: menuHref("linzy-dlya-ochkov", { coating: "Грязе-водоотталкивающее" }) },
+    { label: "Blue-cut", href: menuHref("linzy-dlya-ochkov", { coating: "Защита от синего света" }) },
+    { label: "UV-защита", href: menuHref("linzy-dlya-ochkov", { coating: "Защита от UV" }) },
   ],
   purposes: [
-    { label: "Для работы за ПК", count: "38", href: menuHref("linzy-dlya-ochkov", { purpose: "Для работы за ПК" }), icon: <Laptop className="h-4 w-4" /> },
-    { label: "Для вождения", count: "24", href: menuHref("linzy-dlya-ochkov", { purpose: "Для вождения" }), icon: <Car className="h-4 w-4" /> },
-    { label: "Для чтения", count: "42", href: menuHref("linzy-dlya-ochkov", { purpose: "Для чтения" }), icon: <BookOpen className="h-4 w-4" /> },
-    { label: "Универсальные", count: "62", href: menuHref("linzy-dlya-ochkov", { purpose: "Универсальные" }), icon: <Glasses className="h-4 w-4" /> },
-    { label: "Детские", count: "14", href: menuHref("linzy-dlya-ochkov", { purpose: "Детские" }), icon: <Eye className="h-4 w-4" /> },
+    { label: "Для работы за ПК", count: "21", href: menuHref("linzy-dlya-ochkov", { purpose: "Для работы с гаджетами" }), icon: <Laptop className="h-4 w-4" /> },
+    { label: "Для вождения", count: "3", href: menuHref("linzy-dlya-ochkov", { purpose: "Для вождения" }), icon: <Car className="h-4 w-4" /> },
+    { label: "Для чтения и офиса", count: "6", href: menuHref("linzy-dlya-ochkov", { purpose: "Для чтения и работы на среднем расстоянии (компьютер)" }), icon: <BookOpen className="h-4 w-4" /> },
+    { label: "Детские", count: "10", href: menuHref("linzy-dlya-ochkov", { purpose: "Детские линзы" }), icon: <Eye className="h-4 w-4" /> },
   ],
   rxHelper: {
     title: "Введите свой рецепт",
@@ -1379,18 +1340,20 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 </div>
               </div>
 
-              <div className="mt-5 border-t border-dashed border-border pt-4">
-                <div className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Материал
+              {menu.materials.length > 0 && (
+                <div className="mt-5 border-t border-dashed border-border pt-4">
+                  <div className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Материал
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {menu.materials.map((item) => (
+                      <a key={item.label} href={item.href} className={chipClass}>
+                        {item.label}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {menu.materials.map((item) => (
-                    <a key={item.label} href={item.href} className={chipClass}>
-                      {item.label}
-                    </a>
-                  ))}
-                </div>
-              </div>
+              )}
             </section>
 
             <section>
