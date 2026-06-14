@@ -53,12 +53,12 @@ const TRUST_REASONS = [
   {
     Icon: GraduationCap,
     title: "20 лет в оптике",
-    text: "Команда из 18 врачей и оптометристов. Принимаем по ОМС и ДМС.",
+    text: "Команда из 18 врачей и оптометристов.",
   },
   {
     Icon: Microscope,
     title: "Премиум-диагностика",
-    text: "Авторефрактометр Topcon, аберрометр Tracey-VFA, биомикроскоп Zeiss.",
+    text: "Авторефрактометр, проектор знаков и щелевая лампа Huvitz (Южная Корея), биометр Lenstar LS 900 Haag-Streit Diagnostics (Швейцария), офтальмоскоп KaWe (Германия).",
   },
   {
     Icon: ShieldCheck,
@@ -887,7 +887,7 @@ function MainV2Page() {
             className="text-[11px] uppercase tracking-[0.2em] mb-3"
             style={{ color: "var(--brand)" }}
           >
-            Услуги клиники
+            Услуги салона оптики
           </div>
           <h2 className="font-serif text-3xl lg:text-4xl">
             Комплексные услуги по подбору очков и линз
@@ -1403,13 +1403,13 @@ function MainV2BuyTogetherBanner() {
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <a href={catalogHref("opravy")} className="o100-bts-btn o100-bts-btn-primary">
-                Купить очки
+                Купить оправу
               </a>
               <a
                 href={catalogHref("solntsezashchitnye")}
                 className="o100-bts-btn o100-bts-btn-secondary"
               >
-                Солнцезащитные
+                Купить солнцезащитные очки
               </a>
             </div>
             <div
@@ -1427,7 +1427,7 @@ function MainV2BuyTogetherBanner() {
                 className="o100-bts-quiz-link"
                 style={{ color: "var(--brand)", fontWeight: 600 }}
               >
-                Пройдите подбор за&nbsp;2&nbsp;минуты <span aria-hidden>→</span>
+                Пройдите подбор за&nbsp;30&nbsp;минут <span aria-hidden>→</span>
               </a>
             </div>
           </div>
@@ -2109,7 +2109,7 @@ function MainV2SubscriptionBlock() {
         <div className="o100-sub-grid">
           <Reveal>
             <div className="o100-sub-photo">
-              <img src="/category_cont_lenses_v3.webp" alt="" />
+              <img src="/podpiska_na_linzy.png" alt="Подписка на контактные линзы" />
               <div
                 aria-hidden
                 className="absolute inset-0"

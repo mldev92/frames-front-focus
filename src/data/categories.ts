@@ -1,4 +1,5 @@
 import type { Category } from "./types";
+import type { CityCode } from "@/lib/store/city";
 
 export interface CategoryInfo {
   slug: Category;
@@ -22,10 +23,66 @@ export const segmentToCategory: Record<string, Category> = Object.fromEntries(
   Object.entries(categoryToSegment).map(([cat, seg]) => [seg, cat as Category]),
 ) as Record<string, Category>;
 
-export const catalogHref = (category: Category) => `/catalog_s/${categoryToSegment[category]}/`;
+const sectionCategoryAliases: Record<string, Category> = {
+  ochki: "opravy",
+  muzhskie: "opravy",
+  zhenskie: "opravy",
+  detskie: "opravy",
+  muzhskie_1: "solntsezashchitnye",
+  zhenskie_1: "solntsezashchitnye",
+  detskie_1: "solntsezashchitnye",
+  kontaktnye_linzy: "kontaktnye-linzy",
+  prozrachnye: "kontaktnye-linzy",
+  toricheskie: "kontaktnye-linzy",
+  tsvetnye: "kontaktnye-linzy",
+  multifokalnye: "kontaktnye-linzy",
+  dlya_kontrolya_miopii: "kontaktnye-linzy",
+  futlyary: "aksessuary",
+  aksessuary: "aksessuary",
+  rastvory: "aksessuary",
+  ochistiteli_i_kapli: "aksessuary",
+};
 
-export const productHref = (category: Category, slug: string) =>
-  `/catalog_s/${categoryToSegment[category]}/${slug}/`;
+const sectionTitles: Record<string, string> = {
+  muzhskie: "Мужские оправы",
+  zhenskie: "Женские оправы",
+  detskie: "Детские оправы",
+  muzhskie_1: "Мужские солнцезащитные очки",
+  zhenskie_1: "Женские солнцезащитные очки",
+  detskie_1: "Детские солнцезащитные очки",
+  prozrachnye: "Прозрачные контактные линзы",
+  toricheskie: "Торические контактные линзы",
+  tsvetnye: "Цветные контактные линзы",
+  multifokalnye: "Мультифокальные контактные линзы",
+  dlya_kontrolya_miopii: "Линзы для контроля миопии",
+};
+
+export const catalogPrefix = (city: CityCode = "spb") =>
+  city === "nvk" ? "/catalog_n" : "/catalog_s";
+
+export const catalogHref = (category: Category, city: CityCode = "spb") =>
+  `${catalogPrefix(city)}/${categoryToSegment[category]}/`;
+
+export const productHref = (category: Category, slug: string, city: CityCode = "spb") =>
+  `${catalogPrefix(city)}/${categoryToSegment[category]}/${slug}/`;
+
+export function categoryForCatalogPath(path: string): Category | undefined {
+  const segments = path.split("/").filter(Boolean);
+  for (const segment of segments) {
+    const category = segmentToCategory[segment] ?? sectionCategoryAliases[segment];
+    if (category) return category;
+  }
+  return undefined;
+}
+
+export function catalogSectionTitle(path: string, fallback: string): string {
+  const segments = path.split("/").filter(Boolean);
+  for (let index = segments.length - 1; index >= 0; index -= 1) {
+    const title = sectionTitles[segments[index]];
+    if (title) return title;
+  }
+  return fallback;
+}
 
 export const categories: CategoryInfo[] = [
   {
