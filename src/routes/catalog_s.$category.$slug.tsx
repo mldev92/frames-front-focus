@@ -1,9 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Heart, ChevronRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { getProduct, getRelated } from "@/lib/api/bitrix";
-import { catalogHref } from "@/data/categories";
+import { catalogSectionTitle } from "@/data/categories";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { ProductCard } from "@/components/ProductCard";
@@ -14,17 +13,40 @@ import { LensPurposeModal } from "@/components/LensPurposeModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { TBankWidget } from "@/components/TBankWidget";
 import { cn } from "@/lib/utils";
+import { useCityStore, type CityCode } from "@/lib/store/city";
+import { CatalogRouteView } from "@/components/CatalogRouteView";
+import {
+  applyCatalogState,
+  catalogSearchSchema,
+  resolveCatalogRoute,
+  type CatalogSearch,
+} from "@/lib/catalog-route";
 
 export const Route = createFileRoute("/catalog_s/$category/$slug")({
-  loader: async ({ params }) => {
-    const product = await getProduct(params.slug);
-    if (!product) throw notFound();
-    const related = await getRelated(params.category, params.slug, 4);
-    return { product, related };
+  validateSearch: (search: Record<string, unknown>) => catalogSearchSchema.parse(search),
+  loaderDeps: ({ search }) => search,
+  loader: async ({ params, deps, abortController }) => {
+    const resolved = await resolveCatalogRoute(
+      `${params.category}/${params.slug}`,
+      deps,
+      "spb",
+      abortController.signal,
+    );
+    if (!resolved) throw notFound();
+    return resolved;
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) return { meta: [{ title: "Товар · ОПТИКА 100%" }] };
-    const p = loaderData.product;
+    if (loaderData.kind === "catalog") {
+      return {
+        meta: [{ title: "Каталог · ОПТИКА 100%" }],
+        links: [{
+          rel: "canonical",
+          href: `https://optika100.com/catalog_s/${params.category}/${params.slug}/`,
+        }],
+      };
+    }
+    const p = loaderData.data.product;
     return {
       meta: [
         { title: `${p.brand} ${p.name} — купить · ОПТИКА 100%` },
@@ -42,7 +64,7 @@ export const Route = createFileRoute("/catalog_s/$category/$slug")({
       ],
     };
   },
-  component: ProductPage,
+  component: ProductRoutePage,
   notFoundComponent: () => (
     <div className="py-32 text-center">
       <h1 className="font-serif text-3xl">Товар не найден</h1>
@@ -53,9 +75,56 @@ export const Route = createFileRoute("/catalog_s/$category/$slug")({
   ),
 });
 
-function ProductPage() {
-  const data = Route.useLoaderData() as { product: Product; related: Product[] };
+export interface ProductRouteData {
+  product: Product;
+  related: Product[];
+}
+
+function ProductRoutePage() {
+  const params = Route.useParams();
+  const resolved = Route.useLoaderData();
+  const search = Route.useSearch() as CatalogSearch;
+  const navigate = Route.useNavigate();
+
+  if (resolved.kind === "catalog") {
+    return (
+      <CatalogRouteView
+        sectionPath={resolved.sectionPath}
+        catalogPath={`/catalog_s/${resolved.sectionPath}`}
+        city="spb"
+        result={resolved.result}
+        search={search}
+        onRetry={() => navigate({ search: (current) => ({ ...current }), replace: true })}
+        onStateChange={(next) => {
+          void navigate({
+            search: (current: CatalogSearch) => applyCatalogState(current, next),
+            resetScroll: next.page !== undefined,
+          });
+        }}
+      />
+    );
+  }
+
+  return (
+    <ProductPage
+      data={resolved.data}
+      city="spb"
+      catalogPath={`/catalog_s/${params.category}`}
+    />
+  );
+}
+
+export function ProductPage({
+  data,
+  city,
+  catalogPath,
+}: {
+  data: ProductRouteData;
+  city: CityCode;
+  catalogPath: string;
+}) {
   const { product, related } = data;
+  const setCity = useCityStore((state) => state.setCity);
   const displayBrand = getProductDisplayBrand(product);
   const { add, toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
@@ -69,6 +138,8 @@ function ProductPage() {
     ? [selectedColor.image, ...product.images.filter((img) => img !== selectedColor.image)]
     : product.images;
   const currentImage = galleryImages[activeImg] ?? galleryImages[0] ?? product.images[0];
+
+  useEffect(() => setCity(city), [city, setCity]);
 
   const isLens = product.category === "kontaktnye-linzy";
   const isFrameLike = product.category === "opravy" || product.category === "linzy-dlya-ochkov";
@@ -94,8 +165,8 @@ function ProductPage() {
           Главная
         </Link>
         <ChevronRight className="h-3 w-3" />
-        <a href={catalogHref(product.category)} className="hover:text-foreground capitalize">
-          {categoryName(product.category)}
+        <a href={`${catalogPath.replace(/\/$/, "")}/`} className="hover:text-foreground capitalize">
+          {catalogSectionTitle(catalogPath, categoryName(product.category))}
         </a>
         <ChevronRight className="h-3 w-3" />
         <span>{product.name}</span>
@@ -316,7 +387,7 @@ function ProductPage() {
           <h2 className="font-serif text-2xl lg:text-3xl mb-8">Похожие товары</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-10">
             {related.map((p) => (
-              <ProductCard key={p.slug} product={p} />
+              <ProductCard key={p.slug} product={p} catalogPath={catalogPath} city={city} />
             ))}
           </div>
         </section>

@@ -7,6 +7,7 @@ import { getCatalogBanners } from "@/data/catalog-banners";
 import { CONTACT } from "@/data/contact";
 import type { Category, Product } from "@/data/types";
 import type { CatalogPage, CatalogQuery, FacetKey as ServerFacetKey } from "@/lib/api/bitrix";
+import type { CityCode } from "@/lib/store/city";
 import { cn } from "@/lib/utils";
 import { GenderIcon, genderToIconKind } from "@/components/ui/GenderIcon";
 
@@ -48,6 +49,8 @@ interface ListingProps {
   appliedPriceMax?: number;
   page: number;
   loading?: boolean;
+  productBasePath?: string;
+  city?: CityCode;
   onStateChange: (next: CatalogStateChange) => void;
 }
 
@@ -709,6 +712,8 @@ export function CatalogListing({
   appliedPriceMax,
   page,
   loading,
+  productBasePath,
+  city = "spb",
   onStateChange,
 }: ListingProps) {
   // The current page slice — the SERVER already applied every filter; this
@@ -909,6 +914,8 @@ export function CatalogListing({
             key={product.slug}
             product={product}
             compactLensPreview={categoryKey === "kontaktnye-linzy"}
+            catalogPath={productBasePath}
+            city={city}
           />,
         );
         productIndex += 1;
@@ -918,7 +925,7 @@ export function CatalogListing({
     }
 
     return cells;
-  }, [categoryKey, filtered, gridCols]);
+  }, [categoryKey, city, filtered, gridCols, productBasePath]);
 
   const hasFacet = (k: FacetKey) => facets.includes(k);
   const handlePreorderSubmit = (e: React.FormEvent) => {

@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, notFound } from "@tanstack/react-router";
-import { segmentToCategory } from "@/data/categories";
+import { categoryForCatalogPath } from "@/data/categories";
 import type { Category } from "@/data/types";
 
 type FacetKey =
@@ -68,7 +68,7 @@ export const catalogConfig: Record<Category, CatalogConfig> = {
 // Layout-only route — validates category and renders child (index or PDP)
 export const Route = createFileRoute("/catalog_s/$category")({
   loader: ({ params }) => {
-    const category = segmentToCategory[params.category];
+    const category = categoryForCatalogPath(params.category);
     if (!category) throw notFound();
     return { category };
   },

@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { Heart } from "lucide-react";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
@@ -7,10 +6,13 @@ import { categoryToSegment } from "@/data/categories";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { cn } from "@/lib/utils";
 import { getProductGallery } from "@/lib/api/bitrix";
+import type { CityCode } from "@/lib/store/city";
 
 interface ProductCardProps {
   product: Product;
   compactLensPreview?: boolean;
+  catalogPath?: string;
+  city?: CityCode;
 }
 
 const noTryOnCategories = new Set<Product["category"]>([
@@ -18,7 +20,12 @@ const noTryOnCategories = new Set<Product["category"]>([
   "linzy-dlya-ochkov",
 ]);
 
-export function ProductCard({ product, compactLensPreview = false }: ProductCardProps) {
+export function ProductCard({
+  product,
+  compactLensPreview = false,
+  catalogPath,
+  city = "spb",
+}: ProductCardProps) {
   const { toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
   const [selectedColorName, setSelectedColorName] = useState<string | undefined>();
@@ -39,7 +46,7 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
   const prepareHoverImage = () => {
     if (selectedColor?.image || hoverImage || galleryRequested.current) return;
     galleryRequested.current = true;
-    void getProductGallery(product.slug).then((images) => {
+    void getProductGallery(product.slug, city, catalogPath?.split("/").filter(Boolean).at(-1) ?? "").then((images) => {
       const candidate =
         (images[1] && images[1] !== primaryImage ? images[1] : undefined) ??
         images.find((image) => image && image !== primaryImage);
@@ -52,9 +59,12 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
 
   return (
     <div className="group/card">
-      <Link
-        to="/catalog_s/$category/$slug"
-        params={{ category: categoryToSegment[product.category], slug: product.slug }}
+      <a
+        href={
+          catalogPath
+            ? `${catalogPath.replace(/\/$/, "")}/${product.slug}/`
+            : `/catalog_s/${categoryToSegment[product.category]}/${product.slug}/`
+        }
         className="block relative aspect-square bg-surface rounded-sm overflow-hidden transition-all duration-500 group-hover/card:bg-cream/60 group-hover/card:shadow-sm"
         onMouseEnter={prepareHoverImage}
         onFocus={prepareHoverImage}
@@ -153,16 +163,19 @@ export function ProductCard({ product, compactLensPreview = false }: ProductCard
             fill={isSaved ? "var(--brand)" : "none"}
           />
         </button>
-      </Link>
+      </a>
       <div className="mt-3 space-y-1.5">
         <div className="text-xs text-muted-foreground uppercase tracking-wider">{product.brand}</div>
-        <Link
-          to="/catalog_s/$category/$slug"
-          params={{ category: categoryToSegment[product.category], slug: product.slug }}
+        <a
+          href={
+            catalogPath
+              ? `${catalogPath.replace(/\/$/, "")}/${product.slug}/`
+              : `/catalog_s/${categoryToSegment[product.category]}/${product.slug}/`
+          }
           className="block text-base font-semibold leading-snug hover:text-brand transition-colors"
         >
           {product.name}
-        </Link>
+        </a>
         {product.colors && product.colors.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {displayColors.map((c) => {

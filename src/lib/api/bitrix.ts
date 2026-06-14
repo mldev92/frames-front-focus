@@ -22,6 +22,18 @@ const BASE = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\
 
 const url = (path: string) => `${BASE}/api/store/${path}`;
 const productGalleryCache = new Map<string, Promise<string[]>>();
+const regionalProductCache = new Map<string, Product>();
+
+function productCacheKey(city: "spb" | "nvk", slug: string): string {
+  return `${city}:${slug}`;
+}
+
+function cacheProducts(products: Product[], city: "spb" | "nvk"): Product[] {
+  for (const product of products) {
+    regionalProductCache.set(productCacheKey(city, product.slug), product);
+  }
+  return products;
+}
 
 async function hydrateProductGalleries(
   products: Product[],
@@ -46,12 +58,12 @@ async function hydrateProductGalleries(
       );
     }));
     const galleries = Object.assign({}, ...responses.map((data) => data.galleries));
-    return products.map((product) => {
+    return cacheProducts(products.map((product) => {
       const gallery = galleries[product.slug];
       if (!gallery?.length) return product;
-      productGalleryCache.set(product.slug, Promise.resolve(gallery));
+      productGalleryCache.set(productCacheKey(city, product.slug), Promise.resolve(gallery));
       return { ...product, images: gallery };
-    });
+    }), city);
   } catch (error) {
     console.error("[bitrix] gallery batch unavailable:", error);
     return products;
@@ -93,6 +105,7 @@ export interface ProductQuery {
   brand?: string;
   priceMin?: number;
   priceMax?: number;
+  city?: "spb" | "nvk";
 }
 
 /** Map a URL segment (e.g. "opravy") to the v2 Category union for fallbacks. */
@@ -108,7 +121,10 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
     const params = new URLSearchParams({ category: categoryOrSegment });
     for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== "") params.set(k, String(v));
     const data = await fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
-    return hydrateProductGalleries(data.products.map(normalizeProduct));
+    return hydrateProductGalleries(
+      cacheProducts(data.products.map(normalizeProduct), q.city ?? "spb"),
+      q.city ?? "spb",
+    );
   } catch (e) {
     console.error("[bitrix] getProducts fallback:", e);
     const cat = toCategory(categoryOrSegment) ?? (categoryOrSegment as Category);
@@ -126,7 +142,10 @@ export async function getProductsPage(categoryOrSegment: string, q: ProductQuery
   const params = new URLSearchParams({ category: categoryOrSegment });
   for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== "") params.set(k, String(v));
   const data = await fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
-  return { ...data, products: data.products.map(normalizeProduct) };
+  return {
+    ...data,
+    products: cacheProducts(data.products.map(normalizeProduct), q.city ?? "spb"),
+  };
 }
 
 // getAllProducts (fetch-every-page fan-out) was REMOVED in A2: with honest
@@ -134,15 +153,39 @@ export async function getProductsPage(categoryOrSegment: string, q: ProductQuery
 // catalog now makes exactly one getCatalogPage request per state.
 
 /** Single product by slug (element CODE). Returns null when not found. */
-export async function getProduct(slug: string): Promise<Product | null> {
+export async function getProduct(
+  slug: string,
+  city: "spb" | "nvk" = "spb",
+  section = "",
+): Promise<Product | null> {
   if (!BASE) return mockGetProduct(slug) ?? null;
+  const cached = regionalProductCache.get(productCacheKey(city, slug));
+  if (cached) return cached;
+
+  if (city === "nvk") {
+    if (!section) return null;
+    const first = await getProductsPage(section, { city, page: 1, limit: 96 });
+    let product = first.products.find((item) => item.slug === slug);
+    for (let page = 2; page <= first.pages && !product; page += 1) {
+      const next = await getProductsPage(section, { city, page, limit: 96 });
+      product = next.products.find((item) => item.slug === slug);
+    }
+    if (!product) return null;
+    const images = await getProductGallery(slug, city, section);
+    const hydrated = images.length ? { ...product, images } : product;
+    regionalProductCache.set(productCacheKey(city, slug), hydrated);
+    return hydrated;
+  }
+
   try {
     const res = await fetch(url(`product.php?slug=${encodeURIComponent(slug)}`));
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Bitrix API ${res.status}`);
     const data = (await res.json()) as Product | { error: string };
     if ("error" in data) return null;
-    return normalizeProduct(data);
+    const product = normalizeProduct(data);
+    regionalProductCache.set(productCacheKey(city, slug), product);
+    return product;
   } catch (e) {
     console.error("[bitrix] getProduct fallback:", e);
     return mockGetProduct(slug) ?? null;
@@ -155,20 +198,34 @@ export async function getProduct(slug: string): Promise<Product | null> {
  * after the user hovers or focuses them. The promise cache prevents duplicate
  * requests when the same product appears in multiple carousels/sections.
  */
-export function getProductGallery(slug: string): Promise<string[]> {
-  const cached = productGalleryCache.get(slug);
+export function getProductGallery(
+  slug: string,
+  city: "spb" | "nvk" = "spb",
+  section = "",
+): Promise<string[]> {
+  const cacheKey = productCacheKey(city, slug);
+  const cached = productGalleryCache.get(cacheKey);
   if (cached) return cached;
 
-  const request = getProduct(slug)
-    .then((product) => product?.images ?? [])
-    .catch(() => []);
-  productGalleryCache.set(slug, request);
+  const request = city === "nvk"
+    ? fetchJson<{ galleries: Record<string, string[]> }>(
+        `galleries.php?slugs=${encodeURIComponent(slug)}&city=nvk`,
+      ).then((data) => data.galleries[slug] ?? []).catch(() => [])
+    : getProduct(slug, city, section)
+        .then((product) => product?.images ?? [])
+        .catch(() => []);
+  productGalleryCache.set(cacheKey, request);
   return request;
 }
 
 /** Related products: same category, excluding the current slug. */
-export async function getRelated(categoryOrSegment: string, excludeSlug: string, limit = 4): Promise<Product[]> {
-  const list = await getProducts(categoryOrSegment, { limit: limit + 4 });
+export async function getRelated(
+  categoryOrSegment: string,
+  excludeSlug: string,
+  limit = 4,
+  city: "spb" | "nvk" = "spb",
+): Promise<Product[]> {
+  const list = await getProducts(categoryOrSegment, { limit: limit + 4, city });
   return list.filter((p) => p.slug !== excludeSlug).slice(0, limit);
 }
 
@@ -241,7 +298,7 @@ export async function getCatalogPage(
   if (!res.ok) throw new Error(`Bitrix API ${res.status} for catalog page`);
   const data = (await res.json()) as Partial<CatalogPage> & Pick<CatalogPage, "products" | "total" | "page" | "pages" | "source">;
   const products = await hydrateProductGalleries(
-    data.products.map(normalizeProduct),
+    cacheProducts(data.products.map(normalizeProduct), q.city ?? "spb"),
     q.city ?? "spb",
   );
   const prices = products.map((product) => product.price).filter((price) => Number.isFinite(price));

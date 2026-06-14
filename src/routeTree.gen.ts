@@ -33,6 +33,8 @@ import { Route as UslugiSlugRouteImport } from './routes/uslugi.$slug'
 import { Route as PersonalPrivateRouteImport } from './routes/personal_.private'
 import { Route as PersonalOrdersRouteImport } from './routes/personal_.orders'
 import { Route as Catalog_sCategoryRouteImport } from './routes/catalog_s.$category'
+import { Route as Catalog_sSplatRouteImport } from './routes/catalog_s.$'
+import { Route as Catalog_nSplatRouteImport } from './routes/catalog_n.$'
 import { Route as BlogCategoryRouteImport } from './routes/blog.$category'
 import { Route as Catalog_sCategoryIndexRouteImport } from './routes/catalog_s.$category.index'
 import { Route as BlogCategoryIndexRouteImport } from './routes/blog.$category.index'
@@ -161,6 +163,16 @@ const Catalog_sCategoryRoute = Catalog_sCategoryRouteImport.update({
   path: '/catalog_s/$category',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Catalog_sSplatRoute = Catalog_sSplatRouteImport.update({
+  id: '/catalog_s/$',
+  path: '/catalog_s/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Catalog_nSplatRoute = Catalog_nSplatRouteImport.update({
+  id: '/catalog_n/$',
+  path: '/catalog_n/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogCategoryRoute = BlogCategoryRouteImport.update({
   id: '/$category',
   path: '/$category',
@@ -214,6 +226,8 @@ export interface FileRoutesByFullPath {
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$category': typeof BlogCategoryRouteWithChildren
+  '/catalog_n/$': typeof Catalog_nSplatRoute
+  '/catalog_s/$': typeof Catalog_sSplatRoute
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/personal/orders': typeof PersonalOrdersRoute
   '/personal/private': typeof PersonalPrivateRoute
@@ -244,6 +258,8 @@ export interface FileRoutesByTo {
   '/stellest-katalog-s-linzami': typeof StellestKatalogSLinzamiRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
+  '/catalog_n/$': typeof Catalog_nSplatRoute
+  '/catalog_s/$': typeof Catalog_sSplatRoute
   '/personal/orders': typeof PersonalOrdersRoute
   '/personal/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
@@ -276,6 +292,8 @@ export interface FileRoutesById {
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$category': typeof BlogCategoryRouteWithChildren
+  '/catalog_n/$': typeof Catalog_nSplatRoute
+  '/catalog_s/$': typeof Catalog_sSplatRoute
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/personal_/orders': typeof PersonalOrdersRoute
   '/personal_/private': typeof PersonalPrivateRoute
@@ -310,6 +328,8 @@ export interface FileRouteTypes {
     | '/tinkoff'
     | '/uslugi'
     | '/blog/$category'
+    | '/catalog_n/$'
+    | '/catalog_s/$'
     | '/catalog_s/$category'
     | '/personal/orders'
     | '/personal/private'
@@ -340,6 +360,8 @@ export interface FileRouteTypes {
     | '/stellest-katalog-s-linzami'
     | '/tinkoff'
     | '/uslugi'
+    | '/catalog_n/$'
+    | '/catalog_s/$'
     | '/personal/orders'
     | '/personal/private'
     | '/uslugi/$slug'
@@ -371,6 +393,8 @@ export interface FileRouteTypes {
     | '/tinkoff'
     | '/uslugi'
     | '/blog/$category'
+    | '/catalog_n/$'
+    | '/catalog_s/$'
     | '/catalog_s/$category'
     | '/personal_/orders'
     | '/personal_/private'
@@ -403,6 +427,8 @@ export interface RootRouteChildren {
   StellestKatalogSLinzamiRoute: typeof StellestKatalogSLinzamiRoute
   TinkoffRoute: typeof TinkoffRoute
   UslugiRoute: typeof UslugiRouteWithChildren
+  Catalog_nSplatRoute: typeof Catalog_nSplatRoute
+  Catalog_sSplatRoute: typeof Catalog_sSplatRoute
   Catalog_sCategoryRoute: typeof Catalog_sCategoryRouteWithChildren
   PersonalOrdersRoute: typeof PersonalOrdersRoute
   PersonalPrivateRoute: typeof PersonalPrivateRoute
@@ -578,6 +604,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Catalog_sCategoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalog_s/$': {
+      id: '/catalog_s/$'
+      path: '/catalog_s/$'
+      fullPath: '/catalog_s/$'
+      preLoaderRoute: typeof Catalog_sSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/catalog_n/$': {
+      id: '/catalog_n/$'
+      path: '/catalog_n/$'
+      fullPath: '/catalog_n/$'
+      preLoaderRoute: typeof Catalog_nSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/$category': {
       id: '/blog/$category'
       path: '/$category'
@@ -696,6 +736,8 @@ const rootRouteChildren: RootRouteChildren = {
   StellestKatalogSLinzamiRoute: StellestKatalogSLinzamiRoute,
   TinkoffRoute: TinkoffRoute,
   UslugiRoute: UslugiRouteWithChildren,
+  Catalog_nSplatRoute: Catalog_nSplatRoute,
+  Catalog_sSplatRoute: Catalog_sSplatRoute,
   Catalog_sCategoryRoute: Catalog_sCategoryRouteWithChildren,
   PersonalOrdersRoute: PersonalOrdersRoute,
   PersonalPrivateRoute: PersonalPrivateRoute,
