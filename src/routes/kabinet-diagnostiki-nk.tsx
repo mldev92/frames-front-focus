@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState, type ReactNode } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { serviceHref, services } from "@/data/services";
 import { AppointmentModal } from "@/components/AppointmentModal";
+import { useCityStore } from "@/lib/store/city";
 
 const others = services.filter((service) => service.slug !== "diagnostika");
 
@@ -72,6 +73,13 @@ function FeatureList({ items }: { items: string[] }) {
 function DiagnosticsNkPage() {
   const [aptOpen, setAptOpen] = useState(false);
   const openApt = () => setAptOpen(true);
+  const city = useCityStore((state) => state.city);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (city !== "spb") return;
+    void navigate({ to: "/kabinet-diagnostiki-spb" });
+  }, [city, navigate]);
 
   return (
     <div>

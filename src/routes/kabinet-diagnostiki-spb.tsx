@@ -1,7 +1,8 @@
-import { useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { serviceHref, services } from "@/data/services";
 import { AppointmentModal } from "@/components/AppointmentModal";
+import { useCityStore } from "@/lib/store/city";
 
 const others = services.filter((s) => s.slug !== "diagnostika");
 
@@ -34,6 +35,13 @@ function BrandBtn({ onClick, children }: { onClick: () => void; children: React.
 function KabinetDiagnostikiPage() {
   const [aptOpen, setAptOpen] = useState(false);
   const openApt = () => setAptOpen(true);
+  const city = useCityStore((state) => state.city);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (city !== "nvk") return;
+    void navigate({ to: "/kabinet-diagnostiki-nk" });
+  }, [city, navigate]);
 
   return (
     <div>

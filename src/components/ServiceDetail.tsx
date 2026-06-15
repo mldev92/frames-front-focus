@@ -5,11 +5,13 @@ import { toast } from "sonner";
 import { services, serviceHref } from "@/data/services";
 import type { Service } from "@/data/types";
 import { submitCallback } from "@/lib/api/bitrix";
+import { useCityStore } from "@/lib/store/city";
 
 export function ServiceDetail({ service }: { service: Service }) {
   const others = services.filter((s) => s.slug !== service.slug);
   const [sdName, setSdName] = useState("");
   const [sdPhone, setSdPhone] = useState("");
+  const city = useCityStore((state) => state.city);
 
   return (
     <div>
@@ -134,7 +136,7 @@ export function ServiceDetail({ service }: { service: Service }) {
             {others.map((o) => (
               <a
                 key={o.slug}
-                href={serviceHref(o.slug)}
+                href={serviceHref(o.slug, city)}
                 className="block bg-background p-6 rounded-sm hover:shadow-md transition-shadow"
               >
                 <div className="font-serif text-lg">{o.title}</div>

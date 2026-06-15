@@ -3,6 +3,7 @@ import { CONTACT } from "@/data/contact";
 import { SiteLogo } from "./SiteLogo";
 import { useCityStore } from "@/lib/store/city";
 import { regionalCatalogHref } from "@/data/categories";
+import { serviceHref } from "@/data/services";
 
 const COLS = [
   {
@@ -66,16 +67,21 @@ export function Footer() {
             <div key={col.title}>
               <div className="font-serif text-sm uppercase tracking-wider mb-4">{col.title}</div>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                {col.links.map(([label, href]) => (
-                  <li key={`${label}-${href}`}>
-                    <a
-                      href={regionalCatalogHref(href, city)}
-                      className="hover:text-foreground transition-colors"
-                    >
-                      {label}
-                    </a>
-                  </li>
-                ))}
+                {col.links.map(([label, href]) => {
+                  const resolvedHref =
+                    href === "/kabinet-diagnostiki-spb/" ? serviceHref("diagnostika", city) : href;
+
+                  return (
+                    <li key={`${label}-${href}`}>
+                      <a
+                        href={regionalCatalogHref(resolvedHref, city)}
+                        className="hover:text-foreground transition-colors"
+                      >
+                        {label}
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

@@ -1,4 +1,5 @@
 import type { Service } from "./types";
+import type { CityCode } from "@/lib/store/city";
 
 export const services: Service[] = [
   {
@@ -100,4 +101,10 @@ const serviceLiveHref: Record<string, string> = {
   diagnostika: "/kabinet-diagnostiki-spb/",
 };
 
-export const serviceHref = (slug: string) => serviceLiveHref[slug] ?? `/uslugi/${slug}`;
+export const diagnosticsHref = (city: CityCode = "spb") =>
+  city === "nvk" ? "/kabinet-diagnostiki-nk/" : "/kabinet-diagnostiki-spb/";
+
+export const serviceHref = (slug: string, city: CityCode = "spb") => {
+  if (slug === "diagnostika") return diagnosticsHref(city);
+  return serviceLiveHref[slug] ?? `/uslugi/${slug}`;
+};

@@ -21,6 +21,7 @@ import {
   Upload,
 } from "lucide-react";
 import { catalogHref } from "@/data/categories";
+import { diagnosticsHref } from "@/data/services";
 import { cn } from "@/lib/utils";
 
 type FrameCategory = "opravy" | "solntsezashchitnye";
@@ -1000,6 +1001,10 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
 }
 
 function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
+  const city = useCityStore((state) => state.city);
+  const primaryHref =
+    menu.helper.primaryHref === "/kabinet-diagnostiki-spb" ? diagnosticsHref(city) : menu.helper.primaryHref;
+
   return (
     <div className={panelShellClass}>
       <div className="bg-white">
@@ -1161,7 +1166,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
               <p className="mt-3 text-[13px] leading-6 text-white/70">{menu.helper.text}</p>
               <div className="mt-5 space-y-2">
                 <a
-                  href={menu.helper.primaryHref}
+                  href={primaryHref}
                   className="inline-flex w-full items-center justify-between rounded-full bg-brand px-4 py-3 text-[12.5px] font-semibold text-brand-foreground transition-opacity hover:opacity-90"
                 >
                   Записаться в салон
@@ -1197,6 +1202,8 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
 }
 
 function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
+  const city = useCityStore((state) => state.city);
+
   return (
     <div className={panelShellClass}>
       <div className="bg-white">
@@ -1374,7 +1381,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
             {menu.utilities.map((item) => (
               <a
                 key={item.label}
-                href={item.href}
+                href={item.href === "/kabinet-diagnostiki-spb" ? diagnosticsHref(city) : item.href}
                 className="inline-flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-3 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand"
               >
                 <span className="text-muted-foreground">{item.icon}</span>

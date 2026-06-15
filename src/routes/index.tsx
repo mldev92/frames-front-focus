@@ -268,6 +268,7 @@ function MainV2Page() {
   const contactLensProducts = CONTACT_LENS_HOMEPAGE_PRODUCTS;
   const [aptOpen, setAptOpen] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
+  const city = useCityStore((state) => state.city);
 
   return (
     <div>
@@ -931,7 +932,7 @@ function MainV2Page() {
             }
             return (
               <Reveal key={s.slug} delay={i * 80}>
-                <a href={serviceHref(s.slug)} className={className}>
+                <a href={serviceHref(s.slug, city)} className={className}>
                   {inner}
                 </a>
               </Reveal>
@@ -1424,7 +1425,7 @@ function MainV2BuyTogetherBanner() {
             >
               <span>Не знаете, с&nbsp;чего начать?</span>
               <a
-                href={serviceHref("podbor-ochkov")}
+                href={serviceHref("podbor-ochkov", city)}
                 className="o100-bts-quiz-link"
                 style={{ color: "var(--brand)", fontWeight: 600 }}
               >

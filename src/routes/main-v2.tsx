@@ -14,6 +14,7 @@ import { bestsellers, newArrivals } from "@/data/products";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
 import { promoBanner, promotions } from "@/data/promotions";
+import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/main-v2")({
   head: () => ({
@@ -58,6 +59,7 @@ function HomePage() {
   const recent = articles.slice(0, 3);
   const fourCats = categories.filter((c) => c.slug !== "aksessuary").slice(0, 4);
   const [aptOpen, setAptOpen] = useState(false);
+  const city = useCityStore((state) => state.city);
 
   return (
     <div>
@@ -242,7 +244,7 @@ function HomePage() {
           {SERVICE_LIST.map((s, i) => (
             <Reveal key={s.slug} delay={i * 80}>
               <a
-                href={s.slug === "priem-vracha" ? undefined : serviceHref(s.slug)}
+                href={s.slug === "priem-vracha" ? undefined : serviceHref(s.slug, city)}
                 onClick={s.slug === "priem-vracha" ? (e) => { e.preventDefault(); setAptOpen(true); } : undefined}
                 className="group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer"
               >
@@ -280,7 +282,7 @@ function HomePage() {
               индивидуальная программа наблюдения.
             </p>
             <a
-              href={serviceHref("diagnostika")}
+              href={serviceHref("diagnostika", city)}
               className="mt-8 inline-flex items-center gap-2 bg-foreground text-background rounded-full px-6 py-3 hover:opacity-90"
             >
               Записаться на диагностику <ArrowRight className="h-4 w-4" />

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { services, serviceHref } from "@/data/services";
+import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/uslugi")({
   head: () => ({
@@ -22,6 +23,8 @@ export const Route = createFileRoute("/uslugi")({
 });
 
 function ServicesHub() {
+  const city = useCityStore((state) => state.city);
+
   return (
     <div>
       <section className="bg-surface">
@@ -40,7 +43,7 @@ function ServicesHub() {
           {services.map((s) => (
             <a
               key={s.slug}
-              href={serviceHref(s.slug)}
+              href={serviceHref(s.slug, city)}
               className="group block bg-surface rounded-sm overflow-hidden hover:shadow-lg transition-shadow"
             >
               <div className="aspect-[16/10] overflow-hidden">
