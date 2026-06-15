@@ -1,4 +1,6 @@
+import { useState } from "react";
 import { Mail, MessageCircle, Send } from "lucide-react";
+import { AppointmentModal } from "@/components/AppointmentModal";
 import { CONTACT } from "@/data/contact";
 import { SiteLogo } from "./SiteLogo";
 import { useCityStore } from "@/lib/store/city";
@@ -50,6 +52,7 @@ const COLS = [
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const city = useCityStore((state) => state.city);
+  const [appointmentOpen, setAppointmentOpen] = useState(false);
 
   return (
     <footer className="mt-24 pt-16 pb-8" style={{ background: "#FFFEFE" }}>
@@ -73,12 +76,22 @@ export function Footer() {
 
                   return (
                     <li key={`${label}-${href}`}>
-                      <a
-                        href={regionalCatalogHref(resolvedHref, city)}
-                        className="hover:text-foreground transition-colors"
-                      >
-                        {label}
-                      </a>
+                      {href === "/uslugi/priem-vracha" ? (
+                        <button
+                          type="button"
+                          onClick={() => setAppointmentOpen(true)}
+                          className="hover:text-foreground transition-colors"
+                        >
+                          {label}
+                        </button>
+                      ) : (
+                        <a
+                          href={regionalCatalogHref(resolvedHref, city)}
+                          className="hover:text-foreground transition-colors"
+                        >
+                          {label}
+                        </a>
+                      )}
                     </li>
                   );
                 })}
@@ -123,6 +136,7 @@ export function Footer() {
           </div>
         </div>
       </div>
+      <AppointmentModal open={appointmentOpen} onOpenChange={setAppointmentOpen} />
     </footer>
   );
 }

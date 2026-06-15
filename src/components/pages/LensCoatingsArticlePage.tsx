@@ -1,10 +1,12 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
+import { AppointmentModal } from "@/components/AppointmentModal";
 import lensCoatingsCss from "@/content/pokrytiya-linz-dlya-ochkov.css?raw";
 import lensCoatingsHtml from "@/content/pokrytiya-linz-dlya-ochkov.html?raw";
 
 export function LensCoatingsArticlePage() {
   const rootRef = useRef<HTMLDivElement>(null);
+  const [appointmentOpen, setAppointmentOpen] = useState(false);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -51,6 +53,16 @@ export function LensCoatingsArticlePage() {
       cleanups.push(() => link.removeEventListener("click", handleTocClick));
     });
 
+    const handleAppointmentClick = (event: Event) => {
+      event.preventDefault();
+      setAppointmentOpen(true);
+    };
+
+    root.querySelectorAll<HTMLElement>("[data-appointment-trigger]").forEach((trigger) => {
+      trigger.addEventListener("click", handleAppointmentClick);
+      cleanups.push(() => trigger.removeEventListener("click", handleAppointmentClick));
+    });
+
     return () => cleanups.forEach((cleanup) => cleanup());
   }, []);
 
@@ -62,6 +74,7 @@ export function LensCoatingsArticlePage() {
         className="lens-coatings-page"
         dangerouslySetInnerHTML={{ __html: lensCoatingsHtml }}
       />
+      <AppointmentModal open={appointmentOpen} onOpenChange={setAppointmentOpen} />
     </>
   );
 }
