@@ -43,6 +43,16 @@ export function Header() {
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
+    if (!mounted) return;
+
+    const nextHref = regionalLocationHref(window.location, cityCode);
+    const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (nextHref === currentHref) return;
+
+    window.location.assign(nextHref);
+  }, [cityCode, mounted]);
+
+  useEffect(() => {
     if (!cityOpen) return;
 
     function onClickOutside(event: MouseEvent) {
@@ -60,12 +70,6 @@ export function Header() {
     if (code === cityCode) return;
 
     setCityCode(code);
-
-    const nextHref = regionalLocationHref(window.location, code);
-    const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    if (nextHref !== currentHref) {
-      window.location.assign(nextHref);
-    }
   }
 
   const cityLabel = CITY_LABELS[cityCode] ?? cityCode;
