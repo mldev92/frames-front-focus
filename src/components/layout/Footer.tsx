@@ -1,6 +1,8 @@
 import { Mail, MessageCircle, Send } from "lucide-react";
 import { CONTACT } from "@/data/contact";
 import { SiteLogo } from "./SiteLogo";
+import { useCityStore } from "@/lib/store/city";
+import { regionalCatalogHref } from "@/data/categories";
 
 const COLS = [
   {
@@ -28,7 +30,7 @@ const COLS = [
     links: [
       ["О нас", "/o-nas"],
       ["Салоны", "/contacts/"],
-      ["Журнал", "/blog/"],
+      ["Блог", "/blog/"],
       ["Покрытия очковых линз", "/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/"],
     ],
   },
@@ -46,6 +48,7 @@ const COLS = [
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
+  const city = useCityStore((state) => state.city);
 
   return (
     <footer className="mt-24 pt-16 pb-8" style={{ background: "#FFFEFE" }}>
@@ -65,7 +68,10 @@ export function Footer() {
               <ul className="space-y-2 text-sm text-muted-foreground">
                 {col.links.map(([label, href]) => (
                   <li key={`${label}-${href}`}>
-                    <a href={href} className="hover:text-foreground transition-colors">
+                    <a
+                      href={regionalCatalogHref(href, city)}
+                      className="hover:text-foreground transition-colors"
+                    >
                       {label}
                     </a>
                   </li>

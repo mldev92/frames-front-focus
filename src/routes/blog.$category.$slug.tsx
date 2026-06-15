@@ -51,7 +51,7 @@ function ArticlePage() {
         <nav className="text-xs text-muted-foreground mb-4 flex items-center gap-1">
           <Link to="/" className="hover:text-foreground">Главная</Link>
           <ChevronRight className="h-3 w-3" />
-          <Link to="/blog" className="hover:text-foreground">Журнал</Link>
+          <Link to="/blog" className="hover:text-foreground">Блог</Link>
           <ChevronRight className="h-3 w-3" />
           <Link
             to="/blog/$category"

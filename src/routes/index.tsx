@@ -24,6 +24,7 @@ import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
 import { CONTACT, PRIMARY_SALON } from "@/data/contact";
+import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -1047,7 +1048,7 @@ function MainV2Page() {
               className="text-[11px] uppercase tracking-[0.2em] mb-2"
               style={{ color: "var(--brand)" }}
             >
-              Журнал
+              Блог
             </div>
             <h2 className="font-serif text-3xl lg:text-4xl">Полезные статьи</h2>
           </div>
@@ -1447,6 +1448,9 @@ function MainV2BuyTogetherBanner() {
 function MainV2ProductCard({ product }: { product: Product }) {
   const { toggleSaved, saved } = useCart();
   const navigate = useNavigate();
+  const city = useCityStore((state) => state.city);
+  const productRoute =
+    city === "nvk" ? "/catalog_n/$category/$slug/" : "/catalog_s/$category/$slug/";
   const isSaved = saved.includes(product.slug);
   const hasHoverImage = product.images.length > 1;
   const dots = product.colors?.slice(0, 4) ?? [];
@@ -1475,7 +1479,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
     >
       <div className="relative block aspect-square">
         <Link
-          to="/catalog_s/$category/$slug"
+          to={productRoute}
           params={productRouteParams}
           className="relative block h-full w-full"
           aria-label={displayName}
@@ -1502,7 +1506,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
             type="button"
             onClick={() =>
               navigate({
-                to: "/catalog_s/$category/$slug",
+                to: productRoute,
                 params: productRouteParams,
               })
             }
@@ -1549,7 +1553,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
 
       <div className="flex flex-col gap-2" style={{ padding: "18px 20px 22px" }}>
         <Link
-          to="/catalog_s/$category/$slug"
+          to={productRoute}
           params={productRouteParams}
           className="text-sm text-foreground hover:text-brand transition-colors"
           style={{ lineHeight: 1.3 }}
@@ -1821,6 +1825,9 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
 
 function MainV2ContactLensCard({ product }: { product: Product }) {
   const { toggleSaved, saved } = useCart();
+  const city = useCityStore((state) => state.city);
+  const productRoute =
+    city === "nvk" ? "/catalog_n/$category/$slug/" : "/catalog_s/$category/$slug/";
   const isSaved = saved.includes(product.slug);
   const productRouteParams = {
     category: categoryToSegment[product.category],
@@ -1860,7 +1867,7 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
         }}
       >
         <Link
-          to="/catalog_s/$category/$slug"
+          to={productRoute}
           params={productRouteParams}
           className="absolute inset-0 block"
           aria-label={displayName}
@@ -1950,7 +1957,7 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
 
       <div className="flex flex-col gap-2" style={{ padding: "18px 20px 22px" }}>
         <Link
-          to="/catalog_s/$category/$slug"
+          to={productRoute}
           params={productRouteParams}
           className="font-serif text-foreground transition-colors hover:text-brand"
           style={{ fontSize: 18, lineHeight: 1.25 }}

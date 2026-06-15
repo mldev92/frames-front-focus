@@ -8,7 +8,7 @@ import { Route as BlogCategoryRoute } from "./blog.$category";
 export const Route = createFileRoute("/blog/$category/")({
   head: ({ params }) => {
     const cat = getBlogCategory(params.category);
-    if (!cat) return { meta: [{ title: "Журнал · ОПТИКА 100%" }] };
+    if (!cat) return { meta: [{ title: "Блог · ОПТИКА 100%" }] };
     return {
       meta: [
         { title: `${cat.title} — статьи · ОПТИКА 100%` },
@@ -29,7 +29,7 @@ function CategoryPage() {
       <nav className="text-xs text-muted-foreground mb-4 flex items-center gap-1">
         <Link to="/" className="hover:text-foreground">Главная</Link>
         <ChevronRight className="h-3 w-3" />
-        <Link to="/blog" className="hover:text-foreground">Журнал</Link>
+        <Link to="/blog" className="hover:text-foreground">Блог</Link>
       </nav>
       <h1 className="font-serif text-4xl lg:text-5xl">{category.title}</h1>
 

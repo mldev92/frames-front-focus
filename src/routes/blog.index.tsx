@@ -5,13 +5,13 @@ import { articles } from "@/data/articles";
 export const Route = createFileRoute("/blog/")({
   head: () => ({
     meta: [
-      { title: "Журнал · ОПТИКА 100%" },
+      { title: "Блог · ОПТИКА 100%" },
       {
         name: "description",
         content:
           "Статьи о подборе очков, контактных линз, моде на оправы и здоровье зрения.",
       },
-      { property: "og:title", content: "Журнал · ОПТИКА 100%" },
+      { property: "og:title", content: "Блог · ОПТИКА 100%" },
     ],
   }),
   component: JournalIndex,
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/blog/")({
 function JournalIndex() {
   return (
     <div className="mx-auto max-w-7xl px-4 lg:px-8 py-12">
-      <h1 className="font-serif text-4xl lg:text-5xl">Журнал</h1>
+      <h1 className="font-serif text-4xl lg:text-5xl">Блог</h1>
       <p className="mt-3 text-muted-foreground max-w-xl">
         Гид по очкам, линзам, моде и здоровью зрения от наших врачей и стилистов.
       </p>
