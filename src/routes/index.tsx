@@ -1215,6 +1215,8 @@ function MainV2Page() {
 }
 
 function MainV2BuyTogetherBanner() {
+  const city = useCityStore((state) => state.city);
+
   return (
     <section
       className="relative w-full overflow-hidden"
