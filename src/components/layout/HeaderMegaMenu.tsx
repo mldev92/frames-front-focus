@@ -1,5 +1,5 @@
 import { type ReactNode } from "react";
-import { useCityStore } from "@/lib/store/city";
+import { useCityStore, type CityCode } from "@/lib/store/city";
 import {
   ArrowRight,
   BookOpen,
@@ -21,7 +21,7 @@ import {
   Upload,
 } from "lucide-react";
 import { catalogHref } from "@/data/categories";
-import { diagnosticsHref } from "@/data/services";
+import { regionalSiteHref } from "@/lib/city-routing";
 import { cn } from "@/lib/utils";
 
 type FrameCategory = "opravy" | "solntsezashchitnye";
@@ -161,6 +161,7 @@ const menuHref = (category: Parameters<typeof catalogHref>[0], params?: Record<s
 };
 
 const frameHref = (category: FrameCategory, params?: Record<string, string>) => menuHref(category, params);
+const regionalMenuHref = (href: string, city: CityCode) => regionalSiteHref(href, city);
 
 const panelShellClass =
   "overflow-hidden rounded-b-[28px] border border-[#e7e2db] bg-white shadow-[0_12px_30px_rgba(33,24,18,0.08),0_28px_80px_rgba(33,24,18,0.10)]";
@@ -778,6 +779,8 @@ export function isMegaNavItem(item: HeaderNavItem): item is HeaderNavItem & { me
 }
 
 function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
+  const city = useCityStore((state) => state.city);
+
   return (
     <div className={panelShellClass}>
       <div className="bg-white">
@@ -796,7 +799,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
             </div>
 
             <a
-              href={menu.allHref}
+              href={regionalMenuHref(menu.allHref, city)}
               className="inline-flex items-center gap-2 self-start rounded-full border border-foreground px-4 py-2 text-[13px] text-foreground transition-colors hover:bg-foreground hover:text-background"
             >
               {menu.allLabel}
@@ -811,7 +814,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                 {menu.shapes.map((item) => (
                   <a
                     key={item.label}
-                    href={item.href}
+                    href={regionalMenuHref(item.href, city)}
                     className="group relative flex aspect-[1/0.82] flex-col items-center justify-between rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 text-center transition-all hover:-translate-y-0.5 hover:border-brand hover:bg-brand-50"
                   >
                     <span className="mt-2 flex w-full items-center justify-center">{item.icon}</span>
@@ -829,7 +832,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                 {menu.demographics.map((item) => (
                   <a
                     key={item.label}
-                    href={item.href}
+                    href={regionalMenuHref(item.href, city)}
                     className={cn(
                       "group flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-white px-2.5 py-[9px] text-[12.5px] transition-colors hover:border-brand hover:text-brand",
                       item.wide && "col-span-2",
@@ -848,7 +851,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                     Детские
                   </span>
                   <a
-                    href={menu.kidsGroup.href}
+                    href={regionalMenuHref(menu.kidsGroup.href, city)}
                     className="text-[11px] text-muted-foreground transition-colors hover:text-brand"
                   >
                     Все →
@@ -858,7 +861,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                   {menu.kidsGroup.items.map((item) => (
                     <a
                       key={item.label}
-                      href={item.href}
+                      href={regionalMenuHref(item.href, city)}
                       className="group grid grid-cols-[32px_1fr_auto] items-center gap-2.5 rounded-[14px] border border-[#ece7df] bg-white px-3 py-2 transition-colors hover:border-brand hover:bg-brand-50"
                     >
                       <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#ece7df] bg-[var(--cream)]">
@@ -885,7 +888,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                   {menu.construction.map((item) => (
                     <a
                       key={item.label}
-                      href={item.href}
+                      href={regionalMenuHref(item.href, city)}
                       className="group flex items-center gap-3 rounded-[12px] px-1 py-2 text-[13.5px] text-foreground transition-colors hover:text-brand"
                     >
                       {item.icon}
@@ -901,7 +904,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
               {sectionHeader("Материал", "Все →")}
               <div className="flex flex-wrap gap-2">
                 {menu.materials.map((item) => (
-                  <a key={item.label} href={item.href} className={chipClass}>
+                  <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
                     <span>{item.label}</span>
                   </a>
                 ))}
@@ -915,7 +918,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                   {menu.pricePresets.map((preset) => (
                     <a
                       key={preset.label}
-                      href={preset.href}
+                      href={regionalMenuHref(preset.href, city)}
                       className="rounded-[12px] border border-[#ece7df] bg-white px-3 py-2 text-left transition-colors hover:border-brand hover:bg-brand-50"
                     >
                       <strong className="block text-[12px] font-semibold text-foreground">{preset.label}</strong>
@@ -931,7 +934,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {menu.tags.map((item) => (
-                    <a key={item.label} href={item.href} className={chipClass}>
+                    <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
                       {item.label}
                     </a>
                   ))}
@@ -960,7 +963,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
               <div className="mt-auto flex items-center justify-between border-t border-dashed border-border pt-3">
                 <span className="font-serif text-[22px] leading-none text-foreground">{menu.featured.price}</span>
                 <a
-                  href={menu.featured.ctaHref}
+                  href={regionalMenuHref(menu.featured.ctaHref, city)}
                   className="inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
                 >
                   К коллекции
@@ -978,7 +981,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
               {menu.brandStrip.map((item, index) => (
                 <a
                   key={item.label}
-                  href={item.href}
+                  href={regionalMenuHref(item.href, city)}
                   className={cn(
                     "shrink-0 rounded-full border px-4 py-1.5 text-[12.5px] transition-colors",
                     index === 0
@@ -990,7 +993,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                 </a>
               ))}
             </div>
-            <a href={menu.brandStripHref} className="shrink-0 text-sm text-muted-foreground transition-colors hover:text-brand">
+            <a href={regionalMenuHref(menu.brandStripHref, city)} className="shrink-0 text-sm text-muted-foreground transition-colors hover:text-brand">
               Все бренды →
             </a>
           </div>
@@ -1002,8 +1005,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
 
 function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
   const city = useCityStore((state) => state.city);
-  const primaryHref =
-    menu.helper.primaryHref === "/kabinet-diagnostiki-spb" ? diagnosticsHref(city) : menu.helper.primaryHref;
+  const primaryHref = regionalMenuHref(menu.helper.primaryHref, city);
 
   return (
     <div className={panelShellClass}>
@@ -1021,7 +1023,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
             </div>
 
             <a
-              href={menu.allHref}
+              href={regionalMenuHref(menu.allHref, city)}
               className="inline-flex items-center gap-2 self-start rounded-full border border-foreground px-4 py-2 text-[13px] text-foreground transition-colors hover:bg-foreground hover:text-background"
             >
               {menu.allLabel}
@@ -1036,7 +1038,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                 {menu.contactModes.map((item) => (
                   <a
                     key={item.label}
-                    href={item.href}
+                    href={regionalMenuHref(item.href, city)}
                     className="group flex items-center gap-3 rounded-[16px] border border-[#ece7df] bg-white px-3 py-3 transition-colors hover:border-brand hover:bg-brand-50"
                   >
                     <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#e8dfd4] bg-[var(--cream)] text-brand">
@@ -1064,7 +1066,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                       {menu.sphereValues.map((item, index) => (
                         <a
                           key={item.label}
-                          href={item.href}
+                          href={regionalMenuHref(item.href, city)}
                           className={cn(
                             "border-r border-[#ece7df] px-2 py-2 text-center font-mono text-[11.5px] text-foreground transition-colors hover:bg-brand-50 hover:text-brand",
                             index === menu.sphereValues.length - 1 && "border-r-0",
@@ -1085,7 +1087,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {menu.cylinder.map((item) => (
-                      <a key={item.label} href={item.href} className={chipClass}>
+                      <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
                         {item.label}
                       </a>
                     ))}
@@ -1099,7 +1101,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {menu.addition.map((item) => (
-                      <a key={item.label} href={item.href} className={chipClass}>
+                      <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
                         {item.label}
                       </a>
                     ))}
@@ -1112,7 +1114,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {menu.bcValues.map((item) => (
-                      <a key={item.label} href={item.href} className={chipClass}>
+                      <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
                         {item.label}
                       </a>
                     ))}
@@ -1127,7 +1129,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                 {menu.needs.map((item) => (
                   <a
                     key={item.label}
-                    href={item.href}
+                    href={regionalMenuHref(item.href, city)}
                     className="group rounded-[14px] border border-[#ece7df] bg-white p-3 transition-colors hover:border-brand hover:bg-brand-50"
                   >
                     <div className="mb-2 flex items-center justify-between gap-2">
@@ -1148,7 +1150,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                   {menu.brands.map((item) => (
                     <a
                       key={item.label}
-                      href={item.href}
+                      href={regionalMenuHref(item.href, city)}
                       className="rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 transition-colors hover:border-brand hover:bg-brand-50"
                     >
                       <span className="block text-[13px] font-semibold text-foreground">{item.label}</span>
@@ -1173,7 +1175,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <a
-                  href={menu.helper.secondaryHref}
+                  href={regionalMenuHref(menu.helper.secondaryHref, city)}
                   className="inline-flex w-full items-center justify-between rounded-full border border-white/20 px-4 py-3 text-[12.5px] font-medium text-white transition-colors hover:bg-white/10"
                 >
                   Загрузить рецепт
@@ -1187,7 +1189,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
             {menu.utilities.map((item) => (
               <a
                 key={item.label}
-                href={item.href}
+                href={regionalMenuHref(item.href, city)}
                 className="inline-flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-3 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand"
               >
                 <span className="text-muted-foreground">{item.icon}</span>
@@ -1220,7 +1222,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
             </div>
 
             <a
-              href={menu.allHref}
+              href={regionalMenuHref(menu.allHref, city)}
               className="inline-flex items-center gap-2 self-start rounded-full border border-foreground px-4 py-2 text-[13px] text-foreground transition-colors hover:bg-foreground hover:text-background"
             >
               {menu.allLabel}
@@ -1235,7 +1237,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 {menu.lensTypes.map((item) => (
                   <a
                     key={item.label}
-                    href={item.href}
+                    href={regionalMenuHref(item.href, city)}
                     className="group flex items-center gap-3 rounded-[14px] px-2 py-2 transition-colors hover:bg-brand-50"
                   >
                     {item.icon}
@@ -1256,7 +1258,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 {menu.manufacturers.map((item) => (
                   <a
                     key={item.label}
-                    href={item.href}
+                    href={regionalMenuHref(item.href, city)}
                     className="flex items-center justify-between rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 transition-colors hover:border-brand hover:bg-brand-50"
                   >
                     <span>
@@ -1278,7 +1280,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {menu.indexValues.map((item) => (
-                    <a key={item.label} href={item.href} className={chipClass}>
+                    <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
                       {item.label}
                     </a>
                   ))}
@@ -1292,7 +1294,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {menu.materials.map((item) => (
-                      <a key={item.label} href={item.href} className={chipClass}>
+                      <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
                         {item.label}
                       </a>
                     ))}
@@ -1307,7 +1309,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 {menu.technologies.map((item) => (
                   <a
                     key={item.meta}
-                    href={item.href}
+                    href={regionalMenuHref(item.href, city)}
                     className="group rounded-[14px] border border-[#ece7df] bg-white p-3 transition-colors hover:border-brand hover:bg-brand-50"
                   >
                     <div className="mb-2 flex items-center justify-between gap-2">
@@ -1326,7 +1328,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {menu.coatingValues.map((item) => (
-                    <a key={item.label} href={item.href} className={chipClass}>
+                    <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
                       {item.label}
                     </a>
                   ))}
@@ -1340,7 +1342,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 {menu.purposes.map((item) => (
                   <a
                     key={item.label}
-                    href={item.href}
+                    href={regionalMenuHref(item.href, city)}
                     className="group flex items-center gap-3 rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 transition-colors hover:border-brand hover:bg-brand-50"
                   >
                     <span className="text-brand">{item.icon}</span>
@@ -1367,7 +1369,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                   ))}
                 </div>
                 <a
-                  href={menu.rxHelper.ctaHref}
+                  href={regionalMenuHref(menu.rxHelper.ctaHref, city)}
                   className="mt-4 inline-flex w-full items-center justify-between rounded-full bg-brand px-4 py-3 text-[12.5px] font-semibold text-brand-foreground transition-opacity hover:opacity-90"
                 >
                   Подобрать линзы
@@ -1381,7 +1383,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
             {menu.utilities.map((item) => (
               <a
                 key={item.label}
-                href={item.href === "/kabinet-diagnostiki-spb" ? diagnosticsHref(city) : item.href}
+                href={regionalMenuHref(item.href, city)}
                 className="inline-flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-3 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand"
               >
                 <span className="text-muted-foreground">{item.icon}</span>

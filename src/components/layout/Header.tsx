@@ -7,11 +7,11 @@ import { CONTACT, PRIMARY_SALON } from "@/data/contact";
 import { HEADER_NAV_ITEMS, HeaderMegaPanel, isMegaNavItem } from "./HeaderMegaMenu";
 import { SiteLogo } from "./SiteLogo";
 import { useCityStore, type CityCode, CITY_LABELS } from "@/lib/store/city";
+import { regionalLocationHref, regionalSiteHref } from "@/lib/city-routing";
 
-const CITIES: { code: CityCode | "russia"; label: string }[] = [
+const CITIES: { code: CityCode; label: string }[] = [
   { code: "spb", label: "Санкт-Петербург" },
   { code: "nvk", label: "Новокузнецк" },
-  { code: "russia", label: "Россия" },
 ];
 
 const PROMOS = [
@@ -55,12 +55,21 @@ export function Header() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [cityOpen]);
 
-  function selectCity(code: CityCode | "russia") {
-    if (code !== "russia") setCityCode(code);
+  function selectCity(code: CityCode) {
     setCityOpen(false);
+    if (code === cityCode) return;
+
+    setCityCode(code);
+
+    const nextHref = regionalLocationHref(window.location, code);
+    const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+    if (nextHref !== currentHref) {
+      window.location.assign(nextHref);
+    }
   }
 
   const cityLabel = CITY_LABELS[cityCode] ?? cityCode;
+  const regionalHref = (href: string) => regionalSiteHref(href, cityCode);
 
   const [promoIdx, setPromoIdx] = useState(0);
   const [promoVisible, setPromoVisible] = useState(true);
@@ -129,7 +138,7 @@ export function Header() {
                   style={{ top: "calc(100% + 6px)", minWidth: "180px" }}
                 >
                   {CITIES.map(({ code, label }) => {
-                    const isActive = code === cityCode || (code === "russia" && false);
+                    const isActive = code === cityCode;
                     return (
                       <button
                         key={code}
@@ -163,7 +172,7 @@ export function Header() {
             <span className="opacity-40">·</span>
 
             <a
-              href={PROMOS[promoIdx].href}
+              href={regionalHref(PROMOS[promoIdx].href)}
               className="truncate uppercase tracking-wide transition-colors hover:opacity-100"
               style={{
                 opacity: promoVisible ? 0.75 : 0,
@@ -239,7 +248,7 @@ export function Header() {
                     onFocusCapture={() => setOpenMegaHref(hasMega ? item.href : null)}
                   >
                     <a
-                      href={item.href}
+                      href={regionalHref(item.href)}
                       className={cn(
                         "group relative inline-flex h-full items-center gap-1 px-3 text-[15px] font-medium transition-colors duration-[var(--duration-snap)]",
                         hasMega
@@ -347,7 +356,7 @@ export function Header() {
               {HEADER_NAV_ITEMS.map((item) => (
                 <a
                   key={item.href}
-                  href={item.href}
+                  href={regionalHref(item.href)}
                   onClick={() => setMobileOpen(false)}
                   className="border-b border-border py-3 text-lg"
                 >

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { ArrowRight, Check } from "lucide-react";
 import { useInView } from "@/hooks/use-in-view";
 import { cn } from "@/lib/utils";
 import { AppointmentModal } from "@/components/AppointmentModal";
+import { catalogHref } from "@/data/categories";
+import { useCityStore } from "@/lib/store/city";
 
 const STEPS = [
   {
@@ -35,6 +36,7 @@ const STEPS = [
 export function BrandPromiseBand() {
   const { ref, inView } = useInView();
   const [aptOpen, setAptOpen] = useState(false);
+  const city = useCityStore((state) => state.city);
 
   return (
     <section
@@ -124,14 +126,13 @@ export function BrandPromiseBand() {
         </div>
 
         <div className="mt-14 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            to="/catalog_s/$category"
-            params={{ category: "opravy" }}
+          <a
+            href={catalogHref("opravy", city)}
             className="inline-flex items-center gap-2 bg-background text-foreground rounded-full px-6 py-3 text-sm font-medium hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
           >
             Перейти к подбору
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
+          </a>
           <button
             type="button"
             onClick={() => setAptOpen(true)}
