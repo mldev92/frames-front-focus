@@ -23,6 +23,7 @@ import { Route as ONasRouteImport } from './routes/o-nas'
 import { Route as MainV2RouteImport } from './routes/main-v2'
 import { Route as LoyaltyRouteImport } from './routes/loyalty'
 import { Route as KabinetDiagnostikiSpbRouteImport } from './routes/kabinet-diagnostiki-spb'
+import { Route as KabinetDiagnostikiNkRouteImport } from './routes/kabinet-diagnostiki-nk'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as BlogRouteImport } from './routes/blog'
@@ -34,11 +35,14 @@ import { Route as PersonalPrivateRouteImport } from './routes/personal_.private'
 import { Route as PersonalOrdersRouteImport } from './routes/personal_.orders'
 import { Route as Catalog_sCategoryRouteImport } from './routes/catalog_s.$category'
 import { Route as Catalog_sSplatRouteImport } from './routes/catalog_s.$'
+import { Route as Catalog_nCategoryRouteImport } from './routes/catalog_n.$category'
 import { Route as Catalog_nSplatRouteImport } from './routes/catalog_n.$'
 import { Route as BlogCategoryRouteImport } from './routes/blog.$category'
 import { Route as Catalog_sCategoryIndexRouteImport } from './routes/catalog_s.$category.index'
+import { Route as Catalog_nCategoryIndexRouteImport } from './routes/catalog_n.$category.index'
 import { Route as BlogCategoryIndexRouteImport } from './routes/blog.$category.index'
 import { Route as Catalog_sCategorySlugRouteImport } from './routes/catalog_s.$category.$slug'
+import { Route as Catalog_nCategorySlugRouteImport } from './routes/catalog_n.$category.$slug'
 import { Route as BlogCategorySlugRouteImport } from './routes/blog.$category.$slug'
 import { Route as BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRouteImport } from './routes/blog.linzy-dlya-ochkov.pokrytiya-linz-dlya-ochkov.index'
 
@@ -113,6 +117,11 @@ const KabinetDiagnostikiSpbRoute = KabinetDiagnostikiSpbRouteImport.update({
   path: '/kabinet-diagnostiki-spb',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KabinetDiagnostikiNkRoute = KabinetDiagnostikiNkRouteImport.update({
+  id: '/kabinet-diagnostiki-nk',
+  path: '/kabinet-diagnostiki-nk',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactsRoute = ContactsRouteImport.update({
   id: '/contacts',
   path: '/contacts',
@@ -168,6 +177,11 @@ const Catalog_sSplatRoute = Catalog_sSplatRouteImport.update({
   path: '/catalog_s/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const Catalog_nCategoryRoute = Catalog_nCategoryRouteImport.update({
+  id: '/catalog_n/$category',
+  path: '/catalog_n/$category',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Catalog_nSplatRoute = Catalog_nSplatRouteImport.update({
   id: '/catalog_n/$',
   path: '/catalog_n/$',
@@ -183,6 +197,11 @@ const Catalog_sCategoryIndexRoute = Catalog_sCategoryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => Catalog_sCategoryRoute,
 } as any)
+const Catalog_nCategoryIndexRoute = Catalog_nCategoryIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => Catalog_nCategoryRoute,
+} as any)
 const BlogCategoryIndexRoute = BlogCategoryIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -192,6 +211,11 @@ const Catalog_sCategorySlugRoute = Catalog_sCategorySlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => Catalog_sCategoryRoute,
+} as any)
+const Catalog_nCategorySlugRoute = Catalog_nCategorySlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => Catalog_nCategoryRoute,
 } as any)
 const BlogCategorySlugRoute = BlogCategorySlugRouteImport.update({
   id: '/$slug',
@@ -211,6 +235,7 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
+  '/kabinet-diagnostiki-nk': typeof KabinetDiagnostikiNkRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/main-v2': typeof MainV2Route
@@ -227,6 +252,7 @@ export interface FileRoutesByFullPath {
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_n/$': typeof Catalog_nSplatRoute
+  '/catalog_n/$category': typeof Catalog_nCategoryRouteWithChildren
   '/catalog_s/$': typeof Catalog_sSplatRoute
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/personal/orders': typeof PersonalOrdersRoute
@@ -234,8 +260,10 @@ export interface FileRoutesByFullPath {
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
+  '/catalog_n/$category/$slug': typeof Catalog_nCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
+  '/catalog_n/$category/': typeof Catalog_nCategoryIndexRoute
   '/catalog_s/$category/': typeof Catalog_sCategoryIndexRoute
   '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/': typeof BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute
 }
@@ -244,6 +272,7 @@ export interface FileRoutesByTo {
   '/basket': typeof BasketRoute
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
+  '/kabinet-diagnostiki-nk': typeof KabinetDiagnostikiNkRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/main-v2': typeof MainV2Route
@@ -265,8 +294,10 @@ export interface FileRoutesByTo {
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
+  '/catalog_n/$category/$slug': typeof Catalog_nCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category': typeof BlogCategoryIndexRoute
+  '/catalog_n/$category': typeof Catalog_nCategoryIndexRoute
   '/catalog_s/$category': typeof Catalog_sCategoryIndexRoute
   '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov': typeof BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute
 }
@@ -277,6 +308,7 @@ export interface FileRoutesById {
   '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
+  '/kabinet-diagnostiki-nk': typeof KabinetDiagnostikiNkRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/main-v2': typeof MainV2Route
@@ -293,6 +325,7 @@ export interface FileRoutesById {
   '/uslugi': typeof UslugiRouteWithChildren
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_n/$': typeof Catalog_nSplatRoute
+  '/catalog_n/$category': typeof Catalog_nCategoryRouteWithChildren
   '/catalog_s/$': typeof Catalog_sSplatRoute
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
   '/personal_/orders': typeof PersonalOrdersRoute
@@ -300,8 +333,10 @@ export interface FileRoutesById {
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/': typeof BlogIndexRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
+  '/catalog_n/$category/$slug': typeof Catalog_nCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
   '/blog/$category/': typeof BlogCategoryIndexRoute
+  '/catalog_n/$category/': typeof Catalog_nCategoryIndexRoute
   '/catalog_s/$category/': typeof Catalog_sCategoryIndexRoute
   '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/': typeof BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute
 }
@@ -313,6 +348,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/checkout'
     | '/contacts'
+    | '/kabinet-diagnostiki-nk'
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/main-v2'
@@ -329,6 +365,7 @@ export interface FileRouteTypes {
     | '/uslugi'
     | '/blog/$category'
     | '/catalog_n/$'
+    | '/catalog_n/$category'
     | '/catalog_s/$'
     | '/catalog_s/$category'
     | '/personal/orders'
@@ -336,8 +373,10 @@ export interface FileRouteTypes {
     | '/uslugi/$slug'
     | '/blog/'
     | '/blog/$category/$slug'
+    | '/catalog_n/$category/$slug'
     | '/catalog_s/$category/$slug'
     | '/blog/$category/'
+    | '/catalog_n/$category/'
     | '/catalog_s/$category/'
     | '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/'
   fileRoutesByTo: FileRoutesByTo
@@ -346,6 +385,7 @@ export interface FileRouteTypes {
     | '/basket'
     | '/checkout'
     | '/contacts'
+    | '/kabinet-diagnostiki-nk'
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/main-v2'
@@ -367,8 +407,10 @@ export interface FileRouteTypes {
     | '/uslugi/$slug'
     | '/blog'
     | '/blog/$category/$slug'
+    | '/catalog_n/$category/$slug'
     | '/catalog_s/$category/$slug'
     | '/blog/$category'
+    | '/catalog_n/$category'
     | '/catalog_s/$category'
     | '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov'
   id:
@@ -378,6 +420,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/checkout'
     | '/contacts'
+    | '/kabinet-diagnostiki-nk'
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/main-v2'
@@ -394,6 +437,7 @@ export interface FileRouteTypes {
     | '/uslugi'
     | '/blog/$category'
     | '/catalog_n/$'
+    | '/catalog_n/$category'
     | '/catalog_s/$'
     | '/catalog_s/$category'
     | '/personal_/orders'
@@ -401,8 +445,10 @@ export interface FileRouteTypes {
     | '/uslugi/$slug'
     | '/blog/'
     | '/blog/$category/$slug'
+    | '/catalog_n/$category/$slug'
     | '/catalog_s/$category/$slug'
     | '/blog/$category/'
+    | '/catalog_n/$category/'
     | '/catalog_s/$category/'
     | '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/'
   fileRoutesById: FileRoutesById
@@ -413,6 +459,7 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRouteWithChildren
   CheckoutRoute: typeof CheckoutRoute
   ContactsRoute: typeof ContactsRoute
+  KabinetDiagnostikiNkRoute: typeof KabinetDiagnostikiNkRoute
   KabinetDiagnostikiSpbRoute: typeof KabinetDiagnostikiSpbRoute
   LoyaltyRoute: typeof LoyaltyRoute
   MainV2Route: typeof MainV2Route
@@ -428,6 +475,7 @@ export interface RootRouteChildren {
   TinkoffRoute: typeof TinkoffRoute
   UslugiRoute: typeof UslugiRouteWithChildren
   Catalog_nSplatRoute: typeof Catalog_nSplatRoute
+  Catalog_nCategoryRoute: typeof Catalog_nCategoryRouteWithChildren
   Catalog_sSplatRoute: typeof Catalog_sSplatRoute
   Catalog_sCategoryRoute: typeof Catalog_sCategoryRouteWithChildren
   PersonalOrdersRoute: typeof PersonalOrdersRoute
@@ -534,6 +582,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KabinetDiagnostikiSpbRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kabinet-diagnostiki-nk': {
+      id: '/kabinet-diagnostiki-nk'
+      path: '/kabinet-diagnostiki-nk'
+      fullPath: '/kabinet-diagnostiki-nk'
+      preLoaderRoute: typeof KabinetDiagnostikiNkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contacts': {
       id: '/contacts'
       path: '/contacts'
@@ -611,6 +666,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Catalog_sSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/catalog_n/$category': {
+      id: '/catalog_n/$category'
+      path: '/catalog_n/$category'
+      fullPath: '/catalog_n/$category'
+      preLoaderRoute: typeof Catalog_nCategoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/catalog_n/$': {
       id: '/catalog_n/$'
       path: '/catalog_n/$'
@@ -632,6 +694,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Catalog_sCategoryIndexRouteImport
       parentRoute: typeof Catalog_sCategoryRoute
     }
+    '/catalog_n/$category/': {
+      id: '/catalog_n/$category/'
+      path: '/'
+      fullPath: '/catalog_n/$category/'
+      preLoaderRoute: typeof Catalog_nCategoryIndexRouteImport
+      parentRoute: typeof Catalog_nCategoryRoute
+    }
     '/blog/$category/': {
       id: '/blog/$category/'
       path: '/'
@@ -645,6 +714,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/catalog_s/$category/$slug'
       preLoaderRoute: typeof Catalog_sCategorySlugRouteImport
       parentRoute: typeof Catalog_sCategoryRoute
+    }
+    '/catalog_n/$category/$slug': {
+      id: '/catalog_n/$category/$slug'
+      path: '/$slug'
+      fullPath: '/catalog_n/$category/$slug'
+      preLoaderRoute: typeof Catalog_nCategorySlugRouteImport
+      parentRoute: typeof Catalog_nCategoryRoute
     }
     '/blog/$category/$slug': {
       id: '/blog/$category/$slug'
@@ -703,6 +779,19 @@ const UslugiRouteChildren: UslugiRouteChildren = {
 const UslugiRouteWithChildren =
   UslugiRoute._addFileChildren(UslugiRouteChildren)
 
+interface Catalog_nCategoryRouteChildren {
+  Catalog_nCategorySlugRoute: typeof Catalog_nCategorySlugRoute
+  Catalog_nCategoryIndexRoute: typeof Catalog_nCategoryIndexRoute
+}
+
+const Catalog_nCategoryRouteChildren: Catalog_nCategoryRouteChildren = {
+  Catalog_nCategorySlugRoute: Catalog_nCategorySlugRoute,
+  Catalog_nCategoryIndexRoute: Catalog_nCategoryIndexRoute,
+}
+
+const Catalog_nCategoryRouteWithChildren =
+  Catalog_nCategoryRoute._addFileChildren(Catalog_nCategoryRouteChildren)
+
 interface Catalog_sCategoryRouteChildren {
   Catalog_sCategorySlugRoute: typeof Catalog_sCategorySlugRoute
   Catalog_sCategoryIndexRoute: typeof Catalog_sCategoryIndexRoute
@@ -722,6 +811,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRouteWithChildren,
   CheckoutRoute: CheckoutRoute,
   ContactsRoute: ContactsRoute,
+  KabinetDiagnostikiNkRoute: KabinetDiagnostikiNkRoute,
   KabinetDiagnostikiSpbRoute: KabinetDiagnostikiSpbRoute,
   LoyaltyRoute: LoyaltyRoute,
   MainV2Route: MainV2Route,
@@ -737,6 +827,7 @@ const rootRouteChildren: RootRouteChildren = {
   TinkoffRoute: TinkoffRoute,
   UslugiRoute: UslugiRouteWithChildren,
   Catalog_nSplatRoute: Catalog_nSplatRoute,
+  Catalog_nCategoryRoute: Catalog_nCategoryRouteWithChildren,
   Catalog_sSplatRoute: Catalog_sSplatRoute,
   Catalog_sCategoryRoute: Catalog_sCategoryRouteWithChildren,
   PersonalOrdersRoute: PersonalOrdersRoute,
