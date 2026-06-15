@@ -305,7 +305,7 @@ function HomePage() {
             <div className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
               Блог
             </div>
-            <h2 className="font-serif text-3xl lg:text-4xl">Свежее в журнале</h2>
+            <h2 className="font-serif text-3xl lg:text-4xl">Свежие статьи</h2>
           </div>
           <Link
             to="/blog"

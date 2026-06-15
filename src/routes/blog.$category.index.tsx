@@ -12,7 +12,7 @@ export const Route = createFileRoute("/blog/$category/")({
     return {
       meta: [
         { title: `${cat.title} — статьи · ОПТИКА 100%` },
-        { name: "description", content: `Статьи на тему «${cat.title}» в журнале ОПТИКА 100%.` },
+        { name: "description", content: `Статьи на тему «${cat.title}» в блоге ОПТИКА 100%.` },
         { property: "og:title", content: `${cat.title} · ОПТИКА 100%` },
       ],
     };
