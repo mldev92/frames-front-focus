@@ -66,6 +66,13 @@ export const catalogHref = (category: Category, city: CityCode = "spb") =>
 export const productHref = (category: Category, slug: string, city: CityCode = "spb") =>
   `${catalogPrefix(city)}/${categoryToSegment[category]}/${slug}/`;
 
+/** Rewrite catalog links to use the correct city prefix (/catalog_s vs /catalog_n). */
+export const regionalCatalogHref = (href: string, city: CityCode = "spb") => {
+  if (!href.startsWith("/catalog_s/") && !href.startsWith("/catalog_n/")) return href;
+  const path = href.replace(/^\/catalog_[sn]\//, "/");
+  return `${catalogPrefix(city)}${path}`;
+};
+
 export function categoryForCatalogPath(path: string): Category | undefined {
   const segments = path.split("/").filter(Boolean);
   for (const segment of segments) {
