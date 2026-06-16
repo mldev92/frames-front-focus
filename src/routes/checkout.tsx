@@ -57,12 +57,6 @@ interface PickupPoint {
   name?: string;
 }
 
-declare global {
-  interface Window {
-    ISDEKWidjet?: new (options: Record<string, unknown>) => { open?: () => void; close?: () => void };
-  }
-}
-
 const SPB_DELIVERY_OPTIONS: DeliveryOption[] = [
   {
     code: "salon_pickup_spb",
@@ -134,6 +128,8 @@ function Checkout() {
   const [email, setEmail] = useState("");
   const [trackNumber, setTrackNumber] = useState("");
   const [pickupPoint, setPickupPoint] = useState<PickupPoint | null>(null);
+  const [pickupMapOpen, setPickupMapOpen] = useState(false);
+  const [pickupDraftAddress, setPickupDraftAddress] = useState("");
   const [quotedDeliveryOptions, setQuotedDeliveryOptions] = useState<DeliveryQuoteOption[] | null>(null);
   const [deliveryLoading, setDeliveryLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -195,36 +191,26 @@ function Checkout() {
 
   const openCdekPickupMap = async () => {
     if (city === "Санкт-Петербург") return;
-    try {
-      await loadCdekWidget();
-      if (!window.ISDEKWidjet) throw new Error("CDEK widget unavailable");
-      const widget = new window.ISDEKWidjet({
-        popup: true,
-        hidedelt: true,
-        defaultCity: city,
-        cityFrom: "Санкт-Петербург",
-        country: "Россия",
-        onChoose: (info: {
-          id?: string | number;
-          cityName?: string;
-          PVZ?: { Address?: string; Name?: string };
-        }) => {
-          const pointAddress = ["г. " + (info.cityName || city), info.PVZ?.Address].filter(Boolean).join(", ");
-          const point = {
-            id: String(info.id ?? ""),
-            address: pointAddress,
-            name: info.PVZ?.Name,
-          };
-          setPickupPoint(point);
-          setAddress(pointAddress);
-          widget.close?.();
-        },
-      });
-      window.setTimeout(() => widget.open?.(), 150);
-    } catch (error) {
-      console.error("[checkout] cdek widget:", error);
-      toast.error("Не удалось открыть карту СДЭК");
+    setPickupDraftAddress(pickupPoint?.address ?? "");
+    setPickupMapOpen(true);
+  };
+
+  const confirmPickupPoint = () => {
+    const pointAddress = pickupDraftAddress.trim();
+    if (!pointAddress) {
+      toast.error("Укажите адрес выбранного пункта СДЭК");
+      return;
     }
+    const normalizedAddress = pointAddress.toLowerCase().includes(city.toLowerCase())
+      ? pointAddress
+      : `${city}, ${pointAddress}`;
+    setPickupPoint({
+      id: `manual-${Date.now()}`,
+      address: normalizedAddress,
+      name: "Пункт выдачи СДЭК",
+    });
+    setAddress(normalizedAddress);
+    setPickupMapOpen(false);
   };
 
   const submit = async () => {
@@ -748,6 +734,97 @@ function Checkout() {
           </div>
         </aside>
       </div>
+      {pickupMapOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Выбор пункта самовывоза СДЭК"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            backgroundColor: "oklch(0 0 0 / 0.45)",
+            display: "flex",
+            alignItems: isMobile ? "stretch" : "center",
+            justifyContent: "center",
+            padding: isMobile ? "0" : "24px",
+          }}
+        >
+          <div
+            style={{
+              width: isMobile ? "100%" : "min(920px, 96vw)",
+              maxHeight: isMobile ? "100%" : "90vh",
+              backgroundColor: "var(--card)",
+              borderRadius: isMobile ? "0" : "12px",
+              overflow: "hidden",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <div style={{ padding: "16px 18px", borderBottom: "1px solid var(--border)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
+                <div>
+                  <div style={{ fontWeight: 600 }}>Пункт самовывоза СДЭК</div>
+                  <div className="text-muted-foreground" style={{ fontSize: "13px", marginTop: "2px" }}>
+                    {city}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPickupMapOpen(false)}
+                  style={{ border: "none", background: "none", fontSize: "24px", lineHeight: 1, cursor: "pointer" }}
+                  aria-label="Закрыть"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+            <iframe
+              title="Карта пунктов СДЭК"
+              src={`https://yandex.ru/maps/?text=${encodeURIComponent(`СДЭК пункт выдачи ${city}`)}`}
+              style={{ width: "100%", height: isMobile ? "52vh" : "520px", border: "none", flex: "1 1 auto" }}
+            />
+            <div style={{ padding: "16px 18px", borderTop: "1px solid var(--border)" }}>
+              <Field
+                label="Адрес выбранного пункта СДЭК"
+                placeholder="Например: Новокузнецк, ул. Кирова, 55"
+                value={pickupDraftAddress}
+                onChange={setPickupDraftAddress}
+              />
+              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "14px" }}>
+                <button
+                  type="button"
+                  onClick={() => setPickupMapOpen(false)}
+                  style={{
+                    border: "1px solid var(--border)",
+                    background: "white",
+                    borderRadius: "8px",
+                    padding: "10px 14px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Отмена
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmPickupPoint}
+                  style={{
+                    border: "none",
+                    background: "var(--brand)",
+                    color: "var(--brand-foreground)",
+                    borderRadius: "8px",
+                    padding: "10px 14px",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                  }}
+                >
+                  Выбрать этот пункт
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -1091,29 +1168,6 @@ function RadioCard({
   );
 }
 
-let cdekWidgetPromise: Promise<void> | null = null;
-
-function loadCdekWidget(): Promise<void> {
-  if (typeof window === "undefined") return Promise.reject(new Error("browser only"));
-  if (window.ISDEKWidjet) return Promise.resolve();
-  if (cdekWidgetPromise) return cdekWidgetPromise;
-  cdekWidgetPromise = new Promise((resolve, reject) => {
-    const existing = document.getElementById("ISDEKscript") as HTMLScriptElement | null;
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("CDEK script failed")), { once: true });
-      return;
-    }
-    const script = document.createElement("script");
-    script.id = "ISDEKscript";
-    script.src = "https://widget.cdek.ru/widget/widjet.js";
-    script.charset = "utf-8";
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error("CDEK script failed"));
-    document.head.appendChild(script);
-  });
-  return cdekWidgetPromise;
-}
 
 function CityChip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
   return (
