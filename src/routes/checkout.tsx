@@ -35,7 +35,7 @@ const CITIES = ["Москва", "Санкт-Петербург", "Кемеров
 
 type CheckoutCity = (typeof CITIES)[number];
 type DeliveryCode = "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
-type PaymentCode = "yookassa_card" | "t_installment";
+type PaymentCode = "cash_on_pickup" | "yookassa_card" | "t_installment";
 
 interface DeliveryOption {
   code: DeliveryCode;
@@ -104,6 +104,11 @@ const getDeliveryOptions = (city: CheckoutCity): DeliveryOption[] =>
   city === "Санкт-Петербург" ? SPB_DELIVERY_OPTIONS : CDEK_DELIVERY_OPTIONS;
 
 const PAYMENT_OPTIONS: Array<{ code: PaymentCode; label: string; sub: string }> = [
+  {
+    code: "cash_on_pickup",
+    label: "Наличными или по карте при выдаче",
+    sub: "Оплата при получении заказа в салоне, у курьера или в пункте выдачи.",
+  },
   { code: "yookassa_card", label: "Оплата картой Юkassa", sub: "Онлайн-оплата банковской картой после подтверждения заказа." },
   { code: "t_installment", label: "Т-Рассрочка", sub: "Рассрочка от Т-Банка — без переплат, до 12 месяцев." },
 ];
@@ -118,7 +123,7 @@ function Checkout() {
   const [citySearch, setCitySearch] = useState("");
   const [delivery, setDelivery] = useState<DeliveryCode>("salon_pickup_spb");
   const [address, setAddress] = useState("");
-  const [payment, setPayment] = useState<PaymentCode>("yookassa_card");
+  const [payment, setPayment] = useState<PaymentCode>("cash_on_pickup");
   const [promoVisible, setPromoVisible] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [agreed, setAgreed] = useState(false);

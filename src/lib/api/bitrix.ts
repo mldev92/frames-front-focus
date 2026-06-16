@@ -437,7 +437,7 @@ export interface CreateOrderInput {
   lines: import("@/lib/store/cart").CartLine[];
   city: string;
   deliveryCode: "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
-  paymentCode: "yookassa_card" | "t_installment";
+  paymentCode: "cash_on_pickup" | "yookassa_card" | "t_installment";
   delivery: string;
   payment: string;
   address?: string;
