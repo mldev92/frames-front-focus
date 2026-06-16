@@ -488,3 +488,30 @@ export async function getOrderDeliveryOptions(
 ): Promise<DeliveryQuoteResult> {
   return securePost<DeliveryQuoteResult>("order_delivery.php", input);
 }
+
+export interface PickupPointOption {
+  id: string;
+  name: string;
+  address: string;
+  workTime: string;
+  phone: string;
+  note: string;
+  lat: number | null;
+  lon: number | null;
+  cashless: boolean;
+  cash: boolean;
+  cod: boolean;
+  dressingRoom: boolean;
+}
+
+export interface PickupPointsResult {
+  ok: true;
+  city: string;
+  points: PickupPointOption[];
+}
+
+export async function getOrderPickupPoints(
+  input: Pick<CreateOrderInput, "city">,
+): Promise<PickupPointsResult> {
+  return securePost<PickupPointsResult>("order_pickup_points.php", input);
+}
