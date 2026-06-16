@@ -99,18 +99,6 @@ export function ProductInfoSections({
         </Reveal>
       )}
 
-      {showDescription && (
-        <Reveal>
-          <section>
-            <SectionHeading title="Описание" />
-            <div
-              className="max-w-3xl text-sm leading-7 text-muted-foreground [&_a]:text-brand [&_a]:underline [&_br]:block [&_br]:content-[''] [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-foreground [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-serif [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-foreground [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:max-w-full [&_iframe]:w-full [&_li]:mb-1.5 [&_p]:mb-4 [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5"
-              dangerouslySetInnerHTML={{ __html: product.descriptionHtml ?? "" }}
-            />
-          </section>
-        </Reveal>
-      )}
-
       {showCharacteristics && (
         <Reveal>
           <section>
@@ -149,6 +137,18 @@ export function ProductInfoSections({
                 </div>
               ))}
             </dl>
+          </section>
+        </Reveal>
+      )}
+
+      {showDescription && (
+        <Reveal>
+          <section>
+            <SectionHeading title="Описание" />
+            <div
+              className="max-w-3xl text-sm leading-7 text-muted-foreground [&_a]:text-brand [&_a]:underline [&_br]:block [&_br]:content-[''] [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-foreground [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-serif [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-foreground [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:max-w-full [&_iframe]:w-full [&_li]:mb-1.5 [&_p]:mb-4 [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5"
+              dangerouslySetInnerHTML={{ __html: product.descriptionHtml ?? "" }}
+            />
           </section>
         </Reveal>
       )}
