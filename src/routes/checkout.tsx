@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CONTACT } from "@/data/contact";
-import { createOrder, getOrderDeliveryOptions, getOrderPickupPoints } from "@/lib/api/bitrix";
+import { createOrder, getOrderDeliveryOptions, getStoreApiUrl } from "@/lib/api/bitrix";
 import type { DeliveryQuoteOption, PickupPointOption } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/checkout")({
@@ -130,10 +130,6 @@ function Checkout() {
   const [trackNumber, setTrackNumber] = useState("");
   const [pickupPoint, setPickupPoint] = useState<PickupPoint | null>(null);
   const [pickupMapOpen, setPickupMapOpen] = useState(false);
-  const [pickupPoints, setPickupPoints] = useState<PickupPoint[]>([]);
-  const [pickupPointsLoading, setPickupPointsLoading] = useState(false);
-  const [pickupPointsQuery, setPickupPointsQuery] = useState("");
-  const [pickupDraftId, setPickupDraftId] = useState("");
   const [quotedDeliveryOptions, setQuotedDeliveryOptions] = useState<DeliveryQuoteOption[] | null>(null);
   const [deliveryLoading, setDeliveryLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -159,24 +155,22 @@ function Checkout() {
   }, [fallbackDeliveryOptions, quotedDeliveryOptions]);
   const selectedDelivery = deliveryOptions.find((option) => option.code === delivery) ?? deliveryOptions[0];
   const selectedPayment = PAYMENT_OPTIONS.find((option) => option.code === payment) ?? PAYMENT_OPTIONS[0];
-  const filteredPickupPoints = useMemo(() => {
-    const query = pickupPointsQuery.trim().toLowerCase();
-    if (!query) return pickupPoints;
-    return pickupPoints.filter((point) =>
-      [point.address, point.name, point.note, point.phone].some((value) => value.toLowerCase().includes(query)),
-    );
-  }, [pickupPoints, pickupPointsQuery]);
-  const pickupDraftPoint = pickupPoints.find((point) => point.id === pickupDraftId) ?? null;
   const deliveryPrice = selectedDelivery.price ?? 0;
   const orderTotal = subtotal + deliveryPrice;
   const isFree = selectedDelivery.price === 0 || selectedDelivery.free;
+  const pickupWidgetUrl = useMemo(() => {
+    const widgetUrl = new URL(getStoreApiUrl("sdek_widget_frame.php"));
+    widgetUrl.searchParams.set("city", city);
+    widgetUrl.searchParams.set("deliveryId", "55");
+    widgetUrl.searchParams.set("orderPrice", String(orderTotal));
+    widgetUrl.searchParams.set("weight", "1000");
+    return widgetUrl.toString();
+  }, [city, orderTotal]);
 
   useEffect(() => {
     let cancelled = false;
     setQuotedDeliveryOptions(null);
     setPickupPoint(null);
-    setPickupPoints([]);
-    setPickupDraftId("");
     setPickupMapOpen(false);
     if (!lines.length) return;
     setDeliveryLoading(true);
@@ -204,47 +198,37 @@ function Checkout() {
     }
   }, [delivery, deliveryOptions]);
 
-  useEffect(() => {
-    setPickupDraftId(pickupPoint?.id ?? "");
-  }, [pickupPoint]);
-
   const formatPickupAddress = (point: Pick<PickupPoint, "address">) =>
     point.address.toLowerCase().includes(city.toLowerCase()) ? point.address : `${city}, ${point.address}`;
 
-  const openCdekPickupMap = async () => {
-    if (city === "Санкт-Петербург") return;
-    setPickupPointsQuery("");
-    setPickupMapOpen(true);
-    if (pickupPoints.length) {
-      setPickupDraftId(pickupPoint?.id ?? pickupPoints[0]?.id ?? "");
-      return;
-    }
-    setPickupPointsLoading(true);
-    try {
-      const result = await getOrderPickupPoints({ city });
-      setPickupPoints(result.points);
-      setPickupDraftId(pickupPoint?.id ?? result.points[0]?.id ?? "");
-      if (!result.points.length) toast.error("Для этого города не найдены пункты самовывоза СДЭК");
-    } catch (error) {
-      console.error("[checkout] pickup points:", error);
-      toast.error("Не удалось загрузить пункты самовывоза СДЭК");
-      setPickupMapOpen(false);
-    } finally {
-      setPickupPointsLoading(false);
-    }
-  };
+  useEffect(() => {
+    const onMessage = (event: MessageEvent) => {
+      const allowedOrigin = new URL(pickupWidgetUrl).origin;
+      if (event.origin !== allowedOrigin) return;
+      const payload = event.data;
+      if (!payload || typeof payload !== "object") return;
 
-  const confirmPickupPoint = () => {
-    if (!pickupDraftPoint) {
-      toast.error("Выберите пункт самовывоза СДЭК");
-      return;
-    }
-    setPickupPoint({
-      ...pickupDraftPoint,
-      address: formatPickupAddress(pickupDraftPoint),
-    });
-    setAddress(formatPickupAddress(pickupDraftPoint));
-    setPickupMapOpen(false);
+      if (payload.type === "optika100-sdek-selected" && payload.point) {
+        const point = payload.point as PickupPoint;
+        const normalizedAddress = payload.displayAddress?.trim() || formatPickupAddress(point);
+        setPickupPoint({ ...point, address: normalizedAddress });
+        setAddress(normalizedAddress);
+        setPickupMapOpen(false);
+        toast.success("Пункт самовывоза СДЭК выбран");
+      }
+
+      if (payload.type === "optika100-sdek-error") {
+        toast.error(payload.message || "Не удалось загрузить карту пунктов СДЭК");
+      }
+    };
+
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, [formatPickupAddress, pickupWidgetUrl]);
+
+  const openCdekPickupMap = () => {
+    if (city === "Санкт-Петербург") return;
+    setPickupMapOpen(true);
   };
 
   const submit = async () => {
@@ -816,130 +800,34 @@ function Checkout() {
             <div
               style={{
                 padding: "18px",
-                display: "grid",
-                gap: "16px",
+                display: "flex",
+                flexDirection: "column",
+                gap: "14px",
                 backgroundColor: "oklch(0.98 0.01 255)",
               }}
             >
               <div style={{ fontSize: "14px", lineHeight: 1.55 }}>
-                Выберите нужный пункт самовывоза СДЭК. После подтверждения адрес пункта будет автоматически передан в
-                заказ.
+                Выберите нужный пункт самовывоза СДЭК на карте. После выбора адрес пункта будет автоматически передан
+                в заказ.
               </div>
-              <Field
-                label="Поиск пункта СДЭК"
-                placeholder="Улица, район или телефон"
-                value={pickupPointsQuery}
-                onChange={setPickupPointsQuery}
-              />
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: isMobile ? "1fr" : "minmax(0, 1.15fr) minmax(280px, 0.85fr)",
-                  gap: "16px",
+                  border: "1px solid var(--border)",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  backgroundColor: "white",
                   minHeight: isMobile ? "52vh" : "500px",
                 }}
               >
-                <div
+                <iframe
+                  title="Карта пунктов самовывоза СДЭК"
+                  src={pickupWidgetUrl}
                   style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: "12px",
-                    backgroundColor: "white",
-                    overflow: "hidden",
-                    minHeight: isMobile ? "260px" : "420px",
+                    width: "100%",
+                    height: isMobile ? "52vh" : "500px",
+                    border: "none",
                   }}
-                >
-                  <div style={{ padding: "12px 14px", borderBottom: "1px solid var(--border)", fontSize: "13px", fontWeight: 600 }}>
-                    Пункты выдачи
-                  </div>
-                  <div style={{ maxHeight: isMobile ? "calc(52vh - 58px)" : "420px", overflowY: "auto", padding: "10px" }}>
-                    {pickupPointsLoading ? (
-                      <div className="text-muted-foreground" style={{ fontSize: "13px", padding: "8px 4px" }}>
-                        Загружаем пункты СДЭК...
-                      </div>
-                    ) : filteredPickupPoints.length === 0 ? (
-                      <div className="text-muted-foreground" style={{ fontSize: "13px", padding: "8px 4px", lineHeight: 1.5 }}>
-                        Пункты самовывоза не найдены. Попробуйте изменить поисковый запрос.
-                      </div>
-                    ) : (
-                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                        {filteredPickupPoints.map((point) => (
-                          <PickupPointCard
-                            key={point.id}
-                            point={point}
-                            selected={pickupDraftId === point.id}
-                            onClick={() => setPickupDraftId(point.id)}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div
-                  style={{
-                    border: "1px solid var(--border)",
-                    borderRadius: "12px",
-                    backgroundColor: "white",
-                    padding: "16px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "12px",
-                  }}
-                >
-                  <div style={{ fontSize: "13px", fontWeight: 600 }}>Выбранный пункт</div>
-                  {pickupDraftPoint ? (
-                    <>
-                      <div>
-                        <div style={{ fontSize: "15px", fontWeight: 600 }}>
-                          {pickupDraftPoint.name || "Пункт выдачи СДЭК"}
-                        </div>
-                        <div className="text-muted-foreground" style={{ fontSize: "13px", lineHeight: 1.5, marginTop: "4px" }}>
-                          {formatPickupAddress(pickupDraftPoint)}
-                        </div>
-                      </div>
-                      {pickupDraftPoint.workTime && (
-                        <PickupInfoRow label="Режим работы" value={pickupDraftPoint.workTime} />
-                      )}
-                      {pickupDraftPoint.phone && (
-                        <PickupInfoRow label="Телефон" value={pickupDraftPoint.phone} />
-                      )}
-                      {pickupDraftPoint.note && (
-                        <PickupInfoRow label="Комментарий" value={pickupDraftPoint.note} />
-                      )}
-                      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                        {pickupDraftPoint.cashless && <PickupFeature text="Безналичная оплата" />}
-                        {pickupDraftPoint.cash && <PickupFeature text="Оплата наличными" />}
-                        {pickupDraftPoint.cod && <PickupFeature text="Можно оплатить при получении" />}
-                        {pickupDraftPoint.dressingRoom && <PickupFeature text="Есть примерочная" />}
-                      </div>
-                      {(pickupDraftPoint.lat !== null && pickupDraftPoint.lon !== null) && (
-                        <a
-                          href={`https://yandex.ru/maps/?pt=${pickupDraftPoint.lon},${pickupDraftPoint.lat}&z=17&l=map`}
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{
-                            display: "inline-flex",
-                            width: "fit-content",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderRadius: "8px",
-                            border: "1px solid var(--border)",
-                            color: "var(--foreground)",
-                            padding: "10px 12px",
-                            fontSize: "13px",
-                            fontWeight: 600,
-                            textDecoration: "none",
-                          }}
-                        >
-                          Открыть на карте
-                        </a>
-                      )}
-                    </>
-                  ) : (
-                    <div className="text-muted-foreground" style={{ fontSize: "13px", lineHeight: 1.5 }}>
-                      Выберите пункт из списка слева, чтобы посмотреть детали и подтвердить выбор.
-                    </div>
-                  )}
-                </div>
+                />
               </div>
             </div>
             <div style={{ padding: "16px 18px", borderTop: "1px solid var(--border)" }}>
@@ -959,19 +847,18 @@ function Checkout() {
                 </button>
                 <button
                   type="button"
-                  onClick={confirmPickupPoint}
-                  disabled={!pickupDraftPoint}
+                  onClick={() => setPickupMapOpen(false)}
                   style={{
                     border: "none",
-                    background: pickupDraftPoint ? "var(--brand)" : "var(--border)",
+                    background: "var(--brand)",
                     color: "var(--brand-foreground)",
                     borderRadius: "8px",
                     padding: "10px 14px",
                     fontWeight: 600,
-                    cursor: pickupDraftPoint ? "pointer" : "not-allowed",
+                    cursor: "pointer",
                   }}
                 >
-                  Подтвердить пункт
+                  Готово
                 </button>
               </div>
             </div>
@@ -1244,70 +1131,6 @@ function DeliveryCard({
           </button>
         </div>
       )}
-    </div>
-  );
-}
-
-function PickupPointCard({
-  point,
-  selected,
-  onClick,
-}: {
-  point: PickupPoint;
-  selected: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      style={{
-        width: "100%",
-        display: "flex",
-        flexDirection: "column",
-        gap: "6px",
-        textAlign: "left",
-        padding: "12px 14px",
-        borderRadius: "10px",
-        border: selected ? "2px solid var(--brand)" : "1px solid var(--border)",
-        backgroundColor: selected ? "oklch(0.97 0.018 28)" : "white",
-        cursor: "pointer",
-      }}
-    >
-      <div style={{ fontSize: "14px", fontWeight: 600 }}>{point.name || "Пункт выдачи СДЭК"}</div>
-      <div className="text-muted-foreground" style={{ fontSize: "13px", lineHeight: 1.45 }}>
-        {point.address}
-      </div>
-      {(point.workTime || point.phone) && (
-        <div className="text-muted-foreground" style={{ fontSize: "12px", lineHeight: 1.45 }}>
-          {[point.workTime, point.phone].filter(Boolean).join(" · ")}
-        </div>
-      )}
-    </button>
-  );
-}
-
-function PickupInfoRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: "10px", alignItems: "start" }}>
-      <div className="text-muted-foreground" style={{ fontSize: "12px" }}>{label}</div>
-      <div style={{ fontSize: "13px", lineHeight: 1.5 }}>{value}</div>
-    </div>
-  );
-}
-
-function PickupFeature({ text }: { text: string }) {
-  return (
-    <div
-      style={{
-        fontSize: "12px",
-        fontWeight: 600,
-        borderRadius: "999px",
-        padding: "5px 9px",
-        backgroundColor: "oklch(0.96 0.015 28)",
-      }}
-    >
-      {text}
     </div>
   );
 }

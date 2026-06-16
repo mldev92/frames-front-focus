@@ -99,6 +99,10 @@ async function fetchJson<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
+export function getStoreApiUrl(path: string): string {
+  return url(path);
+}
+
 interface ProductsResponse {
   products: Product[];
   total: number;
