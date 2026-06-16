@@ -13,6 +13,8 @@ import { LensPurposeModal } from "@/components/LensPurposeModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { TBankWidget } from "@/components/TBankWidget";
 import { cn } from "@/lib/utils";
+import type { EyePrescription, Prescription } from "@/lib/store/cart";
+import { prescriptionComplete } from "@/components/PrescriptionInput";
 import { useCityStore, type CityCode } from "@/lib/store/city";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
 import {
@@ -128,16 +130,21 @@ export function ProductPage({
   const displayBrand = getProductDisplayBrand(product);
   const { add, toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
-  const [color, setColor] = useState(product.colors?.[0]?.name);
+  const [color, setColor] = useState(
+    product.lensOptions?.colors?.options[0]?.label ?? product.colors?.[0]?.name,
+  );
   const [activeImg, setActiveImg] = useState(0);
   const [lensModal, setLensModal] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
+  const [prescription, setPrescription] = useState<Prescription>({ right: {}, left: {} });
+  const [lensEyeMode, setLensEyeMode] = useState<"same" | "different">("same");
   const vtoSku = product.vtoSku ?? "rayban_wayfarer_havane_marron";
   const selectedColor = product.colors?.find((item) => item.name === color);
   const galleryImages = selectedColor?.image
     ? [selectedColor.image, ...product.images.filter((img) => img !== selectedColor.image)]
     : product.images;
-  const currentImage = galleryImages[activeImg] ?? galleryImages[0] ?? product.images[0];
+  const currentImage =
+    galleryImages[activeImg] ?? galleryImages[0] ?? product.images[0] ?? "/no-product-image.svg";
 
   useEffect(() => setCity(city), [city, setCity]);
 
@@ -148,11 +155,38 @@ export function ProductPage({
   const isMisight = product.slug.toLowerCase().includes("misight");
   const showInstallment =
     (isFrameLike && product.price > 3500) || (product.category === "kontaktnye-linzy" && isMisight);
+  const lensQty = isLens && lensEyeMode === "different" ? 2 : 1;
+  const lensTotal = product.price * lensQty;
+
+  useEffect(() => {
+    if (!isLens || !product.lensOptions) return;
+    if (!color && product.lensOptions.colors?.options[0]) {
+      setColor(product.lensOptions.colors.options[0].label);
+    }
+    setPrescription((current) => {
+      const right = defaultLensEye(product, current.right);
+      const left = lensEyeMode === "same" ? { ...right } : defaultLensEye(product, current.left);
+      if (eyesEqual(current.right, right) && eyesEqual(current.left, left)) return current;
+      return { right, left };
+    });
+  }, [color, isLens, lensEyeMode, product]);
+
   const handlePrimaryCta = () => {
     if (isFrameLike) {
       setLensModal(true);
     } else {
-      add(product, { color, image: currentImage });
+      if (isLens && !lensPurchaseComplete(product, prescription)) {
+        toast.error("Заполните доступные параметры для обоих глаз");
+        return;
+      }
+      add(product, {
+        color,
+        image: currentImage,
+        prescription: isLens ? prescription : undefined,
+        lensEyeMode: isLens ? lensEyeMode : undefined,
+        qty: lensQty,
+        city,
+      });
       toast.success(`«${product.name}» добавлен в корзину`);
     }
   };
@@ -248,8 +282,10 @@ export function ProductPage({
 
           <ProductInfoSections
             product={product}
-            showPrescription={isLens || isFrameLike}
+            showPrescription={!isLens && isFrameLike}
             prescriptionVariant={isLens ? "contacts" : "frames"}
+            prescription={prescription}
+            onPrescriptionChange={setPrescription}
           />
         </div>
 
@@ -288,13 +324,18 @@ export function ProductPage({
             </div>
 
             <div className="mt-5 flex items-baseline gap-3">
-              <span className="font-serif text-3xl">{formatPrice(product.price)}</span>
+              <span className="font-serif text-3xl">{formatPrice(isLens ? lensTotal : product.price)}</span>
               {product.oldPrice && (
                 <span className="text-sm text-muted-foreground line-through">
-                  {formatPrice(product.oldPrice)}
+                  {formatPrice(isLens ? product.oldPrice * lensQty : product.oldPrice)}
                 </span>
               )}
             </div>
+            {isLens && lensQty > 1 && (
+              <div className="mt-1 text-xs text-muted-foreground">
+                {formatPrice(product.price)} × 2 упаковки
+              </div>
+            )}
 
             {showInstallment && (
               <div className="mt-2">
@@ -343,6 +384,23 @@ export function ProductPage({
               </div>
             )}
 
+            {isLens && product.lensOptions && (
+              <LensPurchaseOptions
+                product={product}
+                color={color}
+                onColorChange={setColor}
+                eyeMode={lensEyeMode}
+                onEyeModeChange={(mode) => {
+                  setLensEyeMode(mode);
+                  if (mode === "same") {
+                    setPrescription((current) => ({ right: current.right, left: { ...current.right } }));
+                  }
+                }}
+                prescription={prescription}
+                onPrescriptionChange={setPrescription}
+              />
+            )}
+
             <div className="mt-6 space-y-2.5">
               <button
                 onClick={handlePrimaryCta}
@@ -353,7 +411,7 @@ export function ProductPage({
               {isFrameLike && (
                 <button
                   onClick={() => {
-                    add(product, { color, openDrawer: false, image: currentImage });
+                    add(product, { color, openDrawer: false, image: currentImage, city });
                     toast.success(`«${product.name}» (без линз) добавлен в корзину`);
                   }}
                   className="w-full text-sm text-muted-foreground border border-border rounded-full py-3 hover:text-foreground hover:border-foreground transition-colors"
@@ -400,6 +458,9 @@ export function ProductPage({
               {selectedColor ? `Цвет: ${selectedColor.name}` : displayBrand}
             </div>
             <div className="font-serif text-xl leading-tight">{formatPrice(product.price)}</div>
+            {isLens && lensQty > 1 && (
+              <div className="text-[11px] text-muted-foreground">Итого: {formatPrice(lensTotal)}</div>
+            )}
           </div>
           <button
             onClick={handlePrimaryCta}
@@ -420,15 +481,15 @@ export function ProductPage({
       <LensPurposeModal
         open={lensModal}
         onClose={() => setLensModal(false)}
-        product={product}
-        selectedColor={color}
-        onComplete={({ lensLabel, lensPrice }) => {
+        frame={product}
+        onComplete={({ lens, purpose }) => {
           add(product, {
             color,
             image: currentImage,
-            lensLabel,
-            lensPrice,
+            purpose,
+            city,
           });
+          add(lens, { purpose, city });
           toast.success(`Комплект «${product.name}» добавлен в корзину`);
         }}
       />
@@ -436,6 +497,185 @@ export function ProductPage({
         <VirtualTryOnModal open={vtoOpen} onClose={() => setVtoOpen(false)} vtoSku={vtoSku} />
       )}
     </div>
+  );
+}
+
+const LENS_OPTION_FIELDS: Array<{
+  key: Exclude<keyof NonNullable<Product["lensOptions"]>, "eyeModes" | "colors">;
+  prescriptionKey: keyof EyePrescription;
+}> = [
+  { key: "sphere", prescriptionKey: "sphere" },
+  { key: "cylinder", prescriptionKey: "cylinder" },
+  { key: "axis", prescriptionKey: "axis" },
+  { key: "addition", prescriptionKey: "addition" },
+  { key: "curvatureRadius", prescriptionKey: "bc" },
+  { key: "diameter", prescriptionKey: "diameter" },
+];
+
+function lensPurchaseFields(product: Product) {
+  return LENS_OPTION_FIELDS.filter(({ key }) => {
+    const options = product.lensOptions?.[key]?.options;
+    return Array.isArray(options) && options.length > 0;
+  });
+}
+
+function defaultLensEye(product: Product, current: EyePrescription): EyePrescription {
+  const next = { ...current };
+  for (const { key, prescriptionKey } of lensPurchaseFields(product)) {
+    if (!next[prescriptionKey]) {
+      next[prescriptionKey] = product.lensOptions?.[key]?.options[0]?.label;
+    }
+  }
+  return next;
+}
+
+function eyesEqual(a: EyePrescription, b: EyePrescription): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function lensPurchaseComplete(product: Product, value: Prescription): boolean {
+  const fields = lensPurchaseFields(product);
+  if (!fields.length) return prescriptionComplete(product, value);
+  return fields.every(({ prescriptionKey }) =>
+    Boolean(value.right[prescriptionKey]) && Boolean(value.left[prescriptionKey]),
+  );
+}
+
+function LensPurchaseOptions({
+  product,
+  color,
+  onColorChange,
+  eyeMode,
+  onEyeModeChange,
+  prescription,
+  onPrescriptionChange,
+}: {
+  product: Product;
+  color?: string;
+  onColorChange: (value: string) => void;
+  eyeMode: "same" | "different";
+  onEyeModeChange: (value: "same" | "different") => void;
+  prescription: Prescription;
+  onPrescriptionChange: (value: Prescription) => void;
+}) {
+  const fields = lensPurchaseFields(product);
+  const colorOptions = product.lensOptions?.colors?.options ?? [];
+
+  const updateEye = (eye: "right" | "left", field: keyof EyePrescription, next: string) => {
+    const updated: Prescription = {
+      ...prescription,
+      [eye]: { ...prescription[eye], [field]: next },
+    };
+    if (eyeMode === "same" && eye === "right") {
+      updated.left = { ...updated.right };
+    }
+    onPrescriptionChange(updated);
+  };
+
+  return (
+    <section className="mt-6 border-t border-border pt-5">
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h2 className="font-serif text-lg font-semibold">Параметры линз</h2>
+        {eyeMode === "different" && (
+          <span className="text-xs text-muted-foreground">2 упаковки</span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={() => onEyeModeChange("same")}
+          className={cn(
+            "rounded-lg border px-3 py-2 text-left text-xs transition-colors",
+            eyeMode === "same" ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground",
+          )}
+        >
+          Одинаковые параметры
+        </button>
+        <button
+          type="button"
+          onClick={() => onEyeModeChange("different")}
+          className={cn(
+            "rounded-lg border px-3 py-2 text-left text-xs transition-colors",
+            eyeMode === "different" ? "border-foreground bg-foreground text-background" : "border-border bg-card hover:border-foreground",
+          )}
+        >
+          Разные параметры
+        </button>
+      </div>
+
+      {fields.length > 0 && (
+        <div className="mt-4 space-y-4">
+          {(["right", "left"] as const).map((eye) => (
+            <div
+              key={eye}
+              className={cn(
+                "space-y-3 rounded-xl border border-border bg-surface/40 p-3",
+                eye === "left" && eyeMode === "same" && "hidden",
+              )}
+            >
+              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {eyeMode === "different"
+                  ? eye === "right" ? "Правый глаз (OD)" : "Левый глаз (OS)"
+                  : "Оба глаза"}
+              </div>
+              {fields.map(({ key, prescriptionKey }) => {
+                const field = product.lensOptions?.[key];
+                if (!field) return null;
+                return (
+                  <label key={`${eye}-${key}`} className="block">
+                    <span className="mb-1 block text-xs text-muted-foreground">{field.label}</span>
+                    <select
+                      value={prescription[eye][prescriptionKey] ?? ""}
+                      onChange={(event) => updateEye(eye, prescriptionKey, event.target.value)}
+                      className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
+                    >
+                      {field.options.map((option) => (
+                        <option key={option.id} value={option.label}>{option.label}</option>
+                      ))}
+                    </select>
+                  </label>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {colorOptions.length > 0 && (
+        <div className="mt-4">
+          <div className="mb-2 text-xs text-muted-foreground">
+            Цвет: <span className="text-foreground">{color}</span>
+          </div>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(46px,1fr))] gap-2">
+            {colorOptions.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => onColorChange(option.label)}
+                title={option.label}
+                aria-label={option.label}
+                className={cn(
+                  "flex aspect-square items-center justify-center overflow-hidden rounded-lg border bg-card p-1 transition-colors",
+                  color === option.label ? "border-foreground ring-2 ring-foreground/10" : "border-border hover:border-foreground",
+                )}
+              >
+                {option.image ? (
+                  <img
+                    src={option.image}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    className="h-full w-full rounded-md object-cover"
+                  />
+                ) : (
+                  <span className="text-[10px] font-medium">{option.label.slice(0, 2)}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
   );
 }
 

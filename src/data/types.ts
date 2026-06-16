@@ -13,6 +13,29 @@ export interface ProductColor {
   image?: string;
 }
 
+export interface LensOptionChoice {
+  id: string;
+  label: string;
+  image?: string;
+}
+
+export interface LensOptionField {
+  code: string;
+  label: string;
+  options: LensOptionChoice[];
+}
+
+export interface LensOptions {
+  eyeModes?: LensOptionChoice[];
+  sphere?: LensOptionField;
+  cylinder?: LensOptionField;
+  axis?: LensOptionField;
+  addition?: LensOptionField;
+  curvatureRadius?: LensOptionField;
+  diameter?: LensOptionField;
+  colors?: LensOptionField;
+}
+
 export interface Product {
   id?: number;
   slug: string;
@@ -49,6 +72,8 @@ export interface Product {
   axis?: string[];
   addition?: string[];
   bc?: string[];
+  diameter?: string[];
+  lensOptions?: LensOptions;
   // ophthalmic lens
   refractionIndex?: string;
   coatings?: string[];

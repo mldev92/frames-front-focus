@@ -36,7 +36,7 @@ export function CartDrawer() {
           <>
             <div className="flex-1 overflow-y-auto divide-y divide-border">
               {lines.map((l) => (
-                <div key={l.slug + (l.color ?? "") + (l.lensLabel ?? "")} className="flex gap-4 p-5">
+                <div key={l.lineId} className="flex gap-4 p-5">
                   <img
                     src={l.image}
                     alt={l.name}
@@ -46,22 +46,47 @@ export function CartDrawer() {
                   <div className="flex-1 min-w-0">
                     <div className="text-xs text-muted-foreground">{l.brand}</div>
                     <div className="font-medium truncate">{l.name}</div>
-                    {l.color && (
+                    {l.parameters.color && (
                       <div className="text-xs text-muted-foreground mt-0.5">
-                        Цвет: {l.color}
+                        Цвет: {l.parameters.color}
                       </div>
                     )}
-                    {l.lensLabel && (
+                    {l.parameters.purpose && (
                       <div className="text-xs text-muted-foreground mt-0.5">
-                        Линзы: {l.lensLabel}
-                        {l.lensPrice ? ` (+${formatPrice(l.lensPrice)})` : ""}
+                        Назначение: {l.parameters.purpose}
+                      </div>
+                    )}
+                    {l.parameters.lensEyeMode && (
+                      <div className="text-xs text-muted-foreground mt-0.5">
+                        Глаза: {l.parameters.lensEyeMode === "different" ? "разные параметры" : "одинаковые параметры"}
+                      </div>
+                    )}
+                    {l.parameters.prescription && (
+                      <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
+                        {(["right", "left"] as const).map((eye) => {
+                          const values = l.parameters.prescription?.[eye];
+                          if (!values) return null;
+                          const text = [
+                            values.sphere && `SPH ${values.sphere}`,
+                            values.cylinder && `CYL ${values.cylinder}`,
+                            values.axis && `AX ${values.axis}`,
+                            values.addition && `ADD ${values.addition}`,
+                            values.bc && `BC ${values.bc}`,
+                            values.diameter && `DIA ${values.diameter}`,
+                          ].filter(Boolean).join(", ");
+                          return text ? (
+                            <div key={eye}>
+                              {eye === "right" ? "OD" : "OS"}: {text}
+                            </div>
+                          ) : null;
+                        })}
                       </div>
                     )}
                     <div className="mt-2 flex items-center justify-between">
                       <div className="flex items-center border border-border rounded-sm">
                         <button
                           className="p-1.5"
-                          onClick={() => setQty(l.slug, l.qty - 1, l.color, l.lensLabel)}
+                          onClick={() => setQty(l.lineId, l.qty - 1)}
                           aria-label="Меньше"
                         >
                           <Minus className="h-3 w-3" />
@@ -69,7 +94,7 @@ export function CartDrawer() {
                         <span className="px-2 text-sm w-6 text-center">{l.qty}</span>
                         <button
                           className="p-1.5"
-                          onClick={() => setQty(l.slug, l.qty + 1, l.color, l.lensLabel)}
+                          onClick={() => setQty(l.lineId, l.qty + 1)}
                           aria-label="Больше"
                         >
                           <Plus className="h-3 w-3" />
@@ -81,7 +106,7 @@ export function CartDrawer() {
                     </div>
                   </div>
                   <button
-                    onClick={() => remove(l.slug, l.color, l.lensLabel)}
+                    onClick={() => remove(l.lineId)}
                     className="text-muted-foreground hover:text-brand"
                     aria-label="Удалить"
                   >
