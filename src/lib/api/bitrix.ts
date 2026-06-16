@@ -16,9 +16,11 @@ import {
   getProduct as mockGetProduct,
   products as mockProducts,
 } from "@/data/products";
-import { segmentToCategory } from "@/data/categories";
+import { categoryToSegment, segmentToCategory } from "@/data/categories";
+import { apiFetch, securePost } from "@/lib/api/security";
 
 const BASE = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ?? "";
+const ALLOW_FIXTURES = import.meta.env.DEV && import.meta.env.VITE_ALLOW_FIXTURES === "true";
 
 const url = (path: string) => `${BASE}/api/store/${path}`;
 const productGalleryCache = new Map<string, Promise<string[]>>();
@@ -81,8 +83,18 @@ function normalizeProduct(product: Product): Product {
   };
 }
 
+function fixtureProducts(products: Product[]): Product[] {
+  return products.map((product, index) => ({
+    ...product,
+    id: product.id ?? -(index + 1),
+    canonicalPath:
+      product.canonicalPath ??
+      `/catalog_s/${categoryToSegment[product.category]}/${product.slug}/`,
+  }));
+}
+
 async function fetchJson<T>(path: string): Promise<T> {
-  const res = await fetch(url(path));
+  const res = await apiFetch(url(path));
   if (!res.ok) throw new Error(`Bitrix API ${res.status} for ${path}`);
   return (await res.json()) as T;
 }
@@ -113,10 +125,11 @@ const toCategory = (segment: string): Category | undefined => segmentToCategory[
 
 /** List products for a category URL segment (or union value). */
 export async function getProducts(categoryOrSegment: string, q: ProductQuery = {}): Promise<Product[]> {
-  if (!BASE) {
+  if (!BASE && ALLOW_FIXTURES) {
     const cat = toCategory(categoryOrSegment) ?? (categoryOrSegment as Category);
-    return mockByCategory(cat);
+    return fixtureProducts(mockByCategory(cat));
   }
+  if (!BASE) throw new Error("VITE_BITRIX_API is required");
   try {
     const params = new URLSearchParams({ category: categoryOrSegment });
     for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== "") params.set(k, String(v));
@@ -126,19 +139,19 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
       q.city ?? "spb",
     );
   } catch (e) {
-    console.error("[bitrix] getProducts fallback:", e);
-    const cat = toCategory(categoryOrSegment) ?? (categoryOrSegment as Category);
-    return mockByCategory(cat);
+    console.error("[bitrix] getProducts:", e);
+    throw e;
   }
 }
 
 /** Full paginated response (real total/pages from the endpoint). */
 export async function getProductsPage(categoryOrSegment: string, q: ProductQuery = {}): Promise<ProductsResponse> {
-  if (!BASE) {
+  if (!BASE && ALLOW_FIXTURES) {
     const cat = toCategory(categoryOrSegment) ?? (categoryOrSegment as Category);
-    const products = mockByCategory(cat);
+    const products = fixtureProducts(mockByCategory(cat));
     return { products, total: products.length, page: 1, pages: 1 };
   }
+  if (!BASE) throw new Error("VITE_BITRIX_API is required");
   const params = new URLSearchParams({ category: categoryOrSegment });
   for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== "") params.set(k, String(v));
   const data = await fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
@@ -158,7 +171,11 @@ export async function getProduct(
   city: "spb" | "nvk" = "spb",
   section = "",
 ): Promise<Product | null> {
-  if (!BASE) return mockGetProduct(slug) ?? null;
+  if (!BASE && ALLOW_FIXTURES) {
+    const product = mockGetProduct(slug);
+    return product ? fixtureProducts([product])[0] : null;
+  }
+  if (!BASE) throw new Error("VITE_BITRIX_API is required");
   const cached = regionalProductCache.get(productCacheKey(city, slug));
   if (cached) return cached;
 
@@ -178,7 +195,7 @@ export async function getProduct(
   }
 
   try {
-    const res = await fetch(url(`product.php?slug=${encodeURIComponent(slug)}`));
+    const res = await apiFetch(url(`product.php?slug=${encodeURIComponent(slug)}`));
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Bitrix API ${res.status}`);
     const data = (await res.json()) as Product | { error: string };
@@ -187,8 +204,8 @@ export async function getProduct(
     regionalProductCache.set(productCacheKey(city, slug), product);
     return product;
   } catch (e) {
-    console.error("[bitrix] getProduct fallback:", e);
-    return mockGetProduct(slug) ?? null;
+    console.error("[bitrix] getProduct:", e);
+    throw e;
   }
 }
 
@@ -293,7 +310,7 @@ export async function getCatalogPage(
   for (const [k, vals] of Object.entries(q.filters ?? {})) {
     if (vals && vals.length) params.set(k, vals.join(","));
   }
-  const res = await fetch(url(`products.php?${params.toString()}`), { signal });
+  const res = await apiFetch(url(`products.php?${params.toString()}`), { signal });
   if (res.status === 503) throw new IndexNotReadyError();
   if (!res.ok) throw new Error(`Bitrix API ${res.status} for catalog page`);
   const data = (await res.json()) as Partial<CatalogPage> & Pick<CatalogPage, "products" | "total" | "page" | "pages" | "source">;
@@ -376,22 +393,13 @@ export interface AppointmentData {
   dob?: string;
   salon: string;
   service: string;
-  date: string;
-  time: string;
+  date?: string;
+  time?: string;
   comment?: string;
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(url(path), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as { message?: string }).message ?? `HTTP ${res.status}`);
-  }
-  return res.json() as Promise<T>;
+  return securePost<T>(path, body);
 }
 
 export async function submitCallback(data: CallbackData): Promise<void> {
@@ -406,22 +414,48 @@ export async function submitAppointment(data: AppointmentData): Promise<void> {
 export async function searchProducts(query: string, limit = 24): Promise<Product[]> {
   const q = query.trim();
   if (q.length < 2) return [];
-  if (!BASE) {
+  if (!BASE && ALLOW_FIXTURES) {
     const t = q.toLowerCase();
-    return mockProducts
+    return fixtureProducts(mockProducts
       .filter((p) => p.name.toLowerCase().includes(t) || p.brand.toLowerCase().includes(t))
-      .slice(0, limit);
+      .slice(0, limit));
   }
+  if (!BASE) throw new Error("VITE_BITRIX_API is required");
   try {
     const data = await fetchJson<{ products: Product[]; total: number }>(
       `search.php?q=${encodeURIComponent(q)}&limit=${limit}`,
     );
     return data.products.map(normalizeProduct);
   } catch (e) {
-    console.error("[bitrix] searchProducts fallback:", e);
-    const t = q.toLowerCase();
-    return mockProducts
-      .filter((p) => p.name.toLowerCase().includes(t) || p.brand.toLowerCase().includes(t))
-      .slice(0, limit);
+    console.error("[bitrix] searchProducts:", e);
+    throw e;
   }
+}
+
+export interface CreateOrderInput {
+  customer: { firstName: string; lastName: string; phone: string; email: string };
+  lines: import("@/lib/store/cart").CartLine[];
+  city: string;
+  deliveryCode: "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
+  delivery: string;
+  payment: string;
+  address?: string;
+  comment?: string;
+}
+
+export interface CreateOrderResult {
+  ok: true;
+  orderId: number;
+  accountNumber: string;
+  total: number;
+  itemsTotal: number;
+}
+
+export async function createOrder(
+  input: CreateOrderInput,
+  idempotencyKey: string,
+): Promise<CreateOrderResult> {
+  return securePost<CreateOrderResult>("order_create.php", input, {
+    "X-Idempotency-Key": idempotencyKey,
+  });
 }

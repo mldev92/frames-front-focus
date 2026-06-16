@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode, CSSProperties } from "react";
 import {
   ChevronDown,
@@ -19,6 +19,7 @@ import { useCart, formatPrice } from "@/lib/store/cart";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { IS_PRIVATE_BETA } from "@/lib/runtime";
 import { CONTACT } from "@/data/contact";
+import { createOrder } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -30,13 +31,58 @@ export const Route = createFileRoute("/checkout")({
   component: Checkout,
 });
 
-const CITIES = ["Москва", "Санкт-Петербург", "Кемерово", "Новокузнецк"];
+const CITIES = ["Москва", "Санкт-Петербург", "Кемерово", "Новокузнецк"] as const;
 
-const DELIVERY_OPTIONS = [
-  { label: "Самовывоз из салона", sub: "«Оптика 100%» · ул. Кирочная, 17, Санкт-Петербург (м. Чернышевская)", price: "Бесплатно", free: true },
-  { label: "Курьер по СПб", sub: "Доставка в течение 1-2 дней", price: "от 350 ₽", free: false },
-  { label: "Почта России / СДЭК", sub: "5-10 рабочих дней", price: "по тарифу", free: false },
+type CheckoutCity = (typeof CITIES)[number];
+type DeliveryCode = "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
+
+interface DeliveryOption {
+  code: DeliveryCode;
+  label: string;
+  sub: string;
+  price: string;
+  free: boolean;
+  requiresAddress?: boolean;
+}
+
+const SPB_DELIVERY_OPTIONS: DeliveryOption[] = [
+  {
+    code: "salon_pickup_spb",
+    label: "Самовывоз из салона",
+    sub: "«Оптика 100%» · ул. Кирочная, 17, Санкт-Петербург (м. Чернышевская)",
+    price: "Бесплатно",
+    free: true,
+  },
+  {
+    code: "spb_courier",
+    label: "Курьер по СПб",
+    sub: "Доставка в течение 1-2 дней",
+    price: "от 350 ₽",
+    free: false,
+    requiresAddress: true,
+  },
 ];
+
+const CDEK_DELIVERY_OPTIONS: DeliveryOption[] = [
+  {
+    code: "sdek_courier",
+    label: "СДЭК (Доставка курьером)",
+    sub: "Курьерская доставка до адреса в выбранном городе",
+    price: "по тарифу",
+    free: false,
+    requiresAddress: true,
+  },
+  {
+    code: "sdek_pickup",
+    label: "СДЭК (Самовывоз)",
+    sub: "Получение в пункте выдачи СДЭК",
+    price: "по тарифу",
+    free: false,
+  },
+];
+
+const getDeliveryOptions = (city: CheckoutCity): DeliveryOption[] =>
+  city === "Санкт-Петербург" ? SPB_DELIVERY_OPTIONS : CDEK_DELIVERY_OPTIONS;
 
 const PAYMENT_OPTIONS = [
   { label: "Наличными или по карте при выдаче", sub: "Оплата в момент получения товара в салоне." },
@@ -49,20 +95,35 @@ function Checkout() {
   const { subtotal } = totals();
 
   const [open, setOpen] = useState<string | null>("region");
-  const [city, setCity] = useState("Санкт-Петербург");
+  const [city, setCity] = useState<CheckoutCity>("Санкт-Петербург");
   const [citySearch, setCitySearch] = useState("");
-  const [delivery, setDelivery] = useState("Самовывоз из салона");
+  const [delivery, setDelivery] = useState<DeliveryCode>("salon_pickup_spb");
   const [address, setAddress] = useState("");
   const [payment, setPayment] = useState("Наличными или по карте при выдаче");
   const [promoVisible, setPromoVisible] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [comment, setComment] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [completedOrder, setCompletedOrder] = useState<string | null>(null);
 
   const toggle = (id: string) => setOpen((prev) => (prev === id ? null : id));
-  const isFree = delivery === "Самовывоз из салона";
+  const deliveryOptions = useMemo(() => getDeliveryOptions(city), [city]);
+  const selectedDelivery = deliveryOptions.find((option) => option.code === delivery) ?? deliveryOptions[0];
+  const isFree = selectedDelivery.free;
 
-  const submit = () => {
+  useEffect(() => {
+    if (!deliveryOptions.some((option) => option.code === delivery)) {
+      setDelivery(deliveryOptions[0].code);
+      setAddress("");
+    }
+  }, [delivery, deliveryOptions]);
+
+  const submit = async () => {
     if (IS_PRIVATE_BETA) {
       toast.info("Оформление заказа недоступно в бета-версии", {
         description: "Корзина сохранена. Заказ не создан и данные никуда не отправлены.",
@@ -73,13 +134,69 @@ function Checkout() {
       toast.error("Необходимо согласиться с условиями");
       return;
     }
-    toast.success("Заказ оформлен! Мы свяжемся с вами в течение 30 минут.");
-    clear();
+    if (!lines.length) {
+      toast.error("Корзина пуста");
+      return;
+    }
+    if (!firstName.trim() || !lastName.trim() || phone.replace(/\D/g, "").length < 10
+      || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setOpen("buyer");
+      toast.error("Проверьте контактные данные");
+      return;
+    }
+    if (selectedDelivery.requiresAddress && !address.trim()) {
+      setOpen("delivery");
+      toast.error("Укажите адрес доставки");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const idempotencyKey = crypto.randomUUID().replace(/-/g, "");
+      const result = await createOrder({
+        customer: {
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          phone: phone.trim(),
+          email: email.trim(),
+        },
+        lines,
+        city,
+        delivery: selectedDelivery.label,
+        deliveryCode: selectedDelivery.code,
+        payment,
+        address: address.trim() || undefined,
+        comment: comment.trim() || undefined,
+      }, idempotencyKey);
+      setCompletedOrder(result.accountNumber);
+      clear();
+      toast.success(`Заказ №${result.accountNumber} создан`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Не удалось создать заказ");
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (completedOrder) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+        <h1 className="font-serif text-4xl">Заказ создан</h1>
+        <p className="mt-4 text-muted-foreground">
+          Номер заказа: <strong className="text-foreground">{completedOrder}</strong>. Мы свяжемся
+          с вами для подтверждения доставки и оплаты.
+        </p>
+        <Link to="/" className="mt-8 inline-flex rounded-full bg-brand px-7 py-3 text-white">
+          Вернуться на главную
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div
       style={{
+        width: "100%",
+        minWidth: 0,
         maxWidth: "1200px",
         margin: "0 auto",
         padding: isMobile ? "24px 16px" : "40px 32px",
@@ -97,13 +214,16 @@ function Checkout() {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: isMobile ? "1fr" : "1fr 380px",
+          gridTemplateColumns: isMobile ? "minmax(0, 1fr)" : "minmax(0, 1fr) 380px",
           gap: isMobile ? "32px" : "48px",
           alignItems: "start",
+          width: "100%",
+          minWidth: 0,
+          maxWidth: "100%",
         }}
       >
         {/* Left — accordion sections */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+        <div style={{ display: "flex", minWidth: 0, flexDirection: "column", gap: "12px" }}>
 
           <SectionCard
             id="region"
@@ -145,24 +265,24 @@ function Checkout() {
             id="delivery"
             icon={<Truck size={18} />}
             title="Доставка"
-            subtitle={delivery}
+            subtitle={selectedDelivery.label}
             isOpen={open === "delivery"}
             onToggle={() => toggle("delivery")}
           >
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {DELIVERY_OPTIONS.map((opt) => (
+              {deliveryOptions.map((opt) => (
                 <RadioCard
-                  key={opt.label}
+                  key={opt.code}
                   label={opt.label}
                   sub={opt.sub}
                   badge={opt.price}
                   badgeFree={opt.free}
-                  selected={delivery === opt.label}
-                  onClick={() => setDelivery(opt.label)}
+                  selected={delivery === opt.code}
+                  onClick={() => setDelivery(opt.code)}
                 />
               ))}
             </div>
-            {delivery === "Курьер по СПб" && (
+            {selectedDelivery.requiresAddress && (
               <div style={{ marginTop: "16px" }}>
                 <Field
                   label="Адрес доставки"
@@ -210,12 +330,12 @@ function Checkout() {
                 gap: "12px",
               }}
             >
-              <Field label="Имя" placeholder="Иван" required />
-              <Field label="Фамилия" placeholder="Иванов" required />
+              <Field label="Имя" placeholder="Иван" required value={firstName} onChange={setFirstName} />
+              <Field label="Фамилия" placeholder="Иванов" required value={lastName} onChange={setLastName} />
             </div>
             <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "12px" }}>
-              <Field label="Телефон" type="tel" placeholder="+7 (___) ___-__-__" required />
-              <Field label="E-mail" type="email" placeholder="example@mail.ru" required />
+              <Field label="Телефон" type="tel" placeholder="+7 (___) ___-__-__" required value={phone} onChange={setPhone} />
+              <Field label="E-mail" type="email" placeholder="example@mail.ru" required value={email} onChange={setEmail} />
             </div>
           </SectionCard>
 
@@ -238,7 +358,7 @@ function Checkout() {
               <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {lines.map((line) => (
                   <div
-                    key={line.slug + (line.color ?? "") + (line.lensLabel ?? "")}
+                    key={line.lineId}
                     style={{
                       display: "flex",
                       alignItems: "center",
@@ -268,22 +388,21 @@ function Checkout() {
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontSize: "14px", fontWeight: 500, marginBottom: "2px" }}>{line.name}</div>
-                      {line.color && (
+                      {line.parameters.color && (
                         <div className="text-muted-foreground" style={{ fontSize: "12px" }}>
-                          Цвет: {line.color}
+                          Цвет: {line.parameters.color}
                         </div>
                       )}
-                      {line.lensLabel && (
+                      {line.parameters.purpose && (
                         <div className="text-muted-foreground" style={{ fontSize: "12px" }}>
-                          Линзы: {line.lensLabel}
-                          {line.lensPrice ? ` (+${formatPrice(line.lensPrice)})` : ""}
+                          Назначение: {line.parameters.purpose}
                         </div>
                       )}
                     </div>
                     <QtyControl
                       qty={line.qty}
-                      onDec={() => setQty(line.slug, line.qty - 1, line.color, line.lensLabel)}
-                      onInc={() => setQty(line.slug, line.qty + 1, line.color, line.lensLabel)}
+                      onDec={() => setQty(line.lineId, line.qty - 1)}
+                      onInc={() => setQty(line.lineId, line.qty + 1)}
                     />
                     <div style={{ fontWeight: 600, fontSize: "15px", minWidth: "72px", textAlign: "right", flexShrink: 0 }}>
                       {formatPrice(line.price * line.qty)}
@@ -309,7 +428,7 @@ function Checkout() {
         </div>
 
         {/* Right — sticky sidebar */}
-        <aside style={{ position: "sticky", top: "96px" }}>
+        <aside style={{ position: "sticky", top: "96px", minWidth: 0, maxWidth: "100%" }}>
           <div
             style={{
               backgroundColor: "var(--card)",
@@ -330,7 +449,7 @@ function Checkout() {
             {lines.length > 0 && (
               <div style={{ marginBottom: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
                 {lines.map((line) => (
-                  <div key={line.slug + (line.color ?? "")} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <div key={line.lineId} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                     {line.image ? (
                       <img
                         src={line.image}
@@ -361,9 +480,9 @@ function Checkout() {
                       >
                         {line.name} ({line.qty} шт.)
                       </div>
-                      {line.color && (
+                      {line.parameters.color && (
                         <div className="text-muted-foreground" style={{ fontSize: "11px" }}>
-                          {line.color}
+                          {line.parameters.color}
                         </div>
                       )}
                     </div>
@@ -474,7 +593,7 @@ function Checkout() {
               </button>
               <p className="text-muted-foreground" style={{ fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
                 Я согласен(а) с{" "}
-                <a href="/privacy" className="text-brand" style={{ textDecoration: "underline" }}>
+                <a href="/politika-konfidentsialnosti/" className="text-brand" style={{ textDecoration: "underline" }}>
                   условиями обработки данных
                 </a>
               </p>
@@ -483,7 +602,8 @@ function Checkout() {
             {/* CTA */}
             <button
               type="button"
-              onClick={submit}
+              onClick={() => void submit()}
+              disabled={submitting || lines.length === 0}
               style={{
                 width: "100%",
                 height: "52px",
@@ -493,7 +613,8 @@ function Checkout() {
                 borderRadius: "9999px",
                 fontSize: "15px",
                 fontWeight: 600,
-                cursor: "pointer",
+                cursor: submitting || lines.length === 0 ? "not-allowed" : "pointer",
+                opacity: submitting || lines.length === 0 ? 0.55 : 1,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -502,7 +623,7 @@ function Checkout() {
               onMouseOver={(e) => (e.currentTarget.style.opacity = "0.85")}
               onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
             >
-              {IS_PRIVATE_BETA ? "Оформление недоступно в бета" : "Оформить заказ"}
+              {IS_PRIVATE_BETA ? "Оформление недоступно в бета" : submitting ? "Создаём заказ..." : "Оформить заказ"}
             </button>
 
             {/* Trust badges */}
@@ -523,10 +644,19 @@ function Checkout() {
 function ProgressSteps() {
   const steps = ["Доставка", "Оплата", "Подтверждение"];
   return (
-    <div style={{ display: "flex", alignItems: "center", marginBottom: "32px" }}>
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+        alignItems: "center",
+        marginBottom: "32px",
+        width: "100%",
+        overflow: "hidden",
+      }}
+    >
       {steps.map((s, i) => (
-        <div key={s} style={{ display: "flex", alignItems: "center" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div key={s} style={{ display: "flex", alignItems: "center", minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
             <div
               style={{
                 width: "28px",
@@ -537,7 +667,7 @@ function ProgressSteps() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                fontSize: "13px",
+                fontSize: "clamp(10px, 3vw, 13px)",
                 fontWeight: 600,
                 flexShrink: 0,
               }}
@@ -545,10 +675,15 @@ function ProgressSteps() {
               {i + 1}
             </div>
             <span
+              className="hidden sm:inline"
               style={{
                 fontSize: "13px",
                 fontWeight: i === 0 ? 600 : 400,
                 color: i === 0 ? "var(--foreground)" : "var(--muted-foreground)",
+                minWidth: 0,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}
             >
               {s}
@@ -557,11 +692,11 @@ function ProgressSteps() {
           {i < steps.length - 1 && (
             <div
               style={{
-                width: "32px",
+                minWidth: "4px",
                 height: "1px",
                 backgroundColor: "var(--border)",
-                margin: "0 10px",
-                flexShrink: 0,
+                margin: "0 clamp(3px, 2vw, 10px)",
+                flex: 1,
               }}
             />
           )}
