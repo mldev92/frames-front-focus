@@ -14,11 +14,13 @@ export interface ProductColor {
 }
 
 export interface Product {
+  id?: number;
   slug: string;
   name: string;
   brand: string;
   category: Category;
   price: number;
+  canonicalPath?: string;
   oldPrice?: number;
   images: string[];
   colors?: ProductColor[];
@@ -31,17 +33,26 @@ export interface Product {
   badges?: Badge[];
   description: string;
   specs: { label: string; value: string }[];
+  descriptionHtml?: string;
+  characteristics?: { label: string; value: string }[];
   inStock?: boolean;
   hasTryOn?: boolean;
   /** Jeeliz GlassesDB SKU for virtual try-on. When set, the PDP renders a working VTO button. */
   vtoSku?: string;
   // contact lens specific
-  wearMode?: "Однодневные" | "Двухнедельные" | "Месячные";
+  wearMode?: string;
   lensType?: string;
+  design?: string;
+  technology?: string[];
+  sphere?: string[];
+  cylinder?: string[];
+  axis?: string[];
+  addition?: string[];
+  bc?: string[];
   // ophthalmic lens
   refractionIndex?: string;
   coatings?: string[];
-  purpose?: string;
+  purpose?: string | string[];
 }
 
 export interface Service {
@@ -78,6 +89,7 @@ export interface Article {
   /** Live URL segment: /blog/{categorySlug}/{slug}/ */
   categorySlug: string;
   content: string[];
+  contentHtml?: string;
   productionUrl: string;
   isMigrated: boolean;
 }

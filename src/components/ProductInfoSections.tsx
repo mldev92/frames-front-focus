@@ -3,6 +3,7 @@ import type { Product } from "@/data/types";
 import { formatPrice } from "@/lib/store/cart";
 import { getProductDisplayBrand } from "@/lib/product";
 import { PrescriptionInput } from "@/components/PrescriptionInput";
+import type { Prescription } from "@/lib/store/cart";
 import { Reveal } from "@/components/Reveal";
 import {
   Accordion,
@@ -43,21 +44,33 @@ interface ProductInfoSectionsProps {
   product: Product;
   showPrescription: boolean;
   prescriptionVariant: "frames" | "contacts";
+  prescription?: Prescription;
+  onPrescriptionChange?: (value: Prescription) => void;
 }
 
 export function ProductInfoSections({
   product,
   showPrescription,
   prescriptionVariant,
+  prescription,
+  onPrescriptionChange,
 }: ProductInfoSectionsProps) {
   const brand = getProductDisplayBrand(product);
   const showFrameValueCard = product.category === "opravy";
+  const isLensProduct =
+    product.category === "kontaktnye-linzy" || product.category === "linzy-dlya-ochkov";
   const measurements = MEASUREMENTS.flatMap((measurement) => {
-    const spec = product.specs.find((item) => measurement.labels.includes(item.label as never));
+    const spec = product.specs.find((item) =>
+      (measurement.labels as readonly string[]).includes(item.label),
+    );
     return spec ? [{ ...measurement, value: spec.value }] : [];
   });
-  const measurementLabels = new Set(MEASUREMENTS.flatMap((item) => [...item.labels]));
-  const detailSpecs = product.specs.filter((spec) => !measurementLabels.has(spec.label));
+  const measurementLabels = new Set<string>(MEASUREMENTS.flatMap((item) => [...item.labels]));
+  const sourceSpecs =
+    isLensProduct && product.characteristics?.length ? product.characteristics : product.specs;
+  const detailSpecs = sourceSpecs.filter((spec) => !measurementLabels.has(spec.label));
+  const showDescription = isLensProduct && Boolean(product.descriptionHtml?.trim());
+  const showCharacteristics = measurements.length > 0 || detailSpecs.length > 0;
 
   return (
     <div className="mt-14 flex flex-col gap-14">
@@ -86,54 +99,72 @@ export function ProductInfoSections({
         </Reveal>
       )}
 
-      <Reveal>
-        <section>
-          <SectionHeading title="Характеристики" />
-          {measurements.length > 0 && (
-            <div className="mb-6 grid gap-3 sm:grid-cols-3">
-              {measurements.map((measurement, index) => (
-                <Reveal key={measurement.displayLabel} delay={index * 80}>
-                  <div className="group flex min-h-40 flex-col rounded-xl border border-border bg-card p-5 transition duration-300 ease-editorial hover:-translate-y-1 hover:shadow-md">
-                    <img
-                      src={measurement.icon}
-                      alt=""
-                      className="h-9 w-auto self-start opacity-70 transition-opacity group-hover:opacity-100"
-                    />
-                    <div className="mt-auto pt-5 font-serif text-2xl leading-none">
-                      {measurement.value.replace(/\s*мм\s*$/i, "")}
-                      <span className="ml-1 font-sans text-sm text-muted-foreground">мм</span>
-                    </div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      {measurement.displayLabel}
-                    </div>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          )}
+      {showDescription && (
+        <Reveal>
+          <section>
+            <SectionHeading title="Описание" />
+            <div
+              className="max-w-3xl text-sm leading-7 text-muted-foreground [&_a]:text-brand [&_a]:underline [&_br]:block [&_br]:content-[''] [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-foreground [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-serif [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-foreground [&_li]:mb-1.5 [&_p]:mb-4 [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5"
+              dangerouslySetInnerHTML={{ __html: product.descriptionHtml ?? "" }}
+            />
+          </section>
+        </Reveal>
+      )}
 
-          <dl className="grid gap-x-10 sm:grid-cols-2">
-            {detailSpecs.map((spec) => (
-              <div
-                key={`${spec.label}-${spec.value}`}
-                className="flex justify-between gap-5 border-b border-border py-3 text-sm"
-              >
-                <dt className="text-muted-foreground">{spec.label}</dt>
-                <dd className="text-right font-medium">{spec.value}</dd>
+      {showCharacteristics && (
+        <Reveal>
+          <section>
+            <SectionHeading title="Характеристики" />
+            {measurements.length > 0 && (
+              <div className="mb-6 grid gap-3 sm:grid-cols-3">
+                {measurements.map((measurement, index) => (
+                  <Reveal key={measurement.displayLabel} delay={index * 80}>
+                    <div className="group flex min-h-40 flex-col rounded-xl border border-border bg-card p-5 transition duration-300 ease-editorial hover:-translate-y-1 hover:shadow-md">
+                      <img
+                        src={measurement.icon}
+                        alt=""
+                        className="h-9 w-auto self-start opacity-70 transition-opacity group-hover:opacity-100"
+                      />
+                      <div className="mt-auto pt-5 font-serif text-2xl leading-none">
+                        {measurement.value.replace(/\s*мм\s*$/i, "")}
+                        <span className="ml-1 font-sans text-sm text-muted-foreground">мм</span>
+                      </div>
+                      <div className="mt-2 text-xs text-muted-foreground">
+                        {measurement.displayLabel}
+                      </div>
+                    </div>
+                  </Reveal>
+                ))}
               </div>
-            ))}
-          </dl>
-        </section>
-      </Reveal>
+            )}
 
-      {showPrescription && (
+            <dl className="grid gap-x-10 sm:grid-cols-2">
+              {detailSpecs.map((spec) => (
+                <div
+                  key={`${spec.label}-${spec.value}`}
+                  className="flex justify-between gap-5 border-b border-border py-3 text-sm"
+                >
+                  <dt className="text-muted-foreground">{spec.label}</dt>
+                  <dd className="text-right font-medium">{spec.value}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        </Reveal>
+      )}
+
+      {showPrescription && prescriptionVariant === "contacts" && prescription && onPrescriptionChange && (
         <Reveal>
           <section>
             <SectionHeading
               title="Нужен рецепт?"
               note="Можно добавить сейчас или после оформления"
             />
-            <PrescriptionInput variant={prescriptionVariant} />
+            <PrescriptionInput
+              product={product}
+              value={prescription}
+              onChange={onPrescriptionChange}
+            />
           </section>
         </Reveal>
       )}
