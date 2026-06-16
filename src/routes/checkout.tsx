@@ -17,7 +17,6 @@ import {
 import { toast } from "sonner";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { IS_PRIVATE_BETA } from "@/lib/runtime";
 import { CONTACT } from "@/data/contact";
 import { createOrder } from "@/lib/api/bitrix";
 
@@ -35,6 +34,7 @@ const CITIES = ["Москва", "Санкт-Петербург", "Кемеров
 
 type CheckoutCity = (typeof CITIES)[number];
 type DeliveryCode = "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
+type PaymentCode = "yookassa_card" | "t_installment";
 
 interface DeliveryOption {
   code: DeliveryCode;
@@ -84,9 +84,9 @@ const CDEK_DELIVERY_OPTIONS: DeliveryOption[] = [
 const getDeliveryOptions = (city: CheckoutCity): DeliveryOption[] =>
   city === "Санкт-Петербург" ? SPB_DELIVERY_OPTIONS : CDEK_DELIVERY_OPTIONS;
 
-const PAYMENT_OPTIONS = [
-  { label: "Наличными или по карте при выдаче", sub: "Оплата в момент получения товара в салоне." },
-  { label: "Т-Рассрочка", sub: "Рассрочка от Т-Банка — без переплат, до 12 месяцев." },
+const PAYMENT_OPTIONS: Array<{ code: PaymentCode; label: string; sub: string }> = [
+  { code: "yookassa_card", label: "Оплата картой Юkassa", sub: "Онлайн-оплата банковской картой после подтверждения заказа." },
+  { code: "t_installment", label: "Т-Рассрочка", sub: "Рассрочка от Т-Банка — без переплат, до 12 месяцев." },
 ];
 
 function Checkout() {
@@ -99,21 +99,22 @@ function Checkout() {
   const [citySearch, setCitySearch] = useState("");
   const [delivery, setDelivery] = useState<DeliveryCode>("salon_pickup_spb");
   const [address, setAddress] = useState("");
-  const [payment, setPayment] = useState("Наличными или по карте при выдаче");
+  const [payment, setPayment] = useState<PaymentCode>("yookassa_card");
   const [promoVisible, setPromoVisible] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [comment, setComment] = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
+  const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [trackNumber, setTrackNumber] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<string | null>(null);
 
   const toggle = (id: string) => setOpen((prev) => (prev === id ? null : id));
   const deliveryOptions = useMemo(() => getDeliveryOptions(city), [city]);
   const selectedDelivery = deliveryOptions.find((option) => option.code === delivery) ?? deliveryOptions[0];
+  const selectedPayment = PAYMENT_OPTIONS.find((option) => option.code === payment) ?? PAYMENT_OPTIONS[0];
   const isFree = selectedDelivery.free;
 
   useEffect(() => {
@@ -124,12 +125,6 @@ function Checkout() {
   }, [delivery, deliveryOptions]);
 
   const submit = async () => {
-    if (IS_PRIVATE_BETA) {
-      toast.info("Оформление заказа недоступно в бета-версии", {
-        description: "Корзина сохранена. Заказ не создан и данные никуда не отправлены.",
-      });
-      return;
-    }
     if (!agreed) {
       toast.error("Необходимо согласиться с условиями");
       return;
@@ -138,15 +133,10 @@ function Checkout() {
       toast.error("Корзина пуста");
       return;
     }
-    if (!firstName.trim() || !lastName.trim() || phone.replace(/\D/g, "").length < 10
-      || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    if (!fullName.trim() || phone.replace(/\D/g, "").length < 10
+      || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || !address.trim()) {
       setOpen("buyer");
       toast.error("Проверьте контактные данные");
-      return;
-    }
-    if (selectedDelivery.requiresAddress && !address.trim()) {
-      setOpen("delivery");
-      toast.error("Укажите адрес доставки");
       return;
     }
     setSubmitting(true);
@@ -154,8 +144,7 @@ function Checkout() {
       const idempotencyKey = crypto.randomUUID().replace(/-/g, "");
       const result = await createOrder({
         customer: {
-          firstName: firstName.trim(),
-          lastName: lastName.trim(),
+          fullName: fullName.trim(),
           phone: phone.trim(),
           email: email.trim(),
         },
@@ -163,8 +152,10 @@ function Checkout() {
         city,
         delivery: selectedDelivery.label,
         deliveryCode: selectedDelivery.code,
-        payment,
+        payment: selectedPayment.label,
+        paymentCode: selectedPayment.code,
         address: address.trim() || undefined,
+        trackNumber: trackNumber.trim() || undefined,
         comment: comment.trim() || undefined,
       }, idempotencyKey);
       setCompletedOrder(result.accountNumber);
@@ -282,23 +273,13 @@ function Checkout() {
                 />
               ))}
             </div>
-            {selectedDelivery.requiresAddress && (
-              <div style={{ marginTop: "16px" }}>
-                <Field
-                  label="Адрес доставки"
-                  placeholder="Улица, дом, квартира"
-                  value={address}
-                  onChange={setAddress}
-                />
-              </div>
-            )}
           </SectionCard>
 
           <SectionCard
             id="payment"
             icon={<CreditCard size={18} />}
             title="Оплата"
-            subtitle={payment}
+            subtitle={selectedPayment.label}
             isOpen={open === "payment"}
             onToggle={() => toggle("payment")}
           >
@@ -308,8 +289,8 @@ function Checkout() {
                   key={opt.label}
                   label={opt.label}
                   sub={opt.sub}
-                  selected={payment === opt.label}
-                  onClick={() => setPayment(opt.label)}
+                  selected={payment === opt.code}
+                  onClick={() => setPayment(opt.code)}
                 />
               ))}
             </div>
@@ -330,12 +311,28 @@ function Checkout() {
                 gap: "12px",
               }}
             >
-              <Field label="Имя" placeholder="Иван" required value={firstName} onChange={setFirstName} />
-              <Field label="Фамилия" placeholder="Иванов" required value={lastName} onChange={setLastName} />
+              <Field label="Ф.И.О." placeholder="Иванов Иван Иванович" required value={fullName} onChange={setFullName} />
+              <Field label="E-Mail" type="email" placeholder="example@mail.ru" required value={email} onChange={setEmail} />
             </div>
-            <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "12px" }}>
+            <div
+              style={{
+                marginTop: "12px",
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                gap: "12px",
+              }}
+            >
               <Field label="Телефон" type="tel" placeholder="+7 (___) ___-__-__" required value={phone} onChange={setPhone} />
-              <Field label="E-mail" type="email" placeholder="example@mail.ru" required value={email} onChange={setEmail} />
+              <Field label="Трек-номер СДЭК" placeholder="Если уже есть" value={trackNumber} onChange={setTrackNumber} />
+            </div>
+            <div style={{ marginTop: "12px" }}>
+              <Field
+                label="Адрес доставки"
+                placeholder="Город, улица, дом, квартира"
+                required
+                value={address}
+                onChange={setAddress}
+              />
             </div>
           </SectionCard>
 
@@ -623,7 +620,7 @@ function Checkout() {
               onMouseOver={(e) => (e.currentTarget.style.opacity = "0.85")}
               onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
             >
-              {IS_PRIVATE_BETA ? "Оформление недоступно в бета" : submitting ? "Создаём заказ..." : "Оформить заказ"}
+              {submitting ? "Создаём заказ..." : "Оформить заказ"}
             </button>
 
             {/* Trust badges */}

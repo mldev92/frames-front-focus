@@ -433,13 +433,15 @@ export async function searchProducts(query: string, limit = 24): Promise<Product
 }
 
 export interface CreateOrderInput {
-  customer: { firstName: string; lastName: string; phone: string; email: string };
+  customer: { fullName: string; phone: string; email: string };
   lines: import("@/lib/store/cart").CartLine[];
   city: string;
   deliveryCode: "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
+  paymentCode: "yookassa_card" | "t_installment";
   delivery: string;
   payment: string;
   address?: string;
+  trackNumber?: string;
   comment?: string;
 }
 
