@@ -18,7 +18,8 @@ import { toast } from "sonner";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CONTACT } from "@/data/contact";
-import { createOrder } from "@/lib/api/bitrix";
+import { createOrder, getOrderDeliveryOptions } from "@/lib/api/bitrix";
+import type { DeliveryQuoteOption } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -39,25 +40,44 @@ type PaymentCode = "yookassa_card" | "t_installment";
 interface DeliveryOption {
   code: DeliveryCode;
   label: string;
-  sub: string;
-  price: string;
-  free: boolean;
+  description: string;
+  price: number | null;
+  priceFormatted: string;
+  free?: boolean;
+  period?: string | null;
+  logo?: string | null;
   requiresAddress?: boolean;
+  requiresPickupPoint?: boolean;
+  errors?: string[];
+}
+
+interface PickupPoint {
+  id: string;
+  address: string;
+  name?: string;
+}
+
+declare global {
+  interface Window {
+    ISDEKWidjet?: new (options: Record<string, unknown>) => { open?: () => void; close?: () => void };
+  }
 }
 
 const SPB_DELIVERY_OPTIONS: DeliveryOption[] = [
   {
     code: "salon_pickup_spb",
     label: "Самовывоз из салона",
-    sub: "«Оптика 100%» · ул. Кирочная, 17, Санкт-Петербург (м. Чернышевская)",
-    price: "Бесплатно",
+    description: "«Оптика 100%» · ул. Кирочная, 17, Санкт-Петербург (м. Чернышевская)",
+    price: 0,
+    priceFormatted: "Бесплатно",
     free: true,
   },
   {
     code: "spb_courier",
     label: "Курьер по СПб",
-    sub: "Доставка в течение 1-2 дней",
-    price: "от 350 ₽",
+    description: "Доставка в течение 1-2 дней",
+    price: null,
+    priceFormatted: "по тарифу",
     free: false,
     requiresAddress: true,
   },
@@ -67,17 +87,22 @@ const CDEK_DELIVERY_OPTIONS: DeliveryOption[] = [
   {
     code: "sdek_courier",
     label: "СДЭК (Доставка курьером)",
-    sub: "Курьерская доставка до адреса в выбранном городе",
-    price: "по тарифу",
+    description: "Доставка заказа курьером компании СДЭК",
+    price: null,
+    priceFormatted: "по тарифу",
+    period: "7-8 дней",
     free: false,
     requiresAddress: true,
   },
   {
     code: "sdek_pickup",
     label: "СДЭК (Самовывоз)",
-    sub: "Получение в пункте выдачи СДЭК",
-    price: "по тарифу",
+    description: "Доставка заказа в один из пунктов самовывоза компании СДЭК",
+    price: null,
+    priceFormatted: "по тарифу",
+    period: "7-8 дней",
     free: false,
+    requiresPickupPoint: true,
   },
 ];
 
@@ -108,21 +133,99 @@ function Checkout() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [trackNumber, setTrackNumber] = useState("");
+  const [pickupPoint, setPickupPoint] = useState<PickupPoint | null>(null);
+  const [quotedDeliveryOptions, setQuotedDeliveryOptions] = useState<DeliveryQuoteOption[] | null>(null);
+  const [deliveryLoading, setDeliveryLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<string | null>(null);
 
   const toggle = (id: string) => setOpen((prev) => (prev === id ? null : id));
-  const deliveryOptions = useMemo(() => getDeliveryOptions(city), [city]);
+  const fallbackDeliveryOptions = useMemo(() => getDeliveryOptions(city), [city]);
+  const deliveryOptions = useMemo<DeliveryOption[]>(() => {
+    if (!quotedDeliveryOptions?.length) return fallbackDeliveryOptions;
+    return quotedDeliveryOptions.map((option) => ({
+      code: option.code,
+      label: option.label,
+      description: option.description,
+      price: option.price,
+      priceFormatted: option.priceFormatted,
+      free: option.price === 0,
+      period: option.period,
+      logo: option.logo,
+      requiresAddress: option.requiresAddress,
+      requiresPickupPoint: option.requiresPickupPoint,
+      errors: option.errors,
+    }));
+  }, [fallbackDeliveryOptions, quotedDeliveryOptions]);
   const selectedDelivery = deliveryOptions.find((option) => option.code === delivery) ?? deliveryOptions[0];
   const selectedPayment = PAYMENT_OPTIONS.find((option) => option.code === payment) ?? PAYMENT_OPTIONS[0];
-  const isFree = selectedDelivery.free;
+  const deliveryPrice = selectedDelivery.price ?? 0;
+  const orderTotal = subtotal + deliveryPrice;
+  const isFree = selectedDelivery.price === 0 || selectedDelivery.free;
+
+  useEffect(() => {
+    let cancelled = false;
+    setQuotedDeliveryOptions(null);
+    setPickupPoint(null);
+    if (!lines.length) return;
+    setDeliveryLoading(true);
+    getOrderDeliveryOptions({ city, lines })
+      .then((result) => {
+        if (!cancelled) setQuotedDeliveryOptions(result.options);
+      })
+      .catch((error) => {
+        console.error("[checkout] delivery quote:", error);
+        if (!cancelled) toast.error("Не удалось рассчитать доставку, показаны базовые варианты");
+      })
+      .finally(() => {
+        if (!cancelled) setDeliveryLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [city, lines]);
 
   useEffect(() => {
     if (!deliveryOptions.some((option) => option.code === delivery)) {
       setDelivery(deliveryOptions[0].code);
       setAddress("");
+      setPickupPoint(null);
     }
   }, [delivery, deliveryOptions]);
+
+  const openCdekPickupMap = async () => {
+    if (city === "Санкт-Петербург") return;
+    try {
+      await loadCdekWidget();
+      if (!window.ISDEKWidjet) throw new Error("CDEK widget unavailable");
+      const widget = new window.ISDEKWidjet({
+        popup: true,
+        hidedelt: true,
+        defaultCity: city,
+        cityFrom: "Санкт-Петербург",
+        country: "Россия",
+        onChoose: (info: {
+          id?: string | number;
+          cityName?: string;
+          PVZ?: { Address?: string; Name?: string };
+        }) => {
+          const pointAddress = ["г. " + (info.cityName || city), info.PVZ?.Address].filter(Boolean).join(", ");
+          const point = {
+            id: String(info.id ?? ""),
+            address: pointAddress,
+            name: info.PVZ?.Name,
+          };
+          setPickupPoint(point);
+          setAddress(pointAddress);
+          widget.close?.();
+        },
+      });
+      window.setTimeout(() => widget.open?.(), 150);
+    } catch (error) {
+      console.error("[checkout] cdek widget:", error);
+      toast.error("Не удалось открыть карту СДЭК");
+    }
+  };
 
   const submit = async () => {
     if (!agreed) {
@@ -131,6 +234,11 @@ function Checkout() {
     }
     if (!lines.length) {
       toast.error("Корзина пуста");
+      return;
+    }
+    if (selectedDelivery.requiresPickupPoint && !pickupPoint) {
+      setOpen("delivery");
+      toast.error("Выберите пункт самовывоза СДЭК");
       return;
     }
     if (!fullName.trim() || phone.replace(/\D/g, "").length < 10
@@ -155,6 +263,7 @@ function Checkout() {
         payment: selectedPayment.label,
         paymentCode: selectedPayment.code,
         address: address.trim() || undefined,
+        pickupPoint: pickupPoint ?? undefined,
         trackNumber: trackNumber.trim() || undefined,
         comment: comment.trim() || undefined,
       }, idempotencyKey);
@@ -260,16 +369,23 @@ function Checkout() {
             isOpen={open === "delivery"}
             onToggle={() => toggle("delivery")}
           >
+            {deliveryLoading && (
+              <p className="text-muted-foreground text-sm" style={{ margin: "0 0 10px" }}>
+                Рассчитываем стоимость доставки...
+              </p>
+            )}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {deliveryOptions.map((opt) => (
-                <RadioCard
+                <DeliveryCard
                   key={opt.code}
-                  label={opt.label}
-                  sub={opt.sub}
-                  badge={opt.price}
-                  badgeFree={opt.free}
+                  option={opt}
+                  pickupPoint={opt.code === "sdek_pickup" ? pickupPoint : null}
                   selected={delivery === opt.code}
-                  onClick={() => setDelivery(opt.code)}
+                  onClick={() => {
+                    setDelivery(opt.code);
+                    if (opt.code !== "sdek_pickup") setPickupPoint(null);
+                  }}
+                  onChoosePickup={opt.code === "sdek_pickup" ? openCdekPickupMap : undefined}
                 />
               ))}
             </div>
@@ -504,7 +620,7 @@ function Checkout() {
               <SummaryRow label="Товаров на" value={formatPrice(subtotal)} />
               <SummaryRow
                 label="Доставка"
-                value={isFree ? "Бесплатно" : "по тарифу"}
+                value={selectedDelivery.priceFormatted}
                 valueStyle={isFree ? { color: "var(--success)", fontWeight: 500 } : undefined}
               />
               <SummaryRow label="Скидка" value="—" />
@@ -522,7 +638,7 @@ function Checkout() {
             >
               <span style={{ fontWeight: 500 }}>Итого:</span>
               <span className="font-serif" style={{ fontSize: "22px", fontWeight: 700 }}>
-                {formatPrice(subtotal)}
+                {formatPrice(orderTotal)}
               </span>
             </div>
 
@@ -785,6 +901,123 @@ function SectionCard({
   );
 }
 
+function DeliveryCard({
+  option,
+  pickupPoint,
+  selected,
+  onClick,
+  onChoosePickup,
+}: {
+  option: DeliveryOption;
+  pickupPoint: PickupPoint | null;
+  selected: boolean;
+  onClick: () => void;
+  onChoosePickup?: () => void;
+}) {
+  return (
+    <div
+      style={{
+        width: "100%",
+        backgroundColor: selected ? "oklch(0.97 0.018 28)" : "var(--surface)",
+        border: selected ? "2px solid var(--brand)" : "2px solid transparent",
+        borderRadius: "12px",
+        transition: "all 0.15s ease",
+      }}
+    >
+      <button
+        type="button"
+        onClick={onClick}
+        style={{
+          width: "100%",
+          display: "flex",
+          alignItems: "flex-start",
+          gap: "12px",
+          padding: "14px 16px",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          textAlign: "left",
+        }}
+      >
+        <div
+          style={{
+            width: "18px",
+            height: "18px",
+            marginTop: "2px",
+            borderRadius: "50%",
+            border: selected ? "2px solid var(--brand)" : "2px solid var(--border)",
+            backgroundColor: selected ? "var(--brand)" : "transparent",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}
+        >
+          {selected && <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "white" }} />}
+        </div>
+        {option.logo && (
+          <img
+            src={option.logo}
+            alt=""
+            style={{ width: "56px", maxHeight: "32px", objectFit: "contain", flexShrink: 0, marginTop: "1px" }}
+          />
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: "14px", fontWeight: 600 }}>{option.label}</div>
+          <div className="text-muted-foreground" style={{ fontSize: "12px", marginTop: "4px", lineHeight: 1.45 }}>
+            {option.description}
+          </div>
+          {(option.priceFormatted || option.period) && (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "auto 1fr",
+                gap: "4px 10px",
+                marginTop: "10px",
+                fontSize: "13px",
+              }}
+            >
+              <span className="text-muted-foreground">Стоимость:</span>
+              <strong>{option.priceFormatted}</strong>
+              {option.period && (
+                <>
+                  <span className="text-muted-foreground">Срок доставки:</span>
+                  <strong>{option.period}</strong>
+                </>
+              )}
+            </div>
+          )}
+          {pickupPoint && (
+            <div className="text-muted-foreground" style={{ fontSize: "12px", marginTop: "10px", lineHeight: 1.45 }}>
+              Выбран пункт: {pickupPoint.address}
+            </div>
+          )}
+        </div>
+      </button>
+      {selected && option.requiresPickupPoint && onChoosePickup && (
+        <div style={{ padding: "0 16px 14px 46px" }}>
+          <button
+            type="button"
+            onClick={onChoosePickup}
+            style={{
+              border: "1px solid var(--brand)",
+              background: "white",
+              color: "var(--brand)",
+              borderRadius: "8px",
+              padding: "9px 12px",
+              fontSize: "13px",
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            {pickupPoint ? "Изменить пункт самовывоза" : "Выбрать пункт самовывоза"}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RadioCard({
   label,
   sub,
@@ -856,6 +1089,30 @@ function RadioCard({
       )}
     </button>
   );
+}
+
+let cdekWidgetPromise: Promise<void> | null = null;
+
+function loadCdekWidget(): Promise<void> {
+  if (typeof window === "undefined") return Promise.reject(new Error("browser only"));
+  if (window.ISDEKWidjet) return Promise.resolve();
+  if (cdekWidgetPromise) return cdekWidgetPromise;
+  cdekWidgetPromise = new Promise((resolve, reject) => {
+    const existing = document.getElementById("ISDEKscript") as HTMLScriptElement | null;
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("CDEK script failed")), { once: true });
+      return;
+    }
+    const script = document.createElement("script");
+    script.id = "ISDEKscript";
+    script.src = "https://widget.cdek.ru/widget/widjet.js";
+    script.charset = "utf-8";
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error("CDEK script failed"));
+    document.head.appendChild(script);
+  });
+  return cdekWidgetPromise;
 }
 
 function CityChip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {

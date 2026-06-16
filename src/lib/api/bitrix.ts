@@ -441,6 +441,7 @@ export interface CreateOrderInput {
   delivery: string;
   payment: string;
   address?: string;
+  pickupPoint?: { id: string; address: string; name?: string };
   trackNumber?: string;
   comment?: string;
 }
@@ -460,4 +461,30 @@ export async function createOrder(
   return securePost<CreateOrderResult>("order_create.php", input, {
     "X-Idempotency-Key": idempotencyKey,
   });
+}
+
+export interface DeliveryQuoteOption {
+  code: CreateOrderInput["deliveryCode"];
+  label: string;
+  description: string;
+  price: number | null;
+  priceFormatted: string;
+  period?: string | null;
+  logo?: string | null;
+  requiresAddress: boolean;
+  requiresPickupPoint: boolean;
+  errors: string[];
+}
+
+export interface DeliveryQuoteResult {
+  ok: true;
+  city: string;
+  itemsTotal: number;
+  options: DeliveryQuoteOption[];
+}
+
+export async function getOrderDeliveryOptions(
+  input: Pick<CreateOrderInput, "city" | "lines">,
+): Promise<DeliveryQuoteResult> {
+  return securePost<DeliveryQuoteResult>("order_delivery.php", input);
 }
