@@ -779,11 +779,39 @@ function Checkout() {
                 </button>
               </div>
             </div>
-            <iframe
-              title="Карта пунктов СДЭК"
-              src={`https://yandex.ru/maps/?text=${encodeURIComponent(`СДЭК пункт выдачи ${city}`)}`}
-              style={{ width: "100%", height: isMobile ? "52vh" : "520px", border: "none", flex: "1 1 auto" }}
-            />
+            <div
+              style={{
+                padding: "20px 18px 0",
+                display: "grid",
+                gap: "12px",
+                backgroundColor: "oklch(0.98 0.01 255)",
+              }}
+            >
+              <div style={{ fontSize: "14px", lineHeight: 1.55 }}>
+                Откройте карту СДЭК, выберите удобный пункт выдачи и укажите его адрес ниже. Адрес будет передан в
+                заказ вместе с выбранным способом доставки.
+              </div>
+              <a
+                href={`https://yandex.ru/maps/?text=${encodeURIComponent(`СДЭК пункт выдачи ${city}`)}`}
+                target="_blank"
+                rel="noreferrer"
+                style={{
+                  display: "inline-flex",
+                  width: "fit-content",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "8px",
+                  background: "var(--brand)",
+                  color: "var(--brand-foreground)",
+                  padding: "10px 14px",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  textDecoration: "none",
+                }}
+              >
+                Открыть карту пунктов СДЭК
+              </a>
+            </div>
             <div style={{ padding: "16px 18px", borderTop: "1px solid var(--border)" }}>
               <Field
                 label="Адрес выбранного пункта СДЭК"
