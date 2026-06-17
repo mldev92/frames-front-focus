@@ -31,7 +31,7 @@ export const Route = createFileRoute("/checkout")({
   component: Checkout,
 });
 
-const CITIES = ["Москва", "Санкт-Петербург", "Кемерово", "Новокузнецк"] as const;
+const CITIES = ["Санкт-Петербург", "Новокузнецк"] as const;
 
 type CheckoutCity = (typeof CITIES)[number];
 type DeliveryCode = "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
@@ -51,7 +51,9 @@ interface DeliveryOption {
   errors?: string[];
 }
 
-interface PickupPoint extends PickupPointOption {}
+interface PickupPoint extends PickupPointOption {
+  rawAddress?: string;
+}
 
 const SPB_DELIVERY_OPTIONS: DeliveryOption[] = [
   {
@@ -219,6 +221,8 @@ function Checkout() {
   const formatPickupAddress = (point: Pick<PickupPoint, "address">) =>
     point.address.toLowerCase().includes(city.toLowerCase()) ? point.address : `${city}, ${point.address}`;
 
+  const stripPickupMarker = (value: string) => value.replace(/\s+#S[^\s]+$/u, "").trim();
+
   useEffect(() => {
     const onMessage = (event: MessageEvent) => {
       const allowedOrigin = new URL(pickupWidgetUrl).origin;
@@ -228,8 +232,9 @@ function Checkout() {
 
       if (payload.type === "optika100-sdek-selected" && payload.point) {
         const point = payload.point as PickupPoint;
-        const normalizedAddress = payload.displayAddress?.trim() || formatPickupAddress(point);
-        setPickupPoint({ ...point, address: normalizedAddress });
+        const rawAddress = payload.displayAddress?.trim() || formatPickupAddress(point);
+        const normalizedAddress = stripPickupMarker(rawAddress);
+        setPickupPoint({ ...point, address: normalizedAddress, rawAddress });
         setAddress(normalizedAddress);
         setPickupWidgetLoading(false);
         toast.success("Пункт самовывоза СДЭК выбран");
@@ -441,6 +446,15 @@ function Checkout() {
     setSubmitting(true);
     try {
       const idempotencyKey = crypto.randomUUID().replace(/-/g, "");
+      const pickupPayload = pickupPoint
+        ? {
+            ...pickupPoint,
+            address: pickupPoint.rawAddress ?? pickupPoint.address,
+          }
+        : undefined;
+      const deliveryAddress = selectedDelivery.requiresPickupPoint
+        ? pickupPayload?.address?.trim() || address.trim()
+        : address.trim() || (selectedDelivery.code === "salon_pickup_spb" ? "Самовывоз из салона «Оптика 100%», ул. Кирочная, 17" : undefined);
       const result = await createOrder({
         customer: {
           fullName: fullName.trim(),
@@ -453,8 +467,8 @@ function Checkout() {
         deliveryCode: selectedDelivery.code,
         payment: selectedPayment.label,
         paymentCode: selectedPayment.code,
-        address: address.trim() || (selectedDelivery.code === 'salon_pickup_spb' ? 'Самовывоз из салона «Оптика 100%», ул. Кирочная, 17' : undefined),
-        pickupPoint: pickupPoint ?? undefined,
+        address: deliveryAddress,
+        pickupPoint: pickupPayload,
         trackNumber: trackNumber.trim() || undefined,
         comment: comment.trim() || undefined,
       }, idempotencyKey);
