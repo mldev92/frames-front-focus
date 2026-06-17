@@ -25,6 +25,7 @@ export const Route = createFileRoute("/blog/$category/$slug")({
         { property: "og:image", content: a.cover },
         { property: "og:type", content: "article" },
       ],
+      links: [{ rel: "canonical", href: a.productionUrl }],
     };
   },
   component: ArticlePage,
@@ -82,7 +83,12 @@ function ArticlePage() {
         />
       </div>
 
-      {article.isMigrated ? (
+      {article.contentHtml ? (
+        <div
+          className="article-content mx-auto max-w-3xl px-4 py-12 text-lg leading-relaxed lg:px-8 [&_h2]:mb-4 [&_h2]:mt-10 [&_h2]:font-serif [&_h2]:text-3xl [&_h3]:mb-3 [&_h3]:mt-8 [&_h3]:font-serif [&_h3]:text-2xl [&_img]:my-6 [&_img]:h-auto [&_img]:max-w-full [&_li]:mb-2 [&_ol]:my-5 [&_p]:my-5 [&_ul]:my-5"
+          dangerouslySetInnerHTML={{ __html: article.contentHtml }}
+        />
+      ) : article.isMigrated ? (
         <div className="mx-auto max-w-3xl px-4 lg:px-8 py-12 space-y-5 text-lg leading-relaxed">
           {article.content.map((p, i) => (
             <p key={i}>{p}</p>

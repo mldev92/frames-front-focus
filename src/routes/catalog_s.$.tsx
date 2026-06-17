@@ -14,13 +14,13 @@ export const Route = createFileRoute("/catalog_s/$")({
   validateSearch: (search: Record<string, unknown>) => catalogSearchSchema.parse(search),
   loaderDeps: ({ search }) => search,
   loader: async ({ params, deps, abortController }) => {
-    const resolved = await resolveCatalogRoute(params._splat, deps, "spb", abortController.signal);
+    const resolved = await resolveCatalogRoute(params._splat ?? "", deps, "spb", abortController.signal);
     if (!resolved || !categoryForCatalogPath(resolved.sectionPath)) throw notFound();
     return resolved;
   },
   head: ({ loaderData, params }) => {
     if (!loaderData) return { meta: [{ title: "Каталог · ОПТИКА 100%" }] };
-    const canonical = `https://optika100.com/catalog_s/${params._splat.replace(/^\/|\/$/g, "")}/`;
+    const canonical = `https://optika100.com/catalog_s/${(params._splat ?? "").replace(/^\/|\/$/g, "")}/`;
     if (loaderData.kind === "product") {
       const product = loaderData.data.product;
       return {

@@ -1,8 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCart, formatPrice } from "@/lib/store/cart";
-import { getProduct } from "@/data/products";
-import { categoryToSegment } from "@/data/categories";
 
 export const Route = createFileRoute("/basket")({
   head: () => ({
@@ -41,7 +39,7 @@ function CartPage() {
       <div className="grid lg:grid-cols-[1fr_360px] gap-12">
         <div className="divide-y divide-border border-y border-border">
           {lines.map((l) => (
-            <div key={l.slug + (l.color ?? "") + (l.lensLabel ?? "")} className="flex gap-5 py-6">
+            <div key={l.lineId} className="flex gap-5 py-6">
               <img
                 src={l.image}
                 alt={l.name}
@@ -50,37 +48,29 @@ function CartPage() {
               />
               <div className="flex-1">
                 <div className="text-xs text-muted-foreground">{l.brand}</div>
-                <Link
-                  to="/catalog_s/$category/$slug"
-                  params={{
-                    category: categoryToSegment[getProduct(l.slug)?.category ?? "opravy"],
-                    slug: l.slug,
-                  }}
-                  className="font-medium hover:text-brand"
-                >
+                <a href={l.canonicalPath} className="font-medium hover:text-brand">
                   {l.name}
-                </Link>
-                {l.color && (
+                </a>
+                {l.parameters.color && (
                   <div className="text-xs text-muted-foreground mt-1">
-                    Цвет: {l.color}
+                    Цвет: {l.parameters.color}
                   </div>
                 )}
-                {l.lensLabel && (
+                {l.parameters.purpose && (
                   <div className="text-xs text-muted-foreground mt-1">
-                    Линзы: {l.lensLabel}
-                    {l.lensPrice ? ` (+${formatPrice(l.lensPrice)})` : ""}
+                    Назначение: {l.parameters.purpose}
                   </div>
                 )}
                 <div className="mt-3 flex items-center border border-border rounded-sm w-fit">
                   <button
-                    onClick={() => setQty(l.slug, l.qty - 1, l.color, l.lensLabel)}
+                    onClick={() => setQty(l.lineId, l.qty - 1)}
                     className="p-2"
                   >
                     <Minus className="h-3 w-3" />
                   </button>
                   <span className="px-3 text-sm">{l.qty}</span>
                   <button
-                    onClick={() => setQty(l.slug, l.qty + 1, l.color, l.lensLabel)}
+                    onClick={() => setQty(l.lineId, l.qty + 1)}
                     className="p-2"
                   >
                     <Plus className="h-3 w-3" />
@@ -89,7 +79,7 @@ function CartPage() {
               </div>
               <div className="flex flex-col items-end justify-between">
                 <button
-                  onClick={() => remove(l.slug, l.color, l.lensLabel)}
+                  onClick={() => remove(l.lineId)}
                   className="text-muted-foreground hover:text-brand"
                   aria-label="Удалить"
                 >

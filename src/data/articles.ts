@@ -1,4 +1,5 @@
 import type { Article } from "./types";
+import importedContent from "./articles-content.json";
 
 // Blog categories as published on optika100.com. The live site currently has a
 // single rubric — "Линзы для очков" at /blog/linzy-dlya-ochkov/.
@@ -8,7 +9,6 @@ export const blogCategories: { slug: string; title: string }[] = [
 
 const CATEGORY_SLUG = "linzy-dlya-ochkov";
 const CATEGORY_TITLE = "Линзы для очков";
-const MIGRATED_ARTICLE_SLUGS = new Set(["pokrytiya-linz-dlya-ochkov"]);
 const JOURNAL_FALLBACK_COVERS = [
   "/article-pokrytiya-linz/pokrytie_hero.webp",
   "/blog_vidy_linz.webp",
@@ -58,9 +58,12 @@ export const articles: Article[] = RAW.map(([slug, title, excerpt], i) => ({
         "Полный текст статьи перенесен в отдельную редакционную страницу.",
       ]
     : [],
+  contentHtml: importedContent[slug as keyof typeof importedContent],
   productionUrl: `https://optika100.com/blog/${CATEGORY_SLUG}/${slug}/`,
-  isMigrated: MIGRATED_ARTICLE_SLUGS.has(slug),
-}));
+  isMigrated:
+    slug === "pokrytiya-linz-dlya-ochkov" ||
+    Boolean(importedContent[slug as keyof typeof importedContent]),
+})).filter((article) => article.isMigrated);
 
 export const getArticle = (slug: string) => articles.find((a) => a.slug === slug);
 

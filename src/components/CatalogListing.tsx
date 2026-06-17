@@ -1,4 +1,4 @@
-import { Children, useEffect, useMemo, useState } from "react";
+import { Children, useCallback, useEffect, useMemo, useState } from "react";
 import { SlidersHorizontal, X, ChevronDown, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { CatalogBanner } from "./CatalogBanner";
 import { ProductCard } from "./ProductCard";
@@ -721,19 +721,21 @@ export function CatalogListing({
   const products = data.products;
   const serverFacets = data.facets;
 
-  const seedActive = (): Record<string, Set<string>> => {
+  const seedActive = useCallback((): Record<string, Set<string>> => {
     if (!initialFilters) return {};
     const out: Record<string, Set<string>> = {};
     for (const [k, vals] of Object.entries(initialFilters)) {
       if (vals && vals.length) out[k] = new Set(vals);
     }
     return out;
-  };
+  }, [initialFilters]);
   const [active, setActive] = useState<Record<string, Set<string>>>(seedActive);
   // Re-seed when the URL search params change (dropdown → catalog navigation
   // keeps the same route component, so useState alone wouldn't pick it up).
   const initialKey = JSON.stringify(initialFilters ?? {});
-  useEffect(() => { setActive(seedActive()); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [initialKey]);
+  useEffect(() => {
+    setActive(seedActive());
+  }, [initialKey, seedActive]);
 
   /** Serialise an active-filter map for the URL and emit it (resets to page 1). */
   const emitFilters = (next: Record<string, Set<string>>) => {

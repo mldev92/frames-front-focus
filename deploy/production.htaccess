@@ -1,0 +1,18 @@
+DirectoryIndex index.php index.html
+Options -Indexes
+RewriteEngine On
+
+RewriteRule ^(api|auth|bitrix|sale|upload|local)(/|$) - [L]
+RewriteRule ^personal/(order|payment|profile)(/|$) - [L]
+RewriteRule ^(1c_exchange|payment_callback|verification)(/|$) - [L]
+RewriteRule ^.*\.(php)$ - [L]
+RewriteRule ^o100_frontend_(current|releases|previous)(/|$) - [R=404,L]
+
+RewriteCond %{DOCUMENT_ROOT}/o100_frontend_current/$1 -f
+RewriteRule ^(.+)$ /o100_frontend_current/$1 [L]
+RewriteCond %{DOCUMENT_ROOT}/o100_frontend_current/$1/index.html -f
+RewriteRule ^(.+?)/?$ /o100_frontend_current/$1/index.html [L]
+RewriteRule ^$ /o100_frontend_current/index.html [L]
+RewriteRule ^(basket|checkout|search)/?$ /o100_frontend_current/_shell.html [L]
+
+ErrorDocument 404 /o100_frontend_current/404.html

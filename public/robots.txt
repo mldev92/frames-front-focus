@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /personal/
+Disallow: /checkout/
+Sitemap: https://optika100.com/sitemap.xml

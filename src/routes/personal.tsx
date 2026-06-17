@@ -9,12 +9,12 @@ import {
   Star,
   UserRound,
 } from "lucide-react";
-import { type FormEvent, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Reveal } from "@/components/Reveal";
 import { useCart, formatPrice } from "@/lib/store/cart";
-import { getMe, getOrders, type CabinetOrder, type Me } from "@/lib/api/account";
+import { getMe, getOrders, logout, type CabinetOrder, type Me } from "@/lib/api/account";
 import { authUrl, IS_PRIVATE_BETA } from "@/lib/runtime";
 
 export const Route = createFileRoute("/personal")({
@@ -116,8 +116,6 @@ function showComingSoon() {
 function PersonalPage() {
   const { totals } = useCart();
   const [mounted, setMounted] = useState(false);
-  const [email, setEmail] = useState("");
-  const [consent, setConsent] = useState(false);
   const [me, setMe] = useState<Me | null>(null);
   const [orders, setOrders] = useState<CabinetOrder[]>([]);
 
@@ -148,33 +146,6 @@ function PersonalPage() {
   const lastOrder = orders[0] ?? null;
   const greetingName = me?.firstName?.trim() || "в кабинете";
   const bonus = me?.bonus ?? 0;
-
-  function handleNewsletterSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (IS_PRIVATE_BETA) {
-      toast.info("Подписка недоступна в бета-версии", {
-        description: "E-mail не отправлен.",
-      });
-      return;
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      toast.error("Введите корректный e-mail");
-      return;
-    }
-
-    if (!consent) {
-      toast.error("Подтвердите согласие на обработку данных");
-      return;
-    }
-
-    toast.success("Спасибо за подписку!", {
-      description: "Демо-форма не отправляет данные.",
-    });
-    setEmail("");
-    setConsent(false);
-  }
 
   return (
     <div className="bg-background">
@@ -240,13 +211,18 @@ function PersonalPage() {
               ) : null}
 
               {!IS_PRIVATE_BETA ? (
-                <a
-                  href="/?logout=yes"
+                <button
+                  type="button"
+                  onClick={() => {
+                    void logout()
+                      .then(() => window.location.assign("/"))
+                      .catch(() => toast.error("Не удалось выйти. Обновите страницу."));
+                  }}
                   className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-brand no-underline"
                 >
                   <LogOut className="h-4 w-4" strokeWidth={1.8} />
                   Выйти
-                </a>
+                </button>
               ) : null}
             </div>
           </Reveal>
@@ -439,63 +415,6 @@ function PersonalPage() {
         </section>
       ) : null}
 
-      <section className="-mb-24 bg-cream">
-        <div className="mx-auto grid max-w-7xl items-center gap-9 px-4 py-14 md:grid-cols-2 md:gap-16 lg:px-8 lg:py-20">
-          <Reveal>
-            <div className="text-xs font-semibold uppercase tracking-[0.16em] text-brand">
-              Будьте в курсе
-            </div>
-            <h2 className="mt-3 font-serif text-3xl font-semibold leading-tight text-foreground sm:text-[42px]">
-              Подпишитесь на новости
-            </h2>
-            <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground">
-              Получайте информацию о новинках, акциях и специальных предложениях первыми.
-            </p>
-          </Reveal>
-
-          <Reveal delay={100}>
-            <form className="flex flex-col gap-4" onSubmit={handleNewsletterSubmit} noValidate>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <label className="sr-only" htmlFor="personal-newsletter-email">
-                  Ваш e-mail
-                </label>
-                <input
-                  id="personal-newsletter-email"
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="Ваш e-mail"
-                  className="min-w-0 flex-1 rounded-full border border-border bg-card px-6 py-4 text-[15px] text-foreground outline-none transition focus:border-brand focus:ring-4 focus:ring-brand/10"
-                />
-                <button
-                  type="submit"
-                  className="rounded-full bg-brand px-8 py-4 text-[15px] font-semibold text-white transition-all hover:-translate-y-0.5 hover:opacity-90"
-                >
-                  {IS_PRIVATE_BETA ? "Недоступно в бета" : "Подписаться"}
-                </button>
-              </div>
-
-              <label className="flex cursor-pointer items-start gap-2.5 text-[13px] leading-relaxed text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={consent}
-                  onChange={(event) => setConsent(event.target.checked)}
-                  className="mt-0.5 h-[17px] w-[17px] shrink-0 accent-brand"
-                />
-                <span>
-                  Я согласен на обработку{" "}
-                  <Link
-                    to="/politika-konfidentsialnosti"
-                    className="text-brand underline underline-offset-2"
-                  >
-                    персональных данных
-                  </Link>
-                </span>
-              </label>
-            </form>
-          </Reveal>
-        </div>
-      </section>
     </div>
   );
 }

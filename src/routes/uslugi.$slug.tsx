@@ -21,5 +21,9 @@ export const Route = createFileRoute("/uslugi/$slug")({
       ],
     };
   },
-  component: () => <ServiceDetail service={Route.useLoaderData().service} />,
+  component: ServiceRoutePage,
 });
+
+function ServiceRoutePage() {
+  return <ServiceDetail service={Route.useLoaderData().service} />;
+}

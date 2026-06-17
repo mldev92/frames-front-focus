@@ -15,7 +15,7 @@ type Direction = "forward" | "back";
 // ─── Step meta ────────────────────────────────────────────────────────────────
 const STEPS = [
   { label: "Филиал и возраст", img: "/services1_online_appointment_doctor.webp" },
-  { label: "Услуга и время", img: "/services3_selection_of_glasses.webp" },
+  { label: "Услуга", img: "/services3_selection_of_glasses.webp" },
   { label: "Ваши данные", img: "/services2_vision_diagnostics.webp" },
 ];
 
@@ -24,31 +24,6 @@ const SERVICES: { id: ServiceType; label: string; sub: string }[] = [
   { id: "glasses", label: "Подбор очков", sub: "бесплатно при заказе" },
   { id: "contacts", label: "Подбор МКЛ", sub: "1 500 ₽" },
 ];
-
-// ─── Time slots (static mock) ─────────────────────────────────────────────────
-const DAY_NAMES = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
-const SLOT_TEMPLATES = [
-  ["10:00", "10:20", "10:40", "11:00", "11:20"],
-  ["10:00", "13:50", "14:00", "14:20", "14:40"],
-  ["10:00", "10:20", "10:40", "11:00", "11:20"],
-  ["10:50", "11:00", "11:20", "11:40", "12:00"],
-];
-
-function buildDays() {
-  const today = new Date();
-  return Array.from({ length: 4 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    return {
-      key: d.toISOString().slice(0, 10),
-      day: DAY_NAMES[d.getDay()],
-      date: `${d.getDate()}.${d.getMonth() + 1}`,
-      slots: SLOT_TEMPLATES[i % SLOT_TEMPLATES.length],
-    };
-  });
-}
-
-const DAYS = buildDays();
 
 interface Props {
   open: boolean;
@@ -66,7 +41,6 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
 
   // Step 2
   const [service, setService] = useState<ServiceType>("glasses");
-  const [slot, setSlot] = useState<{ date: string; time: string } | null>(null);
 
   // Step 3
   const [lastName, setLastName] = useState("");
@@ -84,7 +58,6 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     setAgeType("adult");
     setSalonOpen(false);
     setService("glasses");
-    setSlot(null);
     setLastName("");
     setFirstName("");
     setPatronymic("");
@@ -107,7 +80,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (IS_PRIVATE_BETA) {
-      toast.info("Онлайн-запись по времени пока недоступна в бета-версии. Позвоните в выбранный салон.");
+      toast.info("Запрос записи недоступен в бета-версии. Позвоните в выбранный салон.");
       return;
     }
     const selectedSalonForSubmit = salons.find((s) => s.id === salonId)!;
@@ -121,8 +94,6 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
         dob: birthDate || undefined,
         salon: selectedSalonForSubmit.address,
         service: serviceLabel,
-        date: slot?.date ?? "",
-        time: slot?.time ?? "",
         comment: comment || undefined,
       });
       setSent(true);
@@ -319,43 +290,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                       </div>
                     </div>
 
-                    {/* Time grid */}
-                    <div className="space-y-3 flex-1 flex flex-col min-h-0">
-                      <FieldLabel>Выберите время</FieldLabel>
-                      <div className="flex-1 overflow-y-auto rounded-2xl border border-border bg-background p-3">
-                        <div className="grid grid-cols-4 gap-2">
-                          {DAYS.map((d) => (
-                            <div key={d.key} className="min-w-0">
-                              <div className="text-center pb-2 mb-2 border-b border-border/70">
-                                <div className="text-[10px] font-bold uppercase tracking-wider text-foreground/60">
-                                  {d.day}
-                                </div>
-                                <div className="text-[10px] text-foreground/40 mt-0.5">{d.date}</div>
-                              </div>
-                              <div className="flex flex-col gap-1.5">
-                                {d.slots.map((t) => {
-                                  const active = slot?.date === d.key && slot.time === t;
-                                  return (
-                                    <button
-                                      key={t}
-                                      type="button"
-                                      onClick={() => setSlot({ date: d.key, time: t })}
-                                      className={cn(
-                                        "text-[11px] font-medium rounded-lg py-1.5 border transition-all",
-                                        active
-                                          ? "bg-ink text-primary-foreground border-ink shadow-sm"
-                                          : "border-border bg-background hover:border-brand hover:text-brand",
-                                      )}
-                                    >
-                                      {t}
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                    <div className="rounded-2xl border border-border bg-background p-5 text-sm leading-relaxed text-muted-foreground">
+                      Это запрос на запись, а не бронирование конкретного слота. Администратор
+                      позвонит и предложит актуальное свободное время.
                     </div>
                   </div>
 
@@ -363,7 +300,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                     <SecondaryButton onClick={() => go(1)}>
                       <ArrowLeft className="h-4 w-4" /> Назад
                     </SecondaryButton>
-                    <PrimaryButton onClick={() => slot && go(3)} disabled={!slot}>
+                    <PrimaryButton onClick={() => go(3)}>
                       Продолжить
                     </PrimaryButton>
                   </Footer>

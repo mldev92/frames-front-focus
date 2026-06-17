@@ -16,7 +16,6 @@ import { AppointmentModal } from "@/components/AppointmentModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { Reveal } from "@/components/Reveal";
 import { catalogHref, categoryToSegment } from "@/data/categories";
-import { bestsellers, products } from "@/data/products";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
 import { Calendar, Users, Award, Phone, Send } from "lucide-react";
@@ -25,6 +24,7 @@ import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
 import { CONTACT, PRIMARY_SALON } from "@/data/contact";
 import { useCityStore } from "@/lib/store/city";
+import { getProducts } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -47,6 +47,16 @@ export const Route = createFileRoute("/")({
       { property: "og:image", content: "/main_banner_3.webp" },
     ],
   }),
+  loader: async () => {
+    const [frames, contactLenses] = await Promise.all([
+      getProducts("opravy", { limit: 8 }),
+      getProducts("kontaktnye_linzy_", { limit: 8 }),
+    ]);
+    return {
+      hits: frames.slice(0, 8),
+      contactLensProducts: contactLenses.slice(0, 4),
+    };
+  },
   component: MainV2Page,
 });
 
@@ -193,17 +203,6 @@ const SERVICE_STRIP_ITEMS = [
   },
 ];
 
-const CONTACT_LENS_HOMEPAGE_SLUGS = [
-  "acuvue-oasys-1day",
-  "biofinity",
-  "misight-1day-90",
-  "air-optix-toric",
-] as const;
-
-const CONTACT_LENS_HOMEPAGE_PRODUCTS = CONTACT_LENS_HOMEPAGE_SLUGS.map((slug) =>
-  products.find((product) => product.slug === slug),
-).filter((product): product is Product => Boolean(product));
-
 const SUBSCRIPTION_POINTS = [
   "Оформите один раз — пополнение приходит автоматически",
   "Подписка всегда дешевле обычной цены",
@@ -263,9 +262,8 @@ const CAT_CELLS = [
 ];
 
 function MainV2Page() {
-  const hits = bestsellers();
+  const { hits, contactLensProducts } = Route.useLoaderData();
   const recent = articles.slice(0, 2);
-  const contactLensProducts = CONTACT_LENS_HOMEPAGE_PRODUCTS;
   const [aptOpen, setAptOpen] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
   const city = useCityStore((state) => state.city);
@@ -1170,35 +1168,25 @@ function MainV2Page() {
               </div>
             </div>
 
-            {/* 3. Newsletter */}
+            {/* 3. News channels */}
             <div
               className="rounded-2xl bg-background p-6 flex flex-col"
               style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)" }}
             >
               <div className="font-serif text-lg" style={{ lineHeight: 1.2, marginBottom: 8 }}>
-                Будьте в курсе
+                Новости и акции
               </div>
               <p className="text-sm text-muted-foreground" style={{ marginBottom: 18 }}>
-                Подпишитесь на новости и акции — раз в месяц, без спама.
+                Публикуем актуальные предложения в наших официальных каналах.
               </p>
-              <form
-                onSubmit={(e) => e.preventDefault()}
-                className="flex items-center gap-2 mt-auto rounded-full border border-border pl-4 pr-1.5 py-1.5"
+              <a
+                href={CONTACT.telegram.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
               >
-                <input
-                  type="email"
-                  placeholder="Ваш e-mail"
-                  className="flex-1 bg-transparent outline-none text-sm placeholder:text-muted-foreground"
-                />
-                <button
-                  type="submit"
-                  className="flex items-center justify-center rounded-full text-white hover:opacity-90 transition-opacity cursor-pointer"
-                  style={{ width: 36, height: 36, background: "var(--brand)" }}
-                  aria-label="Подписаться"
-                >
-                  <Send className="h-4 w-4" />
-                </button>
-              </form>
+                <Send className="h-4 w-4" /> Читать в Telegram
+              </a>
             </div>
           </div>
         </div>

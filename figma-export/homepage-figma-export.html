@@ -1,0 +1,2140 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Optika100 Homepage Figma Export</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #fcfaf7;
+        --surface: #fffefe;
+        --surface-soft: #f5efe7;
+        --surface-cream: #f8f3ec;
+        --ink: #21252d;
+        --muted: #66707f;
+        --line: rgba(33, 37, 45, 0.1);
+        --brand: #c94040;
+        --success: #1f9d63;
+        --shadow-sm: 0 8px 26px rgba(19, 23, 33, 0.06);
+        --shadow-lg: 0 24px 80px rgba(19, 23, 33, 0.1);
+        --radius-lg: 24px;
+        --radius-md: 18px;
+        --radius-sm: 14px;
+        --content: min(1280px, calc(100vw - 40px));
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        font-family: "Inter", sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+      }
+
+      img {
+        display: block;
+        max-width: 100%;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .page {
+        overflow-x: hidden;
+      }
+
+      .container {
+        width: var(--content);
+        margin: 0 auto;
+      }
+
+      .serif {
+        font-family: "Fraunces", serif;
+      }
+
+      .eyebrow {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--brand);
+      }
+
+      .section {
+        padding: 88px 0;
+      }
+
+      .section-cream {
+        background: var(--surface-cream);
+      }
+
+      .section-white {
+        background: var(--bg);
+      }
+
+      .section-title {
+        margin: 10px 0 0;
+        font-family: "Fraunces", serif;
+        font-size: clamp(34px, 4vw, 54px);
+        line-height: 1.02;
+        letter-spacing: -0.03em;
+      }
+
+      .section-copy {
+        margin: 16px 0 0;
+        max-width: 620px;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.65;
+      }
+
+      .topbar {
+        background: var(--ink);
+        color: rgba(255, 255, 255, 0.84);
+        font-size: 12px;
+      }
+
+      .topbar-row {
+        width: var(--content);
+        margin: 0 auto;
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .topbar-left,
+      .topbar-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .city-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--success);
+        box-shadow: 0 0 0 6px rgba(31, 157, 99, 0.12);
+      }
+
+      .promo-line {
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: rgba(252, 250, 247, 0.92);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid var(--line);
+      }
+
+      .site-header-row {
+        width: var(--content);
+        margin: 0 auto;
+        min-height: 82px;
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 28px;
+      }
+
+      .logo {
+        font-family: "Fraunces", serif;
+        font-size: 28px;
+        letter-spacing: -0.04em;
+      }
+
+      .logo .accent {
+        color: var(--brand);
+      }
+
+      .main-nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 24px;
+        font-size: 15px;
+      }
+
+      .main-nav a {
+        color: rgba(33, 37, 45, 0.84);
+      }
+
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .icon-pill,
+      .ghost-pill,
+      .primary-pill {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border-radius: 999px;
+        font-weight: 600;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+      }
+
+      .icon-pill {
+        width: 42px;
+        height: 42px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        font-size: 14px;
+      }
+
+      .primary-pill,
+      .ghost-pill {
+        min-height: 50px;
+        padding: 0 24px;
+        font-size: 14px;
+      }
+
+      .primary-pill {
+        background: var(--brand);
+        color: #fff;
+      }
+
+      .ghost-pill {
+        border: 1px solid rgba(33, 37, 45, 0.16);
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .hero {
+        position: relative;
+        min-height: 720px;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+      }
+
+      .hero::before,
+      .hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-position: center right;
+        background-size: cover;
+      }
+
+      .hero::before {
+        background-image: url("https://optika.p2print.site/new_main_banner.webp");
+      }
+
+      .hero::after {
+        background-image: linear-gradient(
+            90deg,
+            rgba(245, 239, 231, 0.96) 0%,
+            rgba(245, 239, 231, 0.82) 32%,
+            rgba(245, 239, 231, 0.34) 58%,
+            rgba(245, 239, 231, 0) 80%
+          ),
+          radial-gradient(circle at 78% 20%, rgba(255, 223, 172, 0.72), transparent 36%);
+      }
+
+      .hero-content {
+        position: relative;
+        z-index: 1;
+        width: var(--content);
+        margin: 0 auto;
+        padding: 96px 0;
+        display: grid;
+        grid-template-columns: minmax(0, 560px);
+      }
+
+      .hero-title {
+        margin: 18px 0 0;
+        font-family: "Fraunces", serif;
+        font-size: clamp(52px, 7vw, 92px);
+        line-height: 0.95;
+        letter-spacing: -0.05em;
+      }
+
+      .hero-title .accent {
+        color: var(--brand);
+      }
+
+      .hero-copy {
+        margin: 24px 0 0;
+        max-width: 490px;
+        color: var(--muted);
+        font-size: 19px;
+        line-height: 1.6;
+      }
+
+      .hero-actions {
+        margin-top: 34px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+      }
+
+      .hero-stats {
+        margin-top: 48px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 14px;
+        max-width: 780px;
+      }
+
+      .stat-card {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 16px 18px;
+        border-radius: var(--radius-sm);
+        background: rgba(255, 255, 255, 0.62);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.58);
+      }
+
+      .stat-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: var(--brand);
+        background: rgba(201, 64, 64, 0.12);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .stat-value {
+        font-family: "Fraunces", serif;
+        font-size: 20px;
+        line-height: 1.05;
+      }
+
+      .stat-label {
+        margin-top: 4px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.35;
+      }
+
+      .service-strip {
+        padding: 38px 0 44px;
+      }
+
+      .service-strip-grid {
+        width: min(1480px, calc(100vw - 40px));
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 0;
+      }
+
+      .service-strip-item {
+        display: flex;
+        gap: 16px;
+        padding: 0 24px;
+        border-left: 1px solid var(--line);
+      }
+
+      .service-strip-item:first-child {
+        padding-left: 0;
+        border-left: 0;
+      }
+
+      .service-strip-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: var(--brand);
+        background: var(--surface-soft);
+        font-size: 12px;
+        font-weight: 700;
+        flex: 0 0 auto;
+      }
+
+      .service-strip-title {
+        margin: 4px 0 6px;
+        font-weight: 600;
+        font-size: 15px;
+      }
+
+      .service-strip-copy {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.55;
+      }
+
+      .section-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 36px;
+      }
+
+      .section-link {
+        color: var(--brand);
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+
+      .category-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 0.95fr 0.95fr;
+        grid-template-areas:
+          "women sun sun"
+          "women men kids";
+        min-height: 650px;
+        gap: 18px;
+      }
+
+      .category-card {
+        position: relative;
+        overflow: hidden;
+        border-radius: var(--radius-lg);
+        min-height: 280px;
+        color: #fff;
+      }
+
+      .category-card img,
+      .promo-hero img,
+      .service-card img,
+      .tile-card img,
+      .journal-card img,
+      .salon-card img,
+      .wide-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .category-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.52));
+      }
+
+      .category-content {
+        position: absolute;
+        left: 28px;
+        right: 28px;
+        bottom: 28px;
+        z-index: 1;
+      }
+
+      .category-content.top {
+        top: 28px;
+        bottom: auto;
+      }
+
+      .category-title {
+        margin: 0;
+        font-family: "Fraunces", serif;
+        font-size: clamp(26px, 3vw, 38px);
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+      }
+
+      .category-subtitle {
+        margin: 10px 0 18px;
+        opacity: 0.88;
+        font-size: 14px;
+      }
+
+      .outline-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 40px;
+        padding: 0 18px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.82);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .promo-hero {
+        position: relative;
+        overflow: hidden;
+        min-height: 580px;
+      }
+
+      .promo-hero::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+            90deg,
+            rgba(246, 240, 233, 0.92) 0%,
+            rgba(246, 240, 233, 0.74) 28%,
+            rgba(246, 240, 233, 0.36) 52%,
+            rgba(246, 240, 233, 0) 74%
+          ),
+          radial-gradient(circle at 80% 18%, rgba(255, 223, 172, 0.76), transparent 36%);
+      }
+
+      .promo-hero-content {
+        position: relative;
+        z-index: 1;
+        padding: 110px 0;
+        width: var(--content);
+        margin: 0 auto;
+      }
+
+      .promo-hero-shell {
+        max-width: 540px;
+      }
+
+      .promo-hero-copy {
+        margin: 18px 0 0;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.6;
+      }
+
+      .products-grid,
+      .lens-grid,
+      .services-grid,
+      .trust-grid,
+      .journal-grid,
+      .bottom-cta-grid {
+        display: grid;
+        gap: 20px;
+      }
+
+      .products-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .product-card {
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+      }
+
+      .product-media {
+        position: relative;
+        aspect-ratio: 1;
+        background: #fff;
+      }
+
+      .product-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        padding: 28px;
+      }
+
+      .badge-row {
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        top: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(33, 37, 45, 0.08);
+        font-size: 11px;
+        font-weight: 600;
+      }
+
+      .wish {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.9);
+        color: var(--brand);
+        font-size: 14px;
+      }
+
+      .product-copy {
+        padding: 20px;
+      }
+
+      .product-name {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.45;
+      }
+
+      .product-price {
+        margin-top: 8px;
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .color-row {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .color-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 1px solid rgba(33, 37, 45, 0.12);
+      }
+
+      .trust-layout {
+        display: grid;
+        grid-template-columns: 0.95fr 1.4fr;
+        gap: 72px;
+        align-items: start;
+      }
+
+      .trust-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .trust-item {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .trust-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(201, 64, 64, 0.12);
+        color: var(--brand);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .trust-title {
+        margin: 18px 0 8px;
+        font-family: "Fraunces", serif;
+        font-size: 19px;
+        line-height: 1.15;
+      }
+
+      .trust-copy {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.6;
+      }
+
+      .services-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .service-card,
+      .journal-card,
+      .salon-card,
+      .tile-card,
+      .mini-card,
+      .wide-image-card,
+      .bottom-cta-card {
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        border: 1px solid var(--line);
+        box-shadow: var(--shadow-sm);
+      }
+
+      .service-card .copy,
+      .journal-card .copy,
+      .salon-card .copy {
+        padding: 22px;
+      }
+
+      .service-card .image {
+        aspect-ratio: 4 / 3;
+      }
+
+      .service-name,
+      .journal-title,
+      .salon-title {
+        margin: 0;
+        font-family: "Fraunces", serif;
+        font-size: 24px;
+        line-height: 1.15;
+      }
+
+      .service-link,
+      .journal-link,
+      .small-link {
+        margin-top: 14px;
+        display: inline-block;
+        color: var(--brand);
+        font-size: 14px;
+        font-weight: 600;
+      }
+
+      .lens-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .lens-card {
+        background: var(--surface);
+        border-radius: var(--radius-md);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .lens-card .copy {
+        padding: 20px;
+      }
+
+      .lens-topline {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .strike {
+        margin-left: 8px;
+        color: var(--muted);
+        text-decoration: line-through;
+        font-size: 13px;
+        font-weight: 400;
+      }
+
+      .sale-row {
+        margin-top: 10px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .sale-chip,
+      .sale-chip-outline {
+        display: inline-flex;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .sale-chip {
+        background: var(--brand);
+        color: #fff;
+      }
+
+      .sale-chip-outline {
+        border: 1px solid var(--brand);
+        color: var(--brand);
+      }
+
+      .split-feature {
+        display: grid;
+        grid-template-columns: 1.05fr 1fr;
+        gap: 48px;
+        align-items: stretch;
+      }
+
+      .wide-image-card {
+        position: relative;
+        min-height: 520px;
+      }
+
+      .wide-image-card .overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0, 0, 0, 0.04) 24%, rgba(0, 0, 0, 0.62) 100%);
+      }
+
+      .wide-image-card .content {
+        position: absolute;
+        left: 32px;
+        right: 32px;
+        bottom: 30px;
+        color: #fff;
+      }
+
+      .feature-copy-wrap {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .check-list {
+        margin: 28px 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 14px;
+      }
+
+      .check-list li {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        color: var(--ink);
+        line-height: 1.6;
+      }
+
+      .check {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(201, 64, 64, 0.12);
+        color: var(--brand);
+        font-size: 12px;
+        font-weight: 700;
+        flex: 0 0 auto;
+        margin-top: 2px;
+      }
+
+      .savings-card {
+        margin-top: 28px;
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        padding: 18px 20px;
+        border-radius: var(--radius-sm);
+        background: var(--surface-cream);
+        border: 1px solid var(--line);
+      }
+
+      .savings-value {
+        font-family: "Fraunces", serif;
+        font-size: 40px;
+        line-height: 1;
+        color: var(--brand);
+      }
+
+      .tile-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 1fr;
+        gap: 24px;
+      }
+
+      .tile-card {
+        position: relative;
+        min-height: 420px;
+        color: var(--ink);
+      }
+
+      .tile-card::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          rgba(245, 239, 231, 0.92) 0%,
+          rgba(245, 239, 231, 0.58) 40%,
+          rgba(245, 239, 231, 0) 70%
+        );
+      }
+
+      .tile-card .content {
+        position: absolute;
+        left: 32px;
+        right: 32px;
+        top: 30px;
+        z-index: 1;
+        max-width: 430px;
+      }
+
+      .mini-stack {
+        display: grid;
+        grid-template-rows: 1.25fr 1fr 1fr;
+        gap: 16px;
+      }
+
+      .mini-card {
+        padding: 26px;
+      }
+
+      .mini-card.brand {
+        background: linear-gradient(140deg, var(--brand), #962f2f);
+        color: #fff;
+        border: 0;
+      }
+
+      .mini-title {
+        margin: 0;
+        font-family: "Fraunces", serif;
+        font-size: 24px;
+        line-height: 1.1;
+      }
+
+      .mini-copy {
+        margin: 12px 0 0;
+        color: inherit;
+        opacity: 0.9;
+        font-size: 14px;
+        line-height: 1.55;
+      }
+
+      .mini-kicker {
+        margin-top: 20px;
+        display: inline-block;
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      .salons-layout {
+        display: grid;
+        gap: 22px;
+      }
+
+      .salons-summary {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        align-items: end;
+        margin-bottom: 34px;
+      }
+
+      .salons-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .meta-chip {
+        display: inline-flex;
+        align-items: center;
+        min-height: 38px;
+        padding: 0 14px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .salons-grid {
+        display: grid;
+        grid-template-columns: 1.15fr 1fr 1fr;
+        gap: 20px;
+      }
+
+      .salon-card.featured {
+        grid-row: span 2;
+      }
+
+      .salon-image {
+        position: relative;
+        aspect-ratio: 16 / 11;
+        overflow: hidden;
+      }
+
+      .salon-card.featured .salon-image {
+        aspect-ratio: 1 / 1.08;
+      }
+
+      .open-badge {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 34px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: rgba(238, 251, 244, 0.92);
+        color: #1d8557;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .open-badge .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--success);
+      }
+
+      .salon-meta {
+        margin-top: 14px;
+        display: grid;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .ratings {
+        margin-top: 18px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .rating-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 36px;
+        padding: 0 12px;
+        border-radius: 999px;
+        background: var(--surface-soft);
+        font-size: 12px;
+      }
+
+      .journal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .journal-card {
+        display: grid;
+        grid-template-columns: 0.42fr 0.58fr;
+      }
+
+      .journal-card .image {
+        min-height: 100%;
+      }
+
+      .bottom-cta-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .bottom-cta-card {
+        padding: 26px;
+      }
+
+      .bottom-cta-title {
+        margin: 0 0 10px;
+        font-family: "Fraunces", serif;
+        font-size: 24px;
+        line-height: 1.15;
+      }
+
+      .bottom-cta-copy {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .newsletter-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 52px;
+        padding: 8px 8px 8px 16px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+      }
+
+      .newsletter-input {
+        flex: 1;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: var(--ink);
+        font: inherit;
+      }
+
+      .newsletter-input::placeholder {
+        color: var(--muted);
+      }
+
+      .newsletter-button {
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 50%;
+        background: var(--brand);
+        color: #fff;
+        font-weight: 700;
+      }
+
+      .footer {
+        background: var(--surface);
+        border-top: 1px solid var(--line);
+        padding: 72px 0 32px;
+      }
+
+      .footer-top {
+        display: grid;
+        grid-template-columns: 1.35fr repeat(4, minmax(0, 1fr));
+        gap: 28px;
+      }
+
+      .footer-title {
+        margin: 0 0 18px;
+        font-family: "Fraunces", serif;
+        font-size: 14px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .footer-list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 12px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .footer-bottom {
+        margin-top: 36px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      @media (max-width: 1180px) {
+        .products-grid,
+        .lens-grid,
+        .services-grid,
+        .trust-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .category-grid,
+        .salons-grid,
+        .split-feature,
+        .tile-grid,
+        .trust-layout,
+        .footer-top,
+        .service-strip-grid {
+          grid-template-columns: 1fr;
+          grid-template-areas: none;
+        }
+
+        .service-strip-item {
+          padding: 0;
+          border-left: 0;
+          border-top: 1px solid var(--line);
+          padding-top: 20px;
+        }
+
+        .service-strip-item:first-child {
+          padding-top: 0;
+          border-top: 0;
+        }
+
+        .salon-card.featured {
+          grid-row: auto;
+        }
+
+        .hero {
+          min-height: auto;
+        }
+
+        .hero-stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .site-header-row {
+          grid-template-columns: 1fr;
+          justify-items: start;
+          padding: 16px 0;
+        }
+
+        .main-nav {
+          flex-wrap: wrap;
+          justify-content: flex-start;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .section {
+          padding: 64px 0;
+        }
+
+        .topbar-row,
+        .site-header-row,
+        .container,
+        .hero-content,
+        .promo-hero-content {
+          width: min(100vw - 28px, 100%);
+        }
+
+        .topbar-row,
+        .topbar-left,
+        .topbar-right,
+        .section-head,
+        .salons-summary,
+        .footer-bottom {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .header-actions {
+          flex-wrap: wrap;
+        }
+
+        .hero-content,
+        .promo-hero-content {
+          padding: 76px 0;
+        }
+
+        .hero-title {
+          font-size: 52px;
+        }
+
+        .hero-copy {
+          font-size: 17px;
+        }
+
+        .hero-stats,
+        .products-grid,
+        .lens-grid,
+        .services-grid,
+        .trust-grid,
+        .journal-grid,
+        .bottom-cta-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .journal-card {
+          grid-template-columns: 1fr;
+        }
+
+        .mini-stack {
+          grid-template-rows: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="topbar">
+        <div class="topbar-row">
+          <div class="topbar-left">
+            <span class="city-dot"></span>
+            <span>Санкт-Петербург</span>
+            <span class="promo-line">ДО -40% НА СОЛНЦЕЗАЩИТНЫЕ ОЧКИ</span>
+          </div>
+          <div class="topbar-right">
+            <span>Заказать звонок</span>
+            <strong>8-800-700-0214</strong>
+          </div>
+        </div>
+      </div>
+
+      <header class="site-header">
+        <div class="site-header-row">
+          <div class="logo">ОПТИКА <span class="accent">100%</span></div>
+          <nav class="main-nav">
+            <a href="#hero">Главная</a>
+            <a href="#categories">Категории</a>
+            <a href="#products">Хиты продаж</a>
+            <a href="#services">Услуги</a>
+            <a href="#subscription">Подписка на линзы</a>
+            <a href="#salons">Салоны</a>
+            <a href="#journal">Журнал</a>
+          </nav>
+          <div class="header-actions">
+            <span class="icon-pill">Поиск</span>
+            <span class="icon-pill">Saved</span>
+            <span class="icon-pill">Cart</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="hero" id="hero">
+        <div class="hero-content">
+          <div>
+            <div class="eyebrow">Новая коллекция · Лето 2026</div>
+            <h1 class="hero-title">
+              Видеть мир
+              <br />
+              на <span class="accent">100%</span>
+            </h1>
+            <p class="hero-copy">
+              Современные очки, профессиональный подбор и забота о вашем зрении. Страница
+              подготовлена как статичный дизайн-экспорт, чтобы с ней было удобно работать в
+              Figma-импортерах.
+            </p>
+            <div class="hero-actions">
+              <a class="primary-pill" href="#bottom-cta">Записаться на проверку</a>
+              <a class="ghost-pill" href="#products">Примерить онлайн</a>
+            </div>
+            <div class="hero-stats">
+              <div class="stat-card">
+                <div class="stat-icon">11K</div>
+                <div>
+                  <div class="stat-value">11 000+</div>
+                  <div class="stat-label">довольных клиентов</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">18</div>
+                <div>
+                  <div class="stat-value">18 врачей</div>
+                  <div class="stat-label">и оптометристов</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">12M</div>
+                <div>
+                  <div class="stat-value">12 месяцев</div>
+                  <div class="stat-label">гарантии на очки</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon">RU</div>
+                <div>
+                  <div class="stat-value">Доставка</div>
+                  <div class="stat-label">по всей России</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="service-strip section-white">
+        <div class="service-strip-grid">
+          <div class="service-strip-item">
+            <div class="service-strip-icon">01</div>
+            <div>
+              <div class="eyebrow">Диагностика</div>
+              <div class="service-strip-title">Проверка зрения</div>
+              <p class="service-strip-copy">Современная диагностика за 30 минут</p>
+            </div>
+          </div>
+          <div class="service-strip-item">
+            <div class="service-strip-icon">02</div>
+            <div>
+              <div class="eyebrow">Подбор</div>
+              <div class="service-strip-title">Подбор очков</div>
+              <p class="service-strip-copy">Индивидуальный подбор оправ и линз</p>
+            </div>
+          </div>
+          <div class="service-strip-item">
+            <div class="service-strip-icon">03</div>
+            <div>
+              <div class="eyebrow">Забота</div>
+              <div class="service-strip-title">Контроль миопии</div>
+              <p class="service-strip-copy">Программы для детей и подростков</p>
+            </div>
+          </div>
+          <div class="service-strip-item">
+            <div class="service-strip-icon">04</div>
+            <div>
+              <div class="eyebrow">Сервис</div>
+              <div class="service-strip-title">Ремонт очков</div>
+              <p class="service-strip-copy">Быстрый и качественный ремонт</p>
+            </div>
+          </div>
+          <div class="service-strip-item">
+            <div class="service-strip-icon">05</div>
+            <div>
+              <div class="eyebrow">Линзы</div>
+              <div class="service-strip-title">Контактные линзы</div>
+              <p class="service-strip-copy">Подбор и подписка с доставкой</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-cream" id="categories">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Категории</div>
+              <h2 class="section-title">Подберите свои идеальные очки</h2>
+            </div>
+            <a class="section-link" href="#products">Смотреть все категории</a>
+          </div>
+
+          <div class="category-grid">
+            <article class="category-card" style="grid-area: women">
+              <img src="https://optika.p2print.site/new_categories_1.webp" alt="Женские оправы" />
+              <div class="category-content">
+                <h3 class="category-title">Женские оправы</h3>
+                <p class="category-subtitle">Более 1500 моделей</p>
+                <span class="outline-chip">Смотреть</span>
+              </div>
+            </article>
+
+            <article class="category-card" style="grid-area: sun">
+              <img
+                src="https://optika.p2print.site/new_categories_2.webp"
+                alt="Солнцезащитные очки"
+              />
+              <div class="category-content top">
+                <h3 class="category-title">Солнцезащитные очки</h3>
+                <p class="category-subtitle">Новые коллекции 2024</p>
+                <span class="outline-chip">Смотреть</span>
+              </div>
+            </article>
+
+            <article class="category-card" style="grid-area: men">
+              <img src="https://optika.p2print.site/new_categories_4.webp" alt="Мужские оправы" />
+              <div class="category-content">
+                <h3 class="category-title">Мужские оправы</h3>
+                <p class="category-subtitle">Более 1200 моделей</p>
+                <span class="outline-chip">Смотреть</span>
+              </div>
+            </article>
+
+            <article class="category-card" style="grid-area: kids">
+              <img src="https://optika.p2print.site/new_categories_3.webp" alt="Детские оправы" />
+              <div class="category-content">
+                <h3 class="category-title">Детские оправы</h3>
+                <p class="category-subtitle">Для заботы о будущем</p>
+                <span class="outline-chip">Смотреть</span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="promo-hero">
+        <img src="https://optika.p2print.site/main_banner_v2.webp" alt="" />
+        <div class="promo-hero-content">
+          <div class="promo-hero-shell">
+            <div class="eyebrow">Семейная выгода</div>
+            <h2 class="section-title">
+              Покупайте вместе
+              <span style="color: var(--brand); font-style: italic"> и экономьте</span>
+            </h2>
+            <p class="promo-hero-copy">
+              Купите одну пару и получите скидку 20% на каждую следующую. Включая детские оправы и
+              солнцезащитные очки.
+            </p>
+            <p class="section-copy" style="max-width: 450px; margin-top: 10px; font-size: 13px">
+              Действуют ограничения. Подробности у консультанта в салоне.
+            </p>
+            <div class="hero-actions">
+              <a class="primary-pill" href="#products">Купить очки</a>
+              <a class="ghost-pill" href="#services">Солнцезащитные</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-cream" id="products">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Хиты продаж</div>
+              <h2 class="section-title">Популярные модели</h2>
+            </div>
+            <a class="section-link" href="#journal">Смотреть все</a>
+          </div>
+
+          <div class="products-grid">
+            <article class="product-card">
+              <div class="product-media">
+                <img
+                  src="https://optika.p2print.site/processed_glasses_example.webp"
+                  alt="OPTIKA Studio Vysota"
+                />
+                <div class="badge-row">
+                  <span class="badge">Примерить</span>
+                  <span class="wish">Fav</span>
+                </div>
+              </div>
+              <div class="product-copy">
+                <h3 class="product-name">OPTIKA Studio Vysota</h3>
+                <div class="product-price">10 900 ₽</div>
+                <div class="color-row">
+                  <span class="color-dot" style="background: #e8e4df"></span>
+                  <span class="color-dot" style="background: #6b6b70"></span>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-media">
+                <img
+                  src="https://optika.p2print.site/1_processed_glasses_example2.webp"
+                  alt="OPTIKA Studio Prizma"
+                />
+                <div class="badge-row">
+                  <span class="badge">Примерить</span>
+                  <span class="wish">Fav</span>
+                </div>
+              </div>
+              <div class="product-copy">
+                <h3 class="product-name">OPTIKA Studio Prizma</h3>
+                <div class="product-price">11 500 ₽</div>
+                <div class="color-row">
+                  <span class="color-dot" style="background: #4a5058"></span>
+                  <span class="color-dot" style="background: #c4b69c"></span>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-media">
+                <img
+                  src="https://optika.p2print.site/2_processed_glasses_example.webp"
+                  alt="Ray-Ban Spektr"
+                />
+                <div class="badge-row">
+                  <span class="badge">Примерить</span>
+                  <span class="wish">Fav</span>
+                </div>
+              </div>
+              <div class="product-copy">
+                <h3 class="product-name">Ray-Ban Spektr</h3>
+                <div class="product-price">13 200 ₽</div>
+                <div class="color-row">
+                  <span class="color-dot" style="background: #6b4c3a"></span>
+                  <span class="color-dot" style="background: #1a1a1a"></span>
+                </div>
+              </div>
+            </article>
+
+            <article class="product-card">
+              <div class="product-media">
+                <img src="https://optika.p2print.site/glasses1.webp" alt="OPTIKA Studio Aurora" />
+                <div class="badge-row">
+                  <span class="badge">Примерить</span>
+                  <span class="wish">Fav</span>
+                </div>
+              </div>
+              <div class="product-copy">
+                <h3 class="product-name">OPTIKA Studio Aurora</h3>
+                <div class="product-price">8 900 ₽</div>
+                <div class="color-row">
+                  <span class="color-dot" style="background: #1a1a1a"></span>
+                  <span class="color-dot" style="background: #5a3a1a"></span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-cream">
+        <div class="container">
+          <div class="trust-layout">
+            <div>
+              <div class="eyebrow">Почему нам доверяют</div>
+              <h2 class="section-title">
+                Профессионализм.
+                <br />
+                Качество. <span style="font-style: italic; font-weight: 400">Забота.</span>
+              </h2>
+              <p class="section-copy">
+                Открыли первую оптику в 2006 году и уже помогли подобрать очки, линзы и программы
+                контроля зрения более чем 100 000 клиентам.
+              </p>
+            </div>
+
+            <div class="trust-grid">
+              <article class="trust-item">
+                <div class="trust-icon">20</div>
+                <h3 class="trust-title">20 лет в оптике</h3>
+                <p class="trust-copy">
+                  Команда из 18 врачей и оптометристов. Принимаем по ОМС и ДМС.
+                </p>
+              </article>
+              <article class="trust-item">
+                <div class="trust-icon">DX</div>
+                <h3 class="trust-title">Премиум-диагностика</h3>
+                <p class="trust-copy">
+                  Topcon, Tracey-VFA, биомикроскоп Zeiss и полноценный протокол обследования.
+                </p>
+              </article>
+              <article class="trust-item">
+                <div class="trust-icon">12M</div>
+                <h3 class="trust-title">Гарантия 12 месяцев</h3>
+                <p class="trust-copy">Только оригинальные линзы и оправы. Замена при браке.</p>
+              </article>
+              <article class="trust-item">
+                <div class="trust-icon">Care</div>
+                <h3 class="trust-title">Бесплатный сервис</h3>
+                <p class="trust-copy">
+                  Подгонка, чистка и замена винтов навсегда после покупки.
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-white" id="services">
+        <div class="container">
+          <div style="text-align: center; max-width: 760px; margin: 0 auto 42px">
+            <div class="eyebrow">Услуги клиники</div>
+            <h2 class="section-title">Комплексные услуги по подбору очков и линз</h2>
+          </div>
+
+          <div class="services-grid">
+            <article class="service-card">
+              <div class="image">
+                <img
+                  src="https://optika.p2print.site/services1_online_appointment_doctor.webp"
+                  alt="Запись к врачу"
+                />
+              </div>
+              <div class="copy">
+                <h3 class="service-name">Запись к врачу</h3>
+                <a class="service-link" href="#bottom-cta">Подробнее</a>
+              </div>
+            </article>
+
+            <article class="service-card">
+              <div class="image">
+                <img
+                  src="https://optika.p2print.site/services2_vision_diagnostics.webp"
+                  alt="Диагностика зрения"
+                />
+              </div>
+              <div class="copy">
+                <h3 class="service-name">Диагностика зрения</h3>
+                <a class="service-link" href="#bottom-cta">Подробнее</a>
+              </div>
+            </article>
+
+            <article class="service-card">
+              <div class="image">
+                <img
+                  src="https://optika.p2print.site/services3_selection_of_glasses.webp"
+                  alt="Подбор очков"
+                />
+              </div>
+              <div class="copy">
+                <h3 class="service-name">Подбор очков</h3>
+                <a class="service-link" href="#bottom-cta">Подробнее</a>
+              </div>
+            </article>
+
+            <article class="service-card">
+              <div class="image">
+                <img
+                  src="https://optika.p2print.site/services4_glasses_repair.webp"
+                  alt="Ремонт очков"
+                />
+              </div>
+              <div class="copy">
+                <h3 class="service-name">Ремонт очков</h3>
+                <a class="service-link" href="#bottom-cta">Подробнее</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-cream">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Акция · сентябрь</div>
+              <h2 class="section-title">
+                <span style="color: var(--brand); font-style: italic">−10%</span> на контактные
+                линзы
+              </h2>
+            </div>
+            <a class="section-link" href="#subscription">Все линзы</a>
+          </div>
+
+          <div class="lens-grid">
+            <article class="lens-card">
+              <div class="product-media">
+                <img
+                  src="https://optika.p2print.site/lenses_1.webp"
+                  alt="Acuvue Oasys 1-Day"
+                />
+                <div class="badge-row">
+                  <span class="badge">для сухих глаз</span>
+                  <span class="wish">Fav</span>
+                </div>
+              </div>
+              <div class="copy">
+                <h3 class="service-name" style="font-size: 22px">Acuvue Oasys 1-Day</h3>
+                <div class="lens-topline">Однодневные · 30 шт.</div>
+                <div class="product-price">2 160 ₽ <span class="strike">2 400 ₽</span></div>
+                <div class="sale-row">
+                  <span class="sale-chip">−10%</span>
+                  <span class="sale-chip-outline">Sale</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="lens-card">
+              <div class="product-media">
+                <img src="https://optika.p2print.site/lenses_4.webp" alt="Biofinity" />
+                <div class="badge-row">
+                  <span class="badge">комфорт 14ч</span>
+                  <span class="wish">Fav</span>
+                </div>
+              </div>
+              <div class="copy">
+                <h3 class="service-name" style="font-size: 22px">CooperVision Biofinity</h3>
+                <div class="lens-topline">Месячные · 6 шт.</div>
+                <div class="product-price">1 665 ₽ <span class="strike">1 850 ₽</span></div>
+                <div class="sale-row">
+                  <span class="sale-chip">−10%</span>
+                  <span class="sale-chip-outline">Sale</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="lens-card">
+              <div class="product-media">
+                <img src="https://optika.p2print.site/lenses_3.webp" alt="MiSight 1-Day" />
+                <div class="badge-row">
+                  <span class="badge">контроль миопии</span>
+                  <span class="wish">Fav</span>
+                </div>
+              </div>
+              <div class="copy">
+                <h3 class="service-name" style="font-size: 22px">MiSight 1-Day</h3>
+                <div class="lens-topline">Однодневные · 90 шт.</div>
+                <div class="product-price">7 110 ₽ <span class="strike">7 900 ₽</span></div>
+                <div class="sale-row">
+                  <span class="sale-chip">−10%</span>
+                  <span class="sale-chip-outline">Sale</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="lens-card">
+              <div class="product-media">
+                <img
+                  src="https://optika.p2print.site/lenses_2.webp"
+                  alt="Air Optix Plus HydraGlyde for Astigmatism"
+                />
+                <div class="badge-row">
+                  <span class="badge">для астигматизма</span>
+                  <span class="wish">Fav</span>
+                </div>
+              </div>
+              <div class="copy">
+                <h3 class="service-name" style="font-size: 22px">Air Optix Plus HydraGlyde</h3>
+                <div class="lens-topline">Месячные · 3 шт.</div>
+                <div class="product-price">2 880 ₽ <span class="strike">3 200 ₽</span></div>
+                <div class="sale-row">
+                  <span class="sale-chip">−10%</span>
+                  <span class="sale-chip-outline">Sale</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-white" id="subscription">
+        <div class="container">
+          <div class="split-feature">
+            <article class="wide-image-card">
+              <img
+                src="https://optika.p2print.site/category_cont_lenses_v3.webp"
+                alt="Подписка на линзы"
+              />
+              <div class="overlay"></div>
+              <div class="content">
+                <div class="eyebrow" style="color: #fff; opacity: 0.86">Автоматическое пополнение</div>
+                <h3 class="service-name" style="color: #fff; font-size: clamp(28px, 3vw, 40px)">
+                  Линзы приходят сами,
+                  <br />
+                  пока вы живете
+                </h3>
+              </div>
+            </article>
+
+            <div class="feature-copy-wrap">
+              <div class="eyebrow">Сервис</div>
+              <h2 class="section-title">Подписка на линзы и средства ухода</h2>
+              <p
+                class="serif"
+                style="margin: 14px 0 0; color: var(--brand); font-size: 24px; font-style: italic"
+              >
+                Экономьте с первой доставки
+              </p>
+
+              <ul class="check-list">
+                <li><span class="check">✓</span>Оформите один раз и пополнение приходит автоматически</li>
+                <li><span class="check">✓</span>Подписка всегда дешевле обычной цены</li>
+                <li><span class="check">✓</span>Количество и интервал под ваш ритм</li>
+                <li><span class="check">✓</span>Бесплатная доставка на дом</li>
+                <li><span class="check">✓</span>Можно отменить или поставить на паузу в любой момент</li>
+              </ul>
+
+              <div class="hero-actions">
+                <a class="primary-pill" href="#bottom-cta">Все товары по подписке</a>
+                <a class="ghost-pill" href="#journal">Как это работает</a>
+              </div>
+
+              <div class="savings-card">
+                <div class="savings-value">−15%</div>
+                <div class="section-copy" style="margin: 0; font-size: 13px; max-width: none">
+                  <strong style="color: var(--ink)">Средняя экономия</strong> по подписке против
+                  разовых покупок за год.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-white">
+        <div class="container">
+          <div class="tile-grid">
+            <article class="tile-card">
+              <img
+                src="https://optika.p2print.site/main_bottom_child_banner.webp"
+                alt="Контроль миопии у детей"
+              />
+              <div class="content">
+                <div class="eyebrow">Забота о зрении</div>
+                <h3 class="service-name" style="font-size: 34px">
+                  Контроль миопии
+                  <br />
+                  у детей и подростков
+                </h3>
+                <p class="section-copy" style="margin-top: 14px; max-width: 360px">
+                  Эффективные методики замедления прогрессирования близорукости и сохранения
+                  здоровья глаз.
+                </p>
+                <div class="hero-actions" style="margin-top: 20px">
+                  <a class="primary-pill" href="#bottom-cta">Узнать больше</a>
+                </div>
+              </div>
+            </article>
+
+            <div class="mini-stack">
+              <article class="mini-card brand">
+                <div class="eyebrow" style="color: rgba(255, 255, 255, 0.76)">Акции и предложения</div>
+                <h3 class="mini-title">
+                  Вторая пара очков
+                  <br />
+                  <span style="font-size: 60px; line-height: 1">−50%</span>
+                </h3>
+                <p class="mini-copy">
+                  Подберите любые две пары очков и получите скидку 50% на вторую.
+                </p>
+                <span class="mini-kicker">Подробнее</span>
+              </article>
+
+              <article class="mini-card">
+                <h3 class="mini-title" style="font-size: 22px">Бесплатная диагностика зрения</h3>
+                <p class="mini-copy" style="color: var(--muted)">
+                  Полная проверка зрения и подбор линз бесплатно по записи.
+                </p>
+                <span class="small-link">Подробнее</span>
+              </article>
+
+              <article class="mini-card">
+                <h3 class="mini-title" style="font-size: 22px">Студенческая скидка 15%</h3>
+                <p class="mini-copy" style="color: var(--muted)">
+                  Для любых оправ при предъявлении студенческого билета в салоне.
+                </p>
+                <span class="small-link">Подробнее</span>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-cream" id="salons">
+        <div class="container">
+          <div class="salons-summary">
+            <div>
+              <div class="eyebrow">Оптика 100%</div>
+              <h2 class="section-title">Наши салоны</h2>
+              <p class="section-copy">
+                Приходите на диагностику зрения и подбор очков в удобный для вас салон.
+              </p>
+            </div>
+            <div class="salons-meta">
+              <span class="meta-chip">5 салонов</span>
+              <span class="meta-chip">2 города</span>
+              <span class="meta-chip">Бесплатная диагностика при заказе очков</span>
+            </div>
+          </div>
+
+          <div class="salons-grid">
+            <article class="salon-card featured">
+              <div class="salon-image">
+                <img
+                  src="https://optika.p2print.site/salon_kirochnaya.webp"
+                  alt="Салон в Санкт-Петербурге"
+                />
+                <div class="open-badge"><span class="dot"></span>Открыто</div>
+              </div>
+              <div class="copy">
+                <h3 class="salon-title">Салон оптики в Санкт-Петербурге</h3>
+                <p class="section-copy" style="margin-top: 10px; font-size: 14px; max-width: none">
+                  ул. Кирочная, 17 · рядом с метро Чернышевская
+                </p>
+                <div class="salon-meta">
+                  <span>Ежедневно с 10:00 до 20:00</span>
+                  <span>8-800-700-0214</span>
+                </div>
+                <div class="ratings">
+                  <span class="rating-chip">Яндекс · 5.0 ★★★★★</span>
+                  <span class="rating-chip">2ГИС · 5.0 ★★★★★</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="salon-card">
+              <div class="salon-image">
+                <img src="https://optika.p2print.site/salon_toreza.webp" alt="Салон на Тореза" />
+                <div class="open-badge"><span class="dot"></span>Открыто</div>
+              </div>
+              <div class="copy">
+                <h3 class="salon-title">Новокузнецк · Тореза, 32</h3>
+                <div class="salon-meta">
+                  <span>Заводской район</span>
+                  <span>Ежедневно с 9:30 до 19:30</span>
+                </div>
+                <div class="ratings">
+                  <span class="rating-chip">Яндекс · 5.0</span>
+                  <span class="rating-chip">2ГИС · 4.8</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="salon-card">
+              <div class="salon-image">
+                <img
+                  src="https://optika.p2print.site/salon_shahterov.webp"
+                  alt="Салон на Шахтеров"
+                />
+                <div class="open-badge"><span class="dot"></span>Открыто</div>
+              </div>
+              <div class="copy">
+                <h3 class="salon-title">Новокузнецк · Шахтеров, 12</h3>
+                <div class="salon-meta">
+                  <span>Новобайдаевский район</span>
+                  <span>Ежедневно с 9:30 до 19:00</span>
+                </div>
+                <div class="ratings">
+                  <span class="rating-chip">Яндекс · 5.0</span>
+                  <span class="rating-chip">2ГИС · 5.0</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="salon-card">
+              <div class="salon-image">
+                <img
+                  src="https://optika.p2print.site/salon_bardina.webp"
+                  alt="Салон на Бардина"
+                />
+                <div class="open-badge"><span class="dot"></span>Открыто</div>
+              </div>
+              <div class="copy">
+                <h3 class="salon-title">Новокузнецк · Бардина, 42</h3>
+                <div class="salon-meta">
+                  <span>Центральный район</span>
+                  <span>Ежедневно с 9:30 до 19:30</span>
+                </div>
+                <div class="ratings">
+                  <span class="rating-chip">Яндекс · 5.0</span>
+                  <span class="rating-chip">2ГИС · 4.8</span>
+                </div>
+              </div>
+            </article>
+
+            <article class="salon-card">
+              <div class="salon-image">
+                <img
+                  src="https://optika.p2print.site/salon_zabsibov.webp"
+                  alt="Салон на Запсибовцев"
+                />
+                <div class="open-badge"><span class="dot"></span>Открыто</div>
+              </div>
+              <div class="copy">
+                <h3 class="salon-title">Новокузнецк · Запсибовцев, 37</h3>
+                <div class="salon-meta">
+                  <span>Новоильинский район</span>
+                  <span>Ежедневно с 9:30 до 19:30</span>
+                </div>
+                <div class="ratings">
+                  <span class="rating-chip">Яндекс · 5.0</span>
+                  <span class="rating-chip">2ГИС · 4.8</span>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-white" id="journal">
+        <div class="container">
+          <div class="section-head">
+            <div>
+              <div class="eyebrow">Журнал</div>
+              <h2 class="section-title">Полезные статьи</h2>
+            </div>
+            <a class="section-link" href="#bottom-cta">Все статьи</a>
+          </div>
+
+          <div class="journal-grid">
+            <article class="journal-card">
+              <div class="image">
+                <img
+                  src="https://optika.p2print.site/article-pokrytiya-linz/pokrytie_hero.webp"
+                  alt="Покрытия линз для очков"
+                />
+              </div>
+              <div class="copy">
+                <h3 class="journal-title">Покрытия линз для очков</h3>
+                <div class="section-copy" style="margin-top: 10px; font-size: 13px">Линзы для очков</div>
+                <p class="section-copy" style="margin-top: 14px; font-size: 14px; max-width: none">
+                  Какие покрытия делают очковые линзы комфортнее, защищают от бликов и царапин и
+                  помогают подобрать линзы под ваш образ жизни.
+                </p>
+                <a class="journal-link" href="#bottom-cta">Читать статью</a>
+              </div>
+            </article>
+
+            <article class="journal-card">
+              <div class="image">
+                <img src="https://optika.p2print.site/blog_vidy_linz.webp" alt="Виды линз для очков" />
+              </div>
+              <div class="copy">
+                <h3 class="journal-title">Виды линз для очков</h3>
+                <div class="section-copy" style="margin-top: 10px; font-size: 13px">Линзы для очков</div>
+                <p class="section-copy" style="margin-top: 14px; font-size: 14px; max-width: none">
+                  Однофокальные, прогрессивные и офисные решения. Короткий гид, который удобно
+                  развивать дальше уже в Figma.
+                </p>
+                <a class="journal-link" href="#bottom-cta">Читать статью</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section section-cream" id="bottom-cta">
+        <div class="container">
+          <div class="bottom-cta-grid">
+            <article class="bottom-cta-card">
+              <h3 class="bottom-cta-title">Запишитесь на проверку зрения</h3>
+              <p class="bottom-cta-copy">
+                Выберите удобное время и приходите в ближайший салон.
+              </p>
+              <a class="primary-pill" href="tel:88007000214">Записаться</a>
+            </article>
+
+            <article class="bottom-cta-card">
+              <h3 class="bottom-cta-title">Свяжитесь с нами</h3>
+              <p class="bottom-cta-copy">
+                8-800-700-0214
+                <br />
+                sale-spb@optika100.com
+              </p>
+              <a class="ghost-pill" href="https://optika.p2print.site/contacts">Все контакты</a>
+            </article>
+
+            <article class="bottom-cta-card">
+              <h3 class="bottom-cta-title">Будьте в курсе</h3>
+              <p class="bottom-cta-copy">
+                Подпишитесь на новости и акции. Здесь оставлен статичный инпут для дизайн-работы.
+              </p>
+              <div class="newsletter-row">
+                <input class="newsletter-input" value="" placeholder="Ваш e-mail" />
+                <button class="newsletter-button" type="button">Go</button>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div class="container">
+          <div class="footer-top">
+            <div>
+              <div class="logo">ОПТИКА <span class="accent">100%</span></div>
+              <p class="section-copy" style="margin-top: 16px; max-width: 280px">
+                Сеть оптических салонов и интернет-магазин. Подбор очков и контактных линз с
+                полным циклом услуг.
+              </p>
+            </div>
+
+            <div>
+              <h4 class="footer-title">Каталог</h4>
+              <ul class="footer-list">
+                <li>Оправы</li>
+                <li>Солнцезащитные очки</li>
+                <li>Контактные линзы</li>
+                <li>Линзы для очков</li>
+                <li>Аксессуары</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 class="footer-title">Услуги</h4>
+              <ul class="footer-list">
+                <li>Запись к врачу</li>
+                <li>Диагностика зрения</li>
+                <li>Подбор очков</li>
+                <li>Ремонт очков</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 class="footer-title">Компания</h4>
+              <ul class="footer-list">
+                <li>О нас</li>
+                <li>Салоны</li>
+                <li>Журнал</li>
+                <li>Реквизиты</li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 class="footer-title">Помощь</h4>
+              <ul class="footer-list">
+                <li>Оплата и получение</li>
+                <li>Гарантия</li>
+                <li>Контакты</li>
+                <li>Политика конфиденциальности</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="footer-bottom">
+            <span>© 2026 ОПТИКА 100% · Кирочная, 17 · Санкт-Петербург</span>
+            <span>Подготовлено как standalone HTML export для Figma-редизайна</span>
+          </div>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

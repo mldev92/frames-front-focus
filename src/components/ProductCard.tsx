@@ -30,7 +30,7 @@ export function ProductCard({
   const isSaved = saved.includes(product.slug);
   const [selectedColorName, setSelectedColorName] = useState<string | undefined>();
   const selectedColor = product.colors?.find((item) => item.name === selectedColorName);
-  const primaryImage = selectedColor?.image ?? product.images[0];
+  const primaryImage = selectedColor?.image ?? product.images[0] ?? "/no-product-image.svg";
   const [fetchedHoverImage, setFetchedHoverImage] = useState<string | undefined>();
   const galleryRequested = useRef(false);
   const hoverImage = selectedColor?.image ? undefined : product.images[1] ?? fetchedHoverImage;

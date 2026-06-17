@@ -167,6 +167,10 @@ function Checkout() {
   const orderTotal = subtotal + deliveryPrice;
   const isFree = selectedDelivery.price === 0 || selectedDelivery.free;
   const storeApiBase = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ?? "https://optika100.com";
+  const getSdekWidgetUrl = (path: string) => {
+    if (typeof window === "undefined") return getStoreApiUrl(path);
+    return `${window.location.origin}/api/store/${path}`;
+  };
   const getSameOriginStoreApiUrl = (path: string) => {
     return `${storeApiBase}/api/store/${path}`;
   };
@@ -178,8 +182,8 @@ function Checkout() {
     widgetUrl.searchParams.set("weight", "1000");
     return widgetUrl.toString();
   }, [city, orderTotal]);
-  const pickupWidgetAjaxUrl = useMemo(() => getSameOriginStoreApiUrl("sdek_ajax_proxy.php"), []);
-  const pickupWidgetAssetProxyUrl = useMemo(() => getSameOriginStoreApiUrl("sdek_asset_proxy.php"), []);
+  const pickupWidgetAjaxUrl = useMemo(() => getSdekWidgetUrl("sdek_ajax_proxy.php"), []);
+  const pickupWidgetAssetProxyUrl = useMemo(() => getSdekWidgetUrl("sdek_asset_proxy.php"), []);
   const pickupWidgetAssetOrigin = useMemo(() => new URL(getStoreApiUrl("sdek_widget_frame.php")).origin, []);
 
   useEffect(() => {

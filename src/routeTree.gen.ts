@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WarrantyRouteImport } from './routes/warranty'
 import { Route as UslugiRouteImport } from './routes/uslugi'
 import { Route as TinkoffRouteImport } from './routes/tinkoff'
 import { Route as StellestKatalogSLinzamiRouteImport } from './routes/stellest-katalog-s-linzami'
@@ -46,6 +47,11 @@ import { Route as Catalog_nCategorySlugRouteImport } from './routes/catalog_n.$c
 import { Route as BlogCategorySlugRouteImport } from './routes/blog.$category.$slug'
 import { Route as BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRouteImport } from './routes/blog.linzy-dlya-ochkov.pokrytiya-linz-dlya-ochkov.index'
 
+const WarrantyRoute = WarrantyRouteImport.update({
+  id: '/warranty',
+  path: '/warranty',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UslugiRoute = UslugiRouteImport.update({
   id: '/uslugi',
   path: '/uslugi',
@@ -250,6 +256,7 @@ export interface FileRoutesByFullPath {
   '/stellest-katalog-s-linzami': typeof StellestKatalogSLinzamiRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
+  '/warranty': typeof WarrantyRoute
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_n/$': typeof Catalog_nSplatRoute
   '/catalog_n/$category': typeof Catalog_nCategoryRouteWithChildren
@@ -287,6 +294,7 @@ export interface FileRoutesByTo {
   '/stellest-katalog-s-linzami': typeof StellestKatalogSLinzamiRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
+  '/warranty': typeof WarrantyRoute
   '/catalog_n/$': typeof Catalog_nSplatRoute
   '/catalog_s/$': typeof Catalog_sSplatRoute
   '/personal/orders': typeof PersonalOrdersRoute
@@ -323,6 +331,7 @@ export interface FileRoutesById {
   '/stellest-katalog-s-linzami': typeof StellestKatalogSLinzamiRoute
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
+  '/warranty': typeof WarrantyRoute
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_n/$': typeof Catalog_nSplatRoute
   '/catalog_n/$category': typeof Catalog_nCategoryRouteWithChildren
@@ -363,6 +372,7 @@ export interface FileRouteTypes {
     | '/stellest-katalog-s-linzami'
     | '/tinkoff'
     | '/uslugi'
+    | '/warranty'
     | '/blog/$category'
     | '/catalog_n/$'
     | '/catalog_n/$category'
@@ -400,6 +410,7 @@ export interface FileRouteTypes {
     | '/stellest-katalog-s-linzami'
     | '/tinkoff'
     | '/uslugi'
+    | '/warranty'
     | '/catalog_n/$'
     | '/catalog_s/$'
     | '/personal/orders'
@@ -435,6 +446,7 @@ export interface FileRouteTypes {
     | '/stellest-katalog-s-linzami'
     | '/tinkoff'
     | '/uslugi'
+    | '/warranty'
     | '/blog/$category'
     | '/catalog_n/$'
     | '/catalog_n/$category'
@@ -474,6 +486,7 @@ export interface RootRouteChildren {
   StellestKatalogSLinzamiRoute: typeof StellestKatalogSLinzamiRoute
   TinkoffRoute: typeof TinkoffRoute
   UslugiRoute: typeof UslugiRouteWithChildren
+  WarrantyRoute: typeof WarrantyRoute
   Catalog_nSplatRoute: typeof Catalog_nSplatRoute
   Catalog_nCategoryRoute: typeof Catalog_nCategoryRouteWithChildren
   Catalog_sSplatRoute: typeof Catalog_sSplatRoute
@@ -484,6 +497,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/warranty': {
+      id: '/warranty'
+      path: '/warranty'
+      fullPath: '/warranty'
+      preLoaderRoute: typeof WarrantyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/uslugi': {
       id: '/uslugi'
       path: '/uslugi'
@@ -826,6 +846,7 @@ const rootRouteChildren: RootRouteChildren = {
   StellestKatalogSLinzamiRoute: StellestKatalogSLinzamiRoute,
   TinkoffRoute: TinkoffRoute,
   UslugiRoute: UslugiRouteWithChildren,
+  WarrantyRoute: WarrantyRoute,
   Catalog_nSplatRoute: Catalog_nSplatRoute,
   Catalog_nCategoryRoute: Catalog_nCategoryRouteWithChildren,
   Catalog_sSplatRoute: Catalog_sSplatRoute,

@@ -1,0 +1,18 @@
+name: Quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bunx tsc --noEmit
+      - run: bunx eslint src eslint.config.js vite.config.ts vite.config.beta.ts vite.config.production.ts
+      - run: bun test
+      - run: VITE_BITRIX_API=https://optika100.com bun run build:beta

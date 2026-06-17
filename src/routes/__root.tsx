@@ -14,6 +14,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
 import { MessengerFAB } from "@/components/MessengerFAB";
+import { installClientErrorReporting } from "@/lib/monitoring";
+import { useEffect } from "react";
 
 function NotFoundComponent() {
   return (
@@ -119,11 +121,12 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  useEffect(() => installClientErrorReporting(), []);
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip">
         <Header />
-        <main className="flex-1">
+        <main className="min-w-0 flex-1 overflow-x-clip">
           <Outlet />
         </main>
         <Footer />
