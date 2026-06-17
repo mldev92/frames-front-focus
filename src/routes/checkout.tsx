@@ -335,7 +335,7 @@ function Checkout() {
     if (city === "Санкт-Петербург") return;
     setPickupWidgetLoading(true);
     try {
-      const response = await fetch(pickupWidgetUrl, { credentials: "include" });
+      const response = await fetch(pickupWidgetUrl);
       if (!response.ok) throw new Error(`Widget ${response.status}`);
       const html = await response.text();
       await injectWidgetDocument(html);
