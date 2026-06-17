@@ -166,9 +166,9 @@ function Checkout() {
   const deliveryPrice = selectedDelivery.price ?? 0;
   const orderTotal = subtotal + deliveryPrice;
   const isFree = selectedDelivery.price === 0 || selectedDelivery.free;
+  const storeApiBase = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ?? "https://optika100.com";
   const getSameOriginStoreApiUrl = (path: string) => {
-    if (typeof window === "undefined") return getStoreApiUrl(path);
-    return `${window.location.origin}/api/store/${path}`;
+    return `${storeApiBase}/api/store/${path}`;
   };
   const pickupWidgetUrl = useMemo(() => {
     const widgetUrl = new URL(getSameOriginStoreApiUrl("sdek_widget_frame.php"));
