@@ -247,6 +247,7 @@ function Checkout() {
     if (!src) {
       const body = script.textContent ?? "";
       return (
+        body.includes("IPOL_JSloader") ||
         body.includes("IPOLSDEK_pvz") ||
         body.includes("BX.message") ||
         body.includes("BX.setJSList") ||
@@ -277,8 +278,38 @@ function Checkout() {
     );
   };
 
+  const resolveWidgetUrl = (value: string | null) => {
+    if (!value) return value;
+    return new URL(value, pickupWidgetUrl).toString();
+  };
+
+  const normalizeInlineWidgetScript = (code: string) => {
+    const origin = new URL(pickupWidgetUrl).origin;
+    return code
+      .replaceAll('"/bitrix/', `"${origin}/bitrix/`)
+      .replaceAll("'/bitrix/", `'${origin}/bitrix/`)
+      .replaceAll('"/upload/', `"${origin}/upload/`)
+      .replaceAll("'/upload/", `'${origin}/upload/`);
+  };
+
+  const rewriteWidgetElementUrls = (root: ParentNode) => {
+    root.querySelectorAll("[src]").forEach((node) => {
+      const element = node as HTMLElement;
+      const src = element.getAttribute("src");
+      const nextSrc = resolveWidgetUrl(src);
+      if (nextSrc) element.setAttribute("src", nextSrc);
+    });
+    root.querySelectorAll("[href]").forEach((node) => {
+      const element = node as HTMLElement;
+      const href = element.getAttribute("href");
+      if (!href || href.startsWith("javascript:") || href.startsWith("#")) return;
+      const nextHref = resolveWidgetUrl(href);
+      if (nextHref) element.setAttribute("href", nextHref);
+    });
+  };
+
   const loadExternalScript = async (script: HTMLScriptElement) => {
-    const src = script.getAttribute("src");
+    const src = resolveWidgetUrl(script.getAttribute("src"));
     if (src && document.querySelector(`script[src="${src}"]`)) return;
     const next = document.createElement("script");
     next.setAttribute(pickupWidgetAssetFlag, "true");
@@ -292,7 +323,7 @@ function Checkout() {
       });
       return;
     }
-    next.textContent = script.textContent;
+    next.textContent = normalizeInlineWidgetScript(script.textContent ?? "");
     document.body.appendChild(next);
   };
 
@@ -312,6 +343,10 @@ function Checkout() {
     parsed.head.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
       if (!isAllowedWidgetStyle(node)) return;
       const clone = node.cloneNode(true) as HTMLElement;
+      if (clone.hasAttribute("href")) {
+        const href = resolveWidgetUrl(clone.getAttribute("href"));
+        if (href) clone.setAttribute("href", href);
+      }
       clone.setAttribute(pickupWidgetAssetFlag, "true");
       document.head.appendChild(clone);
     });
@@ -321,6 +356,7 @@ function Checkout() {
     host.setAttribute(pickupWidgetAssetFlag, "true");
     const bodyNodes = Array.from(parsed.body.childNodes).filter((node) => node.nodeName.toLowerCase() !== "script");
     bodyNodes.forEach((node) => host.appendChild(node.cloneNode(true)));
+    rewriteWidgetElementUrls(host);
     document.body.appendChild(host);
 
     for (const script of Array.from(parsed.head.querySelectorAll("script")).filter(isAllowedWidgetScript)) {
