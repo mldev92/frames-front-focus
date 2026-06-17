@@ -1,4 +1,8 @@
 <?php
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
+
 function o100_proxy_header_value(string $name): string {
     $key = 'HTTP_' . strtoupper(str_replace('-', '_', $name));
     return isset($_SERVER[$key]) ? (string)$_SERVER[$key] : '';

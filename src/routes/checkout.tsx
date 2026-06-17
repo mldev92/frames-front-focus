@@ -384,7 +384,9 @@ function Checkout() {
     if (city === "Санкт-Петербург") return;
     setPickupWidgetLoading(true);
     try {
-      const response = await fetch(pickupWidgetUrl);
+      const runtimeWidgetUrl = new URL(pickupWidgetUrl);
+      runtimeWidgetUrl.searchParams.set("_", String(Date.now()));
+      const response = await fetch(runtimeWidgetUrl.toString(), { cache: "no-store" });
       if (!response.ok) throw new Error(`Widget ${response.status}`);
       const html = await response.text();
       await injectWidgetDocument(html);
