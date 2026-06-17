@@ -173,6 +173,7 @@ function Checkout() {
     return widgetUrl.toString();
   }, [city, orderTotal]);
   const pickupWidgetAjaxUrl = useMemo(() => getSameOriginStoreApiUrl("sdek_ajax_proxy.php"), []);
+  const pickupWidgetAssetProxyUrl = useMemo(() => getSameOriginStoreApiUrl("sdek_asset_proxy.php"), []);
   const pickupWidgetAssetOrigin = useMemo(() => new URL(getStoreApiUrl("sdek_widget_frame.php")).origin, []);
 
   useEffect(() => {
@@ -286,6 +287,13 @@ function Checkout() {
 
   const resolveWidgetUrl = (value: string | null) => {
     if (!value) return value;
+    if (value.startsWith("/bitrix/images/ipol.sdek/")) {
+      return `${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent(value)}`;
+    }
+    if (value.startsWith(`${pickupWidgetAssetOrigin}/bitrix/images/ipol.sdek/`)) {
+      const path = new URL(value).pathname;
+      return `${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent(path)}`;
+    }
     if (value.startsWith("/bitrix/") || value.startsWith("/upload/")) {
       return `${pickupWidgetAssetOrigin}${value}`;
     }
@@ -299,6 +307,8 @@ function Checkout() {
       .replaceAll('"/bitrix/js/ipol.sdek/ajax.php', `"${pickupWidgetAjaxUrl}`)
       .replaceAll("'/bitrix/js/ipol.sdek/ajax.php", `'${pickupWidgetAjaxUrl}`)
       .replaceAll(`${pickupWidgetAssetOrigin}/bitrix/js/ipol.sdek/ajax.php`, pickupWidgetAjaxUrl)
+      .replaceAll('"/bitrix/images/ipol.sdek/', `"${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent("/bitrix/images/ipol.sdek/")}`)
+      .replaceAll("'/bitrix/images/ipol.sdek/", `'${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent("/bitrix/images/ipol.sdek/")}`)
       .replaceAll('"/bitrix/', `"${pickupWidgetAssetOrigin}/bitrix/`)
       .replaceAll("'/bitrix/", `'${pickupWidgetAssetOrigin}/bitrix/`)
       .replaceAll('"/upload/', `"${pickupWidgetAssetOrigin}/upload/`)
