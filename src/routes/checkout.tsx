@@ -103,7 +103,7 @@ const PAYMENT_OPTIONS: Array<{ code: PaymentCode; label: string; sub: string }> 
   {
     code: "cash_on_pickup",
     label: "Наличными или по карте при выдаче",
-    sub: "Оплата при получении заказа в салоне, у курьера или в пункте выдачи.",
+    sub: "Оплата при получении заказа в салоне.",
   },
   { code: "yookassa_card", label: "Оплата картой Юkassa", sub: "Онлайн-оплата банковской картой после подтверждения заказа." },
   { code: "t_installment", label: "Т-Рассрочка", sub: "Рассрочка от Т-Банка — без переплат, до 12 месяцев." },
@@ -156,7 +156,11 @@ function Checkout() {
     }));
   }, [fallbackDeliveryOptions, quotedDeliveryOptions]);
   const selectedDelivery = deliveryOptions.find((option) => option.code === delivery) ?? deliveryOptions[0];
-  const selectedPayment = PAYMENT_OPTIONS.find((option) => option.code === payment) ?? PAYMENT_OPTIONS[0];
+  const paymentOptions = useMemo(
+    () => PAYMENT_OPTIONS.filter((option) => option.code !== "cash_on_pickup" || selectedDelivery.code === "salon_pickup_spb"),
+    [selectedDelivery.code],
+  );
+  const selectedPayment = paymentOptions.find((option) => option.code === payment) ?? paymentOptions[0];
   const deliveryPrice = selectedDelivery.price ?? 0;
   const orderTotal = subtotal + deliveryPrice;
   const isFree = selectedDelivery.price === 0 || selectedDelivery.free;
@@ -205,6 +209,12 @@ function Checkout() {
       setPickupPoint(null);
     }
   }, [delivery, deliveryOptions]);
+
+  useEffect(() => {
+    if (!paymentOptions.some((option) => option.code === payment)) {
+      setPayment(paymentOptions[0].code);
+    }
+  }, [payment, paymentOptions]);
 
   const formatPickupAddress = (point: Pick<PickupPoint, "address">) =>
     point.address.toLowerCase().includes(city.toLowerCase()) ? point.address : `${city}, ${point.address}`;
