@@ -372,10 +372,6 @@ function Checkout() {
   const cleanupInjectedWidget = () => {
     document.querySelectorAll(`[${pickupWidgetAssetFlag}]`).forEach((node) => node.remove());
     document.getElementById(pickupWidgetHostId)?.remove();
-    document.getElementById("SDEK_mask")?.remove();
-    document.getElementById("SDEK_pvz")?.remove();
-    document.getElementById("SDEK_preloader")?.remove();
-    document.getElementById("popup-window-overlay-loading_screen")?.remove();
   };
 
   const injectWidgetDocument = async (html: string) => {
@@ -413,12 +409,28 @@ function Checkout() {
     if (city === "Санкт-Петербург") return;
     setPickupWidgetLoading(true);
     try {
+      // Open the SDEK widget in a real iframe so it runs in the production origin
+      // (session cookies and CSRF tokens work cross-origin via postMessage)
+      cleanupInjectedWidget();
       const runtimeWidgetUrl = new URL(pickupWidgetUrl);
       runtimeWidgetUrl.searchParams.set("_", String(Date.now()));
-      const response = await fetch(runtimeWidgetUrl.toString(), { cache: "no-store" });
-      if (!response.ok) throw new Error(`Widget ${response.status}`);
-      const html = await response.text();
-      await injectWidgetDocument(html);
+      
+      const iframe = document.createElement("iframe");
+      iframe.id = pickupWidgetHostId;
+      iframe.setAttribute(pickupWidgetAssetFlag, "true");
+      iframe.src = runtimeWidgetUrl.toString();
+      iframe.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:none;z-index:9999;background:#fff;";
+      document.body.appendChild(iframe);
+      
+      // Track iframe load
+      iframe.onload = () => {
+        setPickupWidgetLoading(false);
+        document.getElementById("bridge-status")?.remove();
+      };
+      iframe.onerror = () => {
+        setPickupWidgetLoading(false);
+        toast.error("Не удалось загрузить виджет СДЭК");
+      };
     } catch (error) {
       console.error("[checkout] sdek widget:", error);
       toast.error("Не удалось открыть виджет СДЭК");
