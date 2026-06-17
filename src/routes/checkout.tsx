@@ -606,7 +606,7 @@ function Checkout() {
             onToggle={() => toggle("payment")}
           >
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {PAYMENT_OPTIONS.map((opt) => (
+              {paymentOptions.map((opt) => (
                 <RadioCard
                   key={opt.label}
                   label={opt.label}
