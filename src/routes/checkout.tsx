@@ -241,11 +241,13 @@ function Checkout() {
         setPickupPoint({ ...point, address: normalizedAddress, rawAddress });
         setAddress(normalizedAddress);
         setPickupWidgetLoading(false);
+        cleanupInjectedWidget();
         toast.success("Пункт самовывоза СДЭК выбран");
       }
 
       if (payload.type === "optika100-sdek-error") {
         setPickupWidgetLoading(false);
+        cleanupInjectedWidget();
         toast.error(payload.message || "Не удалось загрузить карту пунктов СДЭК");
       }
     };
@@ -409,28 +411,43 @@ function Checkout() {
     if (city === "Санкт-Петербург") return;
     setPickupWidgetLoading(true);
     try {
-      // Open the SDEK widget in a real iframe so it runs in the production origin
-      // (session cookies and CSRF tokens work cross-origin via postMessage)
       cleanupInjectedWidget();
       const runtimeWidgetUrl = new URL(pickupWidgetUrl);
       runtimeWidgetUrl.searchParams.set("_", String(Date.now()));
       
-      const iframe = document.createElement("iframe");
-      iframe.id = pickupWidgetHostId;
-      iframe.setAttribute(pickupWidgetAssetFlag, "true");
-      iframe.src = runtimeWidgetUrl.toString();
-      iframe.style.cssText = "position:fixed;inset:0;width:100%;height:100%;border:none;z-index:9999;background:#fff;";
-      document.body.appendChild(iframe);
+      // Create modal overlay
+      const overlay = document.createElement("div");
+      overlay.id = pickupWidgetHostId;
+      overlay.setAttribute(pickupWidgetAssetFlag, "true");
+      overlay.style.cssText = "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;";
       
-      // Track iframe load
-      iframe.onload = () => {
+      // Close button
+      const closeBtn = document.createElement("button");
+      closeBtn.textContent = "✕";
+      closeBtn.style.cssText = "position:absolute;top:16px;right:16px;z-index:1;width:40px;height:40px;border-radius:50%;border:none;background:white;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);";
+      closeBtn.onclick = () => {
         setPickupWidgetLoading(false);
-        document.getElementById("bridge-status")?.remove();
+        cleanupInjectedWidget();
       };
-      iframe.onerror = () => {
-        setPickupWidgetLoading(false);
-        toast.error("Не удалось загрузить виджет СДЭК");
-      };
+      
+      // Iframe
+      const iframe = document.createElement("iframe");
+      iframe.src = runtimeWidgetUrl.toString();
+      iframe.style.cssText = "width:min(100vw,900px);height:min(100vh,700px);border:none;border-radius:12px;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,0.2);";
+      iframe.onload = () => setPickupWidgetLoading(false);
+      iframe.onerror = () => { setPickupWidgetLoading(false); toast.error("Не удалось загрузить виджет СДЭК"); };
+      
+      overlay.appendChild(closeBtn);
+      overlay.appendChild(iframe);
+      document.body.appendChild(overlay);
+      
+      // Close on overlay click (not iframe)
+      overlay.addEventListener("click", (e) => {
+        if (e.target === overlay) {
+          setPickupWidgetLoading(false);
+          cleanupInjectedWidget();
+        }
+      });
     } catch (error) {
       console.error("[checkout] sdek widget:", error);
       toast.error("Не удалось открыть виджет СДЭК");
