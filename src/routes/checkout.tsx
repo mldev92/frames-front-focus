@@ -129,11 +129,13 @@ function Checkout() {
   const [email, setEmail] = useState("");
   const [trackNumber, setTrackNumber] = useState("");
   const [pickupPoint, setPickupPoint] = useState<PickupPoint | null>(null);
-  const [pickupMapOpen, setPickupMapOpen] = useState(false);
+  const [pickupWidgetLoading, setPickupWidgetLoading] = useState(false);
   const [quotedDeliveryOptions, setQuotedDeliveryOptions] = useState<DeliveryQuoteOption[] | null>(null);
   const [deliveryLoading, setDeliveryLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<string | null>(null);
+  const pickupWidgetHostId = "optika100-sdek-widget-host";
+  const pickupWidgetAssetFlag = "data-optika100-sdek-widget";
 
   const toggle = (id: string) => setOpen((prev) => (prev === id ? null : id));
   const fallbackDeliveryOptions = useMemo(() => getDeliveryOptions(city), [city]);
@@ -171,7 +173,6 @@ function Checkout() {
     let cancelled = false;
     setQuotedDeliveryOptions(null);
     setPickupPoint(null);
-    setPickupMapOpen(false);
     if (!lines.length) return;
     setDeliveryLoading(true);
     getOrderDeliveryOptions({ city, lines })
@@ -213,22 +214,100 @@ function Checkout() {
         const normalizedAddress = payload.displayAddress?.trim() || formatPickupAddress(point);
         setPickupPoint({ ...point, address: normalizedAddress });
         setAddress(normalizedAddress);
-        setPickupMapOpen(false);
+        setPickupWidgetLoading(false);
         toast.success("Пункт самовывоза СДЭК выбран");
       }
 
       if (payload.type === "optika100-sdek-error") {
+        setPickupWidgetLoading(false);
         toast.error(payload.message || "Не удалось загрузить карту пунктов СДЭК");
       }
     };
 
+    const onWidgetSelected = (event: Event) => {
+      onMessage(new MessageEvent("message", { data: (event as CustomEvent).detail, origin: window.location.origin }));
+    };
+
+    const onWidgetError = (event: Event) => {
+      onMessage(new MessageEvent("message", { data: (event as CustomEvent).detail, origin: window.location.origin }));
+    };
+
     window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
+    window.addEventListener("optika100-sdek-selected", onWidgetSelected as EventListener);
+    window.addEventListener("optika100-sdek-error", onWidgetError as EventListener);
+    return () => {
+      window.removeEventListener("message", onMessage);
+      window.removeEventListener("optika100-sdek-selected", onWidgetSelected as EventListener);
+      window.removeEventListener("optika100-sdek-error", onWidgetError as EventListener);
+    };
   }, [formatPickupAddress, pickupWidgetUrl]);
 
-  const openCdekPickupMap = () => {
+  const loadExternalScript = async (script: HTMLScriptElement) => {
+    const src = script.getAttribute("src");
+    if (src && document.querySelector(`script[src="${src}"]`)) return;
+    const next = document.createElement("script");
+    next.setAttribute(pickupWidgetAssetFlag, "true");
+    if (src) {
+      next.src = src;
+      next.async = false;
+      await new Promise<void>((resolve, reject) => {
+        next.onload = () => resolve();
+        next.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
+        document.body.appendChild(next);
+      });
+      return;
+    }
+    next.textContent = script.textContent;
+    document.body.appendChild(next);
+  };
+
+  const cleanupInjectedWidget = () => {
+    document.querySelectorAll(`[${pickupWidgetAssetFlag}]`).forEach((node) => node.remove());
+    document.getElementById(pickupWidgetHostId)?.remove();
+    document.getElementById("SDEK_mask")?.remove();
+    document.getElementById("SDEK_pvz")?.remove();
+    document.getElementById("SDEK_preloader")?.remove();
+    document.getElementById("popup-window-overlay-loading_screen")?.remove();
+  };
+
+  const injectWidgetDocument = async (html: string) => {
+    cleanupInjectedWidget();
+    const parsed = new DOMParser().parseFromString(html, "text/html");
+
+    parsed.head.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
+      const clone = node.cloneNode(true) as HTMLElement;
+      clone.setAttribute(pickupWidgetAssetFlag, "true");
+      document.head.appendChild(clone);
+    });
+
+    const host = document.createElement("div");
+    host.id = pickupWidgetHostId;
+    host.setAttribute(pickupWidgetAssetFlag, "true");
+    const bodyNodes = Array.from(parsed.body.childNodes).filter((node) => node.nodeName.toLowerCase() !== "script");
+    bodyNodes.forEach((node) => host.appendChild(node.cloneNode(true)));
+    document.body.appendChild(host);
+
+    for (const script of Array.from(parsed.head.querySelectorAll("script"))) {
+      await loadExternalScript(script);
+    }
+    for (const script of Array.from(parsed.body.querySelectorAll("script"))) {
+      await loadExternalScript(script);
+    }
+  };
+
+  const openCdekPickupMap = async () => {
     if (city === "Санкт-Петербург") return;
-    setPickupMapOpen(true);
+    setPickupWidgetLoading(true);
+    try {
+      const response = await fetch(pickupWidgetUrl, { credentials: "include" });
+      if (!response.ok) throw new Error(`Widget ${response.status}`);
+      const html = await response.text();
+      await injectWidgetDocument(html);
+    } catch (error) {
+      console.error("[checkout] sdek widget:", error);
+      toast.error("Не удалось открыть виджет СДЭК");
+      setPickupWidgetLoading(false);
+    }
   };
 
   const submit = async () => {
@@ -384,6 +463,7 @@ function Checkout() {
                   key={opt.code}
                   option={opt}
                   pickupPoint={opt.code === "sdek_pickup" ? pickupPoint : null}
+                  pickupWidgetLoading={pickupWidgetLoading}
                   selected={delivery === opt.code}
                   onClick={() => {
                     setDelivery(opt.code);
@@ -752,119 +832,6 @@ function Checkout() {
           </div>
         </aside>
       </div>
-      {pickupMapOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Выбор пункта самовывоза СДЭК"
-          style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 1000,
-            backgroundColor: "oklch(0 0 0 / 0.45)",
-            display: "flex",
-            alignItems: isMobile ? "stretch" : "center",
-            justifyContent: "center",
-            padding: isMobile ? "0" : "24px",
-          }}
-        >
-          <div
-            style={{
-              width: isMobile ? "100%" : "min(920px, 96vw)",
-              maxHeight: isMobile ? "100%" : "90vh",
-              backgroundColor: "var(--card)",
-              borderRadius: isMobile ? "0" : "12px",
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <div style={{ padding: "16px 18px", borderBottom: "1px solid var(--border)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
-                <div>
-                  <div style={{ fontWeight: 600 }}>Пункт самовывоза СДЭК</div>
-                  <div className="text-muted-foreground" style={{ fontSize: "13px", marginTop: "2px" }}>
-                    {city}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setPickupMapOpen(false)}
-                  style={{ border: "none", background: "none", fontSize: "24px", lineHeight: 1, cursor: "pointer" }}
-                  aria-label="Закрыть"
-                >
-                  ×
-                </button>
-              </div>
-            </div>
-            <div
-              style={{
-                padding: "18px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "14px",
-                backgroundColor: "oklch(0.98 0.01 255)",
-              }}
-            >
-              <div style={{ fontSize: "14px", lineHeight: 1.55 }}>
-                Выберите нужный пункт самовывоза СДЭК на карте. После выбора адрес пункта будет автоматически передан
-                в заказ.
-              </div>
-              <div
-                style={{
-                  border: "1px solid var(--border)",
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                  backgroundColor: "white",
-                  minHeight: isMobile ? "52vh" : "500px",
-                }}
-              >
-                <iframe
-                  title="Карта пунктов самовывоза СДЭК"
-                  src={pickupWidgetUrl}
-                  style={{
-                    width: "100%",
-                    height: isMobile ? "52vh" : "500px",
-                    border: "none",
-                  }}
-                />
-              </div>
-            </div>
-            <div style={{ padding: "16px 18px", borderTop: "1px solid var(--border)" }}>
-              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "14px" }}>
-                <button
-                  type="button"
-                  onClick={() => setPickupMapOpen(false)}
-                  style={{
-                    border: "1px solid var(--border)",
-                    background: "white",
-                    borderRadius: "8px",
-                    padding: "10px 14px",
-                    cursor: "pointer",
-                  }}
-                >
-                  Отмена
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPickupMapOpen(false)}
-                  style={{
-                    border: "none",
-                    background: "var(--brand)",
-                    color: "var(--brand-foreground)",
-                    borderRadius: "8px",
-                    padding: "10px 14px",
-                    fontWeight: 600,
-                    cursor: "pointer",
-                  }}
-                >
-                  Готово
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -1021,12 +988,14 @@ function SectionCard({
 function DeliveryCard({
   option,
   pickupPoint,
+  pickupWidgetLoading,
   selected,
   onClick,
   onChoosePickup,
 }: {
   option: DeliveryOption;
   pickupPoint: PickupPoint | null;
+  pickupWidgetLoading: boolean;
   selected: boolean;
   onClick: () => void;
   onChoosePickup?: () => void;
@@ -1116,6 +1085,7 @@ function DeliveryCard({
           <button
             type="button"
             onClick={onChoosePickup}
+            disabled={pickupWidgetLoading}
             style={{
               border: "1px solid var(--brand)",
               background: "white",
@@ -1124,10 +1094,15 @@ function DeliveryCard({
               padding: "9px 12px",
               fontSize: "13px",
               fontWeight: 600,
-              cursor: "pointer",
+              cursor: pickupWidgetLoading ? "wait" : "pointer",
+              opacity: pickupWidgetLoading ? 0.7 : 1,
             }}
           >
-            {pickupPoint ? "Изменить пункт самовывоза" : "Выбрать пункт самовывоза"}
+            {pickupWidgetLoading
+              ? "Загружаем карту..."
+              : pickupPoint
+                ? "Изменить пункт самовывоза"
+                : "Выбрать пункт самовывоза"}
           </button>
         </div>
       )}
