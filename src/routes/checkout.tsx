@@ -160,15 +160,20 @@ function Checkout() {
   const deliveryPrice = selectedDelivery.price ?? 0;
   const orderTotal = subtotal + deliveryPrice;
   const isFree = selectedDelivery.price === 0 || selectedDelivery.free;
+  const getSameOriginStoreApiUrl = (path: string) => {
+    if (typeof window === "undefined") return getStoreApiUrl(path);
+    return `${window.location.origin}/api/store/${path}`;
+  };
   const pickupWidgetUrl = useMemo(() => {
-    const widgetUrl = new URL(getStoreApiUrl("sdek_widget_frame.php"));
+    const widgetUrl = new URL(getSameOriginStoreApiUrl("sdek_widget_frame.php"));
     widgetUrl.searchParams.set("city", city);
     widgetUrl.searchParams.set("deliveryId", "55");
     widgetUrl.searchParams.set("orderPrice", String(orderTotal));
     widgetUrl.searchParams.set("weight", "1000");
     return widgetUrl.toString();
   }, [city, orderTotal]);
-  const pickupWidgetAjaxUrl = useMemo(() => getStoreApiUrl("sdek_ajax_proxy.php"), []);
+  const pickupWidgetAjaxUrl = useMemo(() => getSameOriginStoreApiUrl("sdek_ajax_proxy.php"), []);
+  const pickupWidgetAssetOrigin = useMemo(() => new URL(getStoreApiUrl("sdek_widget_frame.php")).origin, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -281,21 +286,23 @@ function Checkout() {
 
   const resolveWidgetUrl = (value: string | null) => {
     if (!value) return value;
+    if (value.startsWith("/bitrix/") || value.startsWith("/upload/")) {
+      return `${pickupWidgetAssetOrigin}${value}`;
+    }
     return new URL(value, pickupWidgetUrl).toString();
   };
 
   const normalizeInlineWidgetScript = (code: string) => {
-    const origin = new URL(pickupWidgetUrl).origin;
     return code
       .replaceAll('"/bitrix/js/ipol.sdek/ajax.php"', `"${pickupWidgetAjaxUrl}"`)
       .replaceAll("'/bitrix/js/ipol.sdek/ajax.php'", `'${pickupWidgetAjaxUrl}'`)
       .replaceAll('"/bitrix/js/ipol.sdek/ajax.php', `"${pickupWidgetAjaxUrl}`)
       .replaceAll("'/bitrix/js/ipol.sdek/ajax.php", `'${pickupWidgetAjaxUrl}`)
-      .replaceAll(`${origin}/bitrix/js/ipol.sdek/ajax.php`, pickupWidgetAjaxUrl)
-      .replaceAll('"/bitrix/', `"${origin}/bitrix/`)
-      .replaceAll("'/bitrix/", `'${origin}/bitrix/`)
-      .replaceAll('"/upload/', `"${origin}/upload/`)
-      .replaceAll("'/upload/", `'${origin}/upload/`);
+      .replaceAll(`${pickupWidgetAssetOrigin}/bitrix/js/ipol.sdek/ajax.php`, pickupWidgetAjaxUrl)
+      .replaceAll('"/bitrix/', `"${pickupWidgetAssetOrigin}/bitrix/`)
+      .replaceAll("'/bitrix/", `'${pickupWidgetAssetOrigin}/bitrix/`)
+      .replaceAll('"/upload/', `"${pickupWidgetAssetOrigin}/upload/`)
+      .replaceAll("'/upload/", `'${pickupWidgetAssetOrigin}/upload/`);
   };
 
   const rewriteWidgetElementUrls = (root: ParentNode) => {
