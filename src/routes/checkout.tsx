@@ -242,6 +242,41 @@ function Checkout() {
     };
   }, [formatPickupAddress, pickupWidgetUrl]);
 
+  const isAllowedWidgetScript = (script: HTMLScriptElement) => {
+    const src = script.getAttribute("src")?.toLowerCase() ?? "";
+    if (!src) {
+      const body = script.textContent ?? "";
+      return (
+        body.includes("IPOLSDEK_pvz") ||
+        body.includes("BX.message") ||
+        body.includes("BX.setJSList") ||
+        body.includes("BX.setCSSList") ||
+        body.includes("main.popup") ||
+        body.includes("optika100-sdek")
+      );
+    }
+
+    return (
+      src.includes("api-maps.yandex.ru") ||
+      src.includes("/bitrix/js/ipol.sdek/") ||
+      src.includes("/bitrix/js/main/jquery/") ||
+      src.includes("/bitrix/js/main/core/core.js") ||
+      src.includes("/bitrix/cache/js/") ||
+      src.includes("/bitrix/js/main/popup/dist/main.popup.bundle.js")
+    );
+  };
+
+  const isAllowedWidgetStyle = (node: Element) => {
+    const href = node.getAttribute("href")?.toLowerCase() ?? "";
+    if (!href) return true;
+    return (
+      href.includes("/bitrix/js/ipol.sdek/") ||
+      href.includes("/bitrix/cache/css/") ||
+      href.includes("/bitrix/js/main/popup/dist/") ||
+      href.includes("/bitrix/css/main/")
+    );
+  };
+
   const loadExternalScript = async (script: HTMLScriptElement) => {
     const src = script.getAttribute("src");
     if (src && document.querySelector(`script[src="${src}"]`)) return;
@@ -275,6 +310,7 @@ function Checkout() {
     const parsed = new DOMParser().parseFromString(html, "text/html");
 
     parsed.head.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
+      if (!isAllowedWidgetStyle(node)) return;
       const clone = node.cloneNode(true) as HTMLElement;
       clone.setAttribute(pickupWidgetAssetFlag, "true");
       document.head.appendChild(clone);
@@ -287,10 +323,10 @@ function Checkout() {
     bodyNodes.forEach((node) => host.appendChild(node.cloneNode(true)));
     document.body.appendChild(host);
 
-    for (const script of Array.from(parsed.head.querySelectorAll("script"))) {
+    for (const script of Array.from(parsed.head.querySelectorAll("script")).filter(isAllowedWidgetScript)) {
       await loadExternalScript(script);
     }
-    for (const script of Array.from(parsed.body.querySelectorAll("script"))) {
+    for (const script of Array.from(parsed.body.querySelectorAll("script")).filter(isAllowedWidgetScript)) {
       await loadExternalScript(script);
     }
   };
