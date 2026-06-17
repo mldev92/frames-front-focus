@@ -31,7 +31,7 @@ export const Route = createFileRoute("/checkout")({
   component: Checkout,
 });
 
-const CITIES = ["Санкт-Петербург", "Новокузнецк"] as const;
+const CITIES = ["Москва", "Санкт-Петербург", "Кемерово", "Новокузнецк"] as const;
 
 type CheckoutCity = (typeof CITIES)[number];
 type DeliveryCode = "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
