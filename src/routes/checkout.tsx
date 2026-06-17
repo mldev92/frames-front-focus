@@ -431,8 +431,9 @@ function Checkout() {
       toast.error("Выберите пункт самовывоза СДЭК");
       return;
     }
+    const needsAddress = selectedDelivery.requiresAddress || selectedDelivery.requiresPickupPoint;
     if (!fullName.trim() || phone.replace(/\D/g, "").length < 10
-      || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || !address.trim()) {
+      || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || (needsAddress && !address.trim())) {
       setOpen("buyer");
       toast.error("Проверьте контактные данные");
       return;
@@ -452,7 +453,7 @@ function Checkout() {
         deliveryCode: selectedDelivery.code,
         payment: selectedPayment.label,
         paymentCode: selectedPayment.code,
-        address: address.trim() || undefined,
+        address: address.trim() || (selectedDelivery.code === 'salon_pickup_spb' ? 'Самовывоз из салона «Оптика 100%», ул. Кирочная, 17' : undefined),
         pickupPoint: pickupPoint ?? undefined,
         trackNumber: trackNumber.trim() || undefined,
         comment: comment.trim() || undefined,
@@ -632,6 +633,7 @@ function Checkout() {
               <Field label="Телефон" type="tel" placeholder="+7 (___) ___-__-__" required value={phone} onChange={setPhone} />
               <Field label="Трек-номер СДЭК" placeholder="Если уже есть" value={trackNumber} onChange={setTrackNumber} />
             </div>
+            {selectedDelivery.code !== 'salon_pickup_spb' && (
             <div style={{ marginTop: "12px" }}>
               <Field
                 label="Адрес доставки"
@@ -641,6 +643,7 @@ function Checkout() {
                 onChange={setAddress}
               />
             </div>
+            )}
           </SectionCard>
 
           <SectionCard
