@@ -168,6 +168,7 @@ function Checkout() {
     widgetUrl.searchParams.set("weight", "1000");
     return widgetUrl.toString();
   }, [city, orderTotal]);
+  const pickupWidgetAjaxUrl = useMemo(() => getStoreApiUrl("sdek_ajax_proxy.php"), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -286,6 +287,11 @@ function Checkout() {
   const normalizeInlineWidgetScript = (code: string) => {
     const origin = new URL(pickupWidgetUrl).origin;
     return code
+      .replaceAll('"/bitrix/js/ipol.sdek/ajax.php"', `"${pickupWidgetAjaxUrl}"`)
+      .replaceAll("'/bitrix/js/ipol.sdek/ajax.php'", `'${pickupWidgetAjaxUrl}'`)
+      .replaceAll('"/bitrix/js/ipol.sdek/ajax.php', `"${pickupWidgetAjaxUrl}`)
+      .replaceAll("'/bitrix/js/ipol.sdek/ajax.php", `'${pickupWidgetAjaxUrl}`)
+      .replaceAll(`${origin}/bitrix/js/ipol.sdek/ajax.php`, pickupWidgetAjaxUrl)
       .replaceAll('"/bitrix/', `"${origin}/bitrix/`)
       .replaceAll("'/bitrix/", `'${origin}/bitrix/`)
       .replaceAll('"/upload/', `"${origin}/upload/`)
