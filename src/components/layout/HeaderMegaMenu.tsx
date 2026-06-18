@@ -826,28 +826,47 @@ const ACCESSORIES_MENU: AccessoriesMegaMenu = {
       title: "Для контактных линз",
       allHref: `${ACC}/aksessuary/`,
       items: [
-        { label: "Для контактных линз - Все", href: `${ACC}/aksessuary/` },
-        { label: "Очистители и капли", href: accSection("aksessuary", "ochistiteli_i_kapli") },
-        { label: "Растворы", href: accSection("aksessuary", "rastvory") },
+        { label: "Для контактных линз — все", href: `${ACC}/aksessuary/`, icon: <Eye className="h-4 w-4" /> },
+        { label: "Очистители и капли", href: accSection("aksessuary", "ochistiteli_i_kapli"), icon: <Droplets className="h-4 w-4" /> },
+        { label: "Растворы", href: accSection("aksessuary", "rastvory"), icon: <Droplets className="h-4 w-4" /> },
       ],
     },
     {
       title: "Для очков",
       allHref: `${ACC}/dlya_ochkov/`,
       items: [
-        { label: "Для очков - Все", href: `${ACC}/dlya_ochkov/` },
-        { label: "Окклюдеры", href: accSection("dlya_ochkov", "okkllyudery") },
-        { label: "Салфетки", href: accSection("dlya_ochkov", "salfetki") },
-        { label: "Стопперы", href: accSection("dlya_ochkov", "stoper") },
-        { label: "Цепочки/шнурки", href: accSection("dlya_ochkov", "tsepochki") },
+        { label: "Для очков — все", href: `${ACC}/dlya_ochkov/`, icon: <Glasses className="h-4 w-4" /> },
+        { label: "Окклюдеры", href: accSection("dlya_ochkov", "okkllyudery"), icon: <ShieldCheck className="h-4 w-4" /> },
+        { label: "Салфетки", href: accSection("dlya_ochkov", "salfetki"), icon: <Layers className="h-4 w-4" /> },
+        { label: "Стопперы", href: accSection("dlya_ochkov", "stoper"), icon: <Circle className="h-4 w-4" /> },
+        { label: "Цепочки/шнурки", href: accSection("dlya_ochkov", "tsepochki"), icon: <Palette className="h-4 w-4" /> },
       ],
     },
   ],
   utilities: [
     { label: "Все средства ухода", href: catalogHref("aksessuary"), icon: <Droplets className="h-4 w-4" /> },
     { label: "Ремонт очков", href: "/remont-ochkov/", icon: <Glasses className="h-4 w-4" /> },
+    { label: "Доставка по СПб от 1 дня", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
+    { label: "Гид по уходу за линзами", href: "/blog/kontaktnye-linzy/", icon: <BookOpen className="h-4 w-4" /> },
   ],
+  promoChips: [
+    { label: "Растворы от 290 ₽", href: accSection("aksessuary", "rastvory") },
+    { label: "Салфетки от 90 ₽", href: accSection("dlya_ochkov", "salfetki") },
+    { label: "Цепочки от 450 ₽", href: accSection("dlya_ochkov", "tsepochki") },
+    { label: "Окклюдеры", href: accSection("dlya_ochkov", "okkllyudery") },
+  ],
+  featured: {
+    eyebrow: "Акция · −25%",
+    title: "Вторая пара со скидкой 25%",
+    description:
+      "При покупке оправы с линзами — скидка 25% на вторую пару. Подходит для солнцезащитных и оправ.",
+    imageSrc: "/2_banner.webp",
+    imageAlt: "Акция: −25% на вторую пару",
+    ctaHref: "/loyalty",
+    ctaLabel: "Об акции",
+  },
 };
+
 
 export const HEADER_NAV_ITEMS: HeaderNavItem[] = [
   { label: "Оправы", href: catalogHref("opravy"), mega: FRAMES_MENU },
