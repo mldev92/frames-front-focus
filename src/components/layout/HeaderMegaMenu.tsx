@@ -794,7 +794,19 @@ const GLASSES_MENU: GlassesMegaMenu = {
     { label: "Срок изготовления 3–5 дней", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
     { label: "Кабинет диагностики", href: "/kabinet-diagnostiki-spb", icon: <BookOpen className="h-4 w-4" /> },
   ],
+  featured: {
+    eyebrow: "Stellest · контроль миопии",
+    title: "Линзы Essilor® Stellest®",
+    description:
+      "Замедляют прогрессирование миопии у детей на 67%. Технология H.A.L.T. с 1021 микролинзой.",
+    imageSrc: "/stellest/hero-child-stellest.webp",
+    imageAlt: "Линзы Stellest для контроля миопии",
+    price: "от 21 900 ₽",
+    ctaHref: menuHref("linzy-dlya-ochkov", { technology: "STELLEST" }),
+    ctaLabel: "Подробнее",
+  },
 };
+
 
 // Canonical Bitrix section paths (1:1 URL parity with optika100.com):
 //   soputstvuyushchie_tovary/aksessuary/   → "Для контактных линз" group
