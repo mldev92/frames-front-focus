@@ -141,6 +141,7 @@ type GlassesMegaMenu = {
 
 type AccessoriesGroup = {
   title: string;
+  allHref: string;
   items: CardLink[];
 };
 
@@ -780,7 +781,11 @@ const GLASSES_MENU: GlassesMegaMenu = {
   ],
 };
 
-const accSection = (code: string) => `/catalog_s/${code}/`;
+// Canonical Bitrix section paths (1:1 URL parity with optika100.com):
+//   soputstvuyushchie_tovary/aksessuary/   → "Для контактных линз" group
+//   soputstvuyushchie_tovary/dlya_ochkov/  → "Для очков" group
+const ACC = "/catalog_s/soputstvuyushchie_tovary";
+const accSection = (parent: string, code: string) => `${ACC}/${parent}/${code}/`;
 
 const ACCESSORIES_MENU: AccessoriesMegaMenu = {
   kind: "accessories",
@@ -792,18 +797,20 @@ const ACCESSORIES_MENU: AccessoriesMegaMenu = {
   groups: [
     {
       title: "Для контактных линз",
+      allHref: `${ACC}/aksessuary/`,
       items: [
-        { label: "Очистители и капли", href: accSection("ochistiteli_i_kapli") },
-        { label: "Растворы", href: accSection("rastvory") },
+        { label: "Очистители и капли", href: accSection("aksessuary", "ochistiteli_i_kapli") },
+        { label: "Растворы", href: accSection("aksessuary", "rastvory") },
       ],
     },
     {
       title: "Для очков",
+      allHref: `${ACC}/dlya_ochkov/`,
       items: [
-        { label: "Окклюдеры", href: accSection("okkllyudery") },
-        { label: "Салфетки", href: accSection("salfetki") },
-        { label: "Стоппер", href: accSection("stoper") },
-        { label: "Цепочки и шнурки", href: accSection("tsepochki") },
+        { label: "Окклюдеры", href: accSection("dlya_ochkov", "okkllyudery") },
+        { label: "Салфетки", href: accSection("dlya_ochkov", "salfetki") },
+        { label: "Стопперы", href: accSection("dlya_ochkov", "stoper") },
+        { label: "Цепочки/шнурки", href: accSection("dlya_ochkov", "tsepochki") },
       ],
     },
   ],
@@ -1476,7 +1483,15 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
           <div className="grid gap-6 lg:grid-cols-2">
             {menu.groups.map((group) => (
               <section key={group.title}>
-                {sectionHeader(group.title, "Все →")}
+                <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-[#ece7df] pb-2">
+                  <span className={sectionNameClass}>{group.title}</span>
+                  <a
+                    href={regionalMenuHref(group.allHref, city)}
+                    className="text-[11.5px] text-muted-foreground transition-colors hover:text-brand"
+                  >
+                    Все →
+                  </a>
+                </div>
                 <div className="space-y-1">
                   {group.items.map((item) => (
                     <a
