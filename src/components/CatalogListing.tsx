@@ -1027,7 +1027,7 @@ export function CatalogListing({
                   onClick={() => toggle("shape", value)}
                   className={cn(
                     "flex flex-col items-center justify-center gap-2.5 rounded-xl border px-2 py-5 text-center transition-all hover:border-ink hover:-translate-y-0.5 hover:shadow-sm",
-                    checked ? "border-ink bg-cream shadow-xs" : "border-border bg-card",
+                    checked ? "border-ink bg-card shadow-xs" : "border-border bg-card",
                   )}
                   style={{
                     transitionDuration: "var(--duration-snap)",
