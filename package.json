@@ -6,10 +6,11 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
-    "build:beta": "vite build --config vite.config.beta.ts",
+    "content:localize": "node scripts/localize-blog-assets.mjs",
+    "build:beta": "npm run content:localize && vite build --config vite.config.beta.ts",
     "manifest:production": "node scripts/generate-production-manifest.mjs",
     "content:production": "node scripts/import-blog-articles.mjs",
-    "build:production": "npm run content:production && npm run manifest:production && vite build --config vite.config.production.ts && node scripts/validate-production-build.mjs",
+    "build:production": "npm run content:production && npm run content:localize && npm run manifest:production && vite build --config vite.config.production.ts && node scripts/validate-production-build.mjs",
     "validate:production": "node scripts/validate-production-build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",

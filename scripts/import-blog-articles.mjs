@@ -48,7 +48,6 @@ function sanitize(html) {
     .replace(/\s(href|src)\s*=\s*(["'])\s*javascript:[\s\S]*?\2/gi, "")
     .replace(/<h1\b[\s\S]*?<\/h1>/i, "")
     .replace(/\s(?:width|height|border|align|style)=("[^"]*"|'[^']*')/gi, "")
-    .replace(/\b(src|href)=("|')\/(?!\/)/gi, '$1=$2https://optika100.com/')
     .trim();
 }
 
