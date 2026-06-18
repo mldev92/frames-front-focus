@@ -1,4 +1,4 @@
-import { Children, useCallback, useEffect, useMemo, useState } from "react";
+import { Children, useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
 import { SlidersHorizontal, X, ChevronDown, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { CatalogBanner } from "./CatalogBanner";
 import { ProductCard } from "./ProductCard";
@@ -415,28 +415,105 @@ const FRAME_GENDER_DEFS = [
   { key: "для девочек", label: "для девочек", matches: ["Девочки"] },
 ] as const;
 
-const COLOR_SWATCHES: { name: string; hex: string }[] = [
-  { name: "Чёрный", hex: "#1a1a1a" },
-  { name: "Серый", hex: "#7a7a7a" },
-  { name: "Белый", hex: "#f5f5f0" },
-  { name: "Серебро", hex: "#c8c8d0" },
-  { name: "Золото", hex: "#d4a44a" },
-  { name: "Бронза", hex: "#9a6b3a" },
-  { name: "Коричневый", hex: "#5a3a1a" },
-  { name: "Бежевый", hex: "#d8b890" },
-  { name: "Розовый", hex: "#e9a8b0" },
-  { name: "Красный", hex: "#c83a32" },
-  { name: "Бордовый", hex: "#6a1a28" },
-  { name: "Оранжевый", hex: "#e07028" },
-  { name: "Жёлтый", hex: "#e8c540" },
-  { name: "Зелёный", hex: "#3a7a48" },
-  { name: "Бирюзовый", hex: "#3aa0a8" },
-  { name: "Голубой", hex: "#5aa8d8" },
-  { name: "Синий", hex: "#28488a" },
-  { name: "Фиолетовый", hex: "#6a3a8a" },
-  { name: "Прозрачный", hex: "transparent" },
-  { name: "Градиент", hex: "linear-gradient(135deg,#e8b8a0,#7a4a90)" },
-];
+type ColorSwatchRecipe = {
+  backgroundColor?: string;
+  backgroundImage?: string;
+  backgroundSize?: string;
+};
+
+const COLOR_SWATCH_RECIPES: Record<string, ColorSwatchRecipe> = {
+  "Черный": { backgroundColor: "#1a1a1a" },
+  "Серебро/Серый/Белый": {
+    backgroundImage: "linear-gradient(135deg, #c9ccd4 0%, #7d8188 50%, #f5f2ea 100%)",
+    backgroundColor: "#c9ccd4",
+  },
+  "Бронза/Коричневый": {
+    backgroundImage: "linear-gradient(135deg, #a57346 0%, #704626 100%)",
+    backgroundColor: "#a57346",
+  },
+  "Синий/Голубой": {
+    backgroundImage: "linear-gradient(135deg, #2d4f9c 0%, #66b4e7 100%)",
+    backgroundColor: "#2d4f9c",
+  },
+  "Золото/Желтый": {
+    backgroundImage: "linear-gradient(135deg, #d5a447 0%, #ecd15b 100%)",
+    backgroundColor: "#d5a447",
+  },
+  "Бордовый/Розовый": {
+    backgroundImage: "linear-gradient(135deg, #702235 0%, #e7a8b4 100%)",
+    backgroundColor: "#702235",
+  },
+  "Зеленый": { backgroundColor: "#3d7e4e" },
+  "Красный": { backgroundColor: "#c73f34" },
+  "Фиолетовый/Сиреневый": {
+    backgroundImage: "linear-gradient(135deg, #704094 0%, #ba9bd6 100%)",
+    backgroundColor: "#704094",
+  },
+  "Прозрачные": {
+    backgroundColor: "#f5f3ee",
+    backgroundImage: "repeating-conic-gradient(#ddd 0 25%, #fff 0 50%)",
+    backgroundSize: "8px 8px",
+  },
+  "Мультиколор": {
+    backgroundImage: "linear-gradient(135deg, #d78952 0%, #7e5ac6 48%, #4fa67a 100%)",
+    backgroundColor: "#d78952",
+  },
+};
+
+const LEGACY_COLOR_LABELS: Record<string, string> = {
+  "черный": "Черный",
+  "чёрный": "Черный",
+  "серый": "Серебро/Серый/Белый",
+  "белый": "Серебро/Серый/Белый",
+  "серебро": "Серебро/Серый/Белый",
+  "бронза": "Бронза/Коричневый",
+  "коричневый": "Бронза/Коричневый",
+  "синий": "Синий/Голубой",
+  "голубой": "Синий/Голубой",
+  "золото": "Золото/Желтый",
+  "желтый": "Золото/Желтый",
+  "жёлтый": "Золото/Желтый",
+  "бордовый": "Бордовый/Розовый",
+  "розовый": "Бордовый/Розовый",
+  "зеленый": "Зеленый",
+  "зелёный": "Зеленый",
+  "фиолетовый": "Фиолетовый/Сиреневый",
+  "сиреневый": "Фиолетовый/Сиреневый",
+  "прозрачный": "Прозрачные",
+  "прозрачные": "Прозрачные",
+  "мультиколор": "Мультиколор",
+  "градиент": "Мультиколор",
+};
+
+function normalizeColorLabel(value: string): string {
+  return normalize(value).replace(/ё/g, "е");
+}
+
+function canonicalizeColorFilterValue(value: string, availableLabels: string[]): string {
+  const exact = availableLabels.find((label) => label === value);
+  if (exact) return exact;
+
+  const normalized = normalizeColorLabel(value);
+  const sameNormalized = availableLabels.find((label) => normalizeColorLabel(label) === normalized);
+  if (sameNormalized) return sameNormalized;
+
+  const legacyTarget = LEGACY_COLOR_LABELS[normalized];
+  if (!legacyTarget) return value;
+
+  const availableTarget = availableLabels.find(
+    (label) => normalizeColorLabel(label) === normalizeColorLabel(legacyTarget),
+  );
+  return availableTarget ?? legacyTarget;
+}
+
+function getColorSwatchStyle(label: string): CSSProperties {
+  const recipe = COLOR_SWATCH_RECIPES[label];
+  if (recipe) return recipe;
+  return {
+    backgroundImage: "linear-gradient(135deg, #e7dfd3 0%, #c5baaa 100%)",
+    backgroundColor: "#e7dfd3",
+  };
+}
 
 const getProductMaterialValues = (p: Product): string[] => {
   const out = new Set<string>();
@@ -720,15 +797,24 @@ export function CatalogListing({
   // component never re-filters it. Totals/counts/bounds also come from `data`.
   const products = data.products;
   const serverFacets = data.facets;
+  const availableColorLabels = useMemo(
+    () => Object.keys(serverFacets.color ?? {}),
+    [serverFacets.color],
+  );
 
   const seedActive = useCallback((): Record<string, Set<string>> => {
     if (!initialFilters) return {};
     const out: Record<string, Set<string>> = {};
     for (const [k, vals] of Object.entries(initialFilters)) {
-      if (vals && vals.length) out[k] = new Set(vals);
+      if (!vals?.length) continue;
+      out[k] = new Set(
+        k === "color"
+          ? vals.map((value) => canonicalizeColorFilterValue(value, availableColorLabels))
+          : vals,
+      );
     }
     return out;
-  }, [initialFilters]);
+  }, [availableColorLabels, initialFilters]);
   const [active, setActive] = useState<Record<string, Set<string>>>(seedActive);
   // Re-seed when the URL search params change (dropdown → catalog navigation
   // keeps the same route component, so useState alone wouldn't pick it up).
@@ -830,6 +916,7 @@ export function CatalogListing({
     warehouse: serverFacets.availability?.["warehouse"] ?? 0,
     preorder: 0, // no orderability rule on the backend yet — option hidden
   };
+  const colorEntries = Object.entries(facetCounts.color ?? {});
   const frameShapeCounts = serverFacets.shape ?? {};
   const frameMaterialCounts = serverFacets.material ?? {};
   const frameGenderCounts = serverFacets.gender ?? {};
@@ -1097,16 +1184,16 @@ export function CatalogListing({
       </FilterSection>
 
       {/* Color — compact swatch grid */}
-      {vis.color && (
+      {vis.color && colorEntries.length > 0 && (
         <FilterSection key="color" title="Цвет">
           <CollapsibleList initialCount={4} className="grid grid-cols-1 gap-2 py-1">
-            {COLOR_SWATCHES.map((c) => {
-              const sel = selectedColors.has(c.name);
+            {colorEntries.map(([label, count]) => {
+              const sel = selectedColors.has(label);
               return (
                 <button
-                  key={c.name}
+                  key={label}
                   type="button"
-                  onClick={() => toggleColor(c.name)}
+                  onClick={() => toggleColor(label)}
                   className={cn(
                     "w-full flex items-center gap-2.5 rounded-lg border px-2.5 py-2 text-left transition-all",
                     sel ? "border-ink bg-cream" : "border-border bg-card hover:border-foreground/40",
@@ -1115,19 +1202,13 @@ export function CatalogListing({
                 >
                   <span
                     className="inline-flex h-5 w-5 shrink-0 rounded-full border border-border"
-                    style={{
-                      background: c.hex,
-                      backgroundImage:
-                        c.hex === "transparent"
-                          ? "repeating-conic-gradient(#ddd 0 25%, #fff 0 50%)"
-                          : c.hex.includes("gradient")
-                            ? c.hex
-                            : undefined,
-                      backgroundSize: c.hex === "transparent" ? "8px 8px" : undefined,
-                    }}
+                    style={getColorSwatchStyle(label)}
                   />
-                  <span className="flex-1 text-sm">{c.name}</span>
-                  {sel && <Check className="h-3.5 w-3.5 text-foreground" strokeWidth={3} />}
+                  <span className="flex-1 text-sm">{label}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="font-mono text-[11px] text-muted-foreground">{count}</span>
+                    {sel && <Check className="h-3.5 w-3.5 text-foreground" strokeWidth={3} />}
+                  </span>
                 </button>
               );
             })}
