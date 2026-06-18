@@ -1334,7 +1334,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
             </a>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1.03fr_0.93fr_1fr_0.95fr]">
+          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1fr_0.95fr_1fr_0.95fr_0.85fr]">
             <section>
               {sectionHeader("Тип линзы", "Все →")}
               <div className="space-y-1">
