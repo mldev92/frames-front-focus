@@ -1481,7 +1481,42 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 </a>
               </div>
             </section>
+
+            <aside
+              className={cn(
+                surfaceCardClass,
+                "flex flex-col gap-4 bg-[var(--cream)] p-4 lg:col-span-2 xl:col-span-1 xl:h-full",
+              )}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">
+                {menu.featured.eyebrow}
+              </span>
+              <h3 className="font-serif text-[20px] leading-tight text-foreground">{menu.featured.title}</h3>
+              <div className="overflow-hidden rounded-[14px] border border-[#e8dfd4] bg-white">
+                <img
+                  src={menu.featured.imageSrc}
+                  alt={menu.featured.imageAlt}
+                  className="h-44 w-full object-cover"
+                />
+              </div>
+              <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
+              <div className="mt-auto flex items-center justify-between border-t border-dashed border-border pt-3">
+                {menu.featured.price && (
+                  <span className="font-serif text-[20px] leading-none text-foreground">
+                    {menu.featured.price}
+                  </span>
+                )}
+                <a
+                  href={regionalMenuHref(menu.featured.ctaHref, city)}
+                  className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
+                >
+                  {menu.featured.ctaLabel ?? "Перейти"}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </aside>
           </div>
+
 
           <div className="mt-6 grid gap-3 border-t border-[#ece7df] pt-4 md:grid-cols-2 xl:grid-cols-4">
             {menu.utilities.map((item) => (
