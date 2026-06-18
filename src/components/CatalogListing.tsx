@@ -4,6 +4,7 @@ import { CatalogBanner } from "./CatalogBanner";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
 import { getCatalogBanners } from "@/data/catalog-banners";
+import { catalogPrefix } from "@/data/categories";
 import { CONTACT } from "@/data/contact";
 import type { Category, Product } from "@/data/types";
 import type { CatalogPage, CatalogQuery, FacetKey as ServerFacetKey } from "@/lib/api/bitrix";
@@ -58,9 +59,20 @@ type AvailabilityKey = "salon" | "warehouse" | "preorder";
 type AvailabilityFilter = "all" | AvailabilityKey;
 type ClipOnFilter = "all" | "Да" | "Нет";
 type GridCols = 2 | 3 | 4;
+type AccessoriesNavGroup = {
+  title: string;
+  items: Array<{ href: string; label: string }>;
+};
 
 const CORPORATE_EMAIL = CONTACT.email.label;
 const normalize = (v?: string) => (v ?? "").trim().toLowerCase();
+const ACCESSORIES_BASE_SEGMENT = "soputstvuyushchie_tovary";
+
+function normalizeCatalogPath(path?: string) {
+  if (!path) return "";
+  const trimmed = path.endsWith("/") ? path : `${path}/`;
+  return trimmed.replace(/\/+/g, "/");
+}
 
 /** 1 … (p-1) p (p+1) … N window for numbered pagination; null = ellipsis. */
 function pageWindow(current: number, total: number): (number | null)[] {
@@ -504,6 +516,30 @@ function getPageRange(total: number, page: number, pageSize: number) {
   return { start, end };
 }
 
+function getAccessoriesNavGroups(city: CityCode): AccessoriesNavGroup[] {
+  const base = `${catalogPrefix(city)}/${ACCESSORIES_BASE_SEGMENT}`;
+  return [
+    {
+      title: "Для контактных линз",
+      items: [
+        { label: "Для контактных линз - Все", href: `${base}/aksessuary/` },
+        { label: "Очистители и капли", href: `${base}/aksessuary/ochistiteli_i_kapli/` },
+        { label: "Растворы", href: `${base}/aksessuary/rastvory/` },
+      ],
+    },
+    {
+      title: "Для очков",
+      items: [
+        { label: "Для очков - Все", href: `${base}/dlya_ochkov/` },
+        { label: "Окклюдеры", href: `${base}/dlya_ochkov/okkllyudery/` },
+        { label: "Салфетки", href: `${base}/dlya_ochkov/salfetki/` },
+        { label: "Стопперы", href: `${base}/dlya_ochkov/stoper/` },
+        { label: "Цепочки/шнурки", href: `${base}/dlya_ochkov/tsepochki/` },
+      ],
+    },
+  ];
+}
+
 function sortFacetEntriesByCount(entries: readonly (readonly [string, number])[]) {
   return [...entries].sort(([labelA, countA], [labelB, countB]) => {
     if (countB !== countA) return countB - countA;
@@ -917,6 +953,13 @@ export function CatalogListing({
         availability: true,
         brand: true,
       };
+  const accessoriesNavGroups = useMemo(
+    () => (categoryKey === "aksessuary" ? getAccessoriesNavGroups(city) : []),
+    [categoryKey, city],
+  );
+  const currentCatalogPath = normalizeCatalogPath(
+    productBasePath ? `${productBasePath}/` : undefined,
+  );
 
   const [discount, setDiscount] = useState<number>(0);
   const [ranges, setRanges] = useState<Record<string, [number, number]>>({});
@@ -1137,6 +1180,48 @@ export function CatalogListing({
           </div>
         </div>
       </div>
+
+      {categoryKey === "aksessuary" && accessoriesNavGroups.length > 0 && (
+        <FilterSection key="accessories-sections" title="Раздел">
+          <div className="space-y-4">
+            {accessoriesNavGroups.map((group) => (
+              <div key={group.title}>
+                <div className="mb-2 text-[11px] uppercase font-semibold tracking-[0.08em] text-foreground/70">
+                  {group.title}
+                </div>
+                <div className="space-y-2">
+                  {group.items.map((item) => {
+                    const isCurrent = normalizeCatalogPath(item.href) === currentCatalogPath;
+                    return (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        className={cn(
+                          "flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm transition-all",
+                          isCurrent
+                            ? "border-ink bg-ink text-primary-foreground"
+                            : "border-border bg-card hover:border-foreground/40 hover:bg-surface",
+                        )}
+                        style={{ transitionDuration: "var(--duration-snap)" }}
+                      >
+                        <span>{item.label}</span>
+                        <span
+                          className={cn(
+                            "text-xs transition-transform",
+                            isCurrent ? "text-primary-foreground/80" : "text-muted-foreground",
+                          )}
+                        >
+                          →
+                        </span>
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </FilterSection>
+      )}
 
       {/* Frame shape — tile grid */}
       {vis.shape && hasFacet("shape") && (

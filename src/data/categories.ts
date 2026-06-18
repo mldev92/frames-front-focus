@@ -64,8 +64,8 @@ const sectionTitles: Record<string, string> = {
   rastvory: "Растворы",
   okkllyudery: "Окклюдеры",
   salfetki: "Салфетки",
-  stoper: "Стоппер",
-  tsepochki: "Цепочки и шнурки",
+  stoper: "Стопперы",
+  tsepochki: "Цепочки/шнурки",
   dlya_ochkov: "Аксессуары для очков",
 };
 

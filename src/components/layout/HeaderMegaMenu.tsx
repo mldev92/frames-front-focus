@@ -799,6 +799,7 @@ const ACCESSORIES_MENU: AccessoriesMegaMenu = {
       title: "Для контактных линз",
       allHref: `${ACC}/aksessuary/`,
       items: [
+        { label: "Для контактных линз - Все", href: `${ACC}/aksessuary/` },
         { label: "Очистители и капли", href: accSection("aksessuary", "ochistiteli_i_kapli") },
         { label: "Растворы", href: accSection("aksessuary", "rastvory") },
       ],
@@ -807,6 +808,7 @@ const ACCESSORIES_MENU: AccessoriesMegaMenu = {
       title: "Для очков",
       allHref: `${ACC}/dlya_ochkov/`,
       items: [
+        { label: "Для очков - Все", href: `${ACC}/dlya_ochkov/` },
         { label: "Окклюдеры", href: accSection("dlya_ochkov", "okkllyudery") },
         { label: "Салфетки", href: accSection("dlya_ochkov", "salfetki") },
         { label: "Стопперы", href: accSection("dlya_ochkov", "stoper") },

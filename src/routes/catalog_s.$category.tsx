@@ -59,6 +59,7 @@ export const catalogConfig: Record<Category, CatalogConfig> = {
   aksessuary: {
     title: "Аксессуары",
     subtitle: "Футляры, цепочки, салфетки, средства для очистки линз.",
+    facets: ["brand"],
     metaTitle: "Аксессуары для очков — каталог · ОПТИКА 100%",
     metaDescription:
       "Футляры, цепочки, салфетки и средства для ухода за очками и линзами.",
