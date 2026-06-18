@@ -139,7 +139,23 @@ type GlassesMegaMenu = {
   utilities: UtilityLink[];
 };
 
-export type HeaderMegaMenu = FramesMegaMenu | ContactMegaMenu | GlassesMegaMenu;
+type AccessoriesGroup = {
+  title: string;
+  items: CardLink[];
+};
+
+type AccessoriesMegaMenu = {
+  kind: "accessories";
+  allHref: string;
+  allLabel: string;
+  title: string;
+  titleEmphasis: string;
+  summary: string;
+  groups: AccessoriesGroup[];
+  utilities: UtilityLink[];
+};
+
+export type HeaderMegaMenu = FramesMegaMenu | ContactMegaMenu | GlassesMegaMenu | AccessoriesMegaMenu;
 
 export interface HeaderNavItem {
   href: string;
@@ -764,12 +780,45 @@ const GLASSES_MENU: GlassesMegaMenu = {
   ],
 };
 
+const accSection = (code: string) => `/catalog_s/${code}/`;
+
+const ACCESSORIES_MENU: AccessoriesMegaMenu = {
+  kind: "accessories",
+  allHref: catalogHref("aksessuary"),
+  allLabel: "Все аксессуары",
+  titleEmphasis: "Аксессуары.",
+  title: "Уход, хранение и ремонт",
+  summary: "Растворы, салфетки, цепочки",
+  groups: [
+    {
+      title: "Для контактных линз",
+      items: [
+        { label: "Очистители и капли", href: accSection("ochistiteli_i_kapli") },
+        { label: "Растворы", href: accSection("rastvory") },
+      ],
+    },
+    {
+      title: "Для очков",
+      items: [
+        { label: "Окклюдеры", href: accSection("okkllyudery") },
+        { label: "Салфетки", href: accSection("salfetki") },
+        { label: "Стоппер", href: accSection("stoper") },
+        { label: "Цепочки и шнурки", href: accSection("tsepochki") },
+      ],
+    },
+  ],
+  utilities: [
+    { label: "Все средства ухода", href: catalogHref("aksessuary"), icon: <Droplets className="h-4 w-4" /> },
+    { label: "Ремонт очков", href: "/remont-ochkov/", icon: <Glasses className="h-4 w-4" /> },
+  ],
+};
+
 export const HEADER_NAV_ITEMS: HeaderNavItem[] = [
   { label: "Оправы", href: catalogHref("opravy"), mega: FRAMES_MENU },
   { label: "Солнцезащитные", href: catalogHref("solntsezashchitnye"), mega: SUNGLASSES_MENU },
   { label: "Контактные линзы", href: catalogHref("kontaktnye-linzy"), mega: CONTACT_MENU },
   { label: "Линзы для очков", href: catalogHref("linzy-dlya-ochkov"), mega: GLASSES_MENU },
-  { label: "Аксессуары", href: catalogHref("aksessuary") },
+  { label: "Аксессуары", href: catalogHref("aksessuary"), mega: ACCESSORIES_MENU },
   { label: "Услуги", href: "/#services" },
   { label: "Салоны", href: "/contacts/" },
 ];
@@ -1397,8 +1446,74 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
   );
 }
 
+function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
+  const city = useCityStore((state) => state.city);
+
+  return (
+    <div className={panelShellClass}>
+      <div className="bg-white">
+        <div className="px-5 py-6 lg:px-6 xl:px-8">
+          <div className="mb-6 flex flex-col gap-4 border-b border-[#ece7df] pb-5 xl:flex-row xl:items-end xl:justify-between">
+            <div className="flex flex-wrap items-end gap-3">
+              <h2 className="font-serif text-[26px] leading-none tracking-[-0.02em] text-foreground xl:text-[30px]">
+                <span className="mr-1 text-brand">{menu.titleEmphasis}</span>
+                {menu.title}
+              </h2>
+              <span className="font-mono text-[11px] tracking-[0.16em] text-muted-foreground uppercase">
+                {menu.summary}
+              </span>
+            </div>
+
+            <a
+              href={regionalMenuHref(menu.allHref, city)}
+              className="inline-flex items-center gap-2 self-start rounded-full border border-foreground px-4 py-2 text-[13px] text-foreground transition-colors hover:bg-foreground hover:text-background"
+            >
+              {menu.allLabel}
+              <ArrowRight className="h-3.5 w-3.5" />
+            </a>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            {menu.groups.map((group) => (
+              <section key={group.title}>
+                {sectionHeader(group.title, "Все →")}
+                <div className="space-y-1">
+                  {group.items.map((item) => (
+                    <a
+                      key={item.label}
+                      href={regionalMenuHref(item.href, city)}
+                      className="group flex items-center justify-between rounded-[12px] border border-[#ece7df] bg-white px-3 py-3 text-[13.5px] text-foreground transition-colors hover:border-brand hover:bg-brand-50"
+                    >
+                      <span className="font-medium">{item.label}</span>
+                      <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100 group-hover:text-brand" />
+                    </a>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+
+          <div className="mt-6 grid gap-3 border-t border-[#ece7df] pt-4 md:grid-cols-2 xl:grid-cols-4">
+            {menu.utilities.map((item) => (
+              <a
+                key={item.label}
+                href={regionalMenuHref(item.href, city)}
+                className="inline-flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-3 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand"
+              >
+                <span className="text-muted-foreground">{item.icon}</span>
+                <span>{item.label}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function HeaderMegaPanel({ menu }: { menu: HeaderMegaMenu }) {
   if (menu.kind === "frames") return <FramesMegaPanel menu={menu} />;
   if (menu.kind === "contact") return <ContactMegaPanel menu={menu} />;
+  if (menu.kind === "accessories") return <AccessoriesMegaPanel menu={menu} />;
   return <GlassesMegaPanel menu={menu} />;
 }

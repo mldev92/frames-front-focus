@@ -41,6 +41,11 @@ const sectionCategoryAliases: Record<string, Category> = {
   aksessuary: "aksessuary",
   rastvory: "aksessuary",
   ochistiteli_i_kapli: "aksessuary",
+  dlya_ochkov: "aksessuary",
+  okkllyudery: "aksessuary",
+  salfetki: "aksessuary",
+  stoper: "aksessuary",
+  tsepochki: "aksessuary",
 };
 
 const sectionTitles: Record<string, string> = {
@@ -55,6 +60,13 @@ const sectionTitles: Record<string, string> = {
   tsvetnye: "Цветные контактные линзы",
   multifokalnye: "Мультифокальные контактные линзы",
   dlya_kontrolya_miopii: "Линзы для контроля миопии",
+  ochistiteli_i_kapli: "Очистители и капли",
+  rastvory: "Растворы",
+  okkllyudery: "Окклюдеры",
+  salfetki: "Салфетки",
+  stoper: "Стоппер",
+  tsepochki: "Цепочки и шнурки",
+  dlya_ochkov: "Аксессуары для очков",
 };
 
 export const catalogPrefix = (city: CityCode = "spb") =>
