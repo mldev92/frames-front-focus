@@ -497,6 +497,13 @@ function getModelCountLabel(total: number): string {
   return "моделей";
 }
 
+function getPageRange(total: number, page: number, pageSize: number) {
+  if (total <= 0 || pageSize <= 0) return null;
+  const start = (page - 1) * pageSize + 1;
+  const end = Math.min(total, start + pageSize - 1);
+  return { start, end };
+}
+
 function sortFacetEntriesByCount(entries: readonly (readonly [string, number])[]) {
   return [...entries].sort(([labelA, countA], [labelB, countB]) => {
     if (countB !== countA) return countB - countA;
@@ -812,6 +819,7 @@ export function CatalogListing({
   // component never re-filters it. Totals/counts/bounds also come from `data`.
   const products = data.products;
   const serverFacets = data.facets;
+  const pageRange = getPageRange(data.total, page, data.pageSize);
   const availableColorLabels = useMemo(
     () => Object.keys(serverFacets.color ?? {}),
     [serverFacets.color],
@@ -1852,7 +1860,7 @@ export function CatalogListing({
       <div className="mb-8">
         <h1 className="font-serif text-4xl lg:text-5xl">{title}</h1>
         {subtitle && <p className="mt-3 text-muted-foreground max-w-2xl">{subtitle}</p>}
-        <p className="mt-3 text-sm text-muted-foreground">
+        <p className="mt-3 text-sm text-muted-foreground lg:hidden">
           {data.total} {getModelCountLabel(data.total)} в каталоге
         </p>
       </div>
@@ -1877,49 +1885,59 @@ export function CatalogListing({
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between mb-6 gap-4">
-            {/* Filter toggle — always left */}
-            {facets.length > 0 && (
-              <>
-                <button
-                  onClick={() => setSidebarOpen((v) => !v)}
-                  className="group/toggle hidden lg:inline-flex items-center gap-2 h-9 rounded-full border border-border bg-background pl-3 pr-4 text-[12px] font-medium tracking-wide text-foreground hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all shrink-0"
-                  style={{
-                    transitionDuration: "var(--duration-snap)",
-                    transitionTimingFunction: "var(--ease-editorial)",
-                  }}
-                >
-                  {sidebarOpen ? (
-                    <>
-                      <span
-                        className="inline-block transition-transform group-hover/toggle:-translate-x-0.5"
-                        style={{ transitionDuration: "var(--duration-snap)" }}
-                      >
-                        ←
-                      </span>
-                      <span>Скрыть фильтры</span>
-                    </>
-                  ) : (
-                    <>
-                      <SlidersHorizontal className="h-3.5 w-3.5" />
-                      <span>Показать фильтры</span>
-                      <span
-                        className="inline-block transition-transform group-hover/toggle:translate-x-0.5"
-                        style={{ transitionDuration: "var(--duration-snap)" }}
-                      >
-                        →
-                      </span>
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={() => setMobileFilters(true)}
-                  className="lg:hidden inline-flex items-center gap-2 h-9 rounded-full border border-border bg-background px-4 text-[12px] font-medium tracking-wide hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all"
-                  style={{ transitionDuration: "var(--duration-snap)" }}
-                >
-                  <SlidersHorizontal className="h-3.5 w-3.5" /> Фильтры
-                </button>
-              </>
-            )}
+            <div className="flex items-center gap-4 min-w-0">
+              {/* Filter toggle — always left */}
+              {facets.length > 0 && (
+                <>
+                  <button
+                    onClick={() => setSidebarOpen((v) => !v)}
+                    className="group/toggle hidden lg:inline-flex items-center gap-2 h-9 rounded-full border border-border bg-background pl-3 pr-4 text-[12px] font-medium tracking-wide text-foreground hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all shrink-0"
+                    style={{
+                      transitionDuration: "var(--duration-snap)",
+                      transitionTimingFunction: "var(--ease-editorial)",
+                    }}
+                  >
+                    {sidebarOpen ? (
+                      <>
+                        <span
+                          className="inline-block transition-transform group-hover/toggle:-translate-x-0.5"
+                          style={{ transitionDuration: "var(--duration-snap)" }}
+                        >
+                          ←
+                        </span>
+                        <span>Скрыть фильтры</span>
+                      </>
+                    ) : (
+                      <>
+                        <SlidersHorizontal className="h-3.5 w-3.5" />
+                        <span>Показать фильтры</span>
+                        <span
+                          className="inline-block transition-transform group-hover/toggle:translate-x-0.5"
+                          style={{ transitionDuration: "var(--duration-snap)" }}
+                        >
+                          →
+                        </span>
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setMobileFilters(true)}
+                    className="lg:hidden inline-flex items-center gap-2 h-9 rounded-full border border-border bg-background px-4 text-[12px] font-medium tracking-wide hover:border-ink hover:bg-ink hover:text-primary-foreground transition-all"
+                    style={{ transitionDuration: "var(--duration-snap)" }}
+                  >
+                    <SlidersHorizontal className="h-3.5 w-3.5" /> Фильтры
+                  </button>
+                </>
+              )}
+              {pageRange && (
+                <p className="hidden lg:block text-[13px] text-muted-foreground whitespace-nowrap">
+                  <span className="font-medium text-foreground">
+                    {pageRange.start}–{pageRange.end}
+                  </span>{" "}
+                  из {data.total} {getModelCountLabel(data.total)}
+                </p>
+              )}
+            </div>
             <div className="flex items-center gap-2 ml-auto">
               <div className="hidden md:flex items-center border border-border rounded-sm overflow-hidden">
                 <button
