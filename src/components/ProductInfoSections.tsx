@@ -59,6 +59,7 @@ export function ProductInfoSections({
   const showFrameValueCard = product.category === "opravy";
   const isLensProduct =
     product.category === "kontaktnye-linzy" || product.category === "linzy-dlya-ochkov";
+  const usesDetailedContent = isLensProduct || product.category === "aksessuary";
   const measurements = MEASUREMENTS.flatMap((measurement) => {
     const spec = product.specs.find((item) =>
       (measurement.labels as readonly string[]).includes(item.label),
@@ -67,9 +68,11 @@ export function ProductInfoSections({
   });
   const measurementLabels = new Set<string>(MEASUREMENTS.flatMap((item) => [...item.labels]));
   const sourceSpecs =
-    isLensProduct && product.characteristics?.length ? product.characteristics : product.specs;
+    usesDetailedContent && product.characteristics?.length ? product.characteristics : product.specs;
   const detailSpecs = sourceSpecs.filter((spec) => !measurementLabels.has(spec.label));
-  const showDescription = isLensProduct && Boolean(product.descriptionHtml?.trim());
+  const descriptionHtml = product.descriptionHtml?.trim() ?? "";
+  const descriptionText = product.description.trim();
+  const showDescription = usesDetailedContent && (descriptionHtml !== "" || descriptionText !== "");
   const showCharacteristics = measurements.length > 0 || detailSpecs.length > 0;
 
   return (
@@ -145,10 +148,16 @@ export function ProductInfoSections({
         <Reveal>
           <section>
             <SectionHeading title="Описание" />
-            <div
-              className="max-w-3xl text-sm leading-7 text-muted-foreground [&_a]:text-brand [&_a]:underline [&_br]:block [&_br]:content-[''] [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-foreground [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-serif [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-foreground [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:max-w-full [&_iframe]:w-full [&_li]:mb-1.5 [&_p]:mb-4 [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5"
-              dangerouslySetInnerHTML={{ __html: product.descriptionHtml ?? "" }}
-            />
+            {descriptionHtml !== "" ? (
+              <div
+                className="max-w-3xl text-sm leading-7 text-muted-foreground [&_a]:text-brand [&_a]:underline [&_br]:block [&_br]:content-[''] [&_h2]:mb-3 [&_h2]:mt-7 [&_h2]:font-serif [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-foreground [&_h3]:mb-2 [&_h3]:mt-6 [&_h3]:font-serif [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-foreground [&_iframe]:aspect-video [&_iframe]:h-auto [&_iframe]:max-w-full [&_iframe]:w-full [&_li]:mb-1.5 [&_p]:mb-4 [&_strong]:font-semibold [&_strong]:text-foreground [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5"
+                dangerouslySetInnerHTML={{ __html: descriptionHtml }}
+              />
+            ) : (
+              <p className="max-w-3xl text-sm leading-7 text-muted-foreground">
+                {descriptionText}
+              </p>
+            )}
           </section>
         </Reveal>
       )}
