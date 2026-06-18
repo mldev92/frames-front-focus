@@ -40,6 +40,11 @@ const MEASUREMENTS = [
   },
 ] as const;
 
+const HIDDEN_CHARACTERISTIC_LABELS = new Set([
+  "Отображать с товарами раздела",
+  "Отображать с товарами со сроком ношения",
+]);
+
 interface ProductInfoSectionsProps {
   product: Product;
   showPrescription: boolean;
@@ -69,7 +74,10 @@ export function ProductInfoSections({
   const measurementLabels = new Set<string>(MEASUREMENTS.flatMap((item) => [...item.labels]));
   const sourceSpecs =
     usesDetailedContent && product.characteristics?.length ? product.characteristics : product.specs;
-  const detailSpecs = sourceSpecs.filter((spec) => !measurementLabels.has(spec.label));
+  const detailSpecs = sourceSpecs.filter(
+    (spec) =>
+      !measurementLabels.has(spec.label) && !HIDDEN_CHARACTERISTIC_LABELS.has(spec.label),
+  );
   const descriptionHtml = product.descriptionHtml?.trim() ?? "";
   const descriptionText = product.description.trim();
   const showDescription = usesDetailedContent && (descriptionHtml !== "" || descriptionText !== "");
@@ -182,7 +190,7 @@ export function ProductInfoSections({
         <Accordion type="multiple" className="border-t border-border">
           <AccordionItem value="guide">
             <AccordionTrigger className="py-5 text-base hover:text-brand hover:no-underline">
-              Как подобрать
+              Как подобрать очки
             </AccordionTrigger>
             <AccordionContent className="max-w-2xl pb-6 text-muted-foreground">
               <p>
