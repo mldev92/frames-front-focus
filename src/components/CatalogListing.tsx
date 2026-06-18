@@ -497,6 +497,13 @@ function getModelCountLabel(total: number): string {
   return "моделей";
 }
 
+function sortFacetEntriesByCount(entries: readonly (readonly [string, number])[]) {
+  return [...entries].sort(([labelA, countA], [labelB, countB]) => {
+    if (countB !== countA) return countB - countA;
+    return labelA.localeCompare(labelB, "ru");
+  });
+}
+
 function canonicalizeColorFilterValue(value: string, availableLabels: string[]): string {
   const exact = availableLabels.find((label) => label === value);
   if (exact) return exact;
@@ -924,10 +931,26 @@ export function CatalogListing({
     warehouse: serverFacets.availability?.["warehouse"] ?? 0,
     preorder: 0, // no orderability rule on the backend yet — option hidden
   };
-  const colorEntries = Object.entries(facetCounts.color ?? {});
+  const colorEntries = useMemo(
+    () => sortFacetEntriesByCount(Object.entries(facetCounts.color ?? {})),
+    [facetCounts.color],
+  );
   const frameShapeCounts = serverFacets.shape ?? {};
   const frameMaterialCounts = serverFacets.material ?? {};
   const frameGenderCounts = serverFacets.gender ?? {};
+  const materialEntries = useMemo(
+    () =>
+      sortFacetEntriesByCount(
+        isFramesCategory
+          ? FRAME_MATERIAL_DEFS.map((material) => [material, frameMaterialCounts[material] ?? 0] as const)
+          : Object.entries(facetCounts.material ?? {}),
+      ),
+    [facetCounts.material, frameMaterialCounts, isFramesCategory],
+  );
+  const brandEntries = useMemo(
+    () => sortFacetEntriesByCount(Object.entries(facetCounts.brand ?? {})),
+    [facetCounts.brand],
+  );
 
   // The SERVER filters and sorts — `filtered` is just the current page slice.
   // (Filtering / aliasing / sorting all moved behind products.php?v2=1&facets=1;
@@ -1228,10 +1251,7 @@ export function CatalogListing({
       {vis.material && hasFacet("material") && (
         <FilterSection key="material" title="Материал">
           <CollapsibleList initialCount={4} className="space-y-2">
-            {(isFramesCategory
-              ? FRAME_MATERIAL_DEFS.map((m) => [m, frameMaterialCounts[m] ?? 0] as const)
-              : Object.entries(facetCounts.material ?? {})
-            ).map(([m, c]) => {
+            {materialEntries.map(([m, c]) => {
               const checked = active.material?.has(m) ?? false;
               return (
                 <button
@@ -1512,9 +1532,7 @@ export function CatalogListing({
       {vis.brand && hasFacet("brand") && (
         <FilterSection key="brand" title="Бренды">
           <CollapsibleList initialCount={4} className="space-y-2">
-            {Object.entries(facetCounts.brand ?? {})
-              .sort(([a], [b]) => a.localeCompare(b))
-              .map(([b, c]) => {
+            {brandEntries.map(([b, c]) => {
                 const checked = active.brand?.has(b) ?? false;
                 return (
                   <button
