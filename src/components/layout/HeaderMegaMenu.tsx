@@ -1563,7 +1563,7 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
             </a>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-[1fr_1fr_0.9fr]">
             {menu.groups.map((group) => (
               <section key={group.title}>
                 <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-[#ece7df] pb-2">
@@ -1575,21 +1575,74 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
                     Все →
                   </a>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {group.items.map((item) => (
                     <a
                       key={item.label}
                       href={regionalMenuHref(item.href, city)}
-                      className="group flex items-center justify-between rounded-[12px] border border-[#ece7df] bg-white px-3 py-3 text-[13.5px] text-foreground transition-colors hover:border-brand hover:bg-brand-50"
+                      className="group grid grid-cols-[32px_1fr_auto] items-center gap-2.5 rounded-[12px] border border-[#ece7df] bg-white px-3 py-2.5 text-[13.5px] text-foreground transition-colors hover:border-brand hover:bg-brand-50"
                     >
+                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#ece7df] bg-[var(--cream)] text-brand">
+                        {item.icon}
+                      </span>
                       <span className="font-medium">{item.label}</span>
                       <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100 group-hover:text-brand" />
                     </a>
                   ))}
                 </div>
+
+                {group.title === "Для очков" && menu.promoChips.length > 0 && (
+                  <div className="mt-5 border-t border-dashed border-border pt-4">
+                    <div className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
+                      Популярное
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {menu.promoChips.map((chip) => (
+                        <a key={chip.label} href={regionalMenuHref(chip.href, city)} className={chipClass}>
+                          {chip.label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </section>
             ))}
+
+            <aside
+              className={cn(
+                surfaceCardClass,
+                "flex flex-col gap-4 bg-[var(--cream)] p-4 lg:col-span-2 xl:col-span-1",
+              )}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">
+                {menu.featured.eyebrow}
+              </span>
+              <h3 className="font-serif text-[20px] leading-tight text-foreground">{menu.featured.title}</h3>
+              <div className="overflow-hidden rounded-[14px] border border-[#e8dfd4] bg-white">
+                <img
+                  src={menu.featured.imageSrc}
+                  alt={menu.featured.imageAlt}
+                  className="h-40 w-full object-cover"
+                />
+              </div>
+              <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
+              <div className="mt-auto flex items-center justify-between border-t border-dashed border-border pt-3">
+                {menu.featured.price && (
+                  <span className="font-serif text-[20px] leading-none text-foreground">
+                    {menu.featured.price}
+                  </span>
+                )}
+                <a
+                  href={regionalMenuHref(menu.featured.ctaHref, city)}
+                  className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
+                >
+                  {menu.featured.ctaLabel ?? "Перейти"}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </aside>
           </div>
+
 
           <div className="mt-6 grid gap-3 border-t border-[#ece7df] pt-4 md:grid-cols-2 xl:grid-cols-4">
             {menu.utilities.map((item) => (
