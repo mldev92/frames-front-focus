@@ -489,6 +489,14 @@ function normalizeColorLabel(value: string): string {
   return normalize(value).replace(/ё/g, "е");
 }
 
+function getModelCountLabel(total: number): string {
+  if (total % 10 === 1 && total % 100 !== 11) return "модель";
+  if (total % 10 >= 2 && total % 10 <= 4 && !(total % 100 >= 12 && total % 100 <= 14)) {
+    return "модели";
+  }
+  return "моделей";
+}
+
 function canonicalizeColorFilterValue(value: string, availableLabels: string[]): string {
   const exact = availableLabels.find((label) => label === value);
   if (exact) return exact;
@@ -1826,6 +1834,9 @@ export function CatalogListing({
       <div className="mb-8">
         <h1 className="font-serif text-4xl lg:text-5xl">{title}</h1>
         {subtitle && <p className="mt-3 text-muted-foreground max-w-2xl">{subtitle}</p>}
+        <p className="mt-3 text-sm text-muted-foreground">
+          {data.total} {getModelCountLabel(data.total)} в каталоге
+        </p>
       </div>
 
       <div className="lg:flex lg:items-start" style={{ minHeight: "80vh" }}>
@@ -1892,17 +1903,6 @@ export function CatalogListing({
               </>
             )}
             <div className="flex items-center gap-2 ml-auto">
-              <div className="hidden lg:block text-sm text-muted-foreground shrink-0">
-                {/* SERVER total — the honest catalog size, not this page's length */}
-                {data.total}{" "}
-                {data.total % 10 === 1 && data.total % 100 !== 11
-                  ? "модель"
-                  : data.total % 10 >= 2 &&
-                      data.total % 10 <= 4 &&
-                      !(data.total % 100 >= 12 && data.total % 100 <= 14)
-                    ? "модели"
-                    : "моделей"}
-              </div>
               <div className="hidden md:flex items-center border border-border rounded-sm overflow-hidden">
                 <button
                   onClick={() => setGridCols(2)}
