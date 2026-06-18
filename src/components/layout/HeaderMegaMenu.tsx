@@ -117,6 +117,17 @@ type ContactMegaMenu = {
   bcValues: CountChip[];
 };
 
+type FeaturedAside = {
+  ctaHref: string;
+  ctaLabel?: string;
+  description: string;
+  eyebrow: string;
+  imageAlt: string;
+  imageSrc: string;
+  price?: string;
+  title: string;
+};
+
 type GlassesMegaMenu = {
   kind: "glasses";
   allHref: string;
@@ -137,6 +148,7 @@ type GlassesMegaMenu = {
   titleEmphasis: string;
   coatingValues: CountChip[];
   utilities: UtilityLink[];
+  featured: FeaturedAside;
 };
 
 type AccessoriesGroup = {
@@ -154,7 +166,10 @@ type AccessoriesMegaMenu = {
   summary: string;
   groups: AccessoriesGroup[];
   utilities: UtilityLink[];
+  featured: FeaturedAside;
+  promoChips: CountChip[];
 };
+
 
 export type HeaderMegaMenu = FramesMegaMenu | ContactMegaMenu | GlassesMegaMenu | AccessoriesMegaMenu;
 
