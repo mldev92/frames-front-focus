@@ -117,6 +117,17 @@ type ContactMegaMenu = {
   bcValues: CountChip[];
 };
 
+type FeaturedAside = {
+  ctaHref: string;
+  ctaLabel?: string;
+  description: string;
+  eyebrow: string;
+  imageAlt: string;
+  imageSrc: string;
+  price?: string;
+  title: string;
+};
+
 type GlassesMegaMenu = {
   kind: "glasses";
   allHref: string;
@@ -137,6 +148,7 @@ type GlassesMegaMenu = {
   titleEmphasis: string;
   coatingValues: CountChip[];
   utilities: UtilityLink[];
+  featured: FeaturedAside;
 };
 
 type AccessoriesGroup = {
@@ -154,7 +166,10 @@ type AccessoriesMegaMenu = {
   summary: string;
   groups: AccessoriesGroup[];
   utilities: UtilityLink[];
+  featured: FeaturedAside;
+  promoChips: CountChip[];
 };
+
 
 export type HeaderMegaMenu = FramesMegaMenu | ContactMegaMenu | GlassesMegaMenu | AccessoriesMegaMenu;
 
@@ -779,7 +794,19 @@ const GLASSES_MENU: GlassesMegaMenu = {
     { label: "Срок изготовления 3–5 дней", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
     { label: "Кабинет диагностики", href: "/kabinet-diagnostiki-spb", icon: <BookOpen className="h-4 w-4" /> },
   ],
+  featured: {
+    eyebrow: "Stellest · контроль миопии",
+    title: "Линзы Essilor® Stellest®",
+    description:
+      "Замедляют прогрессирование миопии у детей на 67%. Технология H.A.L.T. с 1021 микролинзой.",
+    imageSrc: "/stellest/hero-child-stellest.webp",
+    imageAlt: "Линзы Stellest для контроля миопии",
+    price: "от 21 900 ₽",
+    ctaHref: menuHref("linzy-dlya-ochkov", { technology: "STELLEST" }),
+    ctaLabel: "Подробнее",
+  },
 };
+
 
 // Canonical Bitrix section paths (1:1 URL parity with optika100.com):
 //   soputstvuyushchie_tovary/aksessuary/   → "Для контактных линз" group
@@ -799,28 +826,47 @@ const ACCESSORIES_MENU: AccessoriesMegaMenu = {
       title: "Для контактных линз",
       allHref: `${ACC}/aksessuary/`,
       items: [
-        { label: "Для контактных линз - Все", href: `${ACC}/aksessuary/` },
-        { label: "Очистители и капли", href: accSection("aksessuary", "ochistiteli_i_kapli") },
-        { label: "Растворы", href: accSection("aksessuary", "rastvory") },
+        { label: "Для контактных линз — все", href: `${ACC}/aksessuary/`, icon: <Eye className="h-4 w-4" /> },
+        { label: "Очистители и капли", href: accSection("aksessuary", "ochistiteli_i_kapli"), icon: <Droplets className="h-4 w-4" /> },
+        { label: "Растворы", href: accSection("aksessuary", "rastvory"), icon: <Droplets className="h-4 w-4" /> },
       ],
     },
     {
       title: "Для очков",
       allHref: `${ACC}/dlya_ochkov/`,
       items: [
-        { label: "Для очков - Все", href: `${ACC}/dlya_ochkov/` },
-        { label: "Окклюдеры", href: accSection("dlya_ochkov", "okkllyudery") },
-        { label: "Салфетки", href: accSection("dlya_ochkov", "salfetki") },
-        { label: "Стопперы", href: accSection("dlya_ochkov", "stoper") },
-        { label: "Цепочки/шнурки", href: accSection("dlya_ochkov", "tsepochki") },
+        { label: "Для очков — все", href: `${ACC}/dlya_ochkov/`, icon: <Glasses className="h-4 w-4" /> },
+        { label: "Окклюдеры", href: accSection("dlya_ochkov", "okkllyudery"), icon: <ShieldCheck className="h-4 w-4" /> },
+        { label: "Салфетки", href: accSection("dlya_ochkov", "salfetki"), icon: <Layers className="h-4 w-4" /> },
+        { label: "Стопперы", href: accSection("dlya_ochkov", "stoper"), icon: <Circle className="h-4 w-4" /> },
+        { label: "Цепочки/шнурки", href: accSection("dlya_ochkov", "tsepochki"), icon: <Palette className="h-4 w-4" /> },
       ],
     },
   ],
   utilities: [
     { label: "Все средства ухода", href: catalogHref("aksessuary"), icon: <Droplets className="h-4 w-4" /> },
     { label: "Ремонт очков", href: "/remont-ochkov/", icon: <Glasses className="h-4 w-4" /> },
+    { label: "Доставка по СПб от 1 дня", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
+    { label: "Гид по уходу за линзами", href: "/blog/kontaktnye-linzy/", icon: <BookOpen className="h-4 w-4" /> },
   ],
+  promoChips: [
+    { label: "Растворы от 290 ₽", href: accSection("aksessuary", "rastvory") },
+    { label: "Салфетки от 90 ₽", href: accSection("dlya_ochkov", "salfetki") },
+    { label: "Цепочки от 450 ₽", href: accSection("dlya_ochkov", "tsepochki") },
+    { label: "Окклюдеры", href: accSection("dlya_ochkov", "okkllyudery") },
+  ],
+  featured: {
+    eyebrow: "Акция · −25%",
+    title: "Вторая пара со скидкой 25%",
+    description:
+      "При покупке оправы с линзами — скидка 25% на вторую пару. Подходит для солнцезащитных и оправ.",
+    imageSrc: "/2_banner.webp",
+    imageAlt: "Акция: −25% на вторую пару",
+    ctaHref: "/loyalty",
+    ctaLabel: "Об акции",
+  },
 };
+
 
 export const HEADER_NAV_ITEMS: HeaderNavItem[] = [
   { label: "Оправы", href: catalogHref("opravy"), mega: FRAMES_MENU },
@@ -1288,7 +1334,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
             </a>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1.03fr_0.93fr_1fr_0.95fr]">
+          <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1fr_0.95fr_1fr_0.95fr_0.85fr]">
             <section>
               {sectionHeader("Тип линзы", "Все →")}
               <div className="space-y-1">
@@ -1435,7 +1481,42 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 </a>
               </div>
             </section>
+
+            <aside
+              className={cn(
+                surfaceCardClass,
+                "flex flex-col gap-4 bg-[var(--cream)] p-4 lg:col-span-2 xl:col-span-1 xl:h-full",
+              )}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">
+                {menu.featured.eyebrow}
+              </span>
+              <h3 className="font-serif text-[20px] leading-tight text-foreground">{menu.featured.title}</h3>
+              <div className="overflow-hidden rounded-[14px] border border-[#e8dfd4] bg-white">
+                <img
+                  src={menu.featured.imageSrc}
+                  alt={menu.featured.imageAlt}
+                  className="h-44 w-full object-cover"
+                />
+              </div>
+              <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
+              <div className="mt-auto flex items-center justify-between border-t border-dashed border-border pt-3">
+                {menu.featured.price && (
+                  <span className="font-serif text-[20px] leading-none text-foreground">
+                    {menu.featured.price}
+                  </span>
+                )}
+                <a
+                  href={regionalMenuHref(menu.featured.ctaHref, city)}
+                  className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
+                >
+                  {menu.featured.ctaLabel ?? "Перейти"}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </aside>
           </div>
+
 
           <div className="mt-6 grid gap-3 border-t border-[#ece7df] pt-4 md:grid-cols-2 xl:grid-cols-4">
             {menu.utilities.map((item) => (
@@ -1482,7 +1563,7 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
             </a>
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-[1fr_1fr_0.9fr]">
             {menu.groups.map((group) => (
               <section key={group.title}>
                 <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-[#ece7df] pb-2">
@@ -1494,21 +1575,74 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
                     Все →
                   </a>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   {group.items.map((item) => (
                     <a
                       key={item.label}
                       href={regionalMenuHref(item.href, city)}
-                      className="group flex items-center justify-between rounded-[12px] border border-[#ece7df] bg-white px-3 py-3 text-[13.5px] text-foreground transition-colors hover:border-brand hover:bg-brand-50"
+                      className="group grid grid-cols-[32px_1fr_auto] items-center gap-2.5 rounded-[12px] border border-[#ece7df] bg-white px-3 py-2.5 text-[13.5px] text-foreground transition-colors hover:border-brand hover:bg-brand-50"
                     >
+                      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-[#ece7df] bg-[var(--cream)] text-brand">
+                        {item.icon}
+                      </span>
                       <span className="font-medium">{item.label}</span>
                       <ArrowRight className="h-3 w-3 text-muted-foreground opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100 group-hover:text-brand" />
                     </a>
                   ))}
                 </div>
+
+                {group.title === "Для очков" && menu.promoChips.length > 0 && (
+                  <div className="mt-5 border-t border-dashed border-border pt-4">
+                    <div className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
+                      Популярное
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {menu.promoChips.map((chip) => (
+                        <a key={chip.label} href={regionalMenuHref(chip.href, city)} className={chipClass}>
+                          {chip.label}
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </section>
             ))}
+
+            <aside
+              className={cn(
+                surfaceCardClass,
+                "flex flex-col gap-4 bg-[var(--cream)] p-4 lg:col-span-2 xl:col-span-1",
+              )}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">
+                {menu.featured.eyebrow}
+              </span>
+              <h3 className="font-serif text-[20px] leading-tight text-foreground">{menu.featured.title}</h3>
+              <div className="overflow-hidden rounded-[14px] border border-[#e8dfd4] bg-white">
+                <img
+                  src={menu.featured.imageSrc}
+                  alt={menu.featured.imageAlt}
+                  className="h-40 w-full object-cover"
+                />
+              </div>
+              <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
+              <div className="mt-auto flex items-center justify-between border-t border-dashed border-border pt-3">
+                {menu.featured.price && (
+                  <span className="font-serif text-[20px] leading-none text-foreground">
+                    {menu.featured.price}
+                  </span>
+                )}
+                <a
+                  href={regionalMenuHref(menu.featured.ctaHref, city)}
+                  className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
+                >
+                  {menu.featured.ctaLabel ?? "Перейти"}
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </a>
+              </div>
+            </aside>
           </div>
+
 
           <div className="mt-6 grid gap-3 border-t border-[#ece7df] pt-4 md:grid-cols-2 xl:grid-cols-4">
             {menu.utilities.map((item) => (
