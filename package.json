@@ -7,7 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "content:localize": "node scripts/localize-blog-assets.mjs",
-    "build:beta": "npm run content:localize && vite build --config vite.config.beta.ts",
+    "build:beta": "npm run content:localize && vite build --config vite.config.beta.ts && node scripts/generate-beta-index.mjs",
     "manifest:production": "node scripts/generate-production-manifest.mjs",
     "content:production": "node scripts/import-blog-articles.mjs",
     "build:production": "npm run content:production && npm run content:localize && npm run manifest:production && vite build --config vite.config.production.ts && node scripts/validate-production-build.mjs",
