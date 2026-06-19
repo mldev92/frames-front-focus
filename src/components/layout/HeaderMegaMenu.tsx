@@ -920,7 +920,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                   <a
                     key={item.label}
                     href={regionalMenuHref(item.href, city)}
-                    className="group relative flex aspect-[1/0.82] flex-col items-center justify-between rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 text-center transition-all hover:-translate-y-0.5 hover:border-brand hover:bg-brand-50"
+                    className="group relative flex aspect-[1/0.82] flex-col items-center justify-between rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 text-center transition-all hover:-translate-y-0.5 hover:border-brand"
                   >
                     <span className="mt-2 flex w-full items-center justify-center">{item.icon}</span>
                     <span className="text-[11.5px] font-medium leading-tight text-foreground transition-colors group-hover:text-brand">
