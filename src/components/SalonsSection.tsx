@@ -385,7 +385,13 @@ export function SalonsSection() {
         {city === "spb" && (
           <div className="salon-city-panel">
             <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 28 }}>
-              <YandexMap address="Санкт-Петербург, ул. Кирочная, 17" height={240} zoom={16} />
+              <YandexMap
+                address="Санкт-Петербург, ул. Кирочная, 17"
+                markers={[SPB_SALON.coordinates]}
+                center={SPB_SALON.coordinates}
+                height={240}
+                zoom={16}
+              />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, marginBottom: 28 }}>
               <SalonCard
@@ -414,7 +420,12 @@ export function SalonsSection() {
         {city === "nk" && (
           <div className="salon-city-panel">
             <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 28 }}>
-              <YandexMap address="Новокузнецк" height={240} zoom={12} />
+              <YandexMap
+                address="Новокузнецк"
+                markers={NK_SALONS.map((salon) => salon.coordinates)}
+                height={240}
+                zoom={12}
+              />
             </div>
             <div
               className="salons-grid-2col"

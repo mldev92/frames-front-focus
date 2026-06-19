@@ -1945,9 +1945,6 @@ export function CatalogListing({
       <div className="mb-8">
         <h1 className="font-serif text-4xl lg:text-5xl">{title}</h1>
         {subtitle && <p className="mt-3 text-muted-foreground max-w-2xl">{subtitle}</p>}
-        <p className="mt-3 text-sm text-muted-foreground lg:hidden">
-          {data.total} {getModelCountLabel(data.total)} в каталоге
-        </p>
       </div>
 
       <div className="lg:flex lg:items-start" style={{ minHeight: "80vh" }}>
@@ -1969,8 +1966,8 @@ export function CatalogListing({
         )}
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between mb-6 gap-4">
-            <div className="flex items-center gap-4 min-w-0">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
               {/* Filter toggle — always left */}
               {facets.length > 0 && (
                 <>
@@ -2014,6 +2011,9 @@ export function CatalogListing({
                   </button>
                 </>
               )}
+              <span className="inline-flex h-9 items-center rounded-full border border-border bg-cream px-3 text-[12px] font-medium text-foreground lg:hidden">
+                {data.total} {getModelCountLabel(data.total)}
+              </span>
               {pageRange && (
                 <p className="hidden lg:block text-[13px] text-muted-foreground whitespace-nowrap">
                   <span className="font-medium text-foreground">
@@ -2023,7 +2023,7 @@ export function CatalogListing({
                 </p>
               )}
             </div>
-            <div className="flex items-center gap-2 ml-auto">
+            <div className="ml-auto flex items-center gap-2">
               <div className="hidden md:flex items-center border border-border rounded-sm overflow-hidden">
                 <button
                   onClick={() => setGridCols(2)}

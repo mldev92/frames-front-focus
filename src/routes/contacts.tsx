@@ -355,7 +355,13 @@ function ContactsPage() {
         {city === "spb" && (
           <div>
             <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 40 }}>
-              <YandexMap address="Санкт-Петербург, ул. Кирочная, 17" height={340} zoom={16} />
+              <YandexMap
+                address="Санкт-Петербург, ул. Кирочная, 17"
+                markers={[SPB_SALON.coordinates]}
+                center={SPB_SALON.coordinates}
+                height={340}
+                zoom={16}
+              />
             </div>
             <SalonCard
               address={SPB_SALON.address}
@@ -374,7 +380,12 @@ function ContactsPage() {
         {city === "nk" && (
           <div>
             <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 40 }}>
-              <YandexMap address="Новокузнецк" height={340} zoom={12} />
+              <YandexMap
+                address="Новокузнецк"
+                markers={NK_SALONS.map((salon) => salon.coordinates)}
+                height={340}
+                zoom={12}
+              />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {NK_SALONS.map((salon, index) => (

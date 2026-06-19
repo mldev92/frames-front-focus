@@ -93,7 +93,7 @@ export function ProductCard({
           />
         )}
         {product.badges && product.badges.length > 0 && (
-          <div className="absolute top-14 left-3 z-10 flex flex-col gap-1">
+          <div className="absolute bottom-3 left-3 z-10 flex max-w-[calc(100%-56px)] flex-row flex-wrap gap-1 sm:top-14 sm:bottom-auto sm:max-w-none sm:flex-col">
             {product.badges.map((b) => (
               <span
                 key={b}
@@ -148,7 +148,7 @@ export function ProductCard({
             e.stopPropagation();
             toggleSaved(product.slug);
           }}
-          className="absolute top-3 left-3 z-10 flex items-center justify-center rounded-full"
+          className="absolute bottom-3 right-3 z-10 flex items-center justify-center rounded-full sm:top-3 sm:right-auto sm:bottom-auto sm:left-3"
           style={{
             width: 36,
             height: 36,

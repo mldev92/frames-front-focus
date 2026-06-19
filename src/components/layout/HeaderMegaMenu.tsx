@@ -194,6 +194,7 @@ const menuHref = (category: Parameters<typeof catalogHref>[0], params?: Record<s
 
 const frameHref = (category: FrameCategory, params?: Record<string, string>) => menuHref(category, params);
 const regionalMenuHref = (href: string, city: CityCode) => regionalSiteHref(href, city);
+const formatSphereLabel = (value: string) => (value === "0" ? value : value.replace(/\.00$/, ""));
 
 const panelShellClass =
   "overflow-hidden rounded-b-[28px] border border-[#e7e2db] bg-white shadow-[0_12px_30px_rgba(33,24,18,0.08),0_28px_80px_rgba(33,24,18,0.10)]";
@@ -1177,7 +1178,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                             item.label === "0" && "text-muted-foreground",
                           )}
                         >
-                          {item.label}
+                          {formatSphereLabel(item.label)}
                         </a>
                       ))}
                     </div>

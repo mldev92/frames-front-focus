@@ -19,6 +19,11 @@ export const CONTACT = {
 
 export type SalonCity = "spb" | "nk";
 
+export interface SalonCoordinates {
+  lat: number;
+  lon: number;
+}
+
 export interface VerifiedSalon {
   id: string;
   city: SalonCity;
@@ -32,6 +37,7 @@ export interface VerifiedSalon {
   imageSrc?: string;
   imageLabel: string;
   productionPath: string;
+  coordinates: SalonCoordinates;
 }
 
 export const SALONS: VerifiedSalon[] = [
@@ -48,6 +54,7 @@ export const SALONS: VerifiedSalon[] = [
     imageSrc: "/salon_kirochnaya.webp",
     imageLabel: "фото салона СПб",
     productionPath: "/contacts/stores/10867/",
+    coordinates: { lat: 59.94375939041, lon: 30.35913064418 },
   },
   {
     id: "toreza",
@@ -61,6 +68,7 @@ export const SALONS: VerifiedSalon[] = [
     imageSrc: "/salon_toreza.webp",
     imageLabel: "фото · ул. Тореза",
     productionPath: "/contacts/stores/10869/",
+    coordinates: { lat: 53.826182434721, lon: 87.16289414418 },
   },
   {
     id: "shahterov",
@@ -74,6 +82,7 @@ export const SALONS: VerifiedSalon[] = [
     imageSrc: "/salon_shahterov.webp",
     imageLabel: "фото · пр. Шахтеров",
     productionPath: "/contacts/stores/56293/",
+    coordinates: { lat: 53.780158650844, lon: 87.285206001948 },
   },
   {
     id: "bardina",
@@ -87,6 +96,7 @@ export const SALONS: VerifiedSalon[] = [
     imageSrc: "/salon_bardina.webp",
     imageLabel: "фото · пр. Бардина",
     productionPath: "/contacts/stores/10868/",
+    coordinates: { lat: 53.75635549037, lon: 87.136363280426 },
   },
   {
     id: "zapsibovtsev",
@@ -100,6 +110,7 @@ export const SALONS: VerifiedSalon[] = [
     imageSrc: "/salon_zabsibov.webp",
     imageLabel: "фото · пр. Запсибовцев",
     productionPath: "/contacts/stores/10870/",
+    coordinates: { lat: 53.897909897665, lon: 87.126793534393 },
   },
 ];
 

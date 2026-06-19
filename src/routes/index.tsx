@@ -312,95 +312,97 @@ function MainV2Page() {
             50%, 93% { opacity: 1; }
             100%     { opacity: 0; }
           }
+          .o100-hero-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: right center;
+            z-index: 0;
+            will-change: filter, transform, opacity;
+          }
+          .o100-hero-banner-a {
+            animation: _heroImgPulseV2 6s ease-in-out infinite, _bannerFadeA 14s ease-in-out infinite;
+          }
+          .o100-hero-banner-b {
+            animation: _heroImgPulseV2 6s ease-in-out infinite, _bannerFadeB 14s ease-in-out infinite;
+          }
+          .o100-hero-sun {
+            position: absolute;
+            z-index: 1;
+            top: 5%;
+            right: 5%;
+            width: 520px;
+            height: 520px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,225,170,0.95) 0%, rgba(255,195,130,0.55) 35%, rgba(255,170,110,0) 72%);
+            mix-blend-mode: screen;
+            filter: blur(48px);
+            pointer-events: none;
+            animation: _heroSunV2 7s ease-in-out infinite;
+          }
+          .o100-hero-wash {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, rgba(245,239,231,0.95) 0%, rgba(245,239,231,0.78) 30%, rgba(245,239,231,0.35) 55%, rgba(245,239,231,0) 75%);
+            background-size: 220% 100%;
+            z-index: 2;
+            animation: _heroLightV2 8s ease-in-out infinite;
+          }
+          .o100-hero-sheen {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 20%;
+            width: 45%;
+            z-index: 3;
+            background: linear-gradient(100deg, transparent 0%, rgba(255,240,210,0) 20%, rgba(255,240,210,0.55) 50%, rgba(255,240,210,0) 80%, transparent 100%);
+            pointer-events: none;
+            animation: _heroSheenV2 9s ease-in-out infinite;
+          }
+          @media (max-width: 767px) {
+            .o100-hero-banner {
+              animation: none !important;
+              filter: none !important;
+              transform: none !important;
+            }
+            .o100-hero-banner-b {
+              opacity: 0 !important;
+            }
+            .o100-hero-sun {
+              display: none !important;
+            }
+            .o100-hero-wash {
+              animation: none !important;
+              background: linear-gradient(90deg, rgba(245,239,231,0.94) 0%, rgba(245,239,231,0.82) 38%, rgba(245,239,231,0.42) 62%, rgba(245,239,231,0.08) 100%) !important;
+              background-size: 100% 100% !important;
+            }
+            .o100-hero-sheen {
+              display: none !important;
+            }
+          }
         `}</style>
 
         {/* Banner A — new_main_banner.png */}
         <img
           src="/new_main_banner.webp"
           alt=""
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "right center",
-            zIndex: 0,
-            animation:
-              "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeA 14s ease-in-out infinite",
-            willChange: "filter, transform, opacity",
-          }}
+          className="o100-hero-banner o100-hero-banner-a"
         />
         {/* Banner B — main_banner_3.png */}
         <img
           src="/main_banner_3.webp"
           alt=""
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-            objectPosition: "right center",
-            zIndex: 0,
-            animation:
-              "_heroImgPulseV2 6s ease-in-out infinite, _bannerFadeB 14s ease-in-out infinite",
-            willChange: "filter, transform, opacity",
-          }}
+          className="o100-hero-banner o100-hero-banner-b"
         />
         {/* Warm "sun" glow on the right — pulsing light source */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            zIndex: 1,
-            top: "5%",
-            right: "5%",
-            width: 520,
-            height: 520,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle, rgba(255,225,170,0.95) 0%, rgba(255,195,130,0.55) 35%, rgba(255,170,110,0) 72%)",
-            mixBlendMode: "screen",
-            filter: "blur(48px)",
-            pointerEvents: "none",
-            animation: "_heroSunV2 7s ease-in-out infinite",
-          }}
-        />
+        <div aria-hidden className="o100-hero-sun" />
         {/* Soft left-side wash so text stays legible (pulsing intensity, drifts laterally) */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background:
-              "linear-gradient(90deg, rgba(245,239,231,0.95) 0%, rgba(245,239,231,0.78) 30%, rgba(245,239,231,0.35) 55%, rgba(245,239,231,0) 75%)",
-            backgroundSize: "220% 100%",
-            zIndex: 2,
-            animation: "_heroLightV2 8s ease-in-out infinite",
-          }}
-        />
+        <div aria-hidden className="o100-hero-wash" />
         {/* Diagonal sheen — bright light sweep across visible photo area */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            top: 0,
-            bottom: 0,
-            left: "20%",
-            width: "45%",
-            zIndex: 3,
-            background:
-              "linear-gradient(100deg, transparent 0%, rgba(255,240,210,0) 20%, rgba(255,240,210,0.55) 50%, rgba(255,240,210,0) 80%, transparent 100%)",
-            pointerEvents: "none",
-            animation: "_heroSheenV2 9s ease-in-out infinite",
-          }}
-        />
+        <div aria-hidden className="o100-hero-sheen" />
 
         {/* Text content overlay */}
         <div
