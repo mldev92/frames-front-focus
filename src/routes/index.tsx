@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -274,11 +274,24 @@ const CAT_CELLS = [
 ];
 
 function MainV2Page() {
-  const { popularModels, contactLensProducts, lensPromo } = Route.useLoaderData();
+  const initialHomepageData = Route.useLoaderData();
+  const [{ popularModels, contactLensProducts, lensPromo }, setHomepageData] =
+    useState(initialHomepageData);
   const recent = articles.slice(0, 2);
   const [aptOpen, setAptOpen] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
   const city = useCityStore((state) => state.city);
+
+  useEffect(() => {
+    let active = true;
+    getHomepageData().then((data) => {
+      if (!active) return;
+      startTransition(() => setHomepageData(data));
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   return (
     <div>
