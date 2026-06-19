@@ -110,6 +110,22 @@ interface ProductsResponse {
   pages: number;
 }
 
+export interface HomepageLensPromo {
+  title: string;
+  description: string;
+  image: string | null;
+  href: string;
+  endsAt: string | null;
+  discountPercent: number | null;
+  discountLabel: string | null;
+}
+
+interface HomepageResponse {
+  popularModels: Product[];
+  contactLensProducts: Product[];
+  lensPromo: HomepageLensPromo | null;
+}
+
 export interface ProductQuery {
   page?: number;
   limit?: number;
@@ -145,6 +161,45 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
   } catch (e) {
     console.error("[bitrix] getProducts:", e);
     throw e;
+  }
+}
+
+/**
+ * Homepage payload: featured frames, featured contact lenses, and optional
+ * admin-managed promo copy for the lens promo block.
+ */
+export async function getHomepageData(): Promise<HomepageResponse> {
+  if (!BASE && ALLOW_FIXTURES) {
+    const [popularModels, contactLensProducts] = await Promise.all([
+      getProducts("opravy", { limit: 8 }),
+      getProducts("kontaktnye_linzy_", { limit: 4 }),
+    ]);
+    return {
+      popularModels: popularModels.slice(0, 8),
+      contactLensProducts: contactLensProducts.slice(0, 4),
+      lensPromo: null,
+    };
+  }
+  if (!BASE) throw new Error("VITE_BITRIX_API is required");
+
+  try {
+    const data = await fetchJson<HomepageResponse>("homepage.php");
+    return {
+      popularModels: cacheProducts(data.popularModels.map(normalizeProduct), "spb"),
+      contactLensProducts: cacheProducts(data.contactLensProducts.map(normalizeProduct), "spb"),
+      lensPromo: data.lensPromo,
+    };
+  } catch (error) {
+    console.error("[bitrix] getHomepageData:", error);
+    const [popularModels, contactLensProducts] = await Promise.all([
+      getProducts("opravy", { limit: 8 }),
+      getProducts("kontaktnye_linzy_", { limit: 4 }),
+    ]);
+    return {
+      popularModels: popularModels.slice(0, 8),
+      contactLensProducts: contactLensProducts.slice(0, 4),
+      lensPromo: null,
+    };
   }
 }
 

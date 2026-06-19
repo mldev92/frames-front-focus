@@ -24,7 +24,7 @@ import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
 import { CONTACT, PRIMARY_SALON } from "@/data/contact";
 import { useCityStore } from "@/lib/store/city";
-import { getProducts } from "@/lib/api/bitrix";
+import { getHomepageData, getProductGallery } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -48,14 +48,7 @@ export const Route = createFileRoute("/")({
     ],
   }),
   loader: async () => {
-    const [frames, contactLenses] = await Promise.all([
-      getProducts("opravy", { limit: 8 }),
-      getProducts("kontaktnye_linzy_", { limit: 8 }),
-    ]);
-    return {
-      hits: frames.slice(0, 8),
-      contactLensProducts: contactLenses.slice(0, 4),
-    };
+    return getHomepageData();
   },
   component: MainV2Page,
 });
@@ -218,6 +211,25 @@ const LENS_PROMO_PILL_BY_SLUG: Record<string, string> = {
   "air-optix-toric": "для астигматизма",
 };
 
+const DEFAULT_LENS_PROMO = {
+  title: "−10% на контактные линзы",
+  description: "",
+  href: catalogHref("kontaktnye-linzy"),
+  endsAt: null as string | null,
+  discountPercent: 10,
+  discountLabel: "−10%",
+};
+
+function formatPromoEyebrow(endsAt: string | null): string {
+  if (!endsAt) return "Акция";
+  const date = new Date(endsAt);
+  if (Number.isNaN(date.getTime())) return "Акция";
+  return `Акция · до ${new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "long",
+  }).format(date)}`;
+}
+
 // Asymmetric category grid cells. Layout (desktop):
 //   ┌────────────┬───────────────────────┐
 //   │            │  Солнцезащитные       │  (wide top-right)
@@ -262,7 +274,7 @@ const CAT_CELLS = [
 ];
 
 function MainV2Page() {
-  const { hits, contactLensProducts } = Route.useLoaderData();
+  const { popularModels, contactLensProducts, lensPromo } = Route.useLoaderData();
   const recent = articles.slice(0, 2);
   const [aptOpen, setAptOpen] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
@@ -770,7 +782,7 @@ function MainV2Page() {
           .group:hover .o100-podrobnee{color:var(--foreground)!important}
         `}</style>
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <MainV2HitsCarousel products={hits} />
+          <MainV2HitsCarousel products={popularModels} />
         </div>
       </section>
 
@@ -947,7 +959,7 @@ function MainV2Page() {
       {contactLensProducts.length > 0 && (
         <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
           <div className="mx-auto max-w-7xl px-4 lg:px-8">
-            <MainV2ContactLensCarousel products={contactLensProducts} />
+            <MainV2ContactLensCarousel products={contactLensProducts} promo={lensPromo} />
           </div>
         </section>
       )}
@@ -1445,7 +1457,11 @@ function MainV2ProductCard({ product }: { product: Product }) {
   const productRoute =
     city === "nvk" ? "/catalog_n/$category/$slug/" : "/catalog_s/$category/$slug/";
   const isSaved = saved.includes(product.slug);
-  const hasHoverImage = product.images.length > 1;
+  const primaryImage = product.images[0] ?? "/no-product-image.svg";
+  const [fetchedHoverImage, setFetchedHoverImage] = useState<string | undefined>();
+  const galleryRequested = useRef(false);
+  const hoverImage = product.images[1] ?? fetchedHoverImage;
+  const hasHoverImage = Boolean(hoverImage);
   const dots = product.colors?.slice(0, 4) ?? [];
   const extra = (product.colors?.length ?? 0) - dots.length;
   const showTryOn = product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
@@ -1460,6 +1476,20 @@ function MainV2ProductCard({ product }: { product: Product }) {
     product.brand && !product.name.toLowerCase().includes(product.brand.toLowerCase())
       ? `${product.brand} ${product.name}`
       : product.name;
+
+  const prepareHoverImage = () => {
+    if (hoverImage || galleryRequested.current) return;
+    galleryRequested.current = true;
+    void getProductGallery(product.slug, city, categoryToSegment[product.category]).then((images) => {
+      const candidate =
+        (images[1] && images[1] !== primaryImage ? images[1] : undefined) ??
+        images.find((image) => image && image !== primaryImage);
+      if (!candidate || typeof Image === "undefined") return;
+      const preload = new Image();
+      preload.onload = () => setFetchedHoverImage(candidate);
+      preload.src = candidate;
+    });
+  };
 
   return (
     <div
@@ -1476,20 +1506,24 @@ function MainV2ProductCard({ product }: { product: Product }) {
           params={productRouteParams}
           className="relative block h-full w-full"
           aria-label={displayName}
+          onMouseEnter={prepareHoverImage}
+          onFocus={prepareHoverImage}
         >
           <img
-            src={product.images[0]}
+            src={primaryImage}
             alt={displayName}
             loading="lazy"
+            referrerPolicy="no-referrer"
             className={`absolute inset-0 h-full w-full object-contain p-7 transition-opacity duration-500 ${
               hasHoverImage ? "opacity-100 group-hover/card:opacity-0" : "opacity-100"
             }`}
           />
           {hasHoverImage && (
             <img
-              src={product.images[1]}
+              src={hoverImage}
               alt={displayName}
               loading="lazy"
+              referrerPolicy="no-referrer"
               className="absolute inset-0 h-full w-full object-contain p-7 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500"
             />
           )}
@@ -1673,8 +1707,23 @@ function MainV2HitsCarousel({ products }: { products: Product[] }) {
   );
 }
 
-function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
+function MainV2ContactLensCarousel({
+  products,
+  promo,
+}: {
+  products: Product[];
+  promo: {
+    title: string;
+    description: string;
+    href: string;
+    endsAt: string | null;
+    discountPercent: number | null;
+    discountLabel: string | null;
+  } | null;
+}) {
   const scroller = useRef<HTMLDivElement>(null);
+  const lensPromo = promo ?? DEFAULT_LENS_PROMO;
+  const discountPercent = lensPromo.discountPercent ?? DEFAULT_LENS_PROMO.discountPercent;
   const scrollBy = (dir: 1 | -1) => {
     const el = scroller.current;
     if (!el) return;
@@ -1726,7 +1775,7 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
             className="text-[11px] uppercase tracking-[0.22em] mb-3"
             style={{ color: "var(--brand)" }}
           >
-            Акция · сентябрь
+            {formatPromoEyebrow(lensPromo.endsAt)}
           </div>
           <h2
             className="font-serif text-foreground"
@@ -1736,21 +1785,20 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
               letterSpacing: "-0.01em",
             }}
           >
-            <span
-              style={{
-                color: "var(--brand)",
-                fontStyle: "italic",
-                fontWeight: 500,
-              }}
-            >
-              −10%
-            </span>{" "}
-            на&nbsp;контактные линзы
+            {lensPromo.title}
           </h2>
+          {lensPromo.description && (
+            <p
+              className="mt-3 max-w-[36rem] text-sm text-muted-foreground"
+              style={{ lineHeight: 1.55 }}
+            >
+              {lensPromo.description}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-4">
           <a
-            href={catalogHref("kontaktnye-linzy")}
+            href={lensPromo.href}
             className="o100-lens-all-link hidden sm:inline-flex items-center gap-1.5 text-sm font-medium"
             style={{ color: "var(--brand)" }}
           >
@@ -1798,14 +1846,18 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
               key={product.slug}
               className="snap-start shrink-0 w-[72%] first:ml-2 last:mr-2 sm:w-[44%] md:w-[31%] lg:w-[23.5%] lg:first:ml-6 lg:last:mr-6"
             >
-              <MainV2ContactLensCard product={product} />
+              <MainV2ContactLensCard
+                product={product}
+                discountPercent={discountPercent}
+                discountLabel={lensPromo.discountLabel ?? DEFAULT_LENS_PROMO.discountLabel}
+              />
             </div>
           ))}
         </div>
       </Reveal>
       <div className="mt-6 sm:hidden">
         <a
-          href={catalogHref("kontaktnye-linzy")}
+          href={lensPromo.href}
           className="inline-flex items-center gap-1.5 text-sm font-medium"
           style={{ color: "var(--brand)" }}
         >
@@ -1816,7 +1868,15 @@ function MainV2ContactLensCarousel({ products }: { products: Product[] }) {
   );
 }
 
-function MainV2ContactLensCard({ product }: { product: Product }) {
+function MainV2ContactLensCard({
+  product,
+  discountPercent,
+  discountLabel,
+}: {
+  product: Product;
+  discountPercent: number;
+  discountLabel: string;
+}) {
   const { toggleSaved, saved } = useCart();
   const city = useCityStore((state) => state.city);
   const productRoute =
@@ -1828,7 +1888,8 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
   };
   const packSize = product.specs.find((spec) => spec.label === "Упаковка")?.value;
   const lensMeta = [product.wearMode, packSize].filter(Boolean).join(" · ");
-  const isGeneratedPlaceholder = product.images[0]?.includes("picsum.photos");
+  const primaryImage = product.images[0] ?? "/no-product-image.svg";
+  const isGeneratedPlaceholder = primaryImage.includes("picsum.photos");
   const displayName =
     product.brand && !product.name.toLowerCase().includes(product.brand.toLowerCase())
       ? `${product.brand} ${product.name}`
@@ -1840,8 +1901,10 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
         ? "Для астигматизма"
         : (product.wearMode ?? "Контактные линзы");
   const pillLabel = LENS_PROMO_PILL_BY_SLUG[product.slug] ?? fallbackPill;
-  const strike = product.oldPrice ?? product.price;
-  const discounted = Math.round(strike * 0.9);
+  const safeDiscountPercent = Math.min(95, Math.max(0, discountPercent));
+  const strike =
+    product.oldPrice && product.oldPrice > product.price ? product.oldPrice : product.price;
+  const discounted = Math.round(strike * (1 - safeDiscountPercent / 100));
 
   return (
     <div
@@ -1914,9 +1977,10 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
             </div>
           ) : (
             <img
-              src={product.images[0]}
+              src={primaryImage}
               alt={displayName}
               loading="lazy"
+              referrerPolicy="no-referrer"
               className="h-full w-full object-contain p-7 transition-transform duration-500 group-hover/card:scale-[1.03]"
             />
           )}
@@ -1982,8 +2046,8 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
               borderRadius: 4,
               letterSpacing: "0.04em",
             }}
-          >
-            −10%
+            >
+            {discountLabel}
           </span>
           <span
             style={{
