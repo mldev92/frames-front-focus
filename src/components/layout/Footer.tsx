@@ -32,6 +32,7 @@ const COLS = [
     title: "Компания",
     links: [
       ["О нас", "/o-nas"],
+      ["Почему мы?", "/o-nas/#pochemu-my"],
       ["Салоны", "/contacts/"],
       ["Блог", "/blog/"],
       ["Покрытия очковых линз", "/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/"],

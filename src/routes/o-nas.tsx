@@ -55,6 +55,41 @@ function AboutPage() {
         ))}
       </section>
 
+      <section
+        id="pochemu-my"
+        className="mx-auto max-w-5xl px-4 lg:px-8 py-8 lg:py-12"
+        style={{ scrollMarginTop: "7rem" }}
+      >
+        <div className="rounded-[28px] border border-border bg-surface p-5 sm:p-8 lg:p-10 shadow-sm">
+          <div className="mx-auto max-w-3xl text-center">
+            <div className="text-xs uppercase tracking-[0.2em] text-brand mb-4">Почему мы</div>
+            <h2 className="font-serif text-3xl lg:text-4xl leading-tight">
+              Посмотрите, почему нам доверяют заботу о зрении.
+            </h2>
+            <p className="mt-4 text-sm sm:text-base text-muted-foreground leading-7">
+              Это короткое видео помогает лучше почувствовать наш подход: внимательная
+              консультация, качественные линзы и оправы, а также сервис, к которому хочется
+              возвращаться.
+            </p>
+          </div>
+
+          <div className="mt-8 overflow-hidden rounded-3xl border border-border bg-background shadow-sm">
+            <div className="aspect-video w-full">
+              <iframe
+                src="https://vk.com/video_ext.php?oid=-196182273&id=456239049&hash=41a1490142b4e646"
+                title="Почему мы — видео ОПТИКА 100%"
+                className="h-full w-full"
+                frameBorder="0"
+                allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="strict-origin-when-cross-origin"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-3xl px-4 lg:px-8 py-16 text-center">
         <h2 className="font-serif text-3xl">Наши ценности</h2>
         <div className="mt-8 grid sm:grid-cols-3 gap-6 text-left">

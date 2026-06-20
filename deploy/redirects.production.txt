@@ -8,7 +8,8 @@ Redirect 301 /about/ /o-nas/
 Redirect 301 /blog/linzy-dlya-ochkov/linzy-dlya-ochkov-stellest/ /stellest-katalog-s-linzami/
 Redirect 301 /blog/linzy-dlya-ochkov/miopiya-prichiny-oslozhneniya-korrektsiya/ /blog/linzy-dlya-ochkov/
 Redirect 301 /blog/pochemyMi_111.php/ /blog/
-Redirect 301 /blog/pochemyMi.php/ /blog/
+Redirect 301 /blog/pochemyMi.php /o-nas/#pochemu-my
+Redirect 301 /blog/pochemyMi.php/ /o-nas/#pochemu-my
 Redirect 301 /catalog_s/kontaktnye_linzy/ /catalog_s/kontaktnye_linzy_/
 Redirect 301 /catalog_s/ochki/ /catalog_s/opravy/
 Redirect 301 /catalog/ /catalog_s/opravy/
