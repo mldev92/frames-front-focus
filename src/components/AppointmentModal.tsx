@@ -227,12 +227,12 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className="p-0 gap-0 overflow-hidden border-0 rounded-[2rem] shadow-xl bg-background"
+        className="max-h-[calc(100vh-32px)] p-0 gap-0 overflow-hidden border-0 rounded-[2rem] shadow-xl bg-background"
         style={{ maxWidth: "920px", width: "calc(100vw - 32px)" }}
       >
         <DialogTitle className="sr-only">Онлайн-запись к врачу</DialogTitle>
 
-        <div className="flex flex-col md:flex-row min-h-[620px]">
+        <div className="flex max-h-[calc(100vh-32px)] min-h-[620px] flex-col md:flex-row">
           <div className="relative hidden md:flex flex-col justify-between overflow-hidden w-[320px] min-w-[320px] p-8 bg-ink">
             {STEPS.map((item, index) => (
               <img
@@ -289,7 +289,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col bg-cream min-w-0 relative">
+          <div className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-cream">
             <div className="md:hidden px-6 pt-6 pb-2">
               <div className="text-[10px] uppercase tracking-[0.18em] text-foreground/45 font-semibold">
                 Шаг {step} из {STEPS.length}
@@ -297,7 +297,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
               <div className="font-serif text-lg mt-1">{STEPS[step - 1].label}</div>
             </div>
 
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 min-h-0 overflow-hidden">
               {step === 1 && (
                 <div key="step-1" className={cn("h-full px-6 py-8 md:p-10 flex flex-col", slideIn)}>
                   <div className="flex-1 flex flex-col justify-center gap-10 max-w-[440px] w-full mx-auto">
@@ -374,93 +374,95 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
               )}
 
               {step === 2 && (
-                <div key="step-2" className={cn("h-full px-6 py-8 md:p-10 flex flex-col", slideIn)}>
-                  <div className="flex-1 flex flex-col gap-6 max-w-[560px] w-full mx-auto">
-                    <div className="space-y-3">
-                      <FieldLabel>Выберите услугу</FieldLabel>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {SERVICES.map((item) => (
-                          <ChoiceCard
-                            key={item.id}
-                            selected={service === item.id}
-                            onClick={() => setService(item.id)}
-                            eyebrow={item.sub}
-                            title={item.label}
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between gap-3">
-                        <FieldLabel>Свободное время</FieldLabel>
-                        <span className="text-[11px] text-foreground/45">Слоты загружаются из ANZ</span>
-                      </div>
-
-                      {slotsLoading && (
-                        <div className="rounded-2xl border border-border bg-background p-5 text-sm text-foreground/60">
-                          Загружаем доступное время...
-                        </div>
-                      )}
-
-                      {!slotsLoading && slotsError && (
-                        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-5 text-sm text-destructive">
-                          {slotsError}
-                        </div>
-                      )}
-
-                      {!slotsLoading && !slotsError && slots.length === 0 && (
-                        <div className="rounded-2xl border border-border bg-background p-5 text-sm text-foreground/60">
-                          Для выбранного филиала и типа записи пока нет свободных слотов. Попробуйте другой филиал или позвоните нам.
-                        </div>
-                      )}
-
-                      {!slotsLoading && !slotsError && slots.length > 0 && (
-                        <div className="space-y-4">
-                          {groupedSlots.map((group) => (
-                            <div key={group.dateKey} className="rounded-[1.5rem] border border-border bg-background p-4">
-                              <div className="flex items-center gap-2 text-[12px] font-semibold text-foreground/65 mb-3">
-                                <CalendarDays className="h-4 w-4 text-brand" />
-                                <span>{group.label}</span>
-                              </div>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {group.slots.map((slot) => {
-                                  const selected = slot.id === selectedSlotId;
-                                  return (
-                                    <button
-                                      key={slot.id}
-                                      type="button"
-                                      onClick={() => setSelectedSlotId(slot.id)}
-                                      className={cn(
-                                        "rounded-2xl border px-4 py-3 text-left transition-all",
-                                        selected
-                                          ? "border-brand bg-brand/8 shadow-sm"
-                                          : "border-border hover:border-brand/35 hover:bg-muted/50",
-                                      )}
-                                    >
-                                      <div className="flex items-center justify-between gap-3">
-                                        <div className="flex items-center gap-2 text-[15px] font-semibold text-foreground">
-                                          <Clock3 className="h-4 w-4 text-brand" />
-                                          <span>{formatSlotTime(slot.timeBegin)}</span>
-                                        </div>
-                                        {selected && <Check className="h-4 w-4 text-brand shrink-0" />}
-                                      </div>
-                                      <div className="mt-1 text-[12px] text-foreground/55">{slot.doctorName}</div>
-                                      <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-foreground/35">
-                                        {slot.servicePrice !== null ? formatPrice(slot.servicePrice) : "Запись"}
-                                      </div>
-                                    </button>
-                                  );
-                                })}
-                              </div>
-                            </div>
+                <div key="step-2" className={cn("flex h-full min-h-0 flex-col px-6 py-8 md:p-10", slideIn)}>
+                  <div className="flex-1 min-h-0 overflow-y-auto pr-1">
+                    <div className="mx-auto flex w-full max-w-[560px] flex-col gap-6 pb-2">
+                      <div className="space-y-3">
+                        <FieldLabel>Выберите услугу</FieldLabel>
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          {SERVICES.map((item) => (
+                            <ChoiceCard
+                              key={item.id}
+                              selected={service === item.id}
+                              onClick={() => setService(item.id)}
+                              eyebrow={item.sub}
+                              title={item.label}
+                            />
                           ))}
                         </div>
-                      )}
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <FieldLabel>Свободное время</FieldLabel>
+                          <span className="text-[11px] text-foreground/45">Слоты загружаются из ANZ</span>
+                        </div>
+
+                        {slotsLoading && (
+                          <div className="rounded-2xl border border-border bg-background p-5 text-sm text-foreground/60">
+                            Загружаем доступное время...
+                          </div>
+                        )}
+
+                        {!slotsLoading && slotsError && (
+                          <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-5 text-sm text-destructive">
+                            {slotsError}
+                          </div>
+                        )}
+
+                        {!slotsLoading && !slotsError && slots.length === 0 && (
+                          <div className="rounded-2xl border border-border bg-background p-5 text-sm text-foreground/60">
+                            Для выбранного филиала и типа записи пока нет свободных слотов. Попробуйте другой филиал или позвоните нам.
+                          </div>
+                        )}
+
+                        {!slotsLoading && !slotsError && slots.length > 0 && (
+                          <div className="space-y-4">
+                            {groupedSlots.map((group) => (
+                              <div key={group.dateKey} className="rounded-[1.5rem] border border-border bg-background p-4">
+                                <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold text-foreground/65">
+                                  <CalendarDays className="h-4 w-4 text-brand" />
+                                  <span>{group.label}</span>
+                                </div>
+                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                  {group.slots.map((slot) => {
+                                    const selected = slot.id === selectedSlotId;
+                                    return (
+                                      <button
+                                        key={slot.id}
+                                        type="button"
+                                        onClick={() => setSelectedSlotId(slot.id)}
+                                        className={cn(
+                                          "rounded-2xl border px-4 py-3 text-left transition-all",
+                                          selected
+                                            ? "border-brand bg-brand/8 shadow-sm"
+                                            : "border-border hover:border-brand/35 hover:bg-muted/50",
+                                        )}
+                                      >
+                                        <div className="flex items-center justify-between gap-3">
+                                          <div className="flex items-center gap-2 text-[15px] font-semibold text-foreground">
+                                            <Clock3 className="h-4 w-4 text-brand" />
+                                            <span>{formatSlotTime(slot.timeBegin)}</span>
+                                          </div>
+                                          {selected && <Check className="h-4 w-4 shrink-0 text-brand" />}
+                                        </div>
+                                        <div className="mt-1 text-[12px] text-foreground/55">{slot.doctorName}</div>
+                                        <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-foreground/35">
+                                          {slot.servicePrice !== null ? formatPrice(slot.servicePrice) : "Запись"}
+                                        </div>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
-                  <Footer>
+                  <Footer className="border-t border-black/5 bg-cream pt-4">
                     <SecondaryButton onClick={() => go(1)}>
                       <ArrowLeft className="h-4 w-4" /> Назад
                     </SecondaryButton>
@@ -755,11 +757,11 @@ function ChoiceCard({
   );
 }
 
-function Footer({ children }: { children: ReactNode }) {
+function Footer({ children, className }: { children: ReactNode; className?: string }) {
   const count = Array.isArray(children) ? children.length : 1;
   return (
     <div
-      className="mt-8 grid gap-3"
+      className={cn("mt-8 grid gap-3", className)}
       style={{ gridTemplateColumns: count === 1 ? "1fr" : "auto 1fr" }}
     >
       {children}
