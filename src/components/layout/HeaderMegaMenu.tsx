@@ -438,7 +438,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Кошачий глаз",
         count: "44",
         href: frameHref(category, { shape: "Кошачий глаз" }),
-        icon: frameShapeAssetIcon("/cat_eye.webp", "Кошачий глаз", 1.3),
+        icon: frameShapeAssetIcon("/cat_eye.webp", "Кошачий глаз", 1.1),
       },
       {
         label: "Геометрия",
