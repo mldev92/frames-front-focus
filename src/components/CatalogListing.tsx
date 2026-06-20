@@ -272,7 +272,7 @@ const SHAPE_DEFS: ShapeDef[] = [
   { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval2.png" },
   { key: "Авиаторы", label: "Авиаторы", icon: "aviator", img: "/aviator.webp" },
   { key: "Кошачий глаз", label: "Кошачий глаз", icon: "cat", img: "/cat-eye.webp" },
-  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric2.png" },
+  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric22.png", imgScale: 1.3 },
   { key: "Броулайнеры", label: "Броулайнеры", icon: "browline" },
   { key: "Вэйфэрер", label: "Вэйфэрер", icon: "wayfarer" },
   { key: "Большие", label: "Большие", icon: "big" },
@@ -313,7 +313,8 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
   },
   { key: "Авиатор", label: "Авиатор", icon: "aviator", img: "/aviator.webp",
     matches: ["Авиатор", "Авиаторы", "Aviator"] },
-  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric2.png",
+  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric22.png",
+    imgScale: 1.3,
     matches: ["Геометрические", "Гексагональные", "Многоугольник"] },
   {
     key: "Маска",
@@ -335,7 +336,8 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     key: "Бабочка",
     label: "Бабочка",
     icon: "butterfly",
-    img: "/buterfly_shape2.png",
+    img: "/buterfly_shape22.png",
+    imgScale: 1.3,
     matches: ["Бабочка", "Кошачий глаз"],
   },
   {

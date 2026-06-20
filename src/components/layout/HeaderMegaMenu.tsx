@@ -432,13 +432,13 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Бабочка",
         count: "52",
         href: frameHref(category, { shape: "Бабочка" }),
-        icon: frameShapeAssetIcon("/buterfly_shape2.png", "Бабочка"),
+        icon: frameShapeAssetIcon("/buterfly_shape22.png", "Бабочка", 1.3),
       },
       {
         label: "Геометрия",
         count: "48",
         href: frameHref(category, { shape: "Геометрические" }),
-        icon: frameShapeAssetIcon("/Geometric2.png", "Геометрические"),
+        icon: frameShapeAssetIcon("/Geometric22.png", "Геометрические", 1.3),
       },
       {
         label: "Маска",
