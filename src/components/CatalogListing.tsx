@@ -266,13 +266,13 @@ type ShapeDef = {
 };
 
 const SHAPE_DEFS: ShapeDef[] = [
-  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp" },
+  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp", imgScale: 1.15 },
   { key: "Квадратные", label: "Квадратные", icon: "square", img: "/square.webp" },
   { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp" },
-  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval2.webp" },
+  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval2.webp", imgScale: 1.15 },
   { key: "Авиаторы", label: "Авиаторы", icon: "aviator", img: "/aviator.webp" },
   { key: "Кошачий глаз", label: "Кошачий глаз", icon: "cat", img: "/cat_eye.webp" },
-  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric22.webp", imgScale: 1.3 },
+  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric22.webp", imgScale: 1.5 },
   { key: "Броулайнеры", label: "Броулайнеры", icon: "browline" },
   { key: "Вэйфэрер", label: "Вэйфэрер", icon: "wayfarer" },
   { key: "Большие", label: "Большие", icon: "big" },
@@ -287,7 +287,7 @@ const SHAPE_DEFS: ShapeDef[] = [
 // for this shape — verified against the live API. Without them the dropdown
 // label would filter 0 products even though the section is full.
 const FRAME_SHAPE_DEFS: ShapeDef[] = [
-  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp",
+  { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp", imgScale: 1.15,
     matches: ["Прямоугольные", "Классические"] },
   { key: "Квадратные", label: "Квадратные", icon: "square", img: "/square.webp",
     matches: ["Квадратные", "Квадрат"] },
@@ -296,25 +296,25 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     label: "Трапеция",
     icon: "trapezoid",
     img: "/trapec_shape.webp",
-    imgScale: 1.3,
+    imgScale: 1.5,
     matches: ["Трапеция", "Вэйфэрер"],
   },
   { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp",
     matches: ["Круглые", "Круглая"] },
-  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval2.webp",
+  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval2.webp", imgScale: 1.15,
     matches: ["Овальные", "Овал", "Панто"] },
   {
     key: "Клабмастер",
     label: "Клабмастер",
     icon: "browline",
     img: "/clubman_shape.webp",
-    imgScale: 1.3,
+    imgScale: 1.5,
     matches: ["Клабмастер", "Clubmaster", "Броулайн", "Броулайнеры"],
   },
   { key: "Авиатор", label: "Авиатор", icon: "aviator", img: "/aviator.webp",
     matches: ["Авиатор", "Авиаторы", "Aviator"] },
   { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric22.webp",
-    imgScale: 1.3,
+    imgScale: 1.5,
     matches: ["Геометрические", "Гексагональные", "Многоугольник"] },
   {
     key: "Маска",
