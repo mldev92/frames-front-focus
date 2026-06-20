@@ -127,9 +127,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
         if (cancelled) return;
         setSlots(nextSlots);
       })
-      .catch(() => {
+      .catch((err: unknown) => {
         if (cancelled) return;
-        setSlotsError("Не удалось загрузить свободное время. Попробуйте ещё раз или позвоните в салон.");
+        setSlotsError(getUserFacingError(err, "Не удалось загрузить свободное время. Попробуйте ещё раз или позвоните в салон."));
       })
       .finally(() => {
         if (!cancelled) {
@@ -212,8 +212,8 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       });
       setSent(true);
       setTimeout(() => handleClose(false), 2800);
-    } catch (err) {
-      toast.error("Не удалось оформить запись. Попробуйте ещё раз или позвоните нам напрямую.");
+    } catch (err: unknown) {
+      toast.error(getUserFacingError(err, "Не удалось оформить запись. Попробуйте ещё раз или позвоните нам напрямую."));
     } finally {
       setSubmitting(false);
     }
@@ -644,6 +644,17 @@ function formatSlotTime(isoDate: string): string {
 function formatPrice(value: number): string {
   if (value <= 0) return "Бесплатно";
   return `${new Intl.NumberFormat("ru-RU").format(value)} ₽`;
+}
+
+function getUserFacingError(error: unknown, fallback: string): string {
+  if (error instanceof Error) {
+    const message = error.message.trim();
+    if (message) {
+      return message;
+    }
+  }
+
+  return fallback;
 }
 
 function FieldLabel({ children, htmlFor }: { children: ReactNode; htmlFor?: string }) {
