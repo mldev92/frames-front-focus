@@ -88,6 +88,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsError, setSlotsError] = useState("");
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
+  const [selectedDateKey, setSelectedDateKey] = useState("");
   const [selectedSlotId, setSelectedSlotId] = useState("");
 
   const [lastName, setLastName] = useState("");
@@ -100,13 +101,31 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const [submitting, setSubmitting] = useState(false);
 
   const selectedSalon = APPOINTMENT_SALONS.find((item) => item.id === salonId) ?? APPOINTMENT_SALONS[0];
-  const selectedSlot = slots.find((slot) => slot.id === selectedSlotId) ?? null;
   const groupedSlots = groupSlotsByDay(slots);
+  const selectedGroup =
+    groupedSlots.find((group) => group.dateKey === selectedDateKey) ??
+    groupedSlots[0] ??
+    null;
+  const selectedSlot = slots.find((slot) => slot.id === selectedSlotId) ?? null;
   const birthDateMax = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
+    setSelectedDateKey("");
     setSelectedSlotId("");
   }, [salonId, ageType, service]);
+
+  useEffect(() => {
+    if (groupedSlots.length === 0) {
+      setSelectedDateKey("");
+      return;
+    }
+
+    setSelectedDateKey((current) =>
+      current && groupedSlots.some((group) => group.dateKey === current)
+        ? current
+        : groupedSlots[0].dateKey,
+    );
+  }, [groupedSlots]);
 
   useEffect(() => {
     if (!open || step !== 2) {
@@ -152,6 +171,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     setSlotsLoading(false);
     setSlotsError("");
     setSlots([]);
+    setSelectedDateKey("");
     setSelectedSlotId("");
     setLastName("");
     setFirstName("");
@@ -418,14 +438,50 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
 
                         {!slotsLoading && !slotsError && slots.length > 0 && (
                           <div className="space-y-4">
-                            {groupedSlots.map((group) => (
-                              <div key={group.dateKey} className="rounded-[1.5rem] border border-border bg-background p-4">
+                            {groupedSlots.length > 1 && (
+                              <div className="space-y-3">
+                                <FieldLabel>Выберите день</FieldLabel>
+                                <div className="-mx-1 overflow-x-auto px-1 pb-1">
+                                  <div className="flex min-w-max gap-2">
+                                    {groupedSlots.map((group) => {
+                                      const selected = group.dateKey === selectedGroup?.dateKey;
+                                      return (
+                                        <button
+                                          key={group.dateKey}
+                                          type="button"
+                                          onClick={() => {
+                                            setSelectedDateKey(group.dateKey);
+                                            setSelectedSlotId("");
+                                          }}
+                                          className={cn(
+                                            "flex min-w-[124px] flex-col rounded-2xl border px-4 py-3 text-left transition-all",
+                                            selected
+                                              ? "border-brand bg-brand/8 shadow-sm"
+                                              : "border-border bg-background hover:border-brand/35 hover:bg-muted/50",
+                                          )}
+                                        >
+                                          <span className="text-[13px] font-semibold text-foreground">
+                                            {formatSlotDayShort(group.slots[0].timeBegin)}
+                                          </span>
+                                          <span className="mt-1 text-[11px] text-foreground/45">
+                                            {group.slots.length} {pluralizeSlots(group.slots.length)}
+                                          </span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
+                            {selectedGroup && (
+                              <div className="rounded-[1.5rem] border border-border bg-background p-4">
                                 <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold text-foreground/65">
                                   <CalendarDays className="h-4 w-4 text-brand" />
-                                  <span>{group.label}</span>
+                                  <span>{selectedGroup.label}</span>
                                 </div>
                                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                  {group.slots.map((slot) => {
+                                  {selectedGroup.slots.map((slot) => {
                                     const selected = slot.id === selectedSlotId;
                                     return (
                                       <button
@@ -455,7 +511,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                                   })}
                                 </div>
                               </div>
-                            ))}
+                            )}
                           </div>
                         )}
                       </div>
@@ -643,9 +699,25 @@ function formatSlotTime(isoDate: string): string {
   }).format(new Date(isoDate));
 }
 
+function formatSlotDayShort(isoDate: string): string {
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "numeric",
+    month: "short",
+    weekday: "short",
+  }).format(new Date(isoDate));
+}
+
 function formatPrice(value: number): string {
   if (value <= 0) return "Бесплатно";
   return `${new Intl.NumberFormat("ru-RU").format(value)} ₽`;
+}
+
+function pluralizeSlots(count: number): string {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod10 === 1 && mod100 !== 11) return "слот";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "слота";
+  return "слотов";
 }
 
 function getUserFacingError(error: unknown, fallback: string): string {
