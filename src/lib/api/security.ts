@@ -7,6 +7,13 @@ export function apiUrl(path: string): string {
   return `${BASE}/api/store/${path}`;
 }
 
+export function telemetryApiUrl(path: string): string {
+  if (typeof window !== "undefined") {
+    return `${window.location.origin}/api/store/${path}`;
+  }
+  return apiUrl(path);
+}
+
 function reportSlowApi(input: RequestInfo | URL, elapsedMs: number, status?: number) {
   if (typeof window === "undefined" || elapsedMs < SLOW_API_MS) return;
   const payload = JSON.stringify({
@@ -16,10 +23,10 @@ function reportSlowApi(input: RequestInfo | URL, elapsedMs: number, status?: num
     release: document.querySelector<HTMLMetaElement>('meta[name="release"]')?.content ?? "",
   });
   if (navigator.sendBeacon) {
-    navigator.sendBeacon(apiUrl("client_error.php"), new Blob([payload], { type: "application/json" }));
+    navigator.sendBeacon(telemetryApiUrl("client_error.php"), new Blob([payload], { type: "application/json" }));
     return;
   }
-  void fetch(apiUrl("client_error.php"), {
+  void fetch(telemetryApiUrl("client_error.php"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: payload,

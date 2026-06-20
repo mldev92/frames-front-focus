@@ -1,4 +1,4 @@
-import { apiUrl } from "@/lib/api/security";
+import { telemetryApiUrl } from "@/lib/api/security";
 
 let installed = false;
 
@@ -10,10 +10,10 @@ function report(message: string, stack?: string) {
     release: document.querySelector<HTMLMetaElement>('meta[name="release"]')?.content ?? "",
   });
   if (navigator.sendBeacon) {
-    navigator.sendBeacon(apiUrl("client_error.php"), new Blob([payload], { type: "application/json" }));
+    navigator.sendBeacon(telemetryApiUrl("client_error.php"), new Blob([payload], { type: "application/json" }));
     return;
   }
-  void fetch(apiUrl("client_error.php"), {
+  void fetch(telemetryApiUrl("client_error.php"), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: payload,
