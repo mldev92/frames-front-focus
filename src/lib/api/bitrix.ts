@@ -452,9 +452,46 @@ export interface AppointmentData {
   dob?: string;
   salon: string;
   service: string;
-  date?: string;
-  time?: string;
   comment?: string;
+  clinicUid?: string;
+  specialty?: string;
+  specialtyUid?: string;
+  serviceUid?: string;
+  serviceDuration?: number;
+  doctorName?: string;
+  refUid?: string;
+  orderDate?: string;
+  timeBegin?: string;
+  timeEnd?: string;
+}
+
+export interface AppointmentSlot {
+  id: string;
+  clinicUid: string;
+  clinicName: string;
+  specialty: string;
+  specialtyUid: string;
+  serviceCode: "glasses" | "contacts";
+  serviceUid: string;
+  serviceName: string;
+  serviceDuration: number;
+  servicePrice: number | null;
+  doctorName: string;
+  refUid: string;
+  orderDate: string;
+  timeBegin: string;
+  timeEnd: string;
+}
+
+export interface AppointmentSlotsRequest {
+  clinicUid: string;
+  ageType: "adult" | "child";
+  serviceCode: "glasses" | "contacts";
+}
+
+export interface AppointmentSlotsResponse {
+  status: "ok";
+  slots: AppointmentSlot[];
 }
 
 async function postJson<T>(path: string, body: unknown): Promise<T> {
@@ -467,6 +504,13 @@ export async function submitCallback(data: CallbackData): Promise<void> {
 
 export async function submitAppointment(data: AppointmentData): Promise<void> {
   await postJson("appointment.php", data);
+}
+
+export async function getAppointmentSlots(
+  input: AppointmentSlotsRequest,
+): Promise<AppointmentSlot[]> {
+  const response = await postJson<AppointmentSlotsResponse>("appointment_slots.php", input);
+  return response.slots;
 }
 
 /** Name/article substring search. */
