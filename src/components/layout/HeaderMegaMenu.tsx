@@ -456,7 +456,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Спорт",
         count: "29",
         href: frameHref(category, { shape: "Спорт" }),
-        icon: frameShapeAssetIcon("/sport_shape.webp", "Спорт", 1.3),
+        icon: frameShapeAssetIcon("/sport_shape.webp", "Спорт", 1.17),
       },
       {
         label: "Трапеция",
