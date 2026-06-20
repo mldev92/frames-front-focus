@@ -408,7 +408,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Овальные",
         count: "142",
         href: frameHref(category, { shape: "Овальные" }),
-        icon: frameShapeAssetIcon("/Anselm - Oval2.png", "Овальные"),
+        icon: frameShapeAssetIcon("/Anselm - Oval2.webp", "Овальные"),
       },
       {
         label: "Круглые",
@@ -432,13 +432,19 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Бабочка",
         count: "52",
         href: frameHref(category, { shape: "Бабочка" }),
-        icon: frameShapeAssetIcon("/buterfly_shape22.png", "Бабочка", 1.3),
+        icon: frameShapeAssetIcon("/buterfly_shape22.webp", "Бабочка", 1.3),
+      },
+      {
+        label: "Кошачий глаз",
+        count: "44",
+        href: frameHref(category, { shape: "Кошачий глаз" }),
+        icon: frameShapeAssetIcon("/cat_eye.webp", "Кошачий глаз", 1.3),
       },
       {
         label: "Геометрия",
         count: "48",
         href: frameHref(category, { shape: "Геометрические" }),
-        icon: frameShapeAssetIcon("/Geometric22.png", "Геометрические", 1.3),
+        icon: frameShapeAssetIcon("/Geometric22.webp", "Геометрические", 1.3),
       },
       {
         label: "Маска",
@@ -462,7 +468,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Лектор",
         count: "18",
         href: frameHref(category, { shape: "Лектор" }),
-        icon: frameShapeAssetIcon("/lector_shape2.png", "Лектор"),
+        icon: frameShapeAssetIcon("/lector_shape2.webp", "Лектор"),
       },
     ],
     demographics: [
@@ -920,7 +926,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
 
           <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1.38fr_1fr_1fr_0.92fr]">
             <section>
-              {sectionHeader("Форма", "12 форм →")}
+              {sectionHeader("Форма", "13 форм →")}
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {menu.shapes.map((item) => (
                   <a
