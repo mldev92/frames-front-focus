@@ -4,7 +4,10 @@ import { SALONS as salons, type VerifiedSalon } from "@/data/contact";
 import { cn } from "@/lib/utils";
 import {
   getAppointmentSlots,
+  sendAppointmentConfirmationCode,
   submitAppointment,
+  verifyAppointmentConfirmationCode,
+  type AppointmentData,
   type AppointmentSlot,
 } from "@/lib/api/bitrix";
 import { Check, ChevronDown, MapPin, ArrowRight, ArrowLeft, CalendarDays, Clock3 } from "lucide-react";
@@ -18,6 +21,7 @@ const STEPS = [
   { label: "Филиал и возраст", img: "/services1_online_appointment_doctor.webp" },
   { label: "Услуга и время", img: "/services3_selection_of_glasses.webp" },
   { label: "Ваши данные", img: "/services2_vision_diagnostics.webp" },
+  { label: "Подтверждение", img: "/services1_online_appointment_doctor.webp" },
 ];
 
 const SERVICES: { id: ServiceType; label: string; sub: string }[] = [
@@ -97,8 +101,15 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const [birthDate, setBirthDate] = useState("");
   const [phone, setPhone] = useState("");
   const [comment, setComment] = useState("");
+  const [pendingAppointment, setPendingAppointment] = useState<AppointmentData | null>(null);
+  const [confirmationCode, setConfirmationCode] = useState("");
+  const [confirmationExpiresAt, setConfirmationExpiresAt] = useState(0);
+  const [confirmationNow, setConfirmationNow] = useState(() => Math.floor(Date.now() / 1000));
+  const [confirmationMessage, setConfirmationMessage] = useState("");
   const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [resendingCode, setResendingCode] = useState(false);
+  const [verifyingCode, setVerifyingCode] = useState(false);
 
   const selectedSalon = APPOINTMENT_SALONS.find((item) => item.id === salonId) ?? APPOINTMENT_SALONS[0];
   const groupedSlots = groupSlotsByDay(slots);
@@ -108,6 +119,8 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     null;
   const selectedSlot = slots.find((slot) => slot.id === selectedSlotId) ?? null;
   const birthDateMax = new Date().toISOString().slice(0, 10);
+  const confirmationSecondsLeft =
+    confirmationExpiresAt > 0 ? Math.max(0, confirmationExpiresAt - confirmationNow) : 0;
 
   useEffect(() => {
     setSelectedDateKey("");
@@ -126,6 +139,21 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
         : groupedSlots[0].dateKey,
     );
   }, [groupedSlots]);
+
+  useEffect(() => {
+    if (!open || step !== 4 || confirmationExpiresAt <= 0) {
+      return;
+    }
+
+    setConfirmationNow(Math.floor(Date.now() / 1000));
+    const timerId = window.setInterval(() => {
+      setConfirmationNow(Math.floor(Date.now() / 1000));
+    }, 1000);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, [confirmationExpiresAt, open, step]);
 
   useEffect(() => {
     if (!open || step !== 2) {
@@ -179,8 +207,15 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     setBirthDate("");
     setPhone("");
     setComment("");
+    setPendingAppointment(null);
+    setConfirmationCode("");
+    setConfirmationExpiresAt(0);
+    setConfirmationNow(Math.floor(Date.now() / 1000));
+    setConfirmationMessage("");
     setSent(false);
     setSubmitting(false);
+    setResendingCode(false);
+    setVerifyingCode(false);
   }
 
   function handleClose(o: boolean) {
@@ -208,34 +243,105 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       return;
     }
 
+    const appointmentPayload: AppointmentData = {
+      name: firstName.trim(),
+      lastName: lastName.trim(),
+      patronymic: patronymic.trim(),
+      phone: normalizedPhone,
+      dob: birthDate || undefined,
+      salon: selectedSalon.appointmentLabel,
+      service: selectedSlot.serviceName,
+      comment: comment.trim() || undefined,
+      clinicUid: selectedSlot.clinicUid,
+      specialty: selectedSlot.specialty,
+      specialtyUid: selectedSlot.specialtyUid,
+      serviceUid: selectedSlot.serviceUid,
+      serviceDuration: selectedSlot.serviceDuration,
+      doctorName: selectedSlot.doctorName,
+      refUid: selectedSlot.refUid,
+      orderDate: selectedSlot.orderDate,
+      timeBegin: selectedSlot.timeBegin,
+      timeEnd: selectedSlot.timeEnd,
+    };
+
     setSubmitting(true);
     try {
-      await submitAppointment({
-        name: firstName.trim(),
-        lastName: lastName.trim(),
-        patronymic: patronymic.trim(),
+      const confirmation = await sendAppointmentConfirmationCode({
         phone: normalizedPhone,
-        dob: birthDate || undefined,
-        salon: selectedSalon.appointmentLabel,
-        service: selectedSlot.serviceName,
-        comment: comment.trim() || undefined,
-        clinicUid: selectedSlot.clinicUid,
-        specialty: selectedSlot.specialty,
-        specialtyUid: selectedSlot.specialtyUid,
-        serviceUid: selectedSlot.serviceUid,
-        serviceDuration: selectedSlot.serviceDuration,
-        doctorName: selectedSlot.doctorName,
-        refUid: selectedSlot.refUid,
-        orderDate: selectedSlot.orderDate,
-        timeBegin: selectedSlot.timeBegin,
-        timeEnd: selectedSlot.timeEnd,
       });
-      setSent(true);
-      setTimeout(() => handleClose(false), 2800);
+      setPendingAppointment(appointmentPayload);
+
+      if (!confirmation.confirmationRequired) {
+        await submitAppointment(appointmentPayload);
+        setSent(true);
+        go(4);
+        setTimeout(() => handleClose(false), 2800);
+        return;
+      }
+
+      setConfirmationCode("");
+      setConfirmationExpiresAt(confirmation.timeExpires ?? 0);
+      setConfirmationNow(Math.floor(Date.now() / 1000));
+      setConfirmationMessage(confirmation.message ?? "");
+      go(4);
     } catch (err: unknown) {
       toast.error(getUserFacingError(err, "Не удалось оформить запись. Попробуйте ещё раз или позвоните нам напрямую."));
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function handleResendCode() {
+    const normalizedPhone = pendingAppointment?.phone ?? normalizeRussianPhone(phone);
+    if (!normalizedPhone) {
+      toast.error("Сначала укажите корректный номер телефона.");
+      go(3);
+      return;
+    }
+
+    setResendingCode(true);
+    try {
+      const confirmation = await sendAppointmentConfirmationCode({
+        phone: normalizedPhone,
+      });
+      setConfirmationCode("");
+      setConfirmationExpiresAt(confirmation.timeExpires ?? 0);
+      setConfirmationNow(Math.floor(Date.now() / 1000));
+      setConfirmationMessage(confirmation.message ?? "Новый код отправлен.");
+      toast.success("Код подтверждения отправлен повторно.");
+    } catch (err: unknown) {
+      toast.error(getUserFacingError(err, "Не удалось отправить код повторно. Попробуйте ещё раз."));
+    } finally {
+      setResendingCode(false);
+    }
+  }
+
+  async function handleConfirmSubmit(e: FormEvent) {
+    e.preventDefault();
+
+    if (!pendingAppointment) {
+      toast.error("Данные записи не найдены. Заполните форму ещё раз.");
+      go(3);
+      return;
+    }
+
+    const code = confirmationCode.replace(/\D/g, "").slice(0, 4);
+    if (code.length !== 4) {
+      toast.error("Введите 4-значный код из СМС.");
+      return;
+    }
+
+    setVerifyingCode(true);
+    try {
+      await verifyAppointmentConfirmationCode({ code });
+      await submitAppointment(pendingAppointment);
+      setSent(true);
+      setConfirmationMessage("");
+      setTimeout(() => handleClose(false), 2800);
+    } catch (err: unknown) {
+      toast.error(getUserFacingError(err, "Не удалось подтвердить код. Проверьте СМС и попробуйте ещё раз."));
+    } finally {
+      setVerifyingCode(false);
     }
   }
 
@@ -248,7 +354,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
         className="max-h-[calc(100vh-32px)] p-0 gap-0 overflow-hidden border-0 rounded-[2rem] shadow-xl bg-background"
-        style={{ maxWidth: "920px", width: "calc(100vw - 32px)" }}
+        style={{ maxWidth: "1024px", width: "calc(100vw - 32px)" }}
       >
         <DialogTitle className="sr-only">Онлайн-запись к врачу</DialogTitle>
 
@@ -273,7 +379,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                 Запись к&nbsp;врачу
               </h2>
               <p className="mt-3 text-[12px] text-white/55 leading-relaxed max-w-[220px]">
-                Выберите филиал, услугу и свободное время из расписания ANZ.
+                Выберите филиал, услугу, время и подтвердите номер телефона кодом из СМС.
               </p>
             </div>
 
@@ -396,7 +502,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
               {step === 2 && (
                 <div key="step-2" className={cn("flex h-full min-h-0 flex-col px-6 py-8 md:p-10", slideIn)}>
                   <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-                    <div className="mx-auto flex w-full max-w-[560px] flex-col gap-6 pb-2">
+                    <div className="mx-auto flex w-full max-w-[680px] flex-col gap-6 pb-2">
                       <div className="space-y-3">
                         <FieldLabel>Выберите услугу</FieldLabel>
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -531,6 +637,82 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
 
               {step === 3 && (
                 <div key="step-3" className={cn("h-full px-6 py-8 md:p-10 flex flex-col", slideIn)}>
+                  <form
+                    onSubmit={handleSubmit}
+                    className="flex-1 flex flex-col gap-4 max-w-[500px] w-full mx-auto"
+                  >
+                    {selectedSlot && (
+                      <div className="rounded-[1.5rem] border border-border bg-background px-4 py-4 text-sm text-foreground/70">
+                        <div className="font-semibold text-foreground">{selectedSalon.appointmentLabel}</div>
+                        <div className="mt-1">{selectedSlot.serviceName}</div>
+                        <div className="mt-2 text-[12px] text-foreground/55">
+                          {formatSlotDay(selectedSlot.timeBegin)} · {formatSlotTime(selectedSlot.timeBegin)} · {selectedSlot.doctorName}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <InlineField id="ap-ln" label="Фамилия *" placeholder="Иванов" value={lastName} onChange={setLastName} required autoComplete="family-name" />
+                      <InlineField id="ap-fn" label="Имя *" placeholder="Иван" value={firstName} onChange={setFirstName} required autoComplete="given-name" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <InlineField id="ap-pn" label="Отчество *" placeholder="Иванович" value={patronymic} onChange={setPatronymic} required autoComplete="additional-name" />
+                      <InlineField
+                        id="ap-bd"
+                        label="Дата рождения"
+                        placeholder="Выберите дату"
+                        value={birthDate}
+                        onChange={setBirthDate}
+                        type="date"
+                        max={birthDateMax}
+                      />
+                    </div>
+                    <InlineField
+                      id="ap-ph"
+                      label="Телефон *"
+                      placeholder="+7 (___) ___-__-__"
+                      value={phone}
+                      onChange={(value) => setPhone(formatRussianPhone(value))}
+                      required
+                      type="tel"
+                      inputMode="tel"
+                      maxLength={18}
+                      autoComplete="tel"
+                    />
+                    <div>
+                      <FieldLabel htmlFor="ap-cm">Комментарий</FieldLabel>
+                      <textarea
+                        id="ap-cm"
+                        placeholder="Например: удобнее после 18:00"
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                        rows={2}
+                        className="w-full bg-background border border-border rounded-xl py-3 px-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand transition-all shadow-xs"
+                      />
+                    </div>
+
+                    <Footer>
+                      <SecondaryButton onClick={() => go(2)}>
+                        <ArrowLeft className="h-4 w-4" /> Назад
+                      </SecondaryButton>
+                      <PrimaryButton type="submit" disabled={submitting}>
+                        {submitting ? "Отправляем код..." : "Получить код"}
+                      </PrimaryButton>
+                    </Footer>
+
+                    <p className="text-[10.5px] text-foreground/40 leading-relaxed text-center -mt-1">
+                      Отправляя данные, вы соглашаетесь с{" "}
+                      <a href="/politika-konfidentsialnosti" className="underline hover:text-foreground transition-colors">
+                        политикой конфиденциальности
+                      </a>
+                      .
+                    </p>
+                  </form>
+                </div>
+              )}
+
+              {step === 4 && (
+                <div key="step-4" className={cn("h-full px-6 py-8 md:p-10 flex flex-col", slideIn)}>
                   {sent ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 px-4">
                       <div className="h-16 w-16 rounded-full bg-brand/10 border-2 border-brand/30 grid place-items-center">
@@ -545,7 +727,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                     </div>
                   ) : (
                     <form
-                      onSubmit={handleSubmit}
+                      onSubmit={handleConfirmSubmit}
                       className="flex-1 flex flex-col gap-4 max-w-[500px] w-full mx-auto"
                     >
                       {selectedSlot && (
@@ -558,62 +740,65 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                         </div>
                       )}
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <InlineField id="ap-ln" label="Фамилия *" placeholder="Иванов" value={lastName} onChange={setLastName} required autoComplete="family-name" />
-                        <InlineField id="ap-fn" label="Имя *" placeholder="Иван" value={firstName} onChange={setFirstName} required autoComplete="given-name" />
+                      <div className="rounded-[1.5rem] border border-brand/15 bg-background px-4 py-4">
+                        <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-foreground/45">
+                          Подтверждение по телефону
+                        </div>
+                        <div className="mt-2 text-sm leading-relaxed text-foreground/70">
+                          Мы отправили код подтверждения на номер{" "}
+                          <span className="font-semibold text-foreground">{phone}</span>.
+                        </div>
+                        {confirmationMessage && (
+                          <div className="mt-3 text-[12px] text-foreground/55">
+                            {confirmationMessage}
+                          </div>
+                        )}
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <InlineField id="ap-pn" label="Отчество *" placeholder="Иванович" value={patronymic} onChange={setPatronymic} required autoComplete="additional-name" />
-                        <InlineField
-                          id="ap-bd"
-                          label="Дата рождения"
-                          placeholder="Выберите дату"
-                          value={birthDate}
-                          onChange={setBirthDate}
-                          type="date"
-                          max={birthDateMax}
-                        />
-                      </div>
-                      <InlineField
-                        id="ap-ph"
-                        label="Телефон *"
-                        placeholder="+7 (___) ___-__-__"
-                        value={phone}
-                        onChange={(value) => setPhone(formatRussianPhone(value))}
-                        required
-                        type="tel"
-                        inputMode="tel"
-                        maxLength={18}
-                        autoComplete="tel"
-                      />
+
                       <div>
-                        <FieldLabel htmlFor="ap-cm">Комментарий</FieldLabel>
-                        <textarea
-                          id="ap-cm"
-                          placeholder="Например: удобнее после 18:00"
-                          value={comment}
-                          onChange={(e) => setComment(e.target.value)}
-                          rows={2}
-                          className="w-full bg-background border border-border rounded-xl py-3 px-4 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand transition-all shadow-xs"
+                        <FieldLabel htmlFor="ap-code">Код из СМС *</FieldLabel>
+                        <input
+                          id="ap-code"
+                          type="tel"
+                          inputMode="numeric"
+                          autoComplete="one-time-code"
+                          placeholder="1234"
+                          value={confirmationCode}
+                          onChange={(e) => setConfirmationCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                          maxLength={4}
+                          className="w-full bg-background border border-border rounded-xl py-3 px-4 text-center text-xl tracking-[0.35em] focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand transition-all shadow-xs"
                         />
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-3 rounded-[1.25rem] border border-border bg-background px-4 py-3 text-[12px] text-foreground/60">
+                        <span>
+                          {confirmationSecondsLeft > 0
+                            ? `Повторная отправка через ${formatConfirmationTimer(confirmationSecondsLeft)}`
+                            : "Можно запросить код повторно"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleResendCode}
+                          disabled={confirmationSecondsLeft > 0 || resendingCode || verifyingCode}
+                          className={cn(
+                            "font-semibold transition-colors",
+                            confirmationSecondsLeft > 0 || resendingCode || verifyingCode
+                              ? "text-foreground/30"
+                              : "text-brand hover:text-brand/80",
+                          )}
+                        >
+                          {resendingCode ? "Отправляем..." : "Отправить код ещё раз"}
+                        </button>
                       </div>
 
                       <Footer>
-                        <SecondaryButton onClick={() => go(2)}>
+                        <SecondaryButton onClick={() => go(3)} disabled={verifyingCode}>
                           <ArrowLeft className="h-4 w-4" /> Назад
                         </SecondaryButton>
-                        <PrimaryButton type="submit" disabled={submitting}>
-                          {submitting ? "Оформляем запись..." : "Записаться"}
+                        <PrimaryButton type="submit" disabled={verifyingCode}>
+                          {verifyingCode ? "Подтверждаем..." : "Подтвердить и записаться"}
                         </PrimaryButton>
                       </Footer>
-
-                      <p className="text-[10.5px] text-foreground/40 leading-relaxed text-center -mt-1">
-                        Отправляя данные, вы соглашаетесь с{" "}
-                        <a href="/politika-konfidentsialnosti" className="underline hover:text-foreground transition-colors">
-                          политикой конфиденциальности
-                        </a>
-                        .
-                      </p>
                     </form>
                   )}
                 </div>
@@ -710,6 +895,12 @@ function formatSlotDayShort(isoDate: string): string {
 function formatPrice(value: number): string {
   if (value <= 0) return "Бесплатно";
   return `${new Intl.NumberFormat("ru-RU").format(value)} ₽`;
+}
+
+function formatConfirmationTimer(totalSeconds: number): string {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
 }
 
 function pluralizeSlots(count: number): string {
@@ -873,15 +1064,23 @@ function PrimaryButton({
 function SecondaryButton({
   children,
   onClick,
+  disabled,
 }: {
   children: ReactNode;
   onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-border bg-background px-5 py-4 text-[13px] font-medium text-foreground/70 hover:text-foreground hover:border-foreground/40 transition-colors"
+      disabled={disabled}
+      className={cn(
+        "inline-flex items-center justify-center gap-2 rounded-2xl border bg-background px-5 py-4 text-[13px] font-medium transition-colors",
+        disabled
+          ? "border-border text-foreground/30 cursor-not-allowed"
+          : "border-border text-foreground/70 hover:text-foreground hover:border-foreground/40",
+      )}
     >
       {children}
     </button>

@@ -465,6 +465,28 @@ export interface AppointmentData {
   timeEnd?: string;
 }
 
+export interface AppointmentConfirmationSendRequest {
+  phone: string;
+}
+
+export interface AppointmentConfirmationSendResponse {
+  status: "ok";
+  confirmationRequired: boolean;
+  mode?: "phone" | "email" | "none";
+  timeExpires?: number;
+  message?: string;
+}
+
+export interface AppointmentConfirmationVerifyRequest {
+  code: string;
+}
+
+export interface AppointmentConfirmationVerifyResponse {
+  status: "ok";
+  confirmationRequired: boolean;
+  verified: boolean;
+}
+
 export interface AppointmentSlot {
   id: string;
   clinicUid: string;
@@ -504,6 +526,18 @@ export async function submitCallback(data: CallbackData): Promise<void> {
 
 export async function submitAppointment(data: AppointmentData): Promise<void> {
   await postJson("appointment.php", data);
+}
+
+export async function sendAppointmentConfirmationCode(
+  data: AppointmentConfirmationSendRequest,
+): Promise<AppointmentConfirmationSendResponse> {
+  return postJson<AppointmentConfirmationSendResponse>("appointment_confirm_send.php", data);
+}
+
+export async function verifyAppointmentConfirmationCode(
+  data: AppointmentConfirmationVerifyRequest,
+): Promise<AppointmentConfirmationVerifyResponse> {
+  return postJson<AppointmentConfirmationVerifyResponse>("appointment_confirm_verify.php", data);
 }
 
 export async function getAppointmentSlots(
