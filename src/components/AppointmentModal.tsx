@@ -354,7 +354,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
         className="max-h-[calc(100vh-32px)] p-0 gap-0 overflow-hidden border-0 rounded-[2rem] shadow-xl bg-background"
-        style={{ maxWidth: "1024px", width: "calc(100vw - 32px)" }}
+        style={{ maxWidth: "1088px", width: "calc(100vw - 32px)" }}
       >
         <DialogTitle className="sr-only">Онлайн-запись к врачу</DialogTitle>
 
@@ -502,7 +502,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
               {step === 2 && (
                 <div key="step-2" className={cn("flex h-full min-h-0 flex-col px-6 py-8 md:p-10", slideIn)}>
                   <div className="flex-1 min-h-0 overflow-y-auto pr-1">
-                    <div className="mx-auto flex w-full max-w-[680px] flex-col gap-6 pb-2">
+                    <div className="mx-auto flex w-full max-w-[720px] flex-col gap-6 pb-2">
                       <div className="space-y-3">
                         <FieldLabel>Выберите услугу</FieldLabel>
                         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -521,7 +521,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                       <div className="space-y-3">
                         <div className="flex items-center justify-between gap-3">
                           <FieldLabel>Свободное время</FieldLabel>
-                          <span className="text-[11px] text-foreground/45">Слоты загружаются из ANZ</span>
+                          <span className="shrink-0 text-[11px] text-right text-foreground/45">Слоты загружаются из ANZ</span>
                         </div>
 
                         {slotsLoading && (
