@@ -45,6 +45,7 @@ interface ListingProps {
    * the selected entries (matching FRAME_*_DEFS.key / server labels).
    */
   initialFilters?: Record<string, string[]>;
+  expandedFacet?: string;
   appliedSort: NonNullable<CatalogQuery["sort"]>;
   appliedPriceMin?: number;
   appliedPriceMax?: number;
@@ -268,10 +269,10 @@ const SHAPE_DEFS: ShapeDef[] = [
   { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp" },
   { key: "Квадратные", label: "Квадратные", icon: "square", img: "/square.webp" },
   { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp" },
-  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval.webp" },
+  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval2.png" },
   { key: "Авиаторы", label: "Авиаторы", icon: "aviator", img: "/aviator.webp" },
   { key: "Кошачий глаз", label: "Кошачий глаз", icon: "cat", img: "/cat-eye.webp" },
-  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric.webp" },
+  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric2.png" },
   { key: "Броулайнеры", label: "Броулайнеры", icon: "browline" },
   { key: "Вэйфэрер", label: "Вэйфэрер", icon: "wayfarer" },
   { key: "Большие", label: "Большие", icon: "big" },
@@ -300,7 +301,7 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
   },
   { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp",
     matches: ["Круглые", "Круглая"] },
-  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval.webp",
+  { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval2.png",
     matches: ["Овальные", "Овал", "Панто"] },
   {
     key: "Клабмастер",
@@ -312,7 +313,7 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
   },
   { key: "Авиатор", label: "Авиатор", icon: "aviator", img: "/aviator.webp",
     matches: ["Авиатор", "Авиаторы", "Aviator"] },
-  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric.webp",
+  { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric2.png",
     matches: ["Геометрические", "Гексагональные", "Многоугольник"] },
   {
     key: "Маска",
@@ -334,14 +335,14 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     key: "Бабочка",
     label: "Бабочка",
     icon: "butterfly",
-    img: "/buterfly_shape.webp",
+    img: "/buterfly_shape2.png",
     matches: ["Бабочка", "Кошачий глаз"],
   },
   {
     key: "Лектор",
     label: "Лектор",
     icon: "lector",
-    img: "/lector_shape_.webp",
+    img: "/lector_shape2.png",
     matches: ["Лектор", "Оверсайз"],
   },
 ];
@@ -842,6 +843,7 @@ export function CatalogListing({
   facetFilteringEnabled = true,
   categoryKey,
   initialFilters,
+  expandedFacet,
   appliedSort,
   appliedPriceMin,
   appliedPriceMax,
@@ -1099,6 +1101,8 @@ export function CatalogListing({
   }, [categoryKey, city, filtered, gridCols, productBasePath]);
 
   const hasFacet = (k: FacetKey) => facets.includes(k);
+  const shouldExpandFacet = (facetKey: string) =>
+    expandedFacet === facetKey || Boolean(active[facetKey]?.size);
   const handlePreorderSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const body = [
@@ -1226,7 +1230,11 @@ export function CatalogListing({
       {/* Frame shape — tile grid */}
       {vis.shape && hasFacet("shape") && (
         <FilterSection key="shape" title="Форма">
-          <CollapsibleList initialCount={6} className="grid grid-cols-2 gap-2">
+          <CollapsibleList
+            initialCount={6}
+            defaultExpanded={shouldExpandFacet("shape")}
+            className="grid grid-cols-2 gap-2"
+          >
             {shapeDefsForRender.map((s) => {
               const value = s.key;
               const checked = active.shape?.has(value) ?? false;
@@ -1310,7 +1318,11 @@ export function CatalogListing({
       {/* Color — compact swatch grid */}
       {vis.color && colorEntries.length > 0 && (
         <FilterSection key="color" title="Цвет">
-          <CollapsibleList initialCount={4} className="grid grid-cols-1 gap-2 py-1">
+          <CollapsibleList
+            initialCount={4}
+            defaultExpanded={shouldExpandFacet("color")}
+            className="grid grid-cols-1 gap-2 py-1"
+          >
             {colorEntries.map(([label, count]) => {
               const sel = selectedColors.has(label);
               return (
@@ -1343,7 +1355,11 @@ export function CatalogListing({
       {/* Material — checkbox list */}
       {vis.material && hasFacet("material") && (
         <FilterSection key="material" title="Материал">
-          <CollapsibleList initialCount={4} className="space-y-2">
+          <CollapsibleList
+            initialCount={4}
+            defaultExpanded={shouldExpandFacet("material")}
+            className="space-y-2"
+          >
             {materialEntries.map(([m, c]) => {
               const checked = active.material?.has(m) ?? false;
               return (
@@ -1624,7 +1640,11 @@ export function CatalogListing({
       {/* Brands */}
       {vis.brand && hasFacet("brand") && (
         <FilterSection key="brand" title="Бренды">
-          <CollapsibleList initialCount={4} className="space-y-2">
+          <CollapsibleList
+            initialCount={4}
+            defaultExpanded={shouldExpandFacet("brand")}
+            className="space-y-2"
+          >
             {brandEntries.map(([b, c]) => {
                 const checked = active.brand?.has(b) ?? false;
                 return (
@@ -2240,13 +2260,18 @@ export function CatalogListing({
 function CollapsibleList({
   children,
   initialCount,
+  defaultExpanded = false,
   className,
 }: {
   children: React.ReactNode;
   initialCount: number;
+  defaultExpanded?: boolean;
   className?: string;
 }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  useEffect(() => {
+    if (defaultExpanded) setExpanded(true);
+  }, [defaultExpanded]);
   const items = Children.toArray(children);
   const visible = expanded ? items : items.slice(0, initialCount);
   const hiddenCount = items.length - initialCount;

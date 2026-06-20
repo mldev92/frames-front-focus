@@ -22,11 +22,18 @@ export const FACET_PARAMS = [
   "index", "sphere", "cylinder", "axis", "addition", "bc", "availability",
 ] as const satisfies readonly FacetKey[];
 
+export const EXPANDABLE_FACET_PARAMS = [
+  "gender", "color", "shape", "size", "brand", "material", "construction",
+  "wearMode", "lensType", "design", "technology", "purpose", "coating",
+  "index", "sphere", "cylinder", "axis", "addition", "bc",
+] as const;
+
 export const catalogSearchSchema = z.object({
   page: z.coerce.number().int().min(1).optional(),
   sort: z.enum(["price_asc", "price_desc", "name"]).optional(),
   priceMin: z.coerce.number().int().min(0).optional(),
   priceMax: z.coerce.number().int().min(0).optional(),
+  expand: z.enum(EXPANDABLE_FACET_PARAMS).optional(),
   gender: z.string().optional(),
   color: z.string().optional(),
   shape: z.string().optional(),

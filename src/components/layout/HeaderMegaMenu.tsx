@@ -21,6 +21,7 @@ import {
   Upload,
 } from "lucide-react";
 import { catalogHref } from "@/data/categories";
+import { EXPANDABLE_FACET_PARAMS } from "@/lib/catalog-route";
 import { regionalSiteHref } from "@/lib/city-routing";
 import { cn } from "@/lib/utils";
 
@@ -184,9 +185,14 @@ const menuHref = (category: Parameters<typeof catalogHref>[0], params?: Record<s
   if (!params) return href;
 
   const search = new URLSearchParams();
+  let expandedFacet: string | undefined;
   for (const [key, value] of Object.entries(params)) {
     if (value) search.set(key, value);
+    if (!expandedFacet && value && EXPANDABLE_FACET_PARAMS.includes(key as (typeof EXPANDABLE_FACET_PARAMS)[number])) {
+      expandedFacet = key;
+    }
   }
+  if (expandedFacet) search.set("expand", expandedFacet);
 
   const query = search.toString();
   return query ? `${href}?${query}` : href;
@@ -402,7 +408,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Овальные",
         count: "142",
         href: frameHref(category, { shape: "Овальные" }),
-        icon: frameShapeAssetIcon("/Anselm - Oval.webp", "Овальные"),
+        icon: frameShapeAssetIcon("/Anselm - Oval2.png", "Овальные"),
       },
       {
         label: "Круглые",
@@ -426,13 +432,13 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Бабочка",
         count: "52",
         href: frameHref(category, { shape: "Бабочка" }),
-        icon: frameShapeAssetIcon("/buterfly_shape.webp", "Бабочка"),
+        icon: frameShapeAssetIcon("/buterfly_shape2.png", "Бабочка"),
       },
       {
         label: "Геометрия",
         count: "48",
         href: frameHref(category, { shape: "Геометрические" }),
-        icon: frameShapeAssetIcon("/Geometric.webp", "Геометрические"),
+        icon: frameShapeAssetIcon("/Geometric2.png", "Геометрические"),
       },
       {
         label: "Маска",
@@ -456,7 +462,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Лектор",
         count: "18",
         href: frameHref(category, { shape: "Лектор" }),
-        icon: frameShapeAssetIcon("/lector_shape_.webp", "Лектор"),
+        icon: frameShapeAssetIcon("/lector_shape2.png", "Лектор"),
       },
     ],
     demographics: [

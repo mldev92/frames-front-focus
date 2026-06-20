@@ -93,6 +93,7 @@ export function CatalogRouteView({
       facetFilteringEnabled={supportsFacetFiltering}
       categoryKey={category}
       initialFilters={appliedFilters}
+      expandedFacet={search.expand}
       appliedSort={search.sort ?? "default"}
       appliedPriceMin={search.priceMin}
       appliedPriceMax={search.priceMax}
