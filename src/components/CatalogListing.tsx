@@ -360,6 +360,7 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
 const FRAME_MATERIAL_DEFS = [
   "Пластик",
   "Ацетат",
+  "Металл",
   "Нейлон",
   "Титан",
   "TR-90",
@@ -370,6 +371,7 @@ const FRAME_MATERIAL_DEFS = [
 const FRAME_MATERIAL_MATCHES: Record<(typeof FRAME_MATERIAL_DEFS)[number], string[]> = {
   Пластик: ["Пластик", "Полимер"],
   Ацетат: ["Ацетат", "Гибкий ацетат", "Mazzucchelli"],
+  Металл: ["Металл"],
   Нейлон: ["Нейлон"],
   Титан: ["Титан", "Бета-титан"],
   "TR-90": ["TR-90", "TR90"],

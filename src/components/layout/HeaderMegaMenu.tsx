@@ -545,6 +545,7 @@ function buildFrameMega(category: FrameCategory, copy: {
     materials: [
       { label: "Ацетат", count: "412", href: frameHref(category, { material: "Ацетат" }) },
       { label: "Титан", count: "218", href: frameHref(category, { material: "Титан" }) },
+      { label: "Металл", count: "199", href: frameHref(category, { material: "Металл" }) },
       { label: "Пластик", count: "196", href: frameHref(category, { material: "Пластик" }) },
       { label: "TR-90", count: "142", href: frameHref(category, { material: "TR-90" }) },
       { label: "Нейлон", count: "88", href: frameHref(category, { material: "Нейлон" }) },
