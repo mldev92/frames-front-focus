@@ -1,10 +1,8 @@
-import { useState } from "react";
+import { useCityStore, type CityCode } from "@/lib/store/city";
 import { ArrowRight, Phone, Clock } from "lucide-react";
 import { ContactActionButtons, yandexMapsSearchHref } from "@/components/ContactActionButtons";
 import { YandexMap } from "@/components/YandexMap";
 import { CONTACT, NK_SALONS, SPB_SALONS } from "@/data/contact";
-
-type City = "spb" | "nk";
 
 const SPB_SALON = SPB_SALONS[0];
 
@@ -282,7 +280,8 @@ const SalonCard = ({
 );
 
 export function SalonsSection() {
-  const [city, setCity] = useState<City>("spb");
+  const city = useCityStore((state) => state.city);
+  const setCity = useCityStore((state) => state.setCity);
 
   return (
     <>
@@ -356,7 +355,7 @@ export function SalonsSection() {
 
           {/* City tabs */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {(["spb", "nk"] as City[]).map((c) => (
+            {(["spb", "nvk"] as CityCode[]).map((c) => (
               <button
                 key={c}
                 onClick={() => setCity(c)}
@@ -417,7 +416,7 @@ export function SalonsSection() {
         )}
 
         {/* Novokuznetsk */}
-        {city === "nk" && (
+        {city === "nvk" && (
           <div className="salon-city-panel">
             <div style={{ borderRadius: 16, overflow: "hidden", border: "1px solid var(--border)", marginBottom: 28 }}>
               <YandexMap

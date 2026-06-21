@@ -42,10 +42,11 @@ export function YandexMap({
   className,
   style,
 }: YandexMapProps) {
-  const hasMarkers = Boolean(markers && markers.length > 0);
-  const mapCenter = hasMarkers ? center ?? averageCenter(markers) : undefined;
+  const safeMarkers = markers ?? [];
+  const hasMarkers = safeMarkers.length > 0;
+  const mapCenter = hasMarkers ? center ?? averageCenter(safeMarkers) : undefined;
   const markerPoints = hasMarkers
-    ? markers.map((marker) => `${formatLonLat(marker)},pm2rdm`).join("~")
+    ? safeMarkers.map((marker) => `${formatLonLat(marker)},pm2rdm`).join("~")
     : undefined;
   const src = hasMarkers && mapCenter && markerPoints
     ? `https://yandex.ru/map-widget/v1/?ll=${encodeURIComponent(formatLonLat(mapCenter))}&z=${zoom}&pt=${encodeURIComponent(markerPoints)}`

@@ -57,7 +57,7 @@ export const catalogBanners: CatalogBannerData[] = [
   },
   {
     id: "guide",
-    image: "/categ_glasses_lens_v4.webp",
+    image: "/article-pokrytiya-linz/combined-coatings.webp",
     eyebrow: "ЖУРНАЛ · ГАЙД",
     title: "Какое покрытие линз выбрать",
     description: "Антиблик, фотохром и защита от синего света",
@@ -69,12 +69,12 @@ export const catalogBanners: CatalogBannerData[] = [
     id: "promo",
     image: "/2_banner.webp",
     eyebrow: "АКЦИЯ",
-    title: "−25% на вторую пару",
-    description: "При заказе оправы с линзами",
+    title: "−20% на вторую пару",
+    description: "Для Вас и Ваших близких",
     cta: "Об акции",
     href: "/loyalty",
     variant: "promo",
-    badge: "−25%",
+    badge: "−20%",
   },
 ];
 

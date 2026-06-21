@@ -575,7 +575,7 @@ function buildFrameMega(category: FrameCategory, copy: {
       { label: "Juniorlook", href: frameHref(category, { brand: "Juniorlook" }) },
       { label: "Fisher-Price", href: frameHref(category, { brand: "Fisher-Price" }) },
     ],
-    brandStripHref: frameHref(category, { brandGroup: copy.brandHrefLabel }),
+    brandStripHref: menuHref(category, { expand: "brand" }),
   };
 }
 
@@ -869,12 +869,12 @@ const ACCESSORIES_MENU: AccessoriesMegaMenu = {
     { label: "Окклюдеры", href: accSection("dlya_ochkov", "okkllyudery") },
   ],
   featured: {
-    eyebrow: "Акция · −25%",
-    title: "Вторая пара со скидкой 25%",
+    eyebrow: "Акция · −20%",
+    title: "−20% на вторую пару",
     description:
-      "При покупке оправы с линзами — скидка 25% на вторую пару. Подходит для солнцезащитных и оправ.",
+      "Для Вас и Ваших близких",
     imageSrc: "/2_banner.webp",
-    imageAlt: "Акция: −25% на вторую пару",
+    imageAlt: "Акция: −20% на вторую пару",
     ctaHref: "/loyalty",
     ctaLabel: "Об акции",
   },
