@@ -40,13 +40,15 @@ export function CatalogBanner({ banner, className, style }: CatalogBannerProps) 
   const variant = variantClasses[banner.variant];
   const city = useCityStore((state) => state.city);
   const href = banner.href === "/kabinet-diagnostiki-spb" ? diagnosticsHref(city) : banner.href;
+  const isInteractive = Boolean(href && banner.cta);
+  const BannerTag = isInteractive ? "a" : "div";
 
   return (
     <div className={cn("h-full min-h-0", className)} style={style}>
-      <a
-        href={href}
+      <BannerTag
+        {...(isInteractive ? { href } : {})}
         className="catalog-banner group/banner relative isolate block h-full min-h-[260px] overflow-hidden rounded-md bg-ink text-cream focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        aria-label={`${banner.title}: ${banner.cta}`}
+        {...(isInteractive ? { "aria-label": `${banner.title}: ${banner.cta}` } : {})}
       >
         <img
           src={banner.image}
@@ -87,30 +89,44 @@ export function CatalogBanner({ banner, className, style }: CatalogBannerProps) 
             </span>
           )}
 
-          <span
-            className={cn(
-              "catalog-banner__cta mt-3 inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-medium sm:mt-4 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-[12px] lg:mt-[18px] lg:px-[18px] lg:text-[13px]",
-              variant.cta,
-            )}
-          >
-            {banner.cta}
-            <svg
-              className="catalog-banner__arrow h-3.5 w-3.5 shrink-0"
-              viewBox="0 0 16 16"
-              fill="none"
-              aria-hidden="true"
+          {banner.meta && (
+            <span className="mt-3 inline-flex max-w-full rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-[10px] font-medium text-cream/90 backdrop-blur-sm sm:mt-4 sm:text-[11px]">
+              {banner.meta}
+            </span>
+          )}
+
+          {banner.note && (
+            <span className="mt-3 max-w-[34ch] text-[11px] leading-[1.45] text-cream/82 sm:mt-3.5 sm:text-[12px] lg:text-[12.5px]">
+              {banner.note}
+            </span>
+          )}
+
+          {banner.cta && (
+            <span
+              className={cn(
+                "catalog-banner__cta mt-3 inline-flex max-w-full items-center gap-1.5 rounded-full px-3 py-2 text-[10px] font-medium sm:mt-4 sm:gap-2 sm:px-4 sm:py-2.5 sm:text-[12px] lg:mt-[18px] lg:px-[18px] lg:text-[13px]",
+                variant.cta,
+              )}
             >
-              <path
-                d="M3 8h9M8.5 4l4 4-4 4"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
+              {banner.cta}
+              <svg
+                className="catalog-banner__arrow h-3.5 w-3.5 shrink-0"
+                viewBox="0 0 16 16"
+                fill="none"
+                aria-hidden="true"
+              >
+                <path
+                  d="M3 8h9M8.5 4l4 4-4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+          )}
         </span>
-      </a>
+      </BannerTag>
     </div>
   );
 }

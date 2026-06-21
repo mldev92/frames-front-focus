@@ -8,10 +8,12 @@ export interface CatalogBannerData {
   eyebrow: string;
   title: string;
   description?: string;
-  cta: string;
-  href: string;
+  cta?: string;
+  href?: string;
   variant: CatalogBannerVariant;
   badge?: string;
+  note?: string;
+  meta?: string;
 }
 
 export const catalogBanners: CatalogBannerData[] = [
@@ -71,10 +73,10 @@ export const catalogBanners: CatalogBannerData[] = [
     eyebrow: "АКЦИЯ",
     title: "−20% на вторую пару",
     description: "Для Вас и Ваших близких",
-    cta: "Об акции",
-    href: "/loyalty",
     variant: "promo",
     badge: "−20%",
+    meta: "Реферальная программа · 6 месяцев",
+    note: "Скидка действует на повторный заказ очков по номеру вашего заказа для вас или ваших близких.",
   },
 ];
 

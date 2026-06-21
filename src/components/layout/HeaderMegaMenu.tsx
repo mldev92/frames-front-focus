@@ -119,12 +119,14 @@ type ContactMegaMenu = {
 };
 
 type FeaturedAside = {
-  ctaHref: string;
+  ctaHref?: string;
   ctaLabel?: string;
   description: string;
   eyebrow: string;
   imageAlt: string;
   imageSrc: string;
+  meta?: string;
+  note?: string;
   price?: string;
   title: string;
 };
@@ -871,12 +873,11 @@ const ACCESSORIES_MENU: AccessoriesMegaMenu = {
   featured: {
     eyebrow: "Акция · −20%",
     title: "−20% на вторую пару",
-    description:
-      "Для Вас и Ваших близких",
+    description: "Для Вас и Ваших близких",
     imageSrc: "/2_banner.webp",
     imageAlt: "Акция: −20% на вторую пару",
-    ctaHref: "/loyalty",
-    ctaLabel: "Об акции",
+    meta: "Реферальная программа · 6 месяцев",
+    note: "Скидка на повторный заказ очков по номеру вашего заказа доступна для вас или ваших близких.",
   },
 };
 
@@ -1513,19 +1514,29 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 />
               </div>
               <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
+              {menu.featured.meta && (
+                <span className="inline-flex max-w-full rounded-full border border-[#e4dbcf] bg-white px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-brand">
+                  {menu.featured.meta}
+                </span>
+              )}
+              {menu.featured.note && (
+                <p className="text-[12px] leading-5 text-muted-foreground">{menu.featured.note}</p>
+              )}
               <div className="mt-auto flex items-center justify-between border-t border-dashed border-border pt-3">
                 {menu.featured.price && (
                   <span className="font-serif text-[20px] leading-none text-foreground">
                     {menu.featured.price}
                   </span>
                 )}
-                <a
-                  href={regionalMenuHref(menu.featured.ctaHref, city)}
-                  className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
-                >
-                  {menu.featured.ctaLabel ?? "Перейти"}
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </a>
+                {menu.featured.ctaHref && (
+                  <a
+                    href={regionalMenuHref(menu.featured.ctaHref, city)}
+                    className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
+                  >
+                    {menu.featured.ctaLabel ?? "Перейти"}
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </a>
+                )}
               </div>
             </aside>
           </div>
@@ -1639,19 +1650,29 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
                 />
               </div>
               <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
+              {menu.featured.meta && (
+                <span className="inline-flex max-w-full rounded-full border border-[#e4dbcf] bg-white px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-brand">
+                  {menu.featured.meta}
+                </span>
+              )}
+              {menu.featured.note && (
+                <p className="text-[12px] leading-5 text-muted-foreground">{menu.featured.note}</p>
+              )}
               <div className="mt-auto flex items-center justify-between border-t border-dashed border-border pt-3">
                 {menu.featured.price && (
                   <span className="font-serif text-[20px] leading-none text-foreground">
                     {menu.featured.price}
                   </span>
                 )}
-                <a
-                  href={regionalMenuHref(menu.featured.ctaHref, city)}
-                  className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
-                >
-                  {menu.featured.ctaLabel ?? "Перейти"}
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </a>
+                {menu.featured.ctaHref && (
+                  <a
+                    href={regionalMenuHref(menu.featured.ctaHref, city)}
+                    className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
+                  >
+                    {menu.featured.ctaLabel ?? "Перейти"}
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </a>
+                )}
               </div>
             </aside>
           </div>
