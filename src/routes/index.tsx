@@ -513,7 +513,7 @@ function MainV2Page() {
                   </span>
                   <div className="flex min-w-0 flex-col">
                     <strong className="font-serif text-[18px] leading-[1.1] text-foreground">
-                      90 000+
+                      90 тыс+
                     </strong>
                     <span className="mt-0.5 text-[12px] leading-[1.35] text-muted-foreground">
                       довольных клиентов
