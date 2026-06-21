@@ -42,21 +42,8 @@ const MEASUREMENTS = [
 const HIDDEN_CHARACTERISTIC_LABELS = new Set([
   "Отображать с товарами раздела",
   "Отображать с товарами со сроком ношения",
+  "Жёсткий футляр и салфетка из микрофибры",
 ]);
-
-function normalizeFeatureText(value: string): string {
-  return value.toLowerCase().replaceAll("ё", "е");
-}
-
-function isCaseAndClothSpec(spec: { label: string; value: string }): boolean {
-  const label = normalizeFeatureText(spec.label);
-  const value = normalizeFeatureText(spec.value);
-  const text = `${label} ${value}`;
-  const mentionsCase = text.includes("футля");
-  const mentionsCloth = text.includes("салфет") || text.includes("микрофиб");
-
-  return mentionsCase && mentionsCloth;
-}
 
 interface ProductInfoSectionsProps {
   product: Product;
@@ -75,9 +62,7 @@ export function ProductInfoSections({
 }: ProductInfoSectionsProps) {
   const brand = getProductDisplayBrand(product);
   const showFrameValueCard = product.category === "opravy";
-  const includesCaseAndCloth = [...(product.characteristics ?? []), ...product.specs].some(
-    isCaseAndClothSpec,
-  );
+  const includesCaseAndCloth = product.includesCaseCloth === true;
   const includedFeatures = includesCaseAndCloth
     ? [
         ...BASE_INCLUDED_FEATURES.slice(0, 2),
@@ -100,8 +85,7 @@ export function ProductInfoSections({
   const detailSpecs = sourceSpecs.filter(
     (spec) =>
       !measurementLabels.has(spec.label) &&
-      !HIDDEN_CHARACTERISTIC_LABELS.has(spec.label) &&
-      !isCaseAndClothSpec(spec),
+      !HIDDEN_CHARACTERISTIC_LABELS.has(spec.label),
   );
   const descriptionHtml = product.descriptionHtml?.trim() ?? "";
   const descriptionText = product.description.trim();

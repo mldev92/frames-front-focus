@@ -58,6 +58,7 @@ export interface Product {
   specs: { label: string; value: string }[];
   descriptionHtml?: string;
   characteristics?: { label: string; value: string }[];
+  includesCaseCloth?: boolean;
   inStock?: boolean;
   hasTryOn?: boolean;
   /** Jeeliz GlassesDB SKU for virtual try-on. When set, the PDP renders a working VTO button. */
