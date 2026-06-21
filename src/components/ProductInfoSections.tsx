@@ -12,15 +12,14 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const INCLUDED_FEATURES = [
+const BASE_INCLUDED_FEATURES = [
   "Однодневная сборка в салоне",
   "Бесплатная подгонка по лицу",
-  "Покрытие от царапин на 12 месяцев",
-  "Защита от ультрафиолета и бликов",
-  "Жёсткий футляр и салфетка из микрофибры",
   "Возврат и обмен в течение 14 дней",
   "Гарантия лучшей цены",
 ];
+
+const OPTIONAL_CASE_AND_CLOTH_FEATURE = "Жёсткий футляр и салфетка из микрофибры";
 
 const MEASUREMENTS = [
   {
@@ -45,6 +44,20 @@ const HIDDEN_CHARACTERISTIC_LABELS = new Set([
   "Отображать с товарами со сроком ношения",
 ]);
 
+function normalizeFeatureText(value: string): string {
+  return value.toLowerCase().replaceAll("ё", "е");
+}
+
+function isCaseAndClothSpec(spec: { label: string; value: string }): boolean {
+  const label = normalizeFeatureText(spec.label);
+  const value = normalizeFeatureText(spec.value);
+  const text = `${label} ${value}`;
+  const mentionsCase = text.includes("футля");
+  const mentionsCloth = text.includes("салфет") || text.includes("микрофиб");
+
+  return mentionsCase && mentionsCloth;
+}
+
 interface ProductInfoSectionsProps {
   product: Product;
   showPrescription: boolean;
@@ -62,6 +75,16 @@ export function ProductInfoSections({
 }: ProductInfoSectionsProps) {
   const brand = getProductDisplayBrand(product);
   const showFrameValueCard = product.category === "opravy";
+  const includesCaseAndCloth = [...(product.characteristics ?? []), ...product.specs].some(
+    isCaseAndClothSpec,
+  );
+  const includedFeatures = includesCaseAndCloth
+    ? [
+        ...BASE_INCLUDED_FEATURES.slice(0, 2),
+        OPTIONAL_CASE_AND_CLOTH_FEATURE,
+        ...BASE_INCLUDED_FEATURES.slice(2),
+      ]
+    : BASE_INCLUDED_FEATURES;
   const isLensProduct =
     product.category === "kontaktnye-linzy" || product.category === "linzy-dlya-ochkov";
   const usesDetailedContent = isLensProduct || product.category === "aksessuary";
@@ -76,7 +99,9 @@ export function ProductInfoSections({
     usesDetailedContent && product.characteristics?.length ? product.characteristics : product.specs;
   const detailSpecs = sourceSpecs.filter(
     (spec) =>
-      !measurementLabels.has(spec.label) && !HIDDEN_CHARACTERISTIC_LABELS.has(spec.label),
+      !measurementLabels.has(spec.label) &&
+      !HIDDEN_CHARACTERISTIC_LABELS.has(spec.label) &&
+      !isCaseAndClothSpec(spec),
   );
   const descriptionHtml = product.descriptionHtml?.trim() ?? "";
   const descriptionText = product.description.trim();
@@ -93,7 +118,7 @@ export function ProductInfoSections({
               note="Всё уже включено в цену оправы"
             />
             <div className="grid sm:grid-cols-2 sm:gap-x-10">
-              {INCLUDED_FEATURES.map((feature, index) => (
+              {includedFeatures.map((feature, index) => (
                 <Reveal
                   key={feature}
                   delay={index * 60}
