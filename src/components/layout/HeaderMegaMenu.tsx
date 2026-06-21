@@ -381,6 +381,7 @@ function sectionHeader(name: string, action: string) {
 function buildFrameMega(category: FrameCategory, copy: {
   allLabel: string;
   brandHrefLabel: string;
+  brandStrip: string[];
   featured: FramesMegaMenu["featured"];
   summary: string;
   title: string;
@@ -565,19 +566,10 @@ function buildFrameMega(category: FrameCategory, copy: {
       { label: "Винтаж", href: frameHref(category, { tag: "Винтаж" }) },
     ],
     featured: copy.featured,
-    brandStrip: [
-      { label: "O.D.L.", href: frameHref(category, { brand: "O.D.L." }) },
-      { label: "Lionsheart", href: frameHref(category, { brand: "Lionsheart" }) },
-      { label: "Stepper", href: frameHref(category, { brand: "Stepper" }) },
-      { label: "Silhouette", href: frameHref(category, { brand: "Silhouette" }) },
-      { label: "Polaroid", href: frameHref(category, { brand: "Polaroid" }) },
-      { label: "Furla", href: frameHref(category, { brand: "Furla" }) },
-      { label: "Guess", href: frameHref(category, { brand: "Guess" }) },
-      { label: "Safilo", href: frameHref(category, { brand: "Safilo" }) },
-      { label: "Okula", href: frameHref(category, { brand: "Okula" }) },
-      { label: "Juniorlook", href: frameHref(category, { brand: "Juniorlook" }) },
-      { label: "Fisher-Price", href: frameHref(category, { brand: "Fisher-Price" }) },
-    ],
+    brandStrip: copy.brandStrip.map((brand) => ({
+      label: brand,
+      href: frameHref(category, { brand }),
+    })),
     brandStripHref: menuHref(category, { expand: "brand" }),
   };
 }
@@ -588,6 +580,19 @@ const FRAMES_MENU = buildFrameMega("opravy", {
   summary: "Формы, размеры и материалы",
   allLabel: "Смотреть все оправы",
   brandHrefLabel: "Оправы",
+  brandStrip: [
+    "O.D.L",
+    "LION`S HEART",
+    "STEPPER",
+    "SILHOUETTE",
+    "POLAROID",
+    "FURLA",
+    "GUESS",
+    "SAFILO SEVENTH STREET",
+    "OKULA",
+    "JUNIORLOOK",
+    "FISHER PRICE",
+  ],
   featured: {
     eyebrow: "Сентябрьская подборка",
     title: "O.D.L. — собственный дизайн",
@@ -606,6 +611,19 @@ const SUNGLASSES_MENU = buildFrameMega("solntsezashchitnye", {
   summary: "UV-защита и поляризация",
   allLabel: "Смотреть все солнцезащитные",
   brandHrefLabel: "Солнцезащитные",
+  brandStrip: [
+    "POLAROID",
+    "DACKOR",
+    "ROMEO",
+    "FLAMINGO",
+    "GENEX",
+    "GUESS",
+    "ELFSPIRIT",
+    "ARIZONA USA",
+    "MEGAPOLIS",
+    "VOGUE",
+    "RAY-BAN",
+  ],
   featured: {
     eyebrow: "Редакция Optika 100%",
     title: "Лёгкие формы на каждый день",
