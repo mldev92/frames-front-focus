@@ -67,7 +67,7 @@ function CatalogPage() {
       city="spb"
       result={result}
       search={search}
-      onRetry={() => navigate({ search: (s) => ({ ...s }), replace: true })}
+      onRetry={() => navigate({ search: (s: CatalogSearch) => ({ ...s }), replace: true })}
       onStateChange={(next) => {
         void navigate({
           search: (prev: CatalogSearch) => {

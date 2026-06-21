@@ -9,7 +9,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { TryOnBadge, TryOnIcon } from "@/components/TryOnIcon";
 import { ProductInfoSections } from "@/components/ProductInfoSections";
 import { getProductDisplayBrand } from "@/lib/product";
-import { LensPurposeModal } from "@/components/LensPurposeModal";
+import { LensWizard } from "@/components/LensWizard/LensWizard";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { TBankWidget } from "@/components/TBankWidget";
 import { cn } from "@/lib/utils";
@@ -96,7 +96,7 @@ function ProductRoutePage() {
         city="spb"
         result={resolved.result}
         search={search}
-        onRetry={() => navigate({ search: (current) => ({ ...current }), replace: true })}
+        onRetry={() => navigate({ search: (current: CatalogSearch) => ({ ...current }), replace: true })}
         onStateChange={(next) => {
           void navigate({
             search: (current: CatalogSearch) => applyCatalogState(current, next),
@@ -478,20 +478,10 @@ export function ProductPage({
         </div>
       </div>
 
-      <LensPurposeModal
+      <LensWizard
         open={lensModal}
         onClose={() => setLensModal(false)}
         frame={product}
-        onComplete={({ lens, purpose }) => {
-          add(product, {
-            color,
-            image: currentImage,
-            purpose,
-            city,
-          });
-          add(lens, { purpose, city });
-          toast.success(`Комплект «${product.name}» добавлен в корзину`);
-        }}
       />
       {showTryOn && (
         <VirtualTryOnModal open={vtoOpen} onClose={() => setVtoOpen(false)} vtoSku={vtoSku} />
