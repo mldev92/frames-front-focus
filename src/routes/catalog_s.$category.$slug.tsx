@@ -482,6 +482,8 @@ export function ProductPage({
         open={lensModal}
         onClose={() => setLensModal(false)}
         frame={product}
+        previewImage={currentImage}
+        selectedColor={selectedColor?.name}
       />
       {showTryOn && (
         <VirtualTryOnModal open={vtoOpen} onClose={() => setVtoOpen(false)} vtoSku={vtoSku} />

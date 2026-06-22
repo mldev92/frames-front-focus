@@ -37,10 +37,14 @@ export function LensWizard({
   open,
   onClose,
   frame,
+  previewImage,
+  selectedColor,
 }: {
   open: boolean;
   onClose: () => void;
   frame: Product;
+  previewImage?: string;
+  selectedColor?: string;
 }) {
   const [step, setStep] = useState<StepId>(1);
   const [purpose, setPurpose] = useState<PurposeOption | null>(null);
@@ -111,7 +115,8 @@ export function LensWizard({
     if (!purpose || !lensType || !indexOpt || !design || !brand) return;
     const summary = `${purpose.title} · ${lensType.title} · ${indexOpt.title} · ${brand.title}`;
     add(frame, {
-      color: undefined,
+      color: selectedColor,
+      image: previewImage,
       purpose: summary,
       city,
       prescription:
@@ -201,7 +206,7 @@ export function LensWizard({
             <div className="rounded-2xl bg-surface p-6">
               <div className="aspect-[4/3] w-full overflow-hidden">
                 <img
-                  src={frame.images[0]}
+                  src={previewImage ?? frame.images[0]}
                   alt={frame.name}
                   className="h-full w-full object-contain mix-blend-multiply"
                 />
@@ -209,6 +214,11 @@ export function LensWizard({
               <h2 className="mt-4 font-serif text-xl">
                 {frame.brand} {frame.name}
               </h2>
+              {selectedColor && (
+                <p className="mt-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  Цвет оправы: {selectedColor}
+                </p>
+              )}
               <p className="mt-2 text-sm text-muted-foreground">
                 В быстром подборе линз мы предлагаем самые популярные бренды — Essilor,
                 Zeiss и Hoya. Если Вам нужны линзы другого бренда, обратитесь к нашим
