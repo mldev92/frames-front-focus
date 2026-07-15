@@ -137,7 +137,7 @@ type GlassesMegaMenu = {
   allLabel: string;
   lensTypes: CardLink[];
   manufacturers: CardLink[];
-  indexValues: CountChip[];
+  lightTransmissionValues: CountChip[];
   materials: CountChip[];
   purposes: CardLink[];
   rxHelper: {
@@ -787,11 +787,11 @@ const GLASSES_MENU: GlassesMegaMenu = {
     { label: "Essilor", meta: "Франция", tag: "Топ", href: menuHref("linzy-dlya-ochkov", { brand: "Ессилор (Франция)" }) },
     { label: "Hoya", meta: "Япония", tag: "Премиум", href: menuHref("linzy-dlya-ochkov", { brand: "Hoya (Япония)" }) },
   ],
-  indexValues: [
-    { label: "1.50", href: menuHref("linzy-dlya-ochkov", { index: "1.5" }) },
-    { label: "1.56", href: menuHref("linzy-dlya-ochkov", { index: "1.56" }) },
-    { label: "1.60", href: menuHref("linzy-dlya-ochkov", { index: "1.6" }) },
-    { label: "1.67", href: menuHref("linzy-dlya-ochkov", { index: "1.67" }) },
+  lightTransmissionValues: [
+    { label: "Прозрачная", href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Прозрачная" }) },
+    { label: "Фотохромная", href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Фотохромная" }) },
+    { label: "Тонированная", href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Тонированная" }) },
+    { label: "Поляризованная", href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Поляризованная" }) },
   ],
   materials: [],
   technologies: [
@@ -1416,10 +1416,10 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
 
               <div className="mt-5 border-t border-dashed border-border pt-4">
                 <div className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Индекс преломления
+                  Светопропускание
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {menu.indexValues.map((item) => (
+                  {menu.lightTransmissionValues.map((item) => (
                     <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
                       {item.label}
                     </a>
