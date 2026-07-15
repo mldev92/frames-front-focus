@@ -581,16 +581,10 @@ const FRAMES_MENU = buildFrameMega("opravy", {
   brandHrefLabel: "Оправы",
   brandStrip: [
     "O.D.L",
-    "LION`S HEART",
     "STEPPER",
     "SILHOUETTE",
     "POLAROID",
     "FURLA",
-    "GUESS",
-    "SAFILO SEVENTH STREET",
-    "OKULA",
-    "JUNIORLOOK",
-    "FISHER PRICE",
   ],
   featured: {
     eyebrow: "Сентябрьская подборка",
@@ -612,16 +606,10 @@ const SUNGLASSES_MENU = buildFrameMega("solntsezashchitnye", {
   brandHrefLabel: "Солнцезащитные",
   brandStrip: [
     "POLAROID",
-    "DACKOR",
-    "ROMEO",
-    "FLAMINGO",
-    "GENEX",
-    "GUESS",
-    "ELFSPIRIT",
-    "ARIZONA USA",
-    "MEGAPOLIS",
-    "VOGUE",
     "RAY-BAN",
+    "VOGUE",
+    "GUESS",
+    "DACKOR",
   ],
   featured: {
     eyebrow: "Редакция Optika 100%",
@@ -1109,7 +1097,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
             <span className="font-mono text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
               Бренды
             </span>
-            <div className="flex flex-1 gap-2 overflow-x-auto pb-1">
+            <div className="flex flex-1 flex-wrap gap-2">
               {menu.brandStrip.map((item, index) => (
                 <a
                   key={item.label}
