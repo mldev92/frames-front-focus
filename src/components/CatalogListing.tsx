@@ -1920,6 +1920,7 @@ export function CatalogListing({
             const n = Number(String(value).replace(",", "."));
             return Number.isFinite(n) ? n.toFixed(digits) : value;
           };
+          const pdLabel = (value: string) => (/\bмм\b/i.test(value) ? value : `${fixed(value, 0)} мм`);
 
           lensBlocks.push({
             facet: "sphere",
@@ -1942,7 +1943,7 @@ export function CatalogListing({
           lensBlocks.push({
             facet: "pd",
             title: "Межзрачковое расстояние / PD",
-            defs: numericDefs("pd", (value) => `${fixed(value, 0)} мм`, (value) => [value, `${fixed(value, 0)} мм`]),
+            defs: numericDefs("pd", pdLabel, (value) => [value, pdLabel(value), `${fixed(value, 0)} мм`]),
             initialCount: 16,
           });
           lensBlocks.push({ facet: "sunLens", title: "Солнцезащитная линза", defs: LENS_SUN_DEFS });
