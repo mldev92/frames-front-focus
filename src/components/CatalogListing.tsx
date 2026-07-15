@@ -412,6 +412,15 @@ const LENS_TYPE_DEFS: { key: string; matches: string[] }[] = [
   { key: "Фотохромные",   matches: ["Фотохромные"] },
   { key: "Perifocal",     matches: ["Perifocal"] },
 ];
+const LENS_PURPOSE_DEFS: { key: string; matches: string[] }[] = [
+  { key: "Детские линзы", matches: ["Детские линзы"] },
+  { key: "Для вождения", matches: ["Для вождения"] },
+  { key: "Для работы с гаджетами", matches: ["Для работы с гаджетами"] },
+  {
+    key: "Для чтения и работы на среднем расстоянии (компьютер)",
+    matches: ["Для чтения и работы на среднем расстоянии (компьютер)"],
+  },
+];
 
 // Prescription chip groups — values mirror the contact-lens header dropdown.
 // These are presentation-only for now (no Bitrix data backs the per-value
@@ -1830,12 +1839,13 @@ export function CatalogListing({
           so URL ?design=Торические seeds the checkbox AND filters the grid,
           mirroring the Конструкция pattern). */}
       {(() => {
-        const lensBlocks: { facet: "design" | "wearMode" | "lensType"; title: string; defs: typeof LENS_DESIGN_DEFS }[] = [];
+        const lensBlocks: { facet: "design" | "wearMode" | "lensType" | "purpose"; title: string; defs: typeof LENS_DESIGN_DEFS }[] = [];
         const isContacts     = categoryKey === "kontaktnye-linzy";
         const isGlassesLens  = categoryKey === "linzy-dlya-ochkov";
         if (isContacts || isGlassesLens) lensBlocks.push({ facet: "design", title: "Дизайн", defs: LENS_DESIGN_DEFS });
         if (isContacts)                  lensBlocks.push({ facet: "wearMode", title: "Срок замены", defs: LENS_WEAR_MODE_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "lensType", title: "Тип линзы", defs: LENS_TYPE_DEFS });
+        if (isGlassesLens)               lensBlocks.push({ facet: "purpose", title: "Назначение", defs: LENS_PURPOSE_DEFS });
 
         // SERVER counts — the page slice (24 items) must never drive counts.
         // Server facet keys are the canonical chip labels (same def.key set).
