@@ -697,10 +697,10 @@ const CONTACT_MENU: ContactMegaMenu = {
     { label: "High", href: menuHref("kontaktnye-linzy", { addition: "High" }) },
   ],
   bcValues: [
-    { label: "8.4", href: menuHref("kontaktnye-linzy", { bc: "8.4" }) },
-    { label: "8.6", href: menuHref("kontaktnye-linzy", { bc: "8.6" }) },
-    { label: "8.7", href: menuHref("kontaktnye-linzy", { bc: "8.7" }) },
-    { label: "9.0", href: menuHref("kontaktnye-linzy", { bc: "9.0" }) },
+    { label: "8.4", href: menuHref("kontaktnye-linzy", { bc: "8.4", addition: "Low,Med,High" }) },
+    { label: "8.6", href: menuHref("kontaktnye-linzy", { bc: "8.6", addition: "Low,Med,High" }) },
+    { label: "8.7", href: menuHref("kontaktnye-linzy", { bc: "8.7", addition: "Low,Med,High" }) },
+    { label: "9.0", href: menuHref("kontaktnye-linzy", { bc: "9.0", addition: "Low,Med,High" }) },
   ],
   // Дизайн — the only contact-lens "type" facet that actually maps to a
   // Bitrix property (DESIGN). The previous 6 chips (Для сухих глаз, UV-
