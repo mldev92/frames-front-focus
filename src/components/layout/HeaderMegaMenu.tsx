@@ -795,12 +795,12 @@ const GLASSES_MENU: GlassesMegaMenu = {
   ],
   materials: [],
   technologies: [
-    { label: "FreeForm", count: "14", href: menuHref("linzy-dlya-ochkov", { design: "FreeForm" }) },
-    { label: "Асферический", count: "22", href: menuHref("linzy-dlya-ochkov", { design: "Асферический" }) },
-    { label: "Бифокальный", count: "2", href: menuHref("linzy-dlya-ochkov", { design: "Бифокальный" }) },
-    { label: "Индивидуальный", count: "2", href: menuHref("linzy-dlya-ochkov", { design: "Индивидуальный" }) },
-    { label: "Прогрессивный", count: "4", href: menuHref("linzy-dlya-ochkov", { design: "Прогрессивный" }) },
-    { label: "Сферический", count: "22", href: menuHref("linzy-dlya-ochkov", { design: "Сферический" }) },
+    { label: "FreeForm", href: menuHref("linzy-dlya-ochkov", { design: "FreeForm" }) },
+    { label: "Асферический", href: menuHref("linzy-dlya-ochkov", { design: "Асферический" }) },
+    { label: "Бифокальный", href: menuHref("linzy-dlya-ochkov", { design: "Бифокальный" }) },
+    { label: "Индивидуальный", href: menuHref("linzy-dlya-ochkov", { design: "Индивидуальный" }) },
+    { label: "Прогрессивный", href: menuHref("linzy-dlya-ochkov", { design: "Прогрессивный" }) },
+    { label: "Сферический", href: menuHref("linzy-dlya-ochkov", { design: "Сферический" }) },
   ],
   coatingValues: [
     { label: "Антиблик", href: menuHref("linzy-dlya-ochkov", { coating: "Просветляющее (антибликовое)" }) },
@@ -1450,12 +1450,9 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                   <a
                     key={item.label}
                     href={regionalMenuHref(item.href, city)}
-                    className="group rounded-[14px] border border-[#ece7df] bg-white p-3 transition-colors hover:border-brand hover:bg-brand-50"
+                    className="group flex min-h-12 items-center rounded-[14px] border border-[#ece7df] bg-white px-3 py-2.5 transition-colors hover:border-brand hover:bg-brand-50"
                   >
-                    <div className="mb-2 flex items-center justify-between gap-2">
-                      <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-brand">{item.count}</span>
-                    </div>
-                    <span className="text-[12.5px] font-medium text-foreground transition-colors group-hover:text-brand">
+                    <span className="block max-w-full break-words text-[12px] font-medium leading-snug text-foreground transition-colors group-hover:text-brand">
                       {item.label}
                     </span>
                   </a>
