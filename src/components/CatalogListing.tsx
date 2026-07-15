@@ -398,6 +398,14 @@ const LENS_DESIGN_DEFS: { key: string; matches: string[] }[] = [
   { key: "Торические",    matches: ["Торические"] },
   { key: "Индивидуальные", matches: ["Индивидуальный", "Индивидуальные"] },
 ];
+const GLASSES_LENS_DESIGN_DEFS: { key: string; matches: string[] }[] = [
+  { key: "FreeForm", matches: ["FreeForm", "Free Form"] },
+  { key: "Асферический", matches: ["Асферический", "Асферические"] },
+  { key: "Бифокальный", matches: ["Бифокальный", "Бифокальные"] },
+  { key: "Индивидуальный", matches: ["Индивидуальный", "Индивидуальные"] },
+  { key: "Прогрессивный", matches: ["Прогрессивный", "Прогрессивные"] },
+  { key: "Сферический", matches: ["Сферический", "Сферические"] },
+];
 const LENS_WEAR_MODE_DEFS: { key: string; matches: string[] }[] = [
   { key: "Однодневные",   matches: ["1 день", "Однодневные"] },
   { key: "Двухнедельные", matches: ["2 недели", "Двухнедельные"] },
@@ -1842,7 +1850,8 @@ export function CatalogListing({
         const lensBlocks: { facet: "design" | "wearMode" | "lensType" | "purpose"; title: string; defs: typeof LENS_DESIGN_DEFS }[] = [];
         const isContacts     = categoryKey === "kontaktnye-linzy";
         const isGlassesLens  = categoryKey === "linzy-dlya-ochkov";
-        if (isContacts || isGlassesLens) lensBlocks.push({ facet: "design", title: "Дизайн", defs: LENS_DESIGN_DEFS });
+        if (isContacts)                  lensBlocks.push({ facet: "design", title: "Дизайн", defs: LENS_DESIGN_DEFS });
+        if (isGlassesLens)               lensBlocks.push({ facet: "design", title: "Дизайн линзы", defs: GLASSES_LENS_DESIGN_DEFS });
         if (isContacts)                  lensBlocks.push({ facet: "wearMode", title: "Срок замены", defs: LENS_WEAR_MODE_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "lensType", title: "Тип линзы", defs: LENS_TYPE_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "purpose", title: "Назначение", defs: LENS_PURPOSE_DEFS });
