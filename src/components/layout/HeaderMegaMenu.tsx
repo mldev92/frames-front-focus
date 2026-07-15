@@ -149,7 +149,6 @@ type GlassesMegaMenu = {
   technologies: CardLink[];
   title: string;
   titleEmphasis: string;
-  coatingValues: CountChip[];
   utilities: UtilityLink[];
   featured: FeaturedAside;
 };
@@ -802,13 +801,6 @@ const GLASSES_MENU: GlassesMegaMenu = {
     { label: "Прогрессивный", href: menuHref("linzy-dlya-ochkov", { design: "Прогрессивный" }) },
     { label: "Сферический", href: menuHref("linzy-dlya-ochkov", { design: "Сферический" }) },
   ],
-  coatingValues: [
-    { label: "Антиблик", href: menuHref("linzy-dlya-ochkov", { coating: "Просветляющее (антибликовое)" }) },
-    { label: "Упрочняющее", href: menuHref("linzy-dlya-ochkov", { coating: "Твердое" }) },
-    { label: "Гидрофобное", href: menuHref("linzy-dlya-ochkov", { coating: "Грязе-водоотталкивающее" }) },
-    { label: "Blue-cut", href: menuHref("linzy-dlya-ochkov", { coating: "Защита от синего света" }) },
-    { label: "UV-защита", href: menuHref("linzy-dlya-ochkov", { coating: "Защита от UV" }) },
-  ],
   purposes: [
     { label: "Для работы за ПК", count: "21", href: menuHref("linzy-dlya-ochkov", { purpose: "Для работы с гаджетами" }), icon: <Laptop className="h-4 w-4" /> },
     { label: "Для вождения", count: "3", href: menuHref("linzy-dlya-ochkov", { purpose: "Для вождения" }), icon: <Car className="h-4 w-4" /> },
@@ -1459,18 +1451,6 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 ))}
               </div>
 
-              <div className="mt-5 border-t border-dashed border-border pt-4">
-                <div className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Покрытия
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {menu.coatingValues.map((item) => (
-                    <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
-                      {item.label}
-                    </a>
-                  ))}
-                </div>
-              </div>
             </section>
 
             <section>
