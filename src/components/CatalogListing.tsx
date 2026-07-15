@@ -340,7 +340,7 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     label: "Спорт",
     icon: "sport",
     img: "/sport_shape.webp",
-    imgScale: 1.3,
+    imgScale: 1.1,
     matches: ["Спорт", "Спортивные"],
   },
   {
