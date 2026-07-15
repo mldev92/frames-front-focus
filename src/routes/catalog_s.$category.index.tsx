@@ -7,6 +7,7 @@ import {
   applyCatalogState,
   catalogSearchSchema,
   loadCatalogPage,
+  normalizeCatalogSearch,
   type CatalogSearch,
   type LoaderResult,
 } from "@/lib/catalog-route";
@@ -20,7 +21,7 @@ import {
 // ---------------------------------------------------------------------------
 
 export const Route = createFileRoute("/catalog_s/$category/")({
-  validateSearch: (search: Record<string, unknown>) => catalogSearchSchema.parse(search),
+  validateSearch: (search: Record<string, unknown>) => normalizeCatalogSearch(catalogSearchSchema.parse(search)),
   // One request per distinct catalog state — these deps ARE the state.
   loaderDeps: ({ search }) => search,
   loader: ({ params, deps, abortController }) =>

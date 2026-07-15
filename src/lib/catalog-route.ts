@@ -35,6 +35,10 @@ export const catalogSearchSchema = z.object({
   sort: z.enum(["price_asc", "price_desc", "name"]).optional(),
   priceMin: z.coerce.number().int().min(0).optional(),
   priceMax: z.coerce.number().int().min(0).optional(),
+  // Legacy header links used these names. Normalize them so old URLs still
+  // activate the real catalog price filter and slider state.
+  priceFrom: z.coerce.number().int().min(0).optional(),
+  priceTo: z.coerce.number().int().min(0).optional(),
   expand: z.enum(EXPANDABLE_FACET_PARAMS).optional(),
   gender: z.string().optional(),
   color: z.string().optional(),
@@ -65,7 +69,18 @@ export const catalogSearchSchema = z.object({
   availability: z.string().optional(),
 });
 
-export type CatalogSearch = z.infer<typeof catalogSearchSchema>;
+type CatalogSearchWithLegacyPrice = z.infer<typeof catalogSearchSchema>;
+
+export type CatalogSearch = Omit<CatalogSearchWithLegacyPrice, "priceFrom" | "priceTo">;
+
+export function normalizeCatalogSearch(search: CatalogSearchWithLegacyPrice): CatalogSearch {
+  const { priceFrom, priceTo, ...normalized } = search;
+  return {
+    ...normalized,
+    priceMin: normalized.priceMin ?? priceFrom,
+    priceMax: normalized.priceMax ?? priceTo,
+  };
+}
 
 export function searchToFilters(search: CatalogSearch): Partial<Record<FacetKey, string[]>> {
   const filters: Partial<Record<FacetKey, string[]>> = {};

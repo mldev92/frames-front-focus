@@ -6,12 +6,13 @@ import { catalogConfig } from "@/routes/catalog_s.$category";
 import {
   applyCatalogState,
   catalogSearchSchema,
+  normalizeCatalogSearch,
   resolveCatalogRoute,
   type CatalogSearch,
 } from "@/lib/catalog-route";
 
 export const Route = createFileRoute("/catalog_s/$")({
-  validateSearch: (search: Record<string, unknown>) => catalogSearchSchema.parse(search),
+  validateSearch: (search: Record<string, unknown>) => normalizeCatalogSearch(catalogSearchSchema.parse(search)),
   loaderDeps: ({ search }) => search,
   loader: async ({ params, deps, abortController }) => {
     const resolved = await resolveCatalogRoute(params._splat ?? "", deps, "spb", abortController.signal);

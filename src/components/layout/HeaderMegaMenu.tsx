@@ -551,10 +551,10 @@ function buildFrameMega(category: FrameCategory, copy: {
       { label: "Комбинированный", count: "186", href: frameHref(category, { material: "Комбинированный" }) },
     ],
     pricePresets: [
-      { label: "Доступные", price: "до 5 000 ₽", href: frameHref(category, { priceTo: "5000" }) },
-      { label: "Средний", price: "5 000 — 12 000 ₽", href: frameHref(category, { priceFrom: "5000", priceTo: "12000" }) },
-      { label: "Премиум", price: "12 000 — 25 000 ₽", href: frameHref(category, { priceFrom: "12000", priceTo: "25000" }) },
-      { label: "Премиум+", price: "от 25 000 ₽", href: frameHref(category, { priceFrom: "25000" }) },
+      { label: "Доступные", price: "до 5 000 ₽", href: frameHref(category, { priceMax: "5000" }) },
+      { label: "Средний", price: "5 000 — 12 000 ₽", href: frameHref(category, { priceMin: "5000", priceMax: "12000" }) },
+      { label: "Премиум", price: "12 000 — 25 000 ₽", href: frameHref(category, { priceMin: "12000", priceMax: "25000" }) },
+      { label: "Премиум+", price: "от 25 000 ₽", href: frameHref(category, { priceMin: "25000" }) },
     ],
     tags: [
       { label: "Новинки", href: frameHref(category, { tag: "Новинки" }) },

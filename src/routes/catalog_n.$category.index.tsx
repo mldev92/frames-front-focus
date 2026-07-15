@@ -7,12 +7,13 @@ import {
   applyCatalogState,
   catalogSearchSchema,
   loadCatalogPage,
+  normalizeCatalogSearch,
   type CatalogSearch,
   type LoaderResult,
 } from "@/lib/catalog-route";
 
 export const Route = createFileRoute("/catalog_n/$category/")({
-  validateSearch: (search: Record<string, unknown>) => catalogSearchSchema.parse(search),
+  validateSearch: (search: Record<string, unknown>) => normalizeCatalogSearch(catalogSearchSchema.parse(search)),
   loaderDeps: ({ search }) => search,
   loader: ({ params, deps, abortController }) =>
     loadCatalogPage(params.category, deps, "nvk", abortController.signal),
