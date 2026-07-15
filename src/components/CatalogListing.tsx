@@ -1920,7 +1920,7 @@ export function CatalogListing({
             const n = Number(String(value).replace(",", "."));
             return Number.isFinite(n) ? n.toFixed(digits) : value;
           };
-          const pdLabel = (value: string) => (/\bмм\b/i.test(value) ? value : `${fixed(value, 0)} мм`);
+          const pdLabel = (value: string) => (/мм\s*$/i.test(value.trim()) ? value : `${fixed(value, 0)} мм`);
 
           lensBlocks.push({
             facet: "sphere",
