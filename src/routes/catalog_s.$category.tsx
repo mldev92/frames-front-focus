@@ -10,7 +10,18 @@ type FacetKey =
   | "brand"
   | "wearMode"
   | "lensType"
-  | "purpose";
+  | "purpose"
+  | "technology"
+  | "design"
+  | "thickness"
+  | "lightTransmission"
+  | "photochromicColor"
+  | "sphere"
+  | "astigmatic"
+  | "cylinder"
+  | "prism"
+  | "pd"
+  | "sunLens";
 
 interface CatalogConfig {
   title: string;
@@ -51,7 +62,23 @@ export const catalogConfig: Record<Category, CatalogConfig> = {
     title: "Линзы для очков",
     subtitle:
       "Линзы мировых брендов: однофокусные, прогрессивные, фотохромные, с защитой от синего света.",
-    facets: ["brand", "purpose"],
+    facets: [
+      "brand",
+      "material",
+      "technology",
+      "design",
+      "lensType",
+      "purpose",
+      "thickness",
+      "lightTransmission",
+      "photochromicColor",
+      "sphere",
+      "astigmatic",
+      "cylinder",
+      "prism",
+      "pd",
+      "sunLens",
+    ],
     metaTitle: "Линзы для очков — каталог · ОПТИКА 100%",
     metaDescription:
       "Линзы для очков ZEISS, Essilor, Hoya. Прогрессивные, фотохромные, с защитой от синего света.",

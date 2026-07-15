@@ -19,13 +19,15 @@ const numOrStr = z
 export const FACET_PARAMS = [
   "gender", "color", "shape", "size", "brand", "material", "construction",
   "wearMode", "lensType", "design", "technology", "purpose", "coating",
-  "index", "sphere", "cylinder", "axis", "addition", "bc", "availability",
+  "index", "thickness", "lightTransmission", "photochromicColor", "astigmatic", "prism", "pd", "sunLens",
+  "sphere", "cylinder", "axis", "addition", "bc", "availability",
 ] as const satisfies readonly FacetKey[];
 
 export const EXPANDABLE_FACET_PARAMS = [
   "gender", "color", "shape", "size", "brand", "material", "construction",
   "wearMode", "lensType", "design", "technology", "purpose", "coating",
-  "index", "sphere", "cylinder", "axis", "addition", "bc",
+  "index", "thickness", "lightTransmission", "photochromicColor", "astigmatic", "prism", "pd", "sunLens",
+  "sphere", "cylinder", "axis", "addition", "bc",
 ] as const;
 
 export const catalogSearchSchema = z.object({
@@ -48,6 +50,13 @@ export const catalogSearchSchema = z.object({
   purpose: z.string().optional(),
   coating: z.string().optional(),
   index: numOrStr,
+  thickness: z.string().optional(),
+  lightTransmission: z.string().optional(),
+  photochromicColor: z.string().optional(),
+  astigmatic: z.string().optional(),
+  prism: numOrStr,
+  pd: numOrStr,
+  sunLens: z.string().optional(),
   sphere: numOrStr,
   cylinder: numOrStr,
   axis: numOrStr,

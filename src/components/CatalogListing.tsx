@@ -20,7 +20,18 @@ type FacetKey =
   | "brand"
   | "wearMode"
   | "lensType"
-  | "purpose";
+  | "purpose"
+  | "design"
+  | "technology"
+  | "thickness"
+  | "lightTransmission"
+  | "photochromicColor"
+  | "sphere"
+  | "astigmatic"
+  | "cylinder"
+  | "prism"
+  | "pd"
+  | "sunLens";
 
 /** State delta emitted to the route; the route serialises it into the URL. */
 export interface CatalogStateChange {
@@ -367,6 +378,7 @@ const FRAME_MATERIAL_DEFS = [
   "Pebax",
   "Комбинированный",
 ] as const;
+const GLASSES_LENS_MATERIAL_DEFS = ["Trivex", "Поликарбонат", "Полимер"] as const;
 
 const FRAME_MATERIAL_MATCHES: Record<(typeof FRAME_MATERIAL_DEFS)[number], string[]> = {
   Пластик: ["Пластик", "Полимер"],
@@ -416,8 +428,6 @@ const LENS_TYPE_DEFS: { key: string; matches: string[] }[] = [
   { key: "Однофокальные", matches: ["Однофокальные"] },
   { key: "Прогрессивные", matches: ["Прогрессивные"] },
   { key: "Офисные",       matches: ["Офисные"] },
-  { key: "Бифокальные",   matches: ["Бифокальные"] },
-  { key: "Фотохромные",   matches: ["Фотохромные"] },
   { key: "Perifocal",     matches: ["Perifocal"] },
 ];
 const LENS_PURPOSE_DEFS: { key: string; matches: string[] }[] = [
@@ -428,6 +438,36 @@ const LENS_PURPOSE_DEFS: { key: string; matches: string[] }[] = [
     key: "Для чтения и работы на среднем расстоянии (компьютер)",
     matches: ["Для чтения и работы на среднем расстоянии (компьютер)"],
   },
+];
+const LENS_TECHNOLOGY_DEFS: { key: string; matches: string[] }[] = [
+  { key: "Crizal", matches: ["Crizal", "CRIZAL"] },
+  { key: "Stellest", matches: ["Stellest", "STELLEST"] },
+  { key: "Varilux", matches: ["Varilux", "VARILUX"] },
+];
+const LENS_THICKNESS_DEFS: { key: string; matches: string[] }[] = [
+  { key: "1,5 базовая", matches: ["1,5 базовая", "1.5 базовая", "1.5", "1.50", "1,5", "1,50"] },
+  { key: "1,53 утонченная", matches: ["1,53 утонченная", "1.53 утонченная", "1.53", "1,53"] },
+  { key: "1,59 утонченная", matches: ["1,59 утонченная", "1.59 утонченная", "1.59", "1,59"] },
+  { key: "1,6 утонченная", matches: ["1,6 утонченная", "1.6 утонченная", "1.6", "1.60", "1,6", "1,60"] },
+  { key: "1,56 утонченная", matches: ["1,56 утонченная", "1.56 утонченная", "1.56", "1,56"] },
+  { key: "1,67 ультратонкая", matches: ["1,67 ультратонкая", "1.67 ультратонкая", "1.67", "1,67"] },
+];
+const LENS_LIGHT_TRANSMISSION_DEFS: { key: string; matches: string[] }[] = [
+  { key: "Поляризованная", matches: ["Поляризованная"] },
+  { key: "Прозрачная", matches: ["Прозрачная"] },
+  { key: "Тонированная", matches: ["Тонированная"] },
+  { key: "Фотохромная", matches: ["Фотохромная"] },
+];
+const LENS_PHOTOCHROMIC_COLOR_DEFS: { key: string; matches: string[] }[] = [
+  { key: "Зеленый", matches: ["Зеленый", "Зелёный"] },
+  { key: "Коричневый", matches: ["Коричневый"] },
+  { key: "Серый", matches: ["Серый"] },
+];
+const LENS_ASTIGMATIC_DEFS: { key: string; matches: string[] }[] = [
+  { key: "С цилиндром", matches: ["С цилиндром"] },
+];
+const LENS_SUN_DEFS: { key: string; matches: string[] }[] = [
+  { key: "Да", matches: ["Да"] },
 ];
 
 // Prescription chip groups — values mirror the contact-lens header dropdown.
@@ -847,7 +887,7 @@ const CATEGORY_VISIBILITY: Record<
   "linzy-dlya-ochkov": {
     shape: false,
     color: false,
-    material: false,
+    material: true,
     gender: false,
     style: false,
     availability: true,
@@ -1025,9 +1065,11 @@ export function CatalogListing({
       sortFacetEntriesByCount(
         isFramesCategory
           ? FRAME_MATERIAL_DEFS.map((material) => [material, frameMaterialCounts[material] ?? 0] as const)
+          : categoryKey === "linzy-dlya-ochkov"
+            ? GLASSES_LENS_MATERIAL_DEFS.map((material) => [material, facetCounts.material?.[material] ?? 0] as const)
           : Object.entries(facetCounts.material ?? {}),
       ),
-    [facetCounts.material, frameMaterialCounts, isFramesCategory],
+    [categoryKey, facetCounts.material, frameMaterialCounts, isFramesCategory],
   );
   const brandEntries = useMemo(
     () => sortFacetEntriesByCount(Object.entries(facetCounts.brand ?? {})),
@@ -1847,18 +1889,68 @@ export function CatalogListing({
           so URL ?design=Торические seeds the checkbox AND filters the grid,
           mirroring the Конструкция pattern). */}
       {(() => {
-        const lensBlocks: { facet: "design" | "wearMode" | "lensType" | "purpose"; title: string; defs: typeof LENS_DESIGN_DEFS }[] = [];
+        type LensFacetDef = { key: string; label?: string; matches: string[] };
+        const lensBlocks: { facet: string; title: string; defs: LensFacetDef[]; initialCount?: number }[] = [];
         const isContacts     = categoryKey === "kontaktnye-linzy";
         const isGlassesLens  = categoryKey === "linzy-dlya-ochkov";
         if (isContacts)                  lensBlocks.push({ facet: "design", title: "Дизайн", defs: LENS_DESIGN_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "design", title: "Дизайн линзы", defs: GLASSES_LENS_DESIGN_DEFS });
         if (isContacts)                  lensBlocks.push({ facet: "wearMode", title: "Срок замены", defs: LENS_WEAR_MODE_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "lensType", title: "Тип линзы", defs: LENS_TYPE_DEFS });
+        if (isGlassesLens)               lensBlocks.push({ facet: "technology", title: "Тип", defs: LENS_TECHNOLOGY_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "purpose", title: "Назначение", defs: LENS_PURPOSE_DEFS });
+        if (isGlassesLens)               lensBlocks.push({ facet: "thickness", title: "Толщина линзы", defs: LENS_THICKNESS_DEFS });
+        if (isGlassesLens)               lensBlocks.push({ facet: "lightTransmission", title: "Светопропускание", defs: LENS_LIGHT_TRANSMISSION_DEFS });
+        if (isGlassesLens)               lensBlocks.push({ facet: "photochromicColor", title: "Цвет фотохрома", defs: LENS_PHOTOCHROMIC_COLOR_DEFS });
+        if (isGlassesLens) {
+          const numericEntries = (facet: string) => Object.keys(facetCounts[facet] ?? {});
+          const numeric = (value: string) => {
+            const n = Number(String(value).replace(",", "."));
+            return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
+          };
+          const numericDefs = (
+            facet: string,
+            labelFor: (value: string) => string,
+            matchesFor: (value: string) => string[] = (value) => [value],
+          ): LensFacetDef[] =>
+            numericEntries(facet)
+              .sort((a, b) => numeric(a) - numeric(b))
+              .map((value) => ({ key: value, label: labelFor(value), matches: matchesFor(value) }));
+          const fixed = (value: string, digits: number) => {
+            const n = Number(String(value).replace(",", "."));
+            return Number.isFinite(n) ? n.toFixed(digits) : value;
+          };
+
+          lensBlocks.push({
+            facet: "sphere",
+            title: "Оптическая сила (сфера)",
+            defs: numericDefs("sphere", (value) => fixed(value, 2), (value) => [value, fixed(value, 2)]),
+            initialCount: 10,
+          });
+          lensBlocks.push({ facet: "astigmatic", title: "Астигматическая", defs: LENS_ASTIGMATIC_DEFS });
+          lensBlocks.push({
+            facet: "cylinder",
+            title: "Цилиндр",
+            defs: numericDefs("cylinder", (value) => fixed(value, 2), (value) => [value, fixed(value, 2)]),
+            initialCount: 10,
+          });
+          lensBlocks.push({
+            facet: "prism",
+            title: "Призма",
+            defs: numericDefs("prism", (value) => fixed(value, 1), (value) => [value, fixed(value, 1)]),
+          });
+          lensBlocks.push({
+            facet: "pd",
+            title: "Межзрачковое расстояние / PD",
+            defs: numericDefs("pd", (value) => `${fixed(value, 0)} мм`, (value) => [value, `${fixed(value, 0)} мм`]),
+            initialCount: 16,
+          });
+          lensBlocks.push({ facet: "sunLens", title: "Солнцезащитная линза", defs: LENS_SUN_DEFS });
+        }
 
         // SERVER counts — the page slice (24 items) must never drive counts.
         // Server facet keys are the canonical chip labels (same def.key set).
-        const countFor = (facet: string, def: { key: string; matches: string[] }) => {
+        const countFor = (facet: string, def: LensFacetDef) => {
           const bucket = (serverFacets as Record<string, Record<string, number> | undefined>)[facet];
           if (!bucket) return 0;
           if (def.key in bucket) return bucket[def.key];
@@ -1866,10 +1958,17 @@ export function CatalogListing({
           return 0;
         };
 
-        return lensBlocks.map(({ facet, title, defs }) => (
+        return lensBlocks.map(({ facet, title, defs, initialCount }) => {
+          const visibleDefs = defs.filter((def) => countFor(facet, def) > 0 || active[facet]?.has(def.key));
+          if (!visibleDefs.length) return null;
+          return (
           <FilterSection key={facet} title={title}>
-            <div className="space-y-2">
-              {defs.map((def) => {
+            <CollapsibleList
+              initialCount={initialCount ?? 6}
+              defaultExpanded={shouldExpandFacet(facet)}
+              className="space-y-2"
+            >
+              {visibleDefs.map((def) => {
                 const checked = active[facet]?.has(def.key) ?? false;
                 const c = countFor(facet, def);
                 return (
@@ -1893,14 +1992,15 @@ export function CatalogListing({
                     >
                       {checked && <Check className="h-3 w-3" strokeWidth={3} />}
                     </span>
-                    <span className="flex-1 text-sm">{def.key}</span>
+                    <span className="flex-1 text-sm">{def.label ?? def.key}</span>
                     <span className="text-xs text-muted-foreground">({c})</span>
                   </button>
                 );
               })}
-            </div>
+            </CollapsibleList>
           </FilterSection>
-        ));
+          );
+        });
       })()}
 
       {/* Prescription chip-groups (contact lenses only). Single discrete
