@@ -1195,7 +1195,9 @@ export function CatalogListing({
     setPreorderSent(true);
   };
   const shapeDefsForRender = isFramesCategory
-    ? FRAME_SHAPE_DEFS
+    ? FRAME_SHAPE_DEFS.filter((s) =>
+        (frameShapeCounts[s.key] ?? 0) > 0 || Boolean(active.shape?.has(s.key)),
+      )
     : SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]);
 
   const FilterContent = (
