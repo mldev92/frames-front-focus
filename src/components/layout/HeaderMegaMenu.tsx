@@ -202,6 +202,12 @@ const menuHref = (category: Parameters<typeof catalogHref>[0], params?: Record<s
 const frameHref = (category: FrameCategory, params?: Record<string, string>) => menuHref(category, params);
 const regionalMenuHref = (href: string, city: CityCode) => regionalSiteHref(href, city);
 const formatSphereLabel = (value: string) => (value === "0" ? value : value.replace(/\.00$/, ""));
+const expandHref = (href: string, facet: (typeof EXPANDABLE_FACET_PARAMS)[number]) => {
+  const [path, query = ""] = href.split("?");
+  const search = new URLSearchParams(query);
+  search.set("expand", facet);
+  return `${path}?${search.toString()}`;
+};
 
 const panelShellClass =
   "overflow-hidden rounded-b-[28px] border border-[#e7e2db] bg-white shadow-[0_12px_30px_rgba(33,24,18,0.08),0_28px_80px_rgba(33,24,18,0.10)]";
@@ -209,6 +215,8 @@ const surfaceCardClass =
   "rounded-[18px] border border-[#ece7df] bg-white shadow-[0_1px_2px_rgba(33,24,18,0.04),0_8px_24px_rgba(33,24,18,0.05)]";
 const sectionNameClass =
   "font-mono text-[10.5px] uppercase tracking-[0.18em] text-muted-foreground";
+const sectionActionClass =
+  "inline-flex shrink-0 items-center gap-1 rounded-full border border-[#e4dbcf] bg-white px-2.5 py-1 text-[11.5px] font-medium text-muted-foreground transition-colors hover:border-brand hover:text-brand";
 const chipClass =
   "inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand";
 
@@ -368,11 +376,19 @@ const LensTypeIcon = ({ kind }: { kind: "single" | "progressive" | "bifocal" | "
   );
 };
 
-function sectionHeader(name: string, action: string) {
+function sectionHeader(name: string, action: string, href?: string) {
+  const actionLabel = action.replace(/\s*→\s*$/, "");
   return (
     <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-[#ece7df] pb-2">
       <span className={sectionNameClass}>{name}</span>
-      <span className="text-[11.5px] text-muted-foreground transition-colors hover:text-brand">{action}</span>
+      {href ? (
+        <a href={href} className={sectionActionClass}>
+          {actionLabel}
+          <ArrowRight className="h-3 w-3" />
+        </a>
+      ) : (
+        <span className="text-[11.5px] text-muted-foreground">{actionLabel}</span>
+      )}
     </div>
   );
 }
@@ -911,7 +927,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
 
           <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1.38fr_1fr_1fr_0.92fr]">
             <section>
-              {sectionHeader("Форма", "13 форм →")}
+              {sectionHeader("Форма", "Все формы", regionalMenuHref(expandHref(menu.allHref, "shape"), city))}
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {menu.shapes.map((item) => (
                   <a
@@ -929,7 +945,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Пол / возраст", "Все →")}
+              {sectionHeader("Пол / возраст", "Все", regionalMenuHref(expandHref(menu.allHref, "gender"), city))}
               <div className="grid grid-cols-2 gap-1.5">
                 {menu.demographics.map((item) => (
                   <a
@@ -954,9 +970,10 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                   </span>
                   <a
                     href={regionalMenuHref(menu.kidsGroup.href, city)}
-                    className="text-[11px] text-muted-foreground transition-colors hover:text-brand"
+                    className={sectionActionClass}
                   >
-                    Все →
+                    Все
+                    <ArrowRight className="h-3 w-3" />
                   </a>
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -1003,7 +1020,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Материал", "Все →")}
+              {sectionHeader("Материал", "Все", regionalMenuHref(expandHref(menu.allHref, "material"), city))}
               <div className="flex flex-wrap gap-2">
                 {menu.materials.map((item) => (
                   <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
@@ -1135,7 +1152,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
 
           <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1.16fr_1.04fr_1fr_0.9fr]">
             <section>
-              {sectionHeader("Режим / замена", "Все →")}
+              {sectionHeader("Режим / замена", "Все", regionalMenuHref(expandHref(menu.allHref, "wearMode"), city))}
               <div className="space-y-2">
                 {menu.contactModes.map((item) => (
                   <a
@@ -1156,7 +1173,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Параметры", "Полный калькулятор →")}
+              {sectionHeader("Параметры", "Все параметры", regionalMenuHref(expandHref(menu.allHref, "sphere"), city))}
               <div className="space-y-4">
                 <div>
                   <div className="mb-2 flex items-baseline justify-between gap-2">
@@ -1226,7 +1243,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Дизайн", "Все →")}
+              {sectionHeader("Дизайн", "Все", regionalMenuHref(expandHref(menu.allHref, "design"), city))}
               <div className="grid grid-cols-2 gap-2">
                 {menu.needs.map((item) => (
                   <a
@@ -1334,7 +1351,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
 
           <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1fr_0.95fr_1fr_0.95fr_0.85fr]">
             <section>
-              {sectionHeader("Тип линзы", "Все →")}
+              {sectionHeader("Тип линзы", "Все", regionalMenuHref(expandHref(menu.allHref, "lensType"), city))}
               <div className="space-y-1">
                 {menu.lensTypes.map((item) => (
                   <a
@@ -1355,7 +1372,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Производитель", "Все →")}
+              {sectionHeader("Производитель", "Все", regionalMenuHref(expandHref(menu.allHref, "brand"), city))}
               <div className="space-y-2">
                 {menu.manufacturers.map((item) => (
                   <a
@@ -1406,7 +1423,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Дизайн линзы", "Все →")}
+              {sectionHeader("Дизайн линзы", "Все", regionalMenuHref(expandHref(menu.allHref, "design"), city))}
               <div className="grid grid-cols-2 gap-2">
                 {menu.technologies.map((item) => (
                   <a
@@ -1424,7 +1441,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Назначение", "Все →")}
+              {sectionHeader("Назначение", "Все", regionalMenuHref(expandHref(menu.allHref, "purpose"), city))}
               <div className="space-y-2">
                 {menu.purposes.map((item) => (
                   <a
@@ -1559,15 +1576,7 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
           <div className="grid gap-6 lg:grid-cols-[1fr_1fr_0.9fr]">
             {menu.groups.map((group) => (
               <section key={group.title}>
-                <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-[#ece7df] pb-2">
-                  <span className={sectionNameClass}>{group.title}</span>
-                  <a
-                    href={regionalMenuHref(group.allHref, city)}
-                    className="text-[11.5px] text-muted-foreground transition-colors hover:text-brand"
-                  >
-                    Все →
-                  </a>
-                </div>
+                {sectionHeader(group.title, "Все", regionalMenuHref(group.allHref, city))}
                 <div className="space-y-1.5">
                   {group.items.map((item) => (
                     <a
