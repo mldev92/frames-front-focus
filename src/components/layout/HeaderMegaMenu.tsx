@@ -1,4 +1,4 @@
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useCityStore, type CityCode } from "@/lib/store/city";
 import {
   ArrowRight,
@@ -24,6 +24,7 @@ import { catalogHref } from "@/data/categories";
 import { EXPANDABLE_FACET_PARAMS } from "@/lib/catalog-route";
 import { regionalSiteHref } from "@/lib/city-routing";
 import { cn } from "@/lib/utils";
+import { AppointmentModal } from "@/components/AppointmentModal";
 
 type FrameCategory = "opravy" | "solntsezashchitnye";
 
@@ -1124,7 +1125,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
 
 function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
   const city = useCityStore((state) => state.city);
-  const primaryHref = regionalMenuHref(menu.helper.primaryHref, city);
+  const [appointmentOpen, setAppointmentOpen] = useState(false);
 
   return (
     <div className={panelShellClass}>
@@ -1286,13 +1287,14 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
               <h3 className="mt-4 font-serif text-[22px] leading-tight text-white">{menu.helper.title}</h3>
               <p className="mt-3 text-[13px] leading-6 text-white/70">{menu.helper.text}</p>
               <div className="mt-5 space-y-2">
-                <a
-                  href={primaryHref}
+                <button
+                  type="button"
+                  onClick={() => setAppointmentOpen(true)}
                   className="inline-flex w-full items-center justify-between rounded-full bg-brand px-4 py-3 text-[12.5px] font-semibold text-brand-foreground transition-opacity hover:opacity-90"
                 >
                   Записаться в салон
                   <ArrowRight className="h-4 w-4" />
-                </a>
+                </button>
                 <a
                   href={regionalMenuHref(menu.helper.secondaryHref, city)}
                   className="inline-flex w-full items-center justify-between rounded-full border border-white/20 px-4 py-3 text-[12.5px] font-medium text-white transition-colors hover:bg-white/10"
@@ -1318,6 +1320,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
           </div>
         </div>
       </div>
+      <AppointmentModal open={appointmentOpen} onOpenChange={setAppointmentOpen} />
     </div>
   );
 }
