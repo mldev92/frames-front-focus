@@ -362,7 +362,7 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     label: "Бабочка",
     icon: "butterfly",
     img: "/buterfly_shape22.webp",
-    imgScale: 1.04,
+    imgScale: 1.3,
     matches: ["Бабочка"],
   },
   {
@@ -370,7 +370,7 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     label: "Кошачий глаз",
     icon: "cat",
     img: "/cat_eye.webp",
-    imgScale: 1.3,
+    imgScale: 1.04,
     matches: ["Кошачий глаз"],
   },
   {
