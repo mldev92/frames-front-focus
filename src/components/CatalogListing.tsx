@@ -617,6 +617,25 @@ function sortFacetEntriesByCount(entries: readonly (readonly [string, number])[]
   });
 }
 
+function sortBrandFacetEntries(entries: readonly (readonly [string, number])[]) {
+  const sortKey = (label: string) =>
+    label
+      .normalize("NFKD")
+      .replace(/[^0-9A-Za-zА-Яа-яЁё]+/g, " ")
+      .trim()
+      .toLocaleLowerCase("en-US");
+
+  return [...entries]
+    .filter(([, count]) => count > 0)
+    .sort(([labelA], [labelB]) => {
+      const byBrandName = sortKey(labelA).localeCompare(sortKey(labelB), ["en", "ru"], {
+        numeric: true,
+        sensitivity: "base",
+      });
+      return byBrandName || labelA.localeCompare(labelB, ["en", "ru"], { numeric: true, sensitivity: "base" });
+    });
+}
+
 function canonicalizeColorFilterValue(value: string, availableLabels: string[]): string {
   const exact = availableLabels.find((label) => label === value);
   if (exact) return exact;
@@ -1072,7 +1091,7 @@ export function CatalogListing({
     [categoryKey, facetCounts.material, frameMaterialCounts, isFramesCategory],
   );
   const brandEntries = useMemo(
-    () => sortFacetEntriesByCount(Object.entries(facetCounts.brand ?? {})),
+    () => sortBrandFacetEntries(Object.entries(facetCounts.brand ?? {})),
     [facetCounts.brand],
   );
 
