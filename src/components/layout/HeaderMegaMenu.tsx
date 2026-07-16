@@ -615,10 +615,10 @@ const SUNGLASSES_MENU = buildFrameMega("solntsezashchitnye", {
     title: "Лёгкие и прочные оправы",
     description:
       "Популярные модели из лёгких и надёжных материалов — для комфортной посадки каждый день. Не утяжеляют образ и хорошо подходят для активного ритма жизни.",
-    imageSrc: "/categ_sunglasses_v4.webp",
-    imageAlt: "Подборка солнцезащитных очков",
-    price: "от 6 900 ₽",
-    ctaHref: "/catalog_s/solntsezashchitnye_ochki/",
+    imageSrc: "/categ_frames_v4.webp",
+    imageAlt: "Подборка оправ",
+    price: "от 5 500 ₽",
+    ctaHref: "/catalog_s/opravy/",
   },
 });
 
