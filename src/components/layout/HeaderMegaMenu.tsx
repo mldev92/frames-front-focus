@@ -427,7 +427,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Трапеция",
         count: "1",
         href: frameHref(category, { shape: "Трапеция" }),
-        icon: frameShapeAssetIcon("/trapec_shape.webp", "Трапеция", 1.5),
+        icon: frameShapeAssetIcon("/trapec_shape.webp", "Трапеция", 1.275),
       },
       {
         label: "Овальные",
@@ -457,7 +457,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Клабмастер",
         count: "6",
         href: frameHref(category, { shape: "Клабмастер" }),
-        icon: frameShapeAssetIcon("/clubman_shape.webp", "Клабмастер", 1.5),
+        icon: frameShapeAssetIcon("/clubman_shape.webp", "Клабмастер", 1.275),
       },
       {
         label: "Бабочка",
@@ -469,7 +469,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Кошачий глаз",
         count: "115",
         href: frameHref(category, { shape: "Кошачий глаз" }),
-        icon: frameShapeAssetIcon("/cat_eye.webp", "Кошачий глаз", 1.3),
+        icon: frameShapeAssetIcon("/cat_eye.webp", "Кошачий глаз", 1.04),
       },
       {
         label: "Геометрия",
