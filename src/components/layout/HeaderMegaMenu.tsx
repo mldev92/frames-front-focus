@@ -412,20 +412,38 @@ function buildFrameMega(category: FrameCategory, copy: {
     titleEmphasis: copy.titleEmphasis,
     shapes: [
       {
+        label: "Прямоугольные",
+        count: "389",
+        href: frameHref(category, { shape: "Прямоугольные" }),
+        icon: frameShapeAssetIcon("/rectangle.webp", "Прямоугольные", 1.15),
+      },
+      {
         label: "Квадратные",
-        count: "37",
+        count: "35",
         href: frameHref(category, { shape: "Квадратные" }),
         icon: frameShapeAssetIcon("/square.webp", "Квадратные"),
       },
       {
+        label: "Трапеция",
+        count: "1",
+        href: frameHref(category, { shape: "Трапеция" }),
+        icon: frameShapeAssetIcon("/trapec_shape.webp", "Трапеция", 1.5),
+      },
+      {
         label: "Овальные",
-        count: "109",
+        count: "49",
         href: frameHref(category, { shape: "Овальные" }),
         icon: frameShapeAssetIcon("/Anselm - Oval2.webp", "Овальные", 1.15),
       },
       {
+        label: "Панто",
+        count: "64",
+        href: frameHref(category, { shape: "Панто" }),
+        icon: frameShapeAssetIcon("/Anselm - Oval2.webp", "Панто", 1.15),
+      },
+      {
         label: "Круглые",
-        count: "112",
+        count: "109",
         href: frameHref(category, { shape: "Круглые" }),
         icon: frameShapeAssetIcon("/round.webp", "Круглые"),
       },
@@ -437,19 +455,25 @@ function buildFrameMega(category: FrameCategory, copy: {
       },
       {
         label: "Клабмастер",
-        count: "64",
+        count: "6",
         href: frameHref(category, { shape: "Клабмастер" }),
         icon: frameShapeAssetIcon("/clubman_shape.webp", "Клабмастер", 1.5),
       },
       {
         label: "Бабочка",
-        count: "187",
+        count: "77",
         href: frameHref(category, { shape: "Бабочка" }),
         icon: frameShapeAssetIcon("/buterfly_shape22.webp", "Бабочка", 1.3),
       },
       {
+        label: "Кошачий глаз",
+        count: "115",
+        href: frameHref(category, { shape: "Кошачий глаз" }),
+        icon: frameShapeAssetIcon("/cat_eye.webp", "Кошачий глаз", 1.3),
+      },
+      {
         label: "Геометрия",
-        count: "72",
+        count: "59",
         href: frameHref(category, { shape: "Геометрические" }),
         icon: frameShapeAssetIcon("/Geometric22.webp", "Геометрические", 1.5),
       },
@@ -470,6 +494,12 @@ function buildFrameMega(category: FrameCategory, copy: {
         count: "14",
         href: frameHref(category, { shape: "Лектор" }),
         icon: frameShapeAssetIcon("/lector_shape2.webp", "Лектор"),
+      },
+      {
+        label: "Clip",
+        count: "12",
+        href: frameHref(category, { shape: "Clip" }),
+        icon: clipOnConstructionIcon,
       },
     ],
     demographics: [

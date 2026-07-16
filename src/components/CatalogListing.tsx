@@ -299,7 +299,7 @@ const SHAPE_DEFS: ShapeDef[] = [
 // label would filter 0 products even though the section is full.
 const FRAME_SHAPE_DEFS: ShapeDef[] = [
   { key: "Прямоугольные", label: "Прямоугольные", icon: "rect", img: "/rectangle.webp", imgScale: 1.15,
-    matches: ["Прямоугольные", "Классические"] },
+    matches: ["Прямоугольные", "Прямоуголные", "Классические"] },
   { key: "Квадратные", label: "Квадратные", icon: "square", img: "/square.webp",
     matches: ["Квадратные", "Квадрат"] },
   {
@@ -308,12 +308,20 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     icon: "trapezoid",
     img: "/trapec_shape.webp",
     imgScale: 1.5,
-    matches: ["Трапеция", "Вэйфэрер"],
+    matches: ["Трапеция", "Вэйфэрер", "Wayfarer"],
   },
   { key: "Круглые", label: "Круглые", icon: "round", img: "/round.webp",
     matches: ["Круглые", "Круглая"] },
   { key: "Овальные", label: "Овальные", icon: "oval", img: "/Anselm - Oval2.webp", imgScale: 1.15,
-    matches: ["Овальные", "Овал", "Панто"] },
+    matches: ["Овальные", "Овал"] },
+  {
+    key: "Панто",
+    label: "Панто",
+    icon: "oval",
+    img: "/Anselm - Oval2.webp",
+    imgScale: 1.15,
+    matches: ["Панто"],
+  },
   {
     key: "Клабмастер",
     label: "Клабмастер",
@@ -324,6 +332,12 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
   },
   { key: "Авиатор", label: "Авиатор", icon: "aviator", img: "/aviator.webp",
     matches: ["Авиатор", "Авиаторы", "Aviator"] },
+  {
+    key: "Clip",
+    label: "Clip",
+    icon: "clip",
+    matches: ["Clip", "Клип"],
+  },
   { key: "Геометрические", label: "Геометрические", icon: "rect", img: "/Geometric22.webp",
     imgScale: 1.5,
     matches: ["Геометрические", "Гексагональные", "Многоугольник"] },
@@ -392,8 +406,8 @@ const FRAME_MATERIAL_MATCHES: Record<(typeof FRAME_MATERIAL_DEFS)[number], strin
 };
 
 // Maps the dropdown's construction label → KONSTRUKTSIYA directory name on
-// Bitrix. Clip-on is intentionally absent: in Bitrix it's a STIL value, so the
-// dropdown link for Clip-on points at ?shape=Clip, not ?construction=Clip-on.
+// Bitrix stores Clip as a STIL value. It is available as a shape and retained
+// as the legacy Clip-on construction filter for existing links.
 const FRAME_CONSTRUCTION_DEFS: { key: string; matches: string[] }[] = [
   { key: "Ободковые",     matches: ["Ободок", "Ободковые"] },
   { key: "Полуободковые", matches: ["Полуободок/Леска", "Полуободковые"] },
