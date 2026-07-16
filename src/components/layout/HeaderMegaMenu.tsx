@@ -427,7 +427,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Wayfarer",
         count: "1",
         href: frameHref(category, { shape: "Трапеция" }),
-        icon: frameShapeAssetIcon("/wayfarer.webp", "Трапеция", 1.02),
+        icon: frameShapeAssetIcon("/wayfarer.webp", "Трапеция", 0.87),
       },
       {
         label: "Овальные",
@@ -499,7 +499,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Clip",
         count: "12",
         href: frameHref(category, { shape: "Clip" }),
-        icon: frameShapeAssetIcon("/clip.webp", "Clip"),
+        icon: frameShapeAssetIcon("/clip.webp", "Clip", 1.2),
       },
     ],
     demographics: [
