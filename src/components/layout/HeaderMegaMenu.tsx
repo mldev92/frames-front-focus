@@ -427,7 +427,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Трапеция",
         count: "1",
         href: frameHref(category, { shape: "Трапеция" }),
-        icon: frameShapeAssetIcon("/trapec_shape.webp", "Трапеция", 1.275),
+        icon: frameShapeAssetIcon("/wayfarer.webp", "Трапеция", 1.275),
       },
       {
         label: "Овальные",
@@ -439,7 +439,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Панто",
         count: "64",
         href: frameHref(category, { shape: "Панто" }),
-        icon: frameShapeAssetIcon("/Anselm - Oval2.webp", "Панто", 1.15),
+        icon: frameShapeAssetIcon("/panto.webp", "Панто", 1.15),
       },
       {
         label: "Круглые",
@@ -499,7 +499,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         label: "Clip",
         count: "12",
         href: frameHref(category, { shape: "Clip" }),
-        icon: clipOnConstructionIcon,
+        icon: frameShapeAssetIcon("/clip.webp", "Clip"),
       },
     ],
     demographics: [
