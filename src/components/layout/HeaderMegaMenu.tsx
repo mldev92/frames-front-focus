@@ -424,7 +424,7 @@ function buildFrameMega(category: FrameCategory, copy: {
         icon: frameShapeAssetIcon("/square.webp", "Квадратные"),
       },
       {
-        label: "Трапеция",
+        label: "Wayfarer",
         count: "1",
         href: frameHref(category, { shape: "Трапеция" }),
         icon: frameShapeAssetIcon("/wayfarer.webp", "Трапеция", 1.02),

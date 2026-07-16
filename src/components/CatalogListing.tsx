@@ -304,7 +304,7 @@ const FRAME_SHAPE_DEFS: ShapeDef[] = [
     matches: ["Квадратные", "Квадрат"] },
   {
     key: "Трапеция",
-    label: "Трапеция",
+    label: "Wayfarer",
     icon: "trapezoid",
     img: "/wayfarer.webp",
     imgScale: 1.02,
