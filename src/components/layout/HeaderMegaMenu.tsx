@@ -618,7 +618,7 @@ const SUNGLASSES_MENU = buildFrameMega("solntsezashchitnye", {
     imageSrc: "/categ_frames_v4.webp",
     imageAlt: "Подборка оправ",
     price: "от 5 500 ₽",
-    ctaHref: "/catalog_s/opravy/",
+    ctaHref: "/catalog_s/opravy/?color=Черный",
   },
 });
 
