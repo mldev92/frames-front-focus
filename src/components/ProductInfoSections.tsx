@@ -199,18 +199,19 @@ export function ProductInfoSections({
         <Accordion type="multiple" className="border-t border-border">
           <AccordionItem value="guide">
             <AccordionTrigger className="py-5 text-base hover:text-brand hover:no-underline">
-              Как подобрать очки
+              {isContactLens ? "Как подобрать линзы" : "Как подобрать очки"}
             </AccordionTrigger>
             <AccordionContent className="max-w-2xl pb-6 text-muted-foreground">
               <p>
-                Не уверены в размере? Запишитесь на бесплатный подбор в любом из наших салонов.
-                Оптики помогут с выбором формы и посадкой.
+                {isContactLens
+                  ? "Не уверены в параметрах? Запишитесь на бесплатный подбор контактных линз в любом из наших салонов. Оптики помогут определить подходящие параметры и режим ношения."
+                  : "Не уверены в размере? Запишитесь на бесплатный подбор в любом из наших салонов. Оптики помогут с выбором формы и посадкой."}
               </p>
               <a
-                href="/podbor-ochkov/"
+                href={isContactLens ? "/kabinet-diagnostiki-spb/" : "/podbor-ochkov/"}
                 className="mt-4 inline-flex items-center gap-2 font-medium text-brand"
               >
-                Подробнее о подборе
+                {isContactLens ? "Подробнее о подборе линз" : "Подробнее о подборе"}
                 <ArrowRight className="h-4 w-4" />
               </a>
             </AccordionContent>
