@@ -35,7 +35,7 @@ const MEASUREMENTS = [
   {
     labels: ["Ширина окуляра", "Ширина линзы", "Ширина ободка"],
     displayLabel: "Ширина линзы",
-    icon: "/icon_param_hinge_distance.svg",
+    icon: "/icon_param_hinge_distance_updated.svg",
   },
 ] as const;
 
