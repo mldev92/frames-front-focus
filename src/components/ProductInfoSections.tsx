@@ -70,8 +70,8 @@ export function ProductInfoSections({
         ...BASE_INCLUDED_FEATURES.slice(2),
       ]
     : BASE_INCLUDED_FEATURES;
-  const isLensProduct =
-    product.category === "kontaktnye-linzy" || product.category === "linzy-dlya-ochkov";
+  const isContactLens = product.category === "kontaktnye-linzy";
+  const isLensProduct = isContactLens || product.category === "linzy-dlya-ochkov";
   const usesDetailedContent = isLensProduct || product.category === "aksessuary";
   const measurements = MEASUREMENTS.flatMap((measurement) => {
     const spec = product.specs.find((item) =>
@@ -225,7 +225,11 @@ export function ProductInfoSections({
                 <li>Доставка по Санкт-Петербургу от 1 дня</li>
                 <li>Самовывоз из салонов бесплатно</li>
                 <li>Оплата картой, наличными или через СБП</li>
-                <li>Возврат и обмен в течение 14 дней</li>
+                <li>
+                  {isContactLens
+                    ? "Контактные линзы не подлежат возврату и обмену."
+                    : "Возврат и обмен в течение 14 дней"}
+                </li>
               </ul>
             </AccordionContent>
           </AccordionItem>

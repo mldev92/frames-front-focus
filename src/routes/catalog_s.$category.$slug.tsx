@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Heart, ChevronRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
+import { CircleAlert, Heart, ChevronRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { catalogSectionTitle } from "@/data/categories";
 import type { Product } from "@/data/types";
@@ -432,8 +432,8 @@ export function ProductPage({
                 Гарантия
               </div>
               <div className="flex flex-col items-center text-center gap-1">
-                <RotateCcw className="h-4 w-4" />
-                Возврат 14 дн.
+                {isLens ? <CircleAlert className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
+                {isLens ? "Не подлежат возврату" : "Возврат 14 дн."}
               </div>
             </div>
           </div>
