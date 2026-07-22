@@ -250,7 +250,7 @@ const CAT_CELLS = [
   {
     slug: "solntsezashchitnye",
     title: "Солнцезащитные очки",
-    subtitle: "Новые коллекции 2024",
+    subtitle: "Новые коллекции 2026",
     image: "/new_categories_2.webp",
     href: catalogHref("solntsezashchitnye"),
     titlePos: "top" as const,
