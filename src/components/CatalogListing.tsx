@@ -916,7 +916,7 @@ const CATEGORY_VISIBILITY: Record<
     material: false,
     gender: false,
     style: false,
-    availability: true,
+    availability: false,
     brand: true,
   },
   "linzy-dlya-ochkov": {
