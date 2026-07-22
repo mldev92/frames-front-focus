@@ -50,7 +50,7 @@ const paymentMethods: IconItem[] = [
 const deliveryCards = [
   {
     title: "СДЭК с доставкой до пункта выдачи заказов",
-    image: "/payment/cdek-pickup.webp",
+    image: "/sdek_pickup_updated.webp",
     alt: "Пункт выдачи заказов СДЭК",
     Icon: MapPin,
   },
