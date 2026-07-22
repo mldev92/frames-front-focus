@@ -193,7 +193,7 @@ export function Header() {
             </a>
           </div>
 
-          <div className="hidden items-center gap-5 md:flex">
+          <div className="hidden items-center gap-5 xl:flex">
             <button
               onClick={() => document.dispatchEvent(new CustomEvent("open-callback"))}
               className="border-b border-dotted border-white/30 pb-px opacity-70 transition-opacity hover:border-white/70 hover:opacity-100"
@@ -230,16 +230,16 @@ export function Header() {
             onMouseLeave={() => setOpenMegaHref(null)}
           >
             <button
-              className="-ml-2 p-2 lg:hidden"
+              className="-ml-2 p-2 xl:hidden"
               onClick={() => setMobileOpen(true)}
               aria-label="Меню"
             >
               <Menu className="h-5 w-5" />
             </button>
 
-            <SiteLogo imageClassName="h-7 sm:h-9 lg:h-10" />
+            <SiteLogo imageClassName="h-7 sm:h-9 xl:h-10" />
 
-            <nav className="hidden h-full min-w-0 flex-1 items-stretch justify-center gap-1 px-3 lg:flex">
+            <nav className="hidden h-full min-w-0 flex-1 items-stretch justify-center gap-1 px-3 xl:flex">
               {HEADER_NAV_ITEMS.map((item) => {
                 const hasMega = isMegaNavItem(item);
                 const isOpen = openMegaItem?.href === item.href;
@@ -333,7 +333,7 @@ export function Header() {
 
             {openMegaItem && (
               <div
-                className="absolute inset-x-0 top-full z-50 hidden pt-1 lg:block"
+                className="absolute inset-x-0 top-full z-50 hidden pt-1 xl:block"
                 onMouseEnter={() => setOpenMegaHref(openMegaItem.href)}
               >
                 <HeaderMegaPanel menu={openMegaItem.mega!} />
