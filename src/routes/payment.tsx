@@ -160,7 +160,7 @@ function PaymentPage() {
           <span>
             Доставка по всей России
             <small className="hidden text-[10px] font-normal uppercase opacity-75 sm:block">
-              Бесплатно от 5 000 ₽
+              Стоимость рассчитывается при оформлении
             </small>
           </span>
         </div>

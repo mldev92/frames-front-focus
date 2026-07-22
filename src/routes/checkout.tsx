@@ -983,7 +983,7 @@ function Checkout() {
             {/* Trust badges */}
             <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
               <TrustBadge icon={<Shield size={15} />} text="Безопасная оплата через защищённое соединение" />
-              <TrustBadge icon={<Truck size={15} />} text="Бесплатная доставка при самовывозе" />
+              <TrustBadge icon={<Truck size={15} />} text="Бесплатный самовывоз из салона" />
               <TrustBadge icon={<Phone size={15} />} text={`Поддержка специалистов ${CONTACT.phone.label}`} />
             </div>
           </div>

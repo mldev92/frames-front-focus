@@ -106,7 +106,7 @@ function CartPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Доставка</span>
-              <span className="text-success">Бесплатно</span>
+              <span className="text-muted-foreground">Рассчитывается при оформлении</span>
             </div>
           </div>
           <div className="flex justify-between items-baseline pt-4 mb-6">
