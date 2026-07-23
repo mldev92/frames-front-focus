@@ -9,6 +9,7 @@ import { CONTACT } from "@/data/contact";
 import type { Category, Product } from "@/data/types";
 import type { CatalogPage, CatalogQuery, FacetKey as ServerFacetKey } from "@/lib/api/bitrix";
 import type { CityCode } from "@/lib/store/city";
+import { AXIS_AVAILABILITY_VALUE } from "@/lib/contact-lens-filters";
 import { cn } from "@/lib/utils";
 import { GenderIcon, genderToIconKind } from "@/components/ui/GenderIcon";
 
@@ -2081,17 +2082,16 @@ export function CatalogListing({
         ));
       })()}
 
-      {/* Ось — free numeric input, COMMITTED to the URL/API on blur or Enter
-          (the SEL_AXIS enum is 10…180; the server matches numerically). The
-          dropdown's "Своя ось °" chip lands here as ?axis=custom, which the
-          backend ignores — shown as an empty input. */}
+      {/* Ось — free numeric input, committed on blur or Enter. The header's
+          axis-availability deep-link stays visually distinct from a specific
+          numeric axis while the loader expands it to the real SEL_AXIS values. */}
       {categoryKey === "kontaktnye-linzy" && (
         <FilterSection key="axis" title="Ось">
           <input
             type="text"
             inputMode="numeric"
             placeholder="например 90°"
-            value={[...(active.axis ?? [])].find((v) => v !== "custom") ?? ""}
+            value={[...(active.axis ?? [])].find((v) => v !== AXIS_AVAILABILITY_VALUE) ?? ""}
             onChange={(e) => {
               const v = e.target.value.replace(/[^\d]/g, "").trim();
               setActive((prev) => {
@@ -2102,7 +2102,7 @@ export function CatalogListing({
             }}
             onBlur={() => {
               const next = { ...active };
-              const v = [...(next.axis ?? [])].find((x) => x !== "custom");
+              const v = [...(next.axis ?? [])].find((x) => x !== AXIS_AVAILABILITY_VALUE);
               if (v) next.axis = new Set([v]); else delete next.axis;
               emitFilters(next);
             }}
@@ -2297,7 +2297,8 @@ export function CatalogListing({
                     transitionTimingFunction: "var(--ease-editorial)",
                   }}
                 >
-                  {value} <X className="h-3 w-3" />
+                  {facet === "axis" && value === AXIS_AVAILABILITY_VALUE ? "Выбор оси" : value}{" "}
+                  <X className="h-3 w-3" />
                 </button>
               ))}
             </div>
