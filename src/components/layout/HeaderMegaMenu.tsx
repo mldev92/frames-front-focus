@@ -710,7 +710,9 @@ const CONTACT_MENU: ContactMegaMenu = {
   addition: [
     { label: "Low", href: menuHref("kontaktnye-linzy", { addition: "Low" }) },
     { label: "Med", href: menuHref("kontaktnye-linzy", { addition: "Med" }) },
-    { label: "High", href: menuHref("kontaktnye-linzy", { addition: "High" }) },
+    // High is the menu shortcut to the full multifocal range, not a literal
+    // ADD=High filter: two multifocal records do not expose that exact option.
+    { label: "High", href: `${catalogHref("kontaktnye-linzy")}multifokalnye/` },
   ],
   bcValues: [
     { label: "8.4", href: menuHref("kontaktnye-linzy", { bc: "8.4", addition: "Low,Med,High" }) },
