@@ -46,13 +46,19 @@ function ServicesHub() {
               href={serviceHref(s.slug, city)}
               className="group block bg-surface rounded-sm overflow-hidden hover:shadow-lg transition-shadow"
             >
-              <div className="aspect-[16/10] overflow-hidden">
+              <div className="relative aspect-[16/10] overflow-hidden">
                 <img
                   src={s.image}
                   alt={s.title}
                   loading="lazy"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
+                {s.image === "/services3_selection_of_glasses_new.webp" && (
+                  <div
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-0 bg-gradient-to-r from-white/80 via-white/25 to-transparent"
+                  />
+                )}
               </div>
               <div className="p-6">
                 <h2 className="font-serif text-2xl">{s.title}</h2>
