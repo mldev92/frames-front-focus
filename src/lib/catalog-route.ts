@@ -11,10 +11,6 @@ import {
 import type { CityCode } from "@/lib/store/city";
 import type { Product } from "@/data/types";
 import type { CatalogStateChange } from "@/components/CatalogListing";
-import {
-  AXIS_AVAILABILITY_VALUE,
-  CONTACT_LENS_AXIS_VALUES,
-} from "@/lib/contact-lens-filters";
 
 const numOrStr = z
   .preprocess((value) => (typeof value === "number" ? String(value) : value), z.string())
@@ -97,14 +93,6 @@ export function searchToFilters(search: CatalogSearch): Partial<Record<FacetKey,
   return filters;
 }
 
-function searchToApiFilters(search: CatalogSearch): Partial<Record<FacetKey, string[]>> {
-  const filters = searchToFilters(search);
-  if (filters.axis?.includes(AXIS_AVAILABILITY_VALUE)) {
-    filters.axis = [...CONTACT_LENS_AXIS_VALUES];
-  }
-  return filters;
-}
-
 export type LoaderResult =
   | { state: "ok"; data: CatalogPageData }
   | { state: "index_not_ready" }
@@ -123,7 +111,7 @@ export async function loadCatalogPage(
     priceMin: search.priceMin,
     priceMax: search.priceMax,
     city,
-    filters: searchToApiFilters(search),
+    filters: searchToFilters(search),
   };
   try {
     const data = await getCatalogPage(section, query, signal);

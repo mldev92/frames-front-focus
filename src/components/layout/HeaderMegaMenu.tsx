@@ -22,10 +22,6 @@ import {
 } from "lucide-react";
 import { catalogHref } from "@/data/categories";
 import { EXPANDABLE_FACET_PARAMS } from "@/lib/catalog-route";
-import {
-  AXIS_AVAILABILITY_VALUE,
-  MULTIFOCAL_ADDITION_VALUE,
-} from "@/lib/contact-lens-filters";
 import { regionalSiteHref } from "@/lib/city-routing";
 import { cn } from "@/lib/utils";
 import { AppointmentModal } from "@/components/AppointmentModal";
@@ -703,21 +699,18 @@ const CONTACT_MENU: ContactMegaMenu = {
     { label: "+3.00", href: menuHref("kontaktnye-linzy", { sphere: "+3.00" }) },
   ],
   cylinder: [
-    // Numeric values are cylinder dioptre. Axis availability is a separate
-    // deep-link that resolves only to records with real SEL_AXIS options.
+    // Numeric values are cylinder dioptre. "Выбор оси" opens the canonical
+    // toric design facet; only toric lenses should offer an axis choice.
     { label: "−0.75", href: menuHref("kontaktnye-linzy", { cylinder: "−0.75" }) },
     { label: "−1.25", href: menuHref("kontaktnye-linzy", { cylinder: "−1.25" }) },
     { label: "−1.75", href: menuHref("kontaktnye-linzy", { cylinder: "−1.75" }) },
     { label: "−2.25", href: menuHref("kontaktnye-linzy", { cylinder: "−2.25" }) },
-    { label: "Выбор оси °", href: menuHref("kontaktnye-linzy", { axis: AXIS_AVAILABILITY_VALUE }) },
+    { label: "Выбор оси °", href: menuHref("kontaktnye-linzy", { design: "Торические" }) },
   ],
   addition: [
     { label: "Low", href: menuHref("kontaktnye-linzy", { addition: "Low" }) },
     { label: "Med", href: menuHref("kontaktnye-linzy", { addition: "Med" }) },
-    {
-      label: "High",
-      href: menuHref("kontaktnye-linzy", { addition: MULTIFOCAL_ADDITION_VALUE }),
-    },
+    { label: "High", href: menuHref("kontaktnye-linzy", { addition: "High" }) },
   ],
   bcValues: [
     { label: "8.4", href: menuHref("kontaktnye-linzy", { bc: "8.4", addition: "Low,Med,High" }) },
