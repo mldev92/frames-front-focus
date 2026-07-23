@@ -4,7 +4,7 @@ import type { CityCode } from "@/lib/store/city";
 export const services: Service[] = [
   {
     slug: "priem-vracha",
-    title: "Онлайн-запись к врачу",
+    title: "Онлайн запись к врачу (бесплатно при заказе очков)",
     short: "Консультация офтальмолога с подбором коррекции",
     description:
       "Запишитесь на приём к врачу-офтальмологу нашей клиники. Полный осмотр, проверка остроты зрения, подбор очков или контактных линз.",
@@ -26,13 +26,13 @@ export const services: Service[] = [
   },
   {
     slug: "diagnostika",
-    title: "Диагностика зрения",
+    title: "Диагностика зрения детям",
     short: "Полное обследование на современном оборудовании",
     description:
       "Комплексная диагностика зрения с использованием авторефрактометра, тонометра и щелевой лампы.",
-    price: "от 2 800 ₽",
+    price: "2 300 ₽",
     duration: "60 минут",
-    image: "/izmenenie_davleniya.webp",
+    image: "/services3_selection_of_glasses.webp",
     includes: [
       "Авторефрактометрия",
       "Измерение внутриглазного давления",
@@ -49,12 +49,12 @@ export const services: Service[] = [
   {
     slug: "podbor-ochkov",
     title: "Подбор очков",
-    short: "Очки, которые идеально подойдут вашему лицу",
+    short: "Очки, которые точно подойдут вашему лицу",
     description:
       "Опытные оптики помогут выбрать форму, цвет и материал оправы с учётом черт лица и образа жизни.",
     price: "Бесплатно при покупке",
     duration: "30 минут",
-    image: "/services3_selection_of_glasses.webp",
+    image: "/services3_selection_of_glasses_new.webp",
     includes: [
       "Анализ формы лица",
       "Подбор формы и цвета оправы",

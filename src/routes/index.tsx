@@ -917,7 +917,7 @@ function MainV2Page() {
             Услуги салона оптики
           </div>
           <h2 className="font-serif text-3xl lg:text-4xl">
-            Комплексные услуги по подбору очков и линз
+            Комплексные услуги по подбору очков и линз. Ремонт очков
           </h2>
         </Reveal>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
