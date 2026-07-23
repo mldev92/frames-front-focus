@@ -87,7 +87,14 @@ export function searchToFilters(search: CatalogSearch): Partial<Record<FacetKey,
   for (const key of FACET_PARAMS) {
     const value = search[key];
     if (typeof value !== "string" || value.trim() === "") continue;
-    const parts = value.split(",").map((part) => part.trim()).filter(Boolean);
+    let parts = value.split(",").map((part) => part.trim()).filter(Boolean);
+    // Compatibility for the short-lived header link shipped in release
+    // 20260723_183528. "Выбор оси" means toric lenses, not a literal axis
+    // value; normalize cached tabs/bookmarks to the canonical design facet.
+    if (key === "axis" && parts.some((part) => part.toLowerCase() === "available")) {
+      parts = parts.filter((part) => part.toLowerCase() !== "available");
+      filters.design = [...new Set([...(filters.design ?? []), "Торические"])];
+    }
     if (parts.length) filters[key] = parts;
   }
   return filters;
