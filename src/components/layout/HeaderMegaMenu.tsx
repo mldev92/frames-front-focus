@@ -129,6 +129,8 @@ type FeaturedAside = {
   meta?: string;
   note?: string;
   price?: string;
+  promoHref?: string;
+  promoLabel?: string;
   title: string;
 };
 
@@ -839,7 +841,7 @@ const GLASSES_MENU: GlassesMegaMenu = {
   utilities: [
     { label: "Установка линз в свою оправу", href: catalogHref("linzy-dlya-ochkov"), icon: <Glasses className="h-4 w-4" /> },
     { label: "Гид: индекс vs толщина", href: "/blog/linzy-dlya-ochkov/vidy-ochkovykh-linz", icon: <FileText className="h-4 w-4" /> },
-    { label: "Срок изготовления 3–5 дней", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
+    { label: "Срок изготовления от 1 часа", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
     { label: "Кабинет диагностики", href: "/kabinet-diagnostiki-spb", icon: <BookOpen className="h-4 w-4" /> },
   ],
   featured: {
@@ -849,9 +851,11 @@ const GLASSES_MENU: GlassesMegaMenu = {
       "Замедляют прогрессирование миопии у детей на 67%. Технология H.A.L.T. с 1021 микролинзой.",
     imageSrc: "/stellest/hero-child-stellest.webp",
     imageAlt: "Линзы Stellest для контроля миопии",
-    price: "от 21 900 ₽",
+    price: "от 21 900 ₽ за пару",
+    promoHref: "/stellest-katalog-s-linzami/",
+    promoLabel: "Подробнее об акции",
     ctaHref: menuHref("linzy-dlya-ochkov", { technology: "STELLEST" }),
-    ctaLabel: "Подробнее",
+    ctaLabel: "Смотреть линзы",
   },
 };
 
@@ -1535,6 +1539,15 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 />
               </div>
               <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
+              {menu.featured.promoHref && (
+                <a
+                  href={regionalMenuHref(menu.featured.promoHref, city)}
+                  className="inline-flex w-full items-center justify-between rounded-full bg-brand px-4 py-3 text-[12.5px] font-semibold text-brand-foreground transition-opacity hover:opacity-90"
+                >
+                  {menu.featured.promoLabel ?? "Подробнее об акции"}
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              )}
               {menu.featured.meta && (
                 <span className="inline-flex max-w-full rounded-full border border-[#e4dbcf] bg-white px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-brand">
                   {menu.featured.meta}
