@@ -1556,16 +1556,31 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
               {menu.featured.note && (
                 <p className="text-[12px] leading-5 text-muted-foreground">{menu.featured.note}</p>
               )}
-              <div className="mt-auto flex items-center justify-between border-t border-dashed border-border pt-3">
+              <div
+                className={cn(
+                  "mt-auto flex border-t border-dashed border-border pt-3",
+                  menu.featured.promoHref
+                    ? "flex-col items-start gap-2"
+                    : "items-center justify-between",
+                )}
+              >
                 {menu.featured.price && (
-                  <span className="font-serif text-[20px] leading-none text-foreground">
+                  <span
+                    className={cn(
+                      "font-serif leading-none text-foreground",
+                      menu.featured.promoHref ? "whitespace-nowrap text-[18px]" : "text-[20px]",
+                    )}
+                  >
                     {menu.featured.price}
                   </span>
                 )}
                 {menu.featured.ctaHref && (
                   <a
                     href={regionalMenuHref(menu.featured.ctaHref, city)}
-                    className="ml-auto inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
+                    className={cn(
+                      "inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80",
+                      menu.featured.promoHref ? "w-full justify-between" : "ml-auto",
+                    )}
                   >
                     {menu.featured.ctaLabel ?? "Перейти"}
                     <ArrowRight className="h-3.5 w-3.5" />
