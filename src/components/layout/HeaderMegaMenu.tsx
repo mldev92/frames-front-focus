@@ -129,8 +129,6 @@ type FeaturedAside = {
   meta?: string;
   note?: string;
   price?: string;
-  promoHref?: string;
-  promoLabel?: string;
   title: string;
 };
 
@@ -143,6 +141,11 @@ type GlassesMegaMenu = {
   lightTransmissionValues: CountChip[];
   materials: CountChip[];
   purposes: CardLink[];
+  promotion: {
+    eyebrow: string;
+    href: string;
+    title: string;
+  };
   rxHelper: {
     ctaHref: string;
     fields: Array<{ label: string; value: string }>;
@@ -828,6 +831,11 @@ const GLASSES_MENU: GlassesMegaMenu = {
     { label: "Для чтения и офиса", count: "6", href: menuHref("linzy-dlya-ochkov", { purpose: "Для чтения и работы на среднем расстоянии (компьютер)" }), icon: <BookOpen className="h-4 w-4" /> },
     { label: "Детские", count: "10", href: menuHref("linzy-dlya-ochkov", { purpose: "Детские линзы" }), icon: <Eye className="h-4 w-4" /> },
   ],
+  promotion: {
+    eyebrow: "Акция на линзы",
+    href: "/#contact-lens-promo",
+    title: "−10% на контактные линзы",
+  },
   rxHelper: {
     title: "Введите свой рецепт",
     ctaHref: "/podbor-ochkov/",
@@ -852,8 +860,6 @@ const GLASSES_MENU: GlassesMegaMenu = {
     imageSrc: "/stellest/hero-child-stellest.webp",
     imageAlt: "Линзы Stellest для контроля миопии",
     price: "от 21 900 ₽ за пару",
-    promoHref: "/stellest-katalog-s-linzami/",
-    promoLabel: "Подробнее об акции",
     ctaHref: menuHref("linzy-dlya-ochkov", { technology: "STELLEST" }),
     ctaLabel: "Смотреть линзы",
   },
@@ -1366,8 +1372,8 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
 
   return (
     <div className={panelShellClass}>
-      <div className="bg-white">
-        <div className="px-5 py-6 lg:px-6 xl:px-8">
+      <div className="flex max-h-[calc(100vh-4.25rem)] flex-col bg-white">
+        <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-4 pt-6 lg:px-6 xl:px-8">
           <div className="mb-6 flex flex-col gap-4 border-b border-[#ece7df] pb-5 xl:flex-row xl:items-end xl:justify-between">
             <div className="flex flex-wrap items-end gap-3">
               <h2 className="font-serif text-[26px] leading-none tracking-[-0.02em] text-foreground xl:text-[30px]">
@@ -1408,6 +1414,21 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                   </a>
                 ))}
               </div>
+
+              <a
+                href={regionalMenuHref(menu.promotion.href, city)}
+                className="mt-4 flex items-center justify-between gap-3 rounded-[16px] bg-brand px-4 py-3.5 text-brand-foreground transition-opacity hover:opacity-90"
+              >
+                <span>
+                  <span className="block text-[10px] font-semibold uppercase tracking-[0.16em] opacity-75">
+                    {menu.promotion.eyebrow}
+                  </span>
+                  <span className="mt-1 block text-[13px] font-semibold leading-snug">
+                    {menu.promotion.title}
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0" />
+              </a>
             </section>
 
             <section>
@@ -1539,15 +1560,6 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 />
               </div>
               <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
-              {menu.featured.promoHref && (
-                <a
-                  href={regionalMenuHref(menu.featured.promoHref, city)}
-                  className="inline-flex w-full items-center justify-between rounded-full bg-brand px-4 py-3 text-[12.5px] font-semibold text-brand-foreground transition-opacity hover:opacity-90"
-                >
-                  {menu.featured.promoLabel ?? "Подробнее об акции"}
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-              )}
               {menu.featured.meta && (
                 <span className="inline-flex max-w-full rounded-full border border-[#e4dbcf] bg-white px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-brand">
                   {menu.featured.meta}
@@ -1556,31 +1568,16 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
               {menu.featured.note && (
                 <p className="text-[12px] leading-5 text-muted-foreground">{menu.featured.note}</p>
               )}
-              <div
-                className={cn(
-                  "mt-auto flex border-t border-dashed border-border pt-3",
-                  menu.featured.promoHref
-                    ? "flex-col items-start gap-2"
-                    : "items-center justify-between",
-                )}
-              >
+              <div className="mt-auto flex flex-col items-start gap-2 border-t border-dashed border-border pt-3">
                 {menu.featured.price && (
-                  <span
-                    className={cn(
-                      "font-serif leading-none text-foreground",
-                      menu.featured.promoHref ? "whitespace-nowrap text-[18px]" : "text-[20px]",
-                    )}
-                  >
+                  <span className="whitespace-nowrap font-serif text-[18px] leading-none text-foreground">
                     {menu.featured.price}
                   </span>
                 )}
                 {menu.featured.ctaHref && (
                   <a
                     href={regionalMenuHref(menu.featured.ctaHref, city)}
-                    className={cn(
-                      "inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80",
-                      menu.featured.promoHref ? "w-full justify-between" : "ml-auto",
-                    )}
+                    className="inline-flex w-full items-center justify-between gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
                   >
                     {menu.featured.ctaLabel ?? "Перейти"}
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -1589,9 +1586,10 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
               </div>
             </aside>
           </div>
+        </div>
 
-
-          <div className="mt-6 grid gap-3 border-t border-[#ece7df] pt-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="shrink-0 border-t border-[#ece7df] bg-white px-5 py-3 lg:px-6 xl:px-8">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {menu.utilities.map((item) => (
               <a
                 key={item.label}

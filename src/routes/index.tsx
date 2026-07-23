@@ -970,7 +970,10 @@ function MainV2Page() {
           6a. CONTACT LENS CAROUSEL — real products from catalog data
          ───────────────────────────────────────────────────────────── */}
       {contactLensProducts.length > 0 && (
-        <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
+        <section
+          id="contact-lens-promo"
+          style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
+        >
           <div className="mx-auto max-w-7xl px-4 lg:px-8">
             <MainV2ContactLensCarousel products={contactLensProducts} promo={lensPromo} />
           </div>
