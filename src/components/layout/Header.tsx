@@ -193,6 +193,16 @@ export function Header() {
             </a>
           </div>
 
+          <a
+            href={regionalHref("/#promotions")}
+            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 font-semibold text-primary-foreground no-underline transition-colors hover:border-white/35 hover:bg-white/15 sm:px-3"
+            aria-label="Все Акции"
+          >
+            <span className="sm:hidden">Акции</span>
+            <span className="hidden sm:inline">Все Акции</span>
+            <span aria-hidden="true">→</span>
+          </a>
+
           <div className="hidden items-center gap-5 xl:flex">
             <button
               onClick={() => document.dispatchEvent(new CustomEvent("open-callback"))}
