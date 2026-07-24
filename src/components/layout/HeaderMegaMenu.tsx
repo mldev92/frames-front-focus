@@ -1372,7 +1372,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
 
   return (
     <div className={panelShellClass}>
-      <div className="flex max-h-[calc(100vh-4.25rem)] flex-col bg-white">
+      <div className="flex max-h-[calc(100dvh-6rem)] flex-col bg-white">
         <div className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-4 pt-6 lg:px-6 xl:px-8">
           <div className="mb-6 flex flex-col gap-4 border-b border-[#ece7df] pb-5 xl:flex-row xl:items-end xl:justify-between">
             <div className="flex flex-wrap items-end gap-3">
