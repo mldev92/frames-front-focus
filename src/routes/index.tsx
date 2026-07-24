@@ -971,7 +971,6 @@ function MainV2Page() {
          ───────────────────────────────────────────────────────────── */}
       {contactLensProducts.length > 0 && (
         <section
-          id="contact-lens-promo"
           style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
         >
           <div className="mx-auto max-w-7xl px-4 lg:px-8">
@@ -989,6 +988,7 @@ function MainV2Page() {
           6c. PAIRED BANNERS — child myopia + virtual try-on promo
          ───────────────────────────────────────────────────────────── */}
       <section
+        id="promotions"
         className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20"
         style={{ background: "var(--background)" }}
       >

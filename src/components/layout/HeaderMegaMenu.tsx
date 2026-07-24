@@ -832,9 +832,9 @@ const GLASSES_MENU: GlassesMegaMenu = {
     { label: "Детские", count: "10", href: menuHref("linzy-dlya-ochkov", { purpose: "Детские линзы" }), icon: <Eye className="h-4 w-4" /> },
   ],
   promotion: {
-    eyebrow: "Акция на линзы",
-    href: "/#contact-lens-promo",
-    title: "−10% на контактные линзы",
+    eyebrow: "Акции и предложения",
+    href: "/#promotions",
+    title: "Все акции",
   },
   rxHelper: {
     title: "Введите свой рецепт",
