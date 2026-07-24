@@ -834,7 +834,7 @@ const GLASSES_MENU: GlassesMegaMenu = {
   promotion: {
     eyebrow: "Акции и предложения",
     href: "/#promotions",
-    title: "Все акции",
+    title: "Все Акции",
   },
   rxHelper: {
     title: "Введите свой рецепт",
