@@ -21,6 +21,7 @@ import { Route as PodborOchkovRouteImport } from './routes/podbor-ochkov'
 import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as ONasRouteImport } from './routes/o-nas'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MainV2RouteImport } from './routes/main-v2'
 import { Route as LoyaltyRouteImport } from './routes/loyalty'
 import { Route as KabinetDiagnostikiSpbRouteImport } from './routes/kabinet-diagnostiki-spb'
@@ -39,12 +40,15 @@ import { Route as Catalog_sSplatRouteImport } from './routes/catalog_s.$'
 import { Route as Catalog_nCategoryRouteImport } from './routes/catalog_n.$category'
 import { Route as Catalog_nSplatRouteImport } from './routes/catalog_n.$'
 import { Route as BlogCategoryRouteImport } from './routes/blog.$category'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Catalog_sCategoryIndexRouteImport } from './routes/catalog_s.$category.index'
 import { Route as Catalog_nCategoryIndexRouteImport } from './routes/catalog_n.$category.index'
 import { Route as BlogCategoryIndexRouteImport } from './routes/blog.$category.index'
 import { Route as Catalog_sCategorySlugRouteImport } from './routes/catalog_s.$category.$slug'
 import { Route as Catalog_nCategorySlugRouteImport } from './routes/catalog_n.$category.$slug'
 import { Route as BlogCategorySlugRouteImport } from './routes/blog.$category.$slug'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRouteImport } from './routes/blog.linzy-dlya-ochkov.pokrytiya-linz-dlya-ochkov.index'
 
 const WarrantyRoute = WarrantyRouteImport.update({
@@ -106,6 +110,11 @@ const PaymentRoute = PaymentRouteImport.update({
 const ONasRoute = ONasRouteImport.update({
   id: '/o-nas',
   path: '/o-nas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MainV2Route = MainV2RouteImport.update({
@@ -198,6 +207,18 @@ const BlogCategoryRoute = BlogCategoryRouteImport.update({
   path: '/$category',
   getParentRoute: () => BlogRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const Catalog_sCategoryIndexRoute = Catalog_sCategoryIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -228,6 +249,12 @@ const BlogCategorySlugRoute = BlogCategorySlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => BlogCategoryRoute,
 } as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute =
   BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRouteImport.update({
     id: '/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/',
@@ -245,6 +272,7 @@ export interface FileRoutesByFullPath {
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/main-v2': typeof MainV2Route
+  '/mcp': typeof McpRoute
   '/o-nas': typeof ONasRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
@@ -257,6 +285,8 @@ export interface FileRoutesByFullPath {
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/warranty': typeof WarrantyRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_n/$': typeof Catalog_nSplatRoute
   '/catalog_n/$category': typeof Catalog_nCategoryRouteWithChildren
@@ -266,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/personal/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_n/$category/$slug': typeof Catalog_nCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
@@ -283,6 +314,7 @@ export interface FileRoutesByTo {
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/main-v2': typeof MainV2Route
+  '/mcp': typeof McpRoute
   '/o-nas': typeof ONasRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
@@ -295,12 +327,15 @@ export interface FileRoutesByTo {
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/warranty': typeof WarrantyRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/catalog_n/$': typeof Catalog_nSplatRoute
   '/catalog_s/$': typeof Catalog_sSplatRoute
   '/personal/orders': typeof PersonalOrdersRoute
   '/personal/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog': typeof BlogIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_n/$category/$slug': typeof Catalog_nCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
@@ -320,6 +355,7 @@ export interface FileRoutesById {
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/main-v2': typeof MainV2Route
+  '/mcp': typeof McpRoute
   '/o-nas': typeof ONasRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
@@ -332,6 +368,8 @@ export interface FileRoutesById {
   '/tinkoff': typeof TinkoffRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/warranty': typeof WarrantyRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/blog/$category': typeof BlogCategoryRouteWithChildren
   '/catalog_n/$': typeof Catalog_nSplatRoute
   '/catalog_n/$category': typeof Catalog_nCategoryRouteWithChildren
@@ -341,6 +379,7 @@ export interface FileRoutesById {
   '/personal_/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_n/$category/$slug': typeof Catalog_nCategorySlugRoute
   '/catalog_s/$category/$slug': typeof Catalog_sCategorySlugRoute
@@ -361,6 +400,7 @@ export interface FileRouteTypes {
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/main-v2'
+    | '/mcp'
     | '/o-nas'
     | '/payment'
     | '/personal'
@@ -373,6 +413,8 @@ export interface FileRouteTypes {
     | '/tinkoff'
     | '/uslugi'
     | '/warranty'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/blog/$category'
     | '/catalog_n/$'
     | '/catalog_n/$category'
@@ -382,6 +424,7 @@ export interface FileRouteTypes {
     | '/personal/private'
     | '/uslugi/$slug'
     | '/blog/'
+    | '/.mcp/invoke-tool/$tool'
     | '/blog/$category/$slug'
     | '/catalog_n/$category/$slug'
     | '/catalog_s/$category/$slug'
@@ -399,6 +442,7 @@ export interface FileRouteTypes {
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/main-v2'
+    | '/mcp'
     | '/o-nas'
     | '/payment'
     | '/personal'
@@ -411,12 +455,15 @@ export interface FileRouteTypes {
     | '/tinkoff'
     | '/uslugi'
     | '/warranty'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/catalog_n/$'
     | '/catalog_s/$'
     | '/personal/orders'
     | '/personal/private'
     | '/uslugi/$slug'
     | '/blog'
+    | '/.mcp/invoke-tool/$tool'
     | '/blog/$category/$slug'
     | '/catalog_n/$category/$slug'
     | '/catalog_s/$category/$slug'
@@ -435,6 +482,7 @@ export interface FileRouteTypes {
     | '/kabinet-diagnostiki-spb'
     | '/loyalty'
     | '/main-v2'
+    | '/mcp'
     | '/o-nas'
     | '/payment'
     | '/personal'
@@ -447,6 +495,8 @@ export interface FileRouteTypes {
     | '/tinkoff'
     | '/uslugi'
     | '/warranty'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/blog/$category'
     | '/catalog_n/$'
     | '/catalog_n/$category'
@@ -456,6 +506,7 @@ export interface FileRouteTypes {
     | '/personal_/private'
     | '/uslugi/$slug'
     | '/blog/'
+    | '/.mcp/invoke-tool/$tool'
     | '/blog/$category/$slug'
     | '/catalog_n/$category/$slug'
     | '/catalog_s/$category/$slug'
@@ -475,6 +526,7 @@ export interface RootRouteChildren {
   KabinetDiagnostikiSpbRoute: typeof KabinetDiagnostikiSpbRoute
   LoyaltyRoute: typeof LoyaltyRoute
   MainV2Route: typeof MainV2Route
+  McpRoute: typeof McpRoute
   ONasRoute: typeof ONasRoute
   PaymentRoute: typeof PaymentRoute
   PersonalRoute: typeof PersonalRoute
@@ -487,12 +539,15 @@ export interface RootRouteChildren {
   TinkoffRoute: typeof TinkoffRoute
   UslugiRoute: typeof UslugiRouteWithChildren
   WarrantyRoute: typeof WarrantyRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   Catalog_nSplatRoute: typeof Catalog_nSplatRoute
   Catalog_nCategoryRoute: typeof Catalog_nCategoryRouteWithChildren
   Catalog_sSplatRoute: typeof Catalog_sSplatRoute
   Catalog_sCategoryRoute: typeof Catalog_sCategoryRouteWithChildren
   PersonalOrdersRoute: typeof PersonalOrdersRoute
   PersonalPrivateRoute: typeof PersonalPrivateRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -579,6 +634,13 @@ declare module '@tanstack/react-router' {
       path: '/o-nas'
       fullPath: '/o-nas'
       preLoaderRoute: typeof ONasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/main-v2': {
@@ -707,6 +769,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogCategoryRouteImport
       parentRoute: typeof BlogRoute
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/catalog_s/$category/': {
       id: '/catalog_s/$category/'
       path: '/'
@@ -748,6 +824,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/blog/$category/$slug'
       preLoaderRoute: typeof BlogCategorySlugRouteImport
       parentRoute: typeof BlogCategoryRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/': {
       id: '/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/'
@@ -835,6 +918,7 @@ const rootRouteChildren: RootRouteChildren = {
   KabinetDiagnostikiSpbRoute: KabinetDiagnostikiSpbRoute,
   LoyaltyRoute: LoyaltyRoute,
   MainV2Route: MainV2Route,
+  McpRoute: McpRoute,
   ONasRoute: ONasRoute,
   PaymentRoute: PaymentRoute,
   PersonalRoute: PersonalRoute,
@@ -847,12 +931,16 @@ const rootRouteChildren: RootRouteChildren = {
   TinkoffRoute: TinkoffRoute,
   UslugiRoute: UslugiRouteWithChildren,
   WarrantyRoute: WarrantyRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   Catalog_nSplatRoute: Catalog_nSplatRoute,
   Catalog_nCategoryRoute: Catalog_nCategoryRouteWithChildren,
   Catalog_sSplatRoute: Catalog_sSplatRoute,
   Catalog_sCategoryRoute: Catalog_sCategoryRouteWithChildren,
   PersonalOrdersRoute: PersonalOrdersRoute,
   PersonalPrivateRoute: PersonalPrivateRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

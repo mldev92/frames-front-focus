@@ -12,6 +12,7 @@ import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 // @cloudflare/vite-plugin builds from this — wrangler.jsonc main alone is insufficient.
 export default defineConfig({
   vite: {
+    plugins: [mcpPlugin()],
     server: {
       allowedHosts: [".ngrok-free.app", "optika-new.p2print.site", "optika.p2print.site"],
       headers: {
@@ -19,6 +20,7 @@ export default defineConfig({
       },
     },
   },
+
   tanstackStart: {
     server: { entry: "server" },
   },
