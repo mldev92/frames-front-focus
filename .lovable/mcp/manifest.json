@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.1",
+  "path": "/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "style-replica-studio",
+      "version": "0.1.0",
+      "title": "Style Replica Studio"
+    },
+    "tools": [
+      {
+        "name": "search_products",
+        "title": "Search products",
+        "description": "Search the ОПТИКА 100% catalog (frames, sunglasses, contact lenses, spectacle lenses, accessories) by text, category, brand and price.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free text matched against name, brand, description, shape or material."
+            },
+            "category": {
+              "type": "string",
+              "description": "Category slug, e.g. opravy, solntsezashchitnye, kontaktnye-linzy, linzy-dlya-ochkov, aksessuary."
+            },
+            "brand": {
+              "type": "string",
+              "description": "Brand name filter (case-insensitive substring)."
+            },
+            "maxPrice": {
+              "type": "number",
+              "description": "Maximum price in RUB."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "description": "Max results, default 20."
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_product",
+        "title": "Get product",
+        "description": "Get full details for one catalog product by its slug (specs, colors, price, description).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "slug": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Product slug, e.g. vysota-oversize-crystal."
+            }
+          },
+          "required": [
+            "slug"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_categories",
+        "title": "List catalog categories",
+        "description": "List the catalog categories of the store with product counts and URLs.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_salons",
+        "title": "List salons",
+        "description": "List the ОПТИКА 100% optical salons with addresses, metro, phones and opening hours.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_services",
+        "title": "List clinic services",
+        "description": "List vision-clinic services (diagnostics, doctor appointments, fitting, repair) with price and duration.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "search_articles",
+        "title": "Search blog articles",
+        "description": "Search the store's blog articles about eyewear, lenses and eye health.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "query": {
+              "type": "string",
+              "description": "Free text matched against title and excerpt."
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991,
+              "description": "Max results, default 10."
+            }
+          }
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
