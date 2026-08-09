@@ -18,6 +18,7 @@ import {
   type PriorityOption,
   type PurposeOption,
 } from "./data";
+import { getRecommendedLensIndex } from "./logic";
 
 type Eye = { sph: string; cyl: string; axi: string; add: string };
 const emptyEye: Eye = { sph: "", cyl: "", axi: "", add: "" };
@@ -328,6 +329,8 @@ export function LensWizard({
               <StepResults
                 purpose={purpose}
                 rxMode={rxMode}
+                od={od}
+                os={os}
                 priorities={priorities}
                 lensFinish={lensFinish}
                 photochromicColor={photochromicColor}
@@ -951,6 +954,8 @@ function StepBrand({
 function StepResults({
   purpose,
   rxMode,
+  od,
+  os,
   priorities,
   lensFinish,
   photochromicColor,
@@ -959,6 +964,8 @@ function StepResults({
 }: {
   purpose: PurposeOption | null;
   rxMode: RxMode;
+  od: Eye;
+  os: Eye;
   priorities: PriorityOption[];
   lensFinish: LensFinishOption | null;
   photochromicColor: PhotochromicColorId | null;
@@ -966,9 +973,25 @@ function StepResults({
   brand: BrandOption | null;
 }) {
   const colorTitle = PHOTOCHROMIC_COLORS.find((color) => color.id === photochromicColor)?.title;
+  const indexRecommendation =
+    rxMode === "has" ? getRecommendedLensIndex(od, os) : null;
+  const formatSphericalEquivalent = (value: number) =>
+    `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
   const rows = [
     ["Назначение", purpose?.title],
     ["Рецепт", rxMode === "has" ? "Введён" : "Нет — предварительный подбор"],
+    [
+      "Сфероэквивалент",
+      indexRecommendation
+        ? `OD ${formatSphericalEquivalent(indexRecommendation.odSphericalEquivalent)} · OS ${formatSphericalEquivalent(indexRecommendation.osSphericalEquivalent)}`
+        : null,
+    ],
+    [
+      "Индекс для обеих линз",
+      indexRecommendation
+        ? `${indexRecommendation.index} — по глазу с большей нагрузкой`
+        : null,
+    ],
     ["Приоритеты", priorities.map((item) => item.title).join(", ")],
     ["Тип линзы", lensFinish?.title],
     ["Цвет фотохрома", colorTitle],
@@ -980,7 +1003,7 @@ function StepResults({
     <div>
       <StepHeader
         title="Предварительный подбор сформирован"
-        subtitle="Точные модели появятся после подключения актуальных прайсов и проверки совместимости SKU."
+        subtitle="Рекомендуемый индекс рассчитан по рецепту. Точные модели и ориентировочные цены появятся после подключения актуальных прайсов."
       />
 
       <section className="rounded-xl border border-border bg-surface/50 p-5">
@@ -1016,8 +1039,9 @@ function StepResults({
       <div className="mt-6 flex gap-3 rounded-xl border border-brand/20 bg-brand/5 p-4 text-sm">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
         <p>
-          Мы не показываем вымышленные цены или наличие. Специалист проверит рецепт, оправу и
-          конкретные позиции прайса перед подтверждением заказа.
+          Индекс для пары рассчитывается по большему значению OD/OS и применяется к обеим линзам.
+          Будущая цена будет ориентировочной: она зависит от актуального курса ЦБ + 2% и настроенной
+          наценки. Специалист подтвердит итоговую стоимость перед заказом.
         </p>
       </div>
     </div>
