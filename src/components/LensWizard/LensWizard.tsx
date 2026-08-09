@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Check, ChevronLeft, HelpCircle, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, Check, ChevronLeft, HelpCircle, Info, X } from "lucide-react";
 import { toast } from "sonner";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
@@ -28,8 +28,8 @@ const STEPS: { id: StepId; label: string; sub?: string }[] = [
   { id: 1, label: "Назначение" },
   { id: 2, label: "Рецепт" },
   { id: 3, label: "Линзы" },
-  { id: 4, label: "Толщина" },
-  { id: 5, label: "Дизайн" },
+  { id: 4, label: "Материал и индекс" },
+  { id: 5, label: "Дизайн и покрытие" },
   { id: 6, label: "Бренд" },
 ];
 
@@ -58,6 +58,7 @@ export function LensWizard({
   const [indexOpt, setIndexOpt] = useState<IndexOption | null>(null);
   const [design, setDesign] = useState<DesignOption | null>(null);
   const [brand, setBrand] = useState<BrandOption | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const { add } = useCart();
   const city = useCityStore((s) => s.city);
@@ -71,20 +72,37 @@ export function LensWizard({
     }
   }, [open]);
 
-  const total = useMemo(() => {
-    return (
-      frame.price +
-      (lensType?.fromPrice ?? 0) +
-      (indexOpt?.fromPrice ?? 0) +
-      (design?.fromPrice ?? 0) +
-      (brand?.fromPrice ?? 0)
-    );
-  }, [frame.price, lensType, indexOpt, design, brand]);
+  useEffect(() => {
+    if (open) scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+  }, [open, step]);
 
   if (!open) return null;
 
-  const goNext = () => setStep((s) => (s < 6 ? ((s + 1) as StepId) : s));
+  const goNext = () => {
+    if (step === 2 && od.sph && os.sph) setSkipRx(false);
+    setStep((s) => (s < 6 ? ((s + 1) as StepId) : s));
+  };
   const goBack = () => setStep((s) => (s > 1 ? ((s - 1) as StepId) : s));
+
+  const resetWizard = () => {
+    setStep(1);
+    setPurpose(null);
+    setOd(emptyEye);
+    setOs(emptyEye);
+    setPd("");
+    setPdNear("");
+    setTwoPd(false);
+    setSkipRx(false);
+    setLensType(null);
+    setIndexOpt(null);
+    setDesign(null);
+    setBrand(null);
+  };
+
+  const closeWizard = () => {
+    resetWizard();
+    onClose();
+  };
 
   const handleStepClick = (id: StepId) => {
     // allow navigating only to completed steps or current
@@ -113,7 +131,7 @@ export function LensWizard({
 
   const handleFinish = () => {
     if (!purpose || !lensType || !indexOpt || !design || !brand) return;
-    const summary = `${purpose.title} · ${lensType.title} · ${indexOpt.title} · ${brand.title}`;
+    const summary = `${purpose.title} · ${lensType.title} · ${indexOpt.title} · ${design.title} · ${brand.title}`;
     add(frame, {
       color: selectedColor,
       image: previewImage,
@@ -127,9 +145,8 @@ export function LensWizard({
               left: { sphere: os.sph, cylinder: os.cyl, axis: os.axi, addition: os.add },
             },
     });
-    toast.success(`Комплект «${frame.name}» добавлен в корзину`);
-    onClose();
-    setStep(1);
+    toast.success(`Оправа и параметры линз добавлены в корзину`);
+    closeWizard();
   };
 
   return (
@@ -172,12 +189,10 @@ export function LensWizard({
             })}
           </nav>
           <div className="ml-auto flex items-center gap-3 md:hidden">
-            <span className="text-xs text-muted-foreground">
-              Шаг {step}/6
-            </span>
+            <span className="text-xs text-muted-foreground">Шаг {step}/6</span>
           </div>
           <button
-            onClick={onClose}
+            onClick={closeWizard}
             aria-label="Закрыть"
             className="rounded-full p-2 hover:bg-surface"
           >
@@ -185,19 +200,17 @@ export function LensWizard({
           </button>
         </div>
         <div className="block px-4 pb-3 md:hidden">
-          <div className="text-xs uppercase tracking-wider text-brand">
-            {STEPS[step - 1].label}
-          </div>
+          <div className="text-xs uppercase tracking-wider text-brand">{STEPS[step - 1].label}</div>
         </div>
       </header>
 
       {/* Body */}
-      <div className="flex-1 overflow-y-auto">
+      <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="mx-auto grid w-full max-w-[1400px] gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:px-8 lg:py-10">
           {/* LEFT: frame preview */}
-          <aside className="lg:sticky lg:top-24 lg:self-start">
+          <aside className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
             <button
-              onClick={onClose}
+              onClick={closeWizard}
               className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -220,15 +233,38 @@ export function LensWizard({
                 </p>
               )}
               <p className="mt-2 text-sm text-muted-foreground">
-                В быстром подборе линз мы предлагаем самые популярные бренды — Essilor,
-                Zeiss и Hoya. Если Вам нужны линзы другого бренда, обратитесь к нашим
-                консультантам.
+                В подборе представлены Essilor, Zeiss с линейками Synchrony и Hoya с линейками
+                MAXXEE. Другие варианты поможет подобрать консультант.
               </p>
             </div>
           </aside>
 
           {/* RIGHT: step content */}
           <main className="min-w-0">
+            <div className="mb-5 flex items-center gap-3 rounded-xl border border-border bg-surface/60 p-3 lg:hidden">
+              <img
+                src={previewImage ?? frame.images[0]}
+                alt={frame.name}
+                className="h-16 w-20 shrink-0 object-contain mix-blend-multiply"
+              />
+              <div className="min-w-0">
+                <div className="truncate text-sm font-medium">
+                  {frame.brand} {frame.name}
+                </div>
+                {selectedColor && (
+                  <div className="mt-1 text-xs text-muted-foreground">Цвет: {selectedColor}</div>
+                )}
+              </div>
+            </div>
+
+            <div className="mb-6 flex gap-3 rounded-xl border border-brand/20 bg-brand/5 p-4 text-sm">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+              <p>
+                Подбор предварительный. Точную модель, совместимость и стоимость линз подтвердит
+                менеджер перед оформлением заказа.
+              </p>
+            </div>
+
             {step > 1 && (
               <button
                 onClick={goBack}
@@ -239,30 +275,53 @@ export function LensWizard({
             )}
 
             {step === 1 && (
-              <StepPurpose value={purpose} onChange={(v) => { setPurpose(v); setLensType(null); }} />
+              <StepPurpose
+                value={purpose}
+                onChange={(v) => {
+                  setPurpose(v);
+                  setLensType(null);
+                  setIndexOpt(null);
+                  setDesign(null);
+                  setBrand(null);
+                }}
+              />
             )}
             {step === 2 && (
               <StepRx
                 purpose={purpose}
-                od={od} setOd={setOd}
-                os={os} setOs={setOs}
-                pd={pd} setPd={setPd}
-                pdNear={pdNear} setPdNear={setPdNear}
-                twoPd={twoPd} setTwoPd={setTwoPd}
-                onSkip={() => { setSkipRx(true); goNext(); }}
+                od={od}
+                setOd={setOd}
+                os={os}
+                setOs={setOs}
+                pd={pd}
+                setPd={setPd}
+                pdNear={pdNear}
+                setPdNear={setPdNear}
+                twoPd={twoPd}
+                setTwoPd={setTwoPd}
+                onSkip={() => {
+                  setSkipRx(true);
+                  goNext();
+                }}
               />
             )}
             {step === 3 && purpose && (
               <StepLensType purposeId={purpose.id} value={lensType} onChange={setLensType} />
             )}
-            {step === 4 && (
-              <StepIndex value={indexOpt} onChange={setIndexOpt} />
-            )}
-            {step === 5 && (
-              <StepDesign value={design} onChange={setDesign} />
-            )}
+            {step === 4 && <StepIndex value={indexOpt} onChange={setIndexOpt} />}
+            {step === 5 && <StepDesign value={design} onChange={setDesign} />}
             {step === 6 && (
-              <StepBrand value={brand} onChange={setBrand} />
+              <>
+                <StepBrand value={brand} onChange={setBrand} />
+                <SelectionReview
+                  purpose={purpose}
+                  lensType={lensType}
+                  indexOpt={indexOpt}
+                  design={design}
+                  brand={brand}
+                  hasRx={!skipRx && !!purpose?.needsRx}
+                />
+              </>
             )}
           </main>
         </div>
@@ -270,21 +329,19 @@ export function LensWizard({
 
       {/* Sticky footer */}
       <footer className="sticky bottom-0 z-10 border-t border-border bg-background">
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-4 lg:px-8">
-          <div className="text-sm">
-            <span className="text-muted-foreground">Цена: </span>
-            {frame.oldPrice && (
-              <span className="mr-2 text-muted-foreground line-through">
-                {formatPrice(frame.oldPrice + (lensType?.fromPrice ?? 0))}
-              </span>
-            )}
-            <strong className="font-serif text-xl">{formatPrice(total)}</strong>
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 lg:px-8 lg:py-4">
+          <div className="min-w-0 text-sm">
+            <div className="text-xs text-muted-foreground">Оправа</div>
+            <strong className="font-serif text-lg sm:text-xl">{formatPrice(frame.price)}</strong>
+            <div className="hidden text-xs text-muted-foreground sm:block">
+              Стоимость линз — после проверки подбора
+            </div>
           </div>
           {step < 6 ? (
             <button
               onClick={goNext}
               disabled={!canProceed}
-              className="rounded-full bg-brand px-8 py-3 text-sm font-semibold text-brand-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+              className="shrink-0 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground transition-opacity hover:opacity-90 disabled:opacity-40 sm:px-8"
             >
               Далее
             </button>
@@ -292,9 +349,9 @@ export function LensWizard({
             <button
               onClick={handleFinish}
               disabled={!canProceed}
-              className="rounded-full bg-brand px-8 py-3 text-sm font-semibold text-brand-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+              className="shrink-0 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground transition-opacity hover:opacity-90 disabled:opacity-40 sm:px-8"
             >
-              В корзину
+              Добавить комплект
             </button>
           )}
         </div>
@@ -341,6 +398,7 @@ function OptionCard({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
         "group flex w-full items-start gap-4 rounded-xl border bg-background p-5 text-left transition-all",
         active ? "border-brand bg-brand/5 shadow-sm" : "border-border hover:border-foreground/30",
@@ -355,9 +413,7 @@ function OptionCard({
             </span>
           )}
         </div>
-        {description && (
-          <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
-        )}
+        {description && <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>}
         {warning && (
           <p className="mt-2 inline-flex items-center gap-1 text-xs text-amber-700">
             <HelpCircle className="h-3 w-3" /> {warning}
@@ -397,7 +453,7 @@ function ConsultationCard() {
   const Icon = CONSULTATION.icon;
   return (
     <a
-      href="tel:+78127777777"
+      href="/contacts/"
       className="flex items-center gap-4 rounded-xl border border-border bg-background p-5 transition-colors hover:border-foreground/30"
     >
       <div className="flex-1">
@@ -430,8 +486,6 @@ function StepPurpose({
               active={value?.id === p.id}
               title={p.title}
               description={p.subtitle}
-              count={p.count}
-              fromPrice={p.fromPrice}
               icon={<Icon className="h-7 w-7" />}
               onClick={() => onChange(p)}
             />
@@ -449,17 +503,20 @@ function RxSelect({
   options,
   placeholder = "Нет",
   disabled,
+  ariaLabel,
 }: {
   value: string;
   onChange: (v: string) => void;
   options: string[];
   placeholder?: string;
   disabled?: boolean;
+  ariaLabel?: string;
 }) {
   return (
     <select
       value={value}
       disabled={disabled}
+      aria-label={ariaLabel}
       onChange={(e) => onChange(e.target.value)}
       className={cn(
         "w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:border-brand focus:outline-none",
@@ -478,19 +535,29 @@ function RxSelect({
 
 function StepRx({
   purpose,
-  od, setOd,
-  os, setOs,
-  pd, setPd,
-  pdNear, setPdNear,
-  twoPd, setTwoPd,
+  od,
+  setOd,
+  os,
+  setOs,
+  pd,
+  setPd,
+  pdNear,
+  setPdNear,
+  twoPd,
+  setTwoPd,
   onSkip,
 }: {
   purpose: PurposeOption | null;
-  od: Eye; setOd: (v: Eye) => void;
-  os: Eye; setOs: (v: Eye) => void;
-  pd: string; setPd: (v: string) => void;
-  pdNear: string; setPdNear: (v: string) => void;
-  twoPd: boolean; setTwoPd: (v: boolean) => void;
+  od: Eye;
+  setOd: (v: Eye) => void;
+  os: Eye;
+  setOs: (v: Eye) => void;
+  pd: string;
+  setPd: (v: string) => void;
+  pdNear: string;
+  setPdNear: (v: string) => void;
+  twoPd: boolean;
+  setTwoPd: (v: boolean) => void;
   onSkip: () => void;
 }) {
   const sphValues = useMemo(() => {
@@ -520,9 +587,32 @@ function StepRx({
     for (let v = 48; v <= 78; v += 0.5) arr.push(v.toFixed(1));
     return arr;
   }, []);
+  const monocularPdValues = useMemo(() => {
+    const arr: string[] = [];
+    for (let v = 24; v <= 40; v += 0.5) arr.push(v.toFixed(1));
+    return arr;
+  }, []);
 
   const hasCyl = (eye: Eye) => eye.cyl !== "" && eye.cyl !== "+0.00" && eye.cyl !== "-0.00";
   const showAdd = !!purpose?.requiresAdd;
+
+  if (purpose && !purpose.needsRx) {
+    return (
+      <div>
+        <StepHeader
+          title="Рецепт не требуется"
+          subtitle="Для имиджевых линз без диоптрий можно сразу перейти к следующему шагу."
+        />
+        <div className="flex items-start gap-3 rounded-xl border border-border bg-surface/60 p-5 text-sm">
+          <Check className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+          <div>
+            <div className="font-medium">Будут использованы линзы без коррекции зрения</div>
+            <p className="mt-1 text-muted-foreground">SPH 0.00, CYL 0.00</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -531,65 +621,102 @@ function StepRx({
         subtitle="Заполните ваш рецепт от врача-офтальмолога. Все параметры должны точно совпадать с рецептом."
       />
 
-      <div className="overflow-hidden rounded-xl border border-border">
-        <table className="w-full border-collapse text-sm">
-          <thead>
-            <tr className="bg-surface text-left">
-              <th className="p-3 font-medium" />
-              <th className="p-3 font-medium">Сфера (SPH)</th>
-              <th className="p-3 font-medium">Цилиндр (CYL)</th>
-              <th className="p-3 font-medium">Ось (AXI)</th>
-              {showAdd && <th className="p-3 font-medium">Аддидация (ADD)</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {(["right", "left"] as const).map((side) => {
-              const eye = side === "right" ? od : os;
-              const set = side === "right" ? setOd : setOs;
-              const label = side === "right" ? "OD (Правый)" : "OS (Левый)";
-              return (
-                <tr key={side} className="border-t border-border">
-                  <td className="p-3 font-medium">{label}</td>
-                  <td className="p-3">
-                    <RxSelect value={eye.sph} onChange={(v) => set({ ...eye, sph: v })} options={sphValues} />
-                  </td>
-                  <td className="p-3">
-                    <RxSelect value={eye.cyl} onChange={(v) => set({ ...eye, cyl: v })} options={cylValues} />
-                  </td>
-                  <td className="p-3">
+      <div className="grid gap-4 md:grid-cols-2">
+        {(["right", "left"] as const).map((side) => {
+          const eye = side === "right" ? od : os;
+          const set = side === "right" ? setOd : setOs;
+          const label = side === "right" ? "OD · Правый глаз" : "OS · Левый глаз";
+          return (
+            <section key={side} className="rounded-xl border border-border p-4">
+              <h2 className="mb-4 font-medium">{label}</h2>
+              <div className="grid grid-cols-2 gap-3">
+                <label className="text-xs text-muted-foreground">
+                  Сфера (SPH) *
+                  <div className="mt-1">
                     <RxSelect
+                      ariaLabel={`${label}: сфера`}
+                      value={eye.sph}
+                      onChange={(v) => set({ ...eye, sph: v })}
+                      options={sphValues}
+                    />
+                  </div>
+                </label>
+                <label className="text-xs text-muted-foreground">
+                  Цилиндр (CYL)
+                  <div className="mt-1">
+                    <RxSelect
+                      ariaLabel={`${label}: цилиндр`}
+                      value={eye.cyl}
+                      onChange={(v) => set({ ...eye, cyl: v, axi: v ? eye.axi : "" })}
+                      options={cylValues}
+                    />
+                  </div>
+                </label>
+                <label className="text-xs text-muted-foreground">
+                  Ось (AXIS)
+                  <div className="mt-1">
+                    <RxSelect
+                      ariaLabel={`${label}: ось`}
                       value={eye.axi}
                       onChange={(v) => set({ ...eye, axi: v })}
                       options={axiValues}
                       disabled={!hasCyl(eye)}
                     />
-                  </td>
-                  {showAdd && (
-                    <td className="p-3">
-                      <RxSelect value={eye.add} onChange={(v) => set({ ...eye, add: v })} options={addValues} />
-                    </td>
-                  )}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                  </div>
+                </label>
+                {showAdd && (
+                  <label className="text-xs text-muted-foreground">
+                    Аддидация (ADD)
+                    <div className="mt-1">
+                      <RxSelect
+                        ariaLabel={`${label}: аддидация`}
+                        value={eye.add}
+                        onChange={(v) => set({ ...eye, add: v })}
+                        options={addValues}
+                      />
+                    </div>
+                  </label>
+                )}
+              </div>
+            </section>
+          );
+        })}
       </div>
 
       <div className="mt-6 space-y-4">
         <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={twoPd} onChange={(e) => setTwoPd(e.target.checked)} />
-          У меня 2 значения PD
+          <input
+            type="checkbox"
+            checked={twoPd}
+            onChange={(e) => {
+              setTwoPd(e.target.checked);
+              setPd("");
+              setPdNear("");
+            }}
+          />
+          В рецепте отдельно указаны PD правого и левого глаза
         </label>
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <div className="mb-1 text-xs text-muted-foreground">PD</div>
-            <RxSelect value={pd} onChange={setPd} options={pdValues} placeholder="—" />
+            <div className="mb-1 text-xs text-muted-foreground">
+              {twoPd ? "PD правого глаза" : "PD · межзрачковое расстояние"}
+            </div>
+            <RxSelect
+              value={pd}
+              onChange={setPd}
+              options={twoPd ? monocularPdValues : pdValues}
+              placeholder="—"
+            />
           </div>
-          {twoPd && showAdd && (
+          {twoPd && (
             <div>
-              <div className="mb-1 text-xs text-muted-foreground">Near PD</div>
-              <RxSelect value={pdNear} onChange={setPdNear} options={pdValues} placeholder="Нет" />
+              <div className="mb-1 text-xs text-muted-foreground">PD левого глаза</div>
+              <RxSelect
+                value={pdNear}
+                onChange={setPdNear}
+                options={monocularPdValues}
+                placeholder="—"
+              />
             </div>
           )}
         </div>
@@ -631,8 +758,6 @@ function StepLensType({
             active={value?.id === o.id}
             title={o.title}
             description={o.description}
-            count={o.count}
-            fromPrice={o.fromPrice}
             warning={o.warning}
             badge={o.badge}
             onClick={() => onChange(o)}
@@ -653,7 +778,10 @@ function StepIndex({
 }) {
   return (
     <div>
-      <StepHeader title="Индекс преломления" subtitle="Чем выше, тем толщина линз меньше" />
+      <StepHeader
+        title="Материал и индекс линз"
+        subtitle="Чем выше индекс, тем тоньше может быть линза"
+      />
       <div className="space-y-3">
         {INDEX_OPTIONS.map((o) => (
           <OptionCard
@@ -661,8 +789,6 @@ function StepIndex({
             active={value?.id === o.id}
             title={o.title}
             description={o.description}
-            count={o.count}
-            fromPrice={o.fromPrice}
             onClick={() => onChange(o)}
             rightSlot={<ThicknessIndicator level={o.level} />}
           />
@@ -707,8 +833,6 @@ function StepDesign({
             active={value?.id === o.id}
             title={o.title}
             description={o.description}
-            count={o.count}
-            fromPrice={o.fromPrice}
             onClick={() => onChange(o)}
           />
         ))}
@@ -735,8 +859,6 @@ function StepBrand({
             active={value?.id === o.id}
             title={o.title}
             description={o.description}
-            count={o.count}
-            fromPrice={o.fromPrice}
             badge={o.highlight}
             onClick={() => onChange(o)}
           />
@@ -744,5 +866,48 @@ function StepBrand({
         <ConsultationCard />
       </div>
     </div>
+  );
+}
+
+function SelectionReview({
+  purpose,
+  lensType,
+  indexOpt,
+  design,
+  brand,
+  hasRx,
+}: {
+  purpose: PurposeOption | null;
+  lensType: LensTypeOption | null;
+  indexOpt: IndexOption | null;
+  design: DesignOption | null;
+  brand: BrandOption | null;
+  hasRx: boolean;
+}) {
+  const rows = [
+    ["Назначение", purpose?.title],
+    ["Тип линз", lensType?.title],
+    ["Материал и индекс", indexOpt?.title],
+    ["Дизайн и покрытие", design?.title],
+    ["Бренд", brand?.title],
+    ["Рецепт", hasRx ? "Заполнен" : "Без рецепта"],
+  ];
+
+  return (
+    <section className="mt-6 rounded-xl border border-border bg-surface/50 p-5">
+      <h2 className="font-serif text-xl">Ваш выбор</h2>
+      <dl className="mt-4 space-y-2 text-sm">
+        {rows.map(([label, value]) => (
+          <div key={label} className="flex gap-4">
+            <dt className="w-36 shrink-0 text-muted-foreground">{label}</dt>
+            <dd className="font-medium">{value ?? "Не выбрано"}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+        Менеджер проверит совместимость выбранных параметров, наличие и итоговую стоимость линз
+        перед подтверждением заказа.
+      </p>
+    </section>
   );
 }
