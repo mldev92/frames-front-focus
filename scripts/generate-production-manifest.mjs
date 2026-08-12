@@ -41,6 +41,10 @@ const staticRoutes = [
   "/warranty/",
   "/kabinet-diagnostiki-spb/",
   "/kabinet-diagnostiki-nk/",
+  "/biometriya-glaza/",
+  "/linzy-spb/",
+  "/optika-spb/",
+  "/tsvetnye-linzy-s-dioptriyami/",
   "/blog/",
   "/blog/linzy-dlya-ochkov/",
 ];
@@ -58,7 +62,12 @@ const redirectText = await readFile(
 const redirectSources = new Set(
   redirectText
     .split(/\r?\n/)
-    .map((line) => line.match(/^Redirect\s+301\s+(\S+)\s+\S+/)?.[1])
+    .map((line) => {
+      const direct = line.match(/^Redirect\s+301\s+(\S+)\s+\S+/)?.[1];
+      if (direct) return direct;
+      const exact = line.match(/^RedirectMatch\s+301\s+\^(\S+?)\/\?\$\s+\S+/)?.[1];
+      return exact;
+    })
     .filter(Boolean)
     .map((path) => normalizePath(path)),
 );
@@ -158,6 +167,12 @@ for (const path of legacyPaths) {
 for (const path of await catalogPaths()) routeSet.add(path);
 
 const routes = [...routeSet].sort((a, b) => a.localeCompare(b, "ru"));
+const sitemapSeo = new Map([
+  ["/linzy-spb/", { priority: "0.7", changefreq: "weekly" }],
+  ["/optika-spb/", { priority: "0.7", changefreq: "weekly" }],
+  ["/tsvetnye-linzy-s-dioptriyami/", { priority: "0.6", changefreq: "monthly" }],
+  ["/biometriya-glaza/", { priority: "0.6", changefreq: "monthly" }],
+]);
 const generatedAt = new Date().toISOString();
 const snapshot = { version: 1, generatedAt, origin, count: routes.length, routes };
 
@@ -168,7 +183,11 @@ await writeFile(new URL("production-routes.json", outputDir), `${JSON.stringify(
 const sitemap = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...routes.map((path) => `  <url><loc>${origin}${path}</loc></url>`),
+  ...routes.map((path) => {
+    const seo = sitemapSeo.get(path);
+    if (!seo) return `  <url><loc>${origin}${path}</loc></url>`;
+    return `  <url><loc>${origin}${path}</loc><changefreq>${seo.changefreq}</changefreq><priority>${seo.priority}</priority></url>`;
+  }),
   "</urlset>",
   "",
 ].join("\n");

@@ -45,6 +45,10 @@ Redirect 301 /services/ /uslugi/
 Redirect 301 /test-region/ /
 Redirect 301 /vazhno/ /blog/
 
+# SEO landing aliases (exact match; optional trailing slash)
+RedirectMatch 301 ^/kontaktnye_lynzy_/?$ /catalog_s/kontaktnye_linzy_/
+RedirectMatch 301 ^/kupit-linzy-spb/?$ /linzy-spb/
+
 # BEGIN o100 SEO product redirects (generated from optika100_dev_task_v2.xlsx)
 # Source: optika100_dev_task_v2.xlsx, sheet "2. 301-Redirect"
 # /company/news/ remains a direct redirect to /blog/ to avoid a redirect chain through /news/.

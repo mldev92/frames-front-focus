@@ -1178,6 +1178,12 @@ function MainV2Page() {
                 {CONTACT.phone.label}
               </a>
               <p className="text-xs text-muted-foreground mt-1 mb-4">{PRIMARY_SALON.hours}</p>
+              <a
+                href="/optika-spb/"
+                className="mb-4 inline-flex text-xs font-medium text-brand transition-opacity hover:opacity-70"
+              >
+                Оптика в Санкт-Петербурге →
+              </a>
               <div className="flex items-center gap-2 mt-auto">
                 {[
                   { name: "Email", href: CONTACT.email.href },

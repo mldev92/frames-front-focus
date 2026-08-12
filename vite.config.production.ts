@@ -5,8 +5,14 @@ const manifest = JSON.parse(
   readFileSync(new URL("./generated/production-routes.json", import.meta.url), "utf8"),
 ) as { routes: string[] };
 const requestedLimit = Number(process.env.O100_PRERENDER_LIMIT ?? 0);
+const requestedRoutes = (process.env.O100_PRERENDER_ROUTES ?? "")
+  .split(",")
+  .map((path) => path.trim())
+  .filter(Boolean);
 const productionRoutes =
-  Number.isFinite(requestedLimit) && requestedLimit > 0
+  requestedRoutes.length > 0
+    ? requestedRoutes
+    : Number.isFinite(requestedLimit) && requestedLimit > 0
     ? manifest.routes.slice(0, requestedLimit)
     : manifest.routes;
 
@@ -26,9 +32,7 @@ export default defineConfig({
     },
     pages: productionRoutes.map((path) => ({ path })),
     sitemap: {
-      enabled: true,
-      host: "https://optika100.com",
-      outputPath: "sitemap.xml",
+      enabled: false,
     },
     prerender: {
       enabled: true,

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WarrantyRouteImport } from './routes/warranty'
 import { Route as UslugiRouteImport } from './routes/uslugi'
+import { Route as TsvetnyeLinzySDioptriyamiRouteImport } from './routes/tsvetnye-linzy-s-dioptriyami'
 import { Route as TinkoffRouteImport } from './routes/tinkoff'
 import { Route as StellestKatalogSLinzamiRouteImport } from './routes/stellest-katalog-s-linzami'
 import { Route as SearchRouteImport } from './routes/search'
@@ -20,15 +21,18 @@ import { Route as PolitikaKonfidentsialnostiRouteImport } from './routes/politik
 import { Route as PodborOchkovRouteImport } from './routes/podbor-ochkov'
 import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as PaymentRouteImport } from './routes/payment'
+import { Route as OptikaSpbRouteImport } from './routes/optika-spb'
 import { Route as ONasRouteImport } from './routes/o-nas'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MainV2RouteImport } from './routes/main-v2'
 import { Route as LoyaltyRouteImport } from './routes/loyalty'
+import { Route as LinzySpbRouteImport } from './routes/linzy-spb'
 import { Route as KabinetDiagnostikiSpbRouteImport } from './routes/kabinet-diagnostiki-spb'
 import { Route as KabinetDiagnostikiNkRouteImport } from './routes/kabinet-diagnostiki-nk'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as BlogRouteImport } from './routes/blog'
+import { Route as BiometriyaGlazaRouteImport } from './routes/biometriya-glaza'
 import { Route as BasketRouteImport } from './routes/basket'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
@@ -61,6 +65,12 @@ const UslugiRoute = UslugiRouteImport.update({
   path: '/uslugi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TsvetnyeLinzySDioptriyamiRoute =
+  TsvetnyeLinzySDioptriyamiRouteImport.update({
+    id: '/tsvetnye-linzy-s-dioptriyami',
+    path: '/tsvetnye-linzy-s-dioptriyami',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const TinkoffRoute = TinkoffRouteImport.update({
   id: '/tinkoff',
   path: '/tinkoff',
@@ -107,6 +117,11 @@ const PaymentRoute = PaymentRouteImport.update({
   path: '/payment',
   getParentRoute: () => rootRouteImport,
 } as any)
+const OptikaSpbRoute = OptikaSpbRouteImport.update({
+  id: '/optika-spb',
+  path: '/optika-spb',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ONasRoute = ONasRouteImport.update({
   id: '/o-nas',
   path: '/o-nas',
@@ -125,6 +140,11 @@ const MainV2Route = MainV2RouteImport.update({
 const LoyaltyRoute = LoyaltyRouteImport.update({
   id: '/loyalty',
   path: '/loyalty',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LinzySpbRoute = LinzySpbRouteImport.update({
+  id: '/linzy-spb',
+  path: '/linzy-spb',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KabinetDiagnostikiSpbRoute = KabinetDiagnostikiSpbRouteImport.update({
@@ -150,6 +170,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const BlogRoute = BlogRouteImport.update({
   id: '/blog',
   path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BiometriyaGlazaRoute = BiometriyaGlazaRouteImport.update({
+  id: '/biometriya-glaza',
+  path: '/biometriya-glaza',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BasketRoute = BasketRouteImport.update({
@@ -265,15 +290,18 @@ const BlogLinzyDlyaOchkovPokrytiyaLinzDlyaOchkovIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/basket': typeof BasketRoute
+  '/biometriya-glaza': typeof BiometriyaGlazaRoute
   '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
   '/kabinet-diagnostiki-nk': typeof KabinetDiagnostikiNkRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
+  '/linzy-spb': typeof LinzySpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/main-v2': typeof MainV2Route
   '/mcp': typeof McpRoute
   '/o-nas': typeof ONasRoute
+  '/optika-spb': typeof OptikaSpbRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
   '/podbor-ochkov': typeof PodborOchkovRoute
@@ -283,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/stellest-katalog-s-linzami': typeof StellestKatalogSLinzamiRoute
   '/tinkoff': typeof TinkoffRoute
+  '/tsvetnye-linzy-s-dioptriyami': typeof TsvetnyeLinzySDioptriyamiRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/warranty': typeof WarrantyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -308,14 +337,17 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/basket': typeof BasketRoute
+  '/biometriya-glaza': typeof BiometriyaGlazaRoute
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
   '/kabinet-diagnostiki-nk': typeof KabinetDiagnostikiNkRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
+  '/linzy-spb': typeof LinzySpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/main-v2': typeof MainV2Route
   '/mcp': typeof McpRoute
   '/o-nas': typeof ONasRoute
+  '/optika-spb': typeof OptikaSpbRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
   '/podbor-ochkov': typeof PodborOchkovRoute
@@ -325,6 +357,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/stellest-katalog-s-linzami': typeof StellestKatalogSLinzamiRoute
   '/tinkoff': typeof TinkoffRoute
+  '/tsvetnye-linzy-s-dioptriyami': typeof TsvetnyeLinzySDioptriyamiRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/warranty': typeof WarrantyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -348,15 +381,18 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/basket': typeof BasketRoute
+  '/biometriya-glaza': typeof BiometriyaGlazaRoute
   '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
   '/kabinet-diagnostiki-nk': typeof KabinetDiagnostikiNkRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
+  '/linzy-spb': typeof LinzySpbRoute
   '/loyalty': typeof LoyaltyRoute
   '/main-v2': typeof MainV2Route
   '/mcp': typeof McpRoute
   '/o-nas': typeof ONasRoute
+  '/optika-spb': typeof OptikaSpbRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
   '/podbor-ochkov': typeof PodborOchkovRoute
@@ -366,6 +402,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/stellest-katalog-s-linzami': typeof StellestKatalogSLinzamiRoute
   '/tinkoff': typeof TinkoffRoute
+  '/tsvetnye-linzy-s-dioptriyami': typeof TsvetnyeLinzySDioptriyamiRoute
   '/uslugi': typeof UslugiRouteWithChildren
   '/warranty': typeof WarrantyRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -393,15 +430,18 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/basket'
+    | '/biometriya-glaza'
     | '/blog'
     | '/checkout'
     | '/contacts'
     | '/kabinet-diagnostiki-nk'
     | '/kabinet-diagnostiki-spb'
+    | '/linzy-spb'
     | '/loyalty'
     | '/main-v2'
     | '/mcp'
     | '/o-nas'
+    | '/optika-spb'
     | '/payment'
     | '/personal'
     | '/podbor-ochkov'
@@ -411,6 +451,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/stellest-katalog-s-linzami'
     | '/tinkoff'
+    | '/tsvetnye-linzy-s-dioptriyami'
     | '/uslugi'
     | '/warranty'
     | '/.mcp/list-tools'
@@ -436,14 +477,17 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/basket'
+    | '/biometriya-glaza'
     | '/checkout'
     | '/contacts'
     | '/kabinet-diagnostiki-nk'
     | '/kabinet-diagnostiki-spb'
+    | '/linzy-spb'
     | '/loyalty'
     | '/main-v2'
     | '/mcp'
     | '/o-nas'
+    | '/optika-spb'
     | '/payment'
     | '/personal'
     | '/podbor-ochkov'
@@ -453,6 +497,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/stellest-katalog-s-linzami'
     | '/tinkoff'
+    | '/tsvetnye-linzy-s-dioptriyami'
     | '/uslugi'
     | '/warranty'
     | '/.mcp/list-tools'
@@ -475,15 +520,18 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/basket'
+    | '/biometriya-glaza'
     | '/blog'
     | '/checkout'
     | '/contacts'
     | '/kabinet-diagnostiki-nk'
     | '/kabinet-diagnostiki-spb'
+    | '/linzy-spb'
     | '/loyalty'
     | '/main-v2'
     | '/mcp'
     | '/o-nas'
+    | '/optika-spb'
     | '/payment'
     | '/personal'
     | '/podbor-ochkov'
@@ -493,6 +541,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/stellest-katalog-s-linzami'
     | '/tinkoff'
+    | '/tsvetnye-linzy-s-dioptriyami'
     | '/uslugi'
     | '/warranty'
     | '/.mcp/list-tools'
@@ -519,15 +568,18 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BasketRoute: typeof BasketRoute
+  BiometriyaGlazaRoute: typeof BiometriyaGlazaRoute
   BlogRoute: typeof BlogRouteWithChildren
   CheckoutRoute: typeof CheckoutRoute
   ContactsRoute: typeof ContactsRoute
   KabinetDiagnostikiNkRoute: typeof KabinetDiagnostikiNkRoute
   KabinetDiagnostikiSpbRoute: typeof KabinetDiagnostikiSpbRoute
+  LinzySpbRoute: typeof LinzySpbRoute
   LoyaltyRoute: typeof LoyaltyRoute
   MainV2Route: typeof MainV2Route
   McpRoute: typeof McpRoute
   ONasRoute: typeof ONasRoute
+  OptikaSpbRoute: typeof OptikaSpbRoute
   PaymentRoute: typeof PaymentRoute
   PersonalRoute: typeof PersonalRoute
   PodborOchkovRoute: typeof PodborOchkovRoute
@@ -537,6 +589,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   StellestKatalogSLinzamiRoute: typeof StellestKatalogSLinzamiRoute
   TinkoffRoute: typeof TinkoffRoute
+  TsvetnyeLinzySDioptriyamiRoute: typeof TsvetnyeLinzySDioptriyamiRoute
   UslugiRoute: typeof UslugiRouteWithChildren
   WarrantyRoute: typeof WarrantyRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -564,6 +617,13 @@ declare module '@tanstack/react-router' {
       path: '/uslugi'
       fullPath: '/uslugi'
       preLoaderRoute: typeof UslugiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tsvetnye-linzy-s-dioptriyami': {
+      id: '/tsvetnye-linzy-s-dioptriyami'
+      path: '/tsvetnye-linzy-s-dioptriyami'
+      fullPath: '/tsvetnye-linzy-s-dioptriyami'
+      preLoaderRoute: typeof TsvetnyeLinzySDioptriyamiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tinkoff': {
@@ -629,6 +689,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PaymentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/optika-spb': {
+      id: '/optika-spb'
+      path: '/optika-spb'
+      fullPath: '/optika-spb'
+      preLoaderRoute: typeof OptikaSpbRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/o-nas': {
       id: '/o-nas'
       path: '/o-nas'
@@ -655,6 +722,13 @@ declare module '@tanstack/react-router' {
       path: '/loyalty'
       fullPath: '/loyalty'
       preLoaderRoute: typeof LoyaltyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/linzy-spb': {
+      id: '/linzy-spb'
+      path: '/linzy-spb'
+      fullPath: '/linzy-spb'
+      preLoaderRoute: typeof LinzySpbRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kabinet-diagnostiki-spb': {
@@ -690,6 +764,13 @@ declare module '@tanstack/react-router' {
       path: '/blog'
       fullPath: '/blog'
       preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/biometriya-glaza': {
+      id: '/biometriya-glaza'
+      path: '/biometriya-glaza'
+      fullPath: '/biometriya-glaza'
+      preLoaderRoute: typeof BiometriyaGlazaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/basket': {
@@ -911,15 +992,18 @@ const Catalog_sCategoryRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BasketRoute: BasketRoute,
+  BiometriyaGlazaRoute: BiometriyaGlazaRoute,
   BlogRoute: BlogRouteWithChildren,
   CheckoutRoute: CheckoutRoute,
   ContactsRoute: ContactsRoute,
   KabinetDiagnostikiNkRoute: KabinetDiagnostikiNkRoute,
   KabinetDiagnostikiSpbRoute: KabinetDiagnostikiSpbRoute,
+  LinzySpbRoute: LinzySpbRoute,
   LoyaltyRoute: LoyaltyRoute,
   MainV2Route: MainV2Route,
   McpRoute: McpRoute,
   ONasRoute: ONasRoute,
+  OptikaSpbRoute: OptikaSpbRoute,
   PaymentRoute: PaymentRoute,
   PersonalRoute: PersonalRoute,
   PodborOchkovRoute: PodborOchkovRoute,
@@ -929,6 +1013,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   StellestKatalogSLinzamiRoute: StellestKatalogSLinzamiRoute,
   TinkoffRoute: TinkoffRoute,
+  TsvetnyeLinzySDioptriyamiRoute: TsvetnyeLinzySDioptriyamiRoute,
   UslugiRoute: UslugiRouteWithChildren,
   WarrantyRoute: WarrantyRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,

@@ -93,7 +93,13 @@ function KabinetDiagnostikiPage() {
                 ].map((item) => (
                   <li key={item} className="flex gap-3">
                     <CheckIcon size={5} />
-                    <span>{item}</span>
+                    <span>
+                      {item === "Биометрия (только в СПб)" ? (
+                        <a href="/biometriya-glaza/" className="text-brand underline-offset-4 hover:underline">
+                          биометрия глаза
+                        </a>
+                      ) : item}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -325,10 +331,11 @@ export const Route = createFileRoute("/kabinet-diagnostiki-spb")({
   head: () => ({
     meta: [
       { title: "Диагностика зрения в Санкт-Петербурге · ОПТИКА 100%" },
-      { name: "description", content: "Профессиональная диагностика зрения на современном оборудовании. Авторефрактометрия, тонометрия, биомикроскопия. Запись онлайн." },
+      { name: "description", content: "Диагностика и проверка зрения в Санкт‑Петербурге: экспресс‑тесты, точный подбор очков/линз, измерение ВГД. Консультация опытных специалистов в салоне Оптика 100%. Запишитесь онлайн или по телефону: 8 (800) 700-02-14" },
       { property: "og:title", content: "Диагностика зрения · ОПТИКА 100%" },
       { property: "og:image", content: "/izmenenie_davleniya.webp" },
     ],
+    links: [{ rel: "canonical", href: "https://optika100.com/kabinet-diagnostiki-spb/" }],
   }),
   component: KabinetDiagnostikiPage,
 });

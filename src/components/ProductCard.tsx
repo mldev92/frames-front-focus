@@ -13,6 +13,7 @@ interface ProductCardProps {
   compactLensPreview?: boolean;
   catalogPath?: string;
   city?: CityCode;
+  productHref?: string;
 }
 
 const noTryOnCategories = new Set<Product["category"]>([
@@ -25,6 +26,7 @@ export function ProductCard({
   compactLensPreview = false,
   catalogPath,
   city = "spb",
+  productHref,
 }: ProductCardProps) {
   const { toggleSaved, saved } = useCart();
   const isSaved = saved.includes(product.slug);
@@ -61,9 +63,9 @@ export function ProductCard({
     <div className="group/card">
       <a
         href={
-          catalogPath
+          productHref ?? (catalogPath
             ? `${catalogPath.replace(/\/$/, "")}/${product.slug}/`
-            : `/catalog_s/${categoryToSegment[product.category]}/${product.slug}/`
+            : `/catalog_s/${categoryToSegment[product.category]}/${product.slug}/`)
         }
         className="block relative aspect-square bg-surface rounded-sm overflow-hidden transition-all duration-500 group-hover/card:bg-cream/60 group-hover/card:shadow-sm"
         onMouseEnter={prepareHoverImage}

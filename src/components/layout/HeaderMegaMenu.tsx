@@ -14,6 +14,7 @@ import {
   Glasses,
   Laptop,
   Layers,
+  MapPin,
   Palette,
   ShieldCheck,
   Sun,
@@ -761,6 +762,7 @@ const CONTACT_MENU: ContactMegaMenu = {
     secondaryHref: "/contacts/",
   },
   utilities: [
+    { label: "Контактные линзы в Санкт-Петербурге", href: "/linzy-spb/", icon: <MapPin className="h-4 w-4" /> },
     { label: "Подписка на линзы −15%", href: catalogHref("kontaktnye-linzy"), icon: <CalendarRange className="h-4 w-4" /> },
     { label: "Все растворы и уход", href: catalogHref("aksessuary"), icon: <Droplets className="h-4 w-4" /> },
     { label: "Доставка", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
@@ -931,6 +933,7 @@ export const HEADER_NAV_ITEMS: HeaderNavItem[] = [
   { label: "Контактные линзы", href: catalogHref("kontaktnye-linzy"), mega: CONTACT_MENU },
   { label: "Линзы для очков", href: catalogHref("linzy-dlya-ochkov"), mega: GLASSES_MENU },
   { label: "Аксессуары", href: catalogHref("aksessuary"), mega: ACCESSORIES_MENU },
+  { label: "Оптика СПб", href: "/optika-spb/" },
   { label: "Услуги", href: "/#services" },
   { label: "Салоны", href: "/contacts/" },
 ];

@@ -14,6 +14,7 @@ const COLS = [
       ["Оправы", "/catalog_s/opravy/"],
       ["Солнцезащитные очки", "/catalog_s/solntsezashchitnye_ochki/"],
       ["Контактные линзы", "/catalog_s/kontaktnye_linzy_/"],
+      ["Контактные линзы в СПб", "/linzy-spb/"],
       ["Линзы для очков", "/catalog_s/linzy_dlya_ochkov/"],
       ["Аксессуары", "/catalog_s/soputstvuyushchie_tovary/"],
     ],
@@ -23,6 +24,7 @@ const COLS = [
     links: [
       ["Запись к врачу", "/uslugi/priem-vracha"],
       ["Диагностика зрения", "/kabinet-diagnostiki-spb/"],
+      ["Биометрия глаза", "/biometriya-glaza/"],
       ["Stellest каталог с линзами", "/stellest-katalog-s-linzami/"],
       ["Подбор очков", "/podbor-ochkov/"],
       ["Ремонт очков", "/remont-ochkov/"],
@@ -32,6 +34,7 @@ const COLS = [
     title: "Компания",
     links: [
       ["О нас", "/o-nas"],
+      ["Оптика в Санкт-Петербурге", "/optika-spb/"],
       ["Почему мы?", "/o-nas/#pochemu-my"],
       ["Салоны", "/contacts/"],
       ["Блог", "/blog/"],

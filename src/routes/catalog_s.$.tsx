@@ -1,5 +1,6 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
+import { catalogSeoForSection } from "@/data/catalog-seo";
 import { categoryForCatalogPath } from "@/data/categories";
 import { ProductPage } from "@/routes/catalog_s.$category.$slug";
 import { catalogConfig } from "@/routes/catalog_s.$category";
@@ -36,10 +37,11 @@ export const Route = createFileRoute("/catalog_s/$")({
     }
     const category = categoryForCatalogPath(loaderData.sectionPath);
     const config = category ? catalogConfig[category] : undefined;
+    const sectionSeo = catalogSeoForSection(loaderData.sectionPath);
     return {
       meta: [
-        { title: config?.metaTitle ?? "Каталог · ОПТИКА 100%" },
-        { name: "description", content: config?.metaDescription ?? "" },
+        { title: sectionSeo?.metaTitle ?? config?.metaTitle ?? "Каталог · ОПТИКА 100%" },
+        { name: "description", content: sectionSeo?.metaDescription ?? config?.metaDescription ?? "" },
       ],
       links: [{ rel: "canonical", href: canonical }],
     };

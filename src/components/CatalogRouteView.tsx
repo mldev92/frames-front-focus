@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { CatalogListing, type CatalogStateChange } from "@/components/CatalogListing";
+import { CatalogSeoContent } from "@/components/CatalogSeoContent";
 import { categoryForCatalogPath, catalogSectionTitle } from "@/data/categories";
 import { catalogConfig } from "@/routes/catalog_s.$category";
 import { searchToFilters, type CatalogSearch, type LoaderResult } from "@/lib/catalog-route";
@@ -85,23 +86,26 @@ export function CatalogRouteView({
   const appliedFilters = supportsFacetFiltering ? searchToFilters(search) : {};
 
   return (
-    <CatalogListing
-      title={catalogSectionTitle(sectionPath, config.title)}
-      subtitle={config.subtitle}
-      data={result.data}
-      facets={config.facets ?? []}
-      facetFilteringEnabled={supportsFacetFiltering}
-      categoryKey={category}
-      initialFilters={appliedFilters}
-      expandedFacet={search.expand}
-      appliedSort={search.sort ?? "default"}
-      appliedPriceMin={search.priceMin}
-      appliedPriceMax={search.priceMax}
-      page={search.page ?? 1}
-      loading={mounted && pending}
-      productBasePath={catalogPath}
-      city={city}
-      onStateChange={onStateChange}
-    />
+    <>
+      <CatalogListing
+        title={catalogSectionTitle(sectionPath, config.title)}
+        subtitle={config.subtitle}
+        data={result.data}
+        facets={config.facets ?? []}
+        facetFilteringEnabled={supportsFacetFiltering}
+        categoryKey={category}
+        initialFilters={appliedFilters}
+        expandedFacet={search.expand}
+        appliedSort={search.sort ?? "default"}
+        appliedPriceMin={search.priceMin}
+        appliedPriceMax={search.priceMax}
+        page={search.page ?? 1}
+        loading={mounted && pending}
+        productBasePath={catalogPath}
+        city={city}
+        onStateChange={onStateChange}
+      />
+      {city === "spb" && <CatalogSeoContent sectionPath={sectionPath} />}
+    </>
   );
 }

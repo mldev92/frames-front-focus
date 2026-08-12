@@ -17,6 +17,7 @@ import type { EyePrescription, Prescription } from "@/lib/store/cart";
 import { prescriptionComplete } from "@/components/PrescriptionInput";
 import { useCityStore, type CityCode } from "@/lib/store/city";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
+import { catalogSeoForSection } from "@/data/catalog-seo";
 import {
   applyCatalogState,
   catalogSearchSchema,
@@ -41,8 +42,14 @@ export const Route = createFileRoute("/catalog_s/$category/$slug")({
   head: ({ loaderData, params }) => {
     if (!loaderData) return { meta: [{ title: "Товар · ОПТИКА 100%" }] };
     if (loaderData.kind === "catalog") {
+      const sectionSeo = catalogSeoForSection(loaderData.sectionPath);
       return {
-        meta: [{ title: "Каталог · ОПТИКА 100%" }],
+        meta: [
+          { title: sectionSeo?.metaTitle ?? "Каталог · ОПТИКА 100%" },
+          { name: "description", content: sectionSeo?.metaDescription ?? "" },
+          { property: "og:title", content: sectionSeo?.metaTitle ?? "Каталог · ОПТИКА 100%" },
+          { property: "og:description", content: sectionSeo?.metaDescription ?? "" },
+        ],
         links: [{
           rel: "canonical",
           href: `https://optika100.com/catalog_s/${params.category}/${params.slug}/`,
