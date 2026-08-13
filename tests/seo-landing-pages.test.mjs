@@ -54,3 +54,28 @@ test("diagnostics route preserves the protected manual Description", async () =>
   assert.ok(source.includes("Диагностика и проверка зрения в Санкт‑Петербурге"));
   assert.ok(source.includes("href=\"/biometriya-glaza/\""));
 });
+
+test("site search can discover the biometry landing page", async () => {
+  const searchRoute = await read("../src/routes/search.tsx");
+  const searchIndex = await read("../src/data/site-search.ts");
+  assert.match(searchRoute, /searchSiteContent/);
+  assert.match(searchRoute, /Страницы, услуги и категории/);
+  assert.match(searchIndex, /title: "Биометрия глаза"/);
+  assert.match(searchIndex, /href: "\/biometriya-glaza\/"/);
+  assert.match(searchIndex, /"биометрия глаза"/);
+});
+
+test("owner-approved informational topics were not reduced to the initial short draft", async () => {
+  const biometry = await read("../src/routes/biometriya-glaza.tsx");
+  const lenses = await read("../src/routes/linzy-spb.tsx");
+  const colored = await read("../src/routes/tsvetnye-linzy-s-dioptriyami.tsx");
+  const catalog = await read("../src/components/CatalogSeoContent.tsx");
+  for (const heading of ["Что измеряет биометрия", "Оптическая и ультразвуковая биометрия", "Расшифровка результатов"]) {
+    assert.ok(biometry.includes(heading));
+  }
+  for (const heading of ["Материалы контактных линз", "Как читать параметры перед онлайн-заказом", "Когда линзы нужно снять"]) {
+    assert.ok(lenses.includes(heading));
+  }
+  assert.ok(colored.includes("Кому подходят цветные линзы с коррекцией"));
+  assert.ok(catalog.includes("Дизайны центр-близь, центр-даль и EDOF"));
+});
