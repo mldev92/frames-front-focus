@@ -2,6 +2,11 @@ import { useEffect, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { CatalogListing, type CatalogStateChange } from "@/components/CatalogListing";
 import { CatalogSeoContent } from "@/components/CatalogSeoContent";
+import {
+  ContactLensCatalogFooter,
+  ContactLensCatalogIntro,
+  ContactLensCatalogNavigation,
+} from "@/components/ContactLensCatalogSeo";
 import { categoryForCatalogPath, catalogSectionTitle } from "@/data/categories";
 import { catalogConfig } from "@/routes/catalog_s.$category";
 import { searchToFilters, type CatalogSearch, type LoaderResult } from "@/lib/catalog-route";
@@ -82,14 +87,19 @@ export function CatalogRouteView({
   }
 
   const config = catalogConfig[category];
+  const normalizedSectionPath = sectionPath.replace(/^\/+|\/+$/g, "");
+  const isContactLensRoot = city === "spb" && normalizedSectionPath === "kontaktnye_linzy_";
   const supportsFacetFiltering = Object.keys(result.data.facets ?? {}).length > 0;
   const appliedFilters = supportsFacetFiltering ? searchToFilters(search) : {};
 
   return (
     <>
       <CatalogListing
-        title={catalogSectionTitle(sectionPath, config.title)}
-        subtitle={config.subtitle}
+        title={isContactLensRoot ? "Контактные линзы в Санкт-Петербурге" : catalogSectionTitle(sectionPath, config.title)}
+        subtitle={isContactLensRoot ? undefined : config.subtitle}
+        headerBeforeTitle={isContactLensRoot ? <ContactLensCatalogNavigation /> : undefined}
+        headerAfterTitle={isContactLensRoot ? <ContactLensCatalogIntro total={result.data.total} /> : undefined}
+        catalogId={isContactLensRoot ? "catalog-products" : undefined}
         data={result.data}
         facets={config.facets ?? []}
         facetFilteringEnabled={supportsFacetFiltering}
@@ -105,6 +115,7 @@ export function CatalogRouteView({
         city={city}
         onStateChange={onStateChange}
       />
+      {isContactLensRoot && <ContactLensCatalogFooter />}
       {city === "spb" && <CatalogSeoContent sectionPath={sectionPath} />}
     </>
   );

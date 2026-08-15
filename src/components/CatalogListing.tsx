@@ -1,4 +1,4 @@
-import { Children, useCallback, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { Children, useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { SlidersHorizontal, X, ChevronDown, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { CatalogBanner } from "./CatalogBanner";
 import { ProductCard } from "./ProductCard";
@@ -45,6 +45,9 @@ export interface CatalogStateChange {
 interface ListingProps {
   title: string;
   subtitle?: string;
+  headerBeforeTitle?: ReactNode;
+  headerAfterTitle?: ReactNode;
+  catalogId?: string;
   /** Server-driven catalog page: slice + totals + facet counts + priceBounds. */
   data: CatalogPage;
   facets?: FacetKey[];
@@ -942,6 +945,9 @@ const CATEGORY_VISIBILITY: Record<
 export function CatalogListing({
   title,
   subtitle,
+  headerBeforeTitle,
+  headerAfterTitle,
+  catalogId,
   data,
   facets = [],
   facetFilteringEnabled = true,
@@ -2129,12 +2135,14 @@ export function CatalogListing({
 
   return (
     <div className="w-full py-10" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
+      {headerBeforeTitle}
       <div className="mb-8">
         <h1 className="font-serif text-4xl lg:text-5xl">{title}</h1>
         {subtitle && <p className="mt-3 text-muted-foreground max-w-2xl">{subtitle}</p>}
       </div>
+      {headerAfterTitle}
 
-      <div className="lg:flex lg:items-start" style={{ minHeight: "80vh" }}>
+      <div id={catalogId} className="scroll-mt-24 lg:flex lg:items-start" style={{ minHeight: "80vh" }}>
         {facets.length > 0 && (
           <div
             className="hidden lg:block shrink-0 sticky top-4 self-start overflow-hidden transition-[width,margin-right] duration-300 ease-in-out"

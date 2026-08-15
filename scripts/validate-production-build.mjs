@@ -5,8 +5,14 @@ const manifest = JSON.parse(
   await readFile(new URL("../generated/production-routes.json", import.meta.url), "utf8"),
 );
 const requestedLimit = Number(process.env.O100_PRERENDER_LIMIT ?? 0);
+const requestedRoutes = (process.env.O100_PRERENDER_ROUTES ?? "")
+  .split(",")
+  .map((path) => path.trim())
+  .filter(Boolean);
 const routes =
-  Number.isFinite(requestedLimit) && requestedLimit > 0
+  requestedRoutes.length > 0
+    ? requestedRoutes
+    : Number.isFinite(requestedLimit) && requestedLimit > 0
     ? manifest.routes.slice(0, requestedLimit)
     : manifest.routes;
 const clientDir = new URL("../dist/client/", import.meta.url);
