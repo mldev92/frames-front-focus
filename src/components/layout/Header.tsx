@@ -278,7 +278,7 @@ export function Header() {
       </div>
 
       <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-4 lg:px-8">
+        <div className="mx-auto max-w-[1600px] px-4 lg:px-8">
           <div
             className="relative flex h-16 items-center justify-between gap-4"
             onMouseLeave={() => setOpenMegaHref(null)}
@@ -293,7 +293,7 @@ export function Header() {
 
             <SiteLogo imageClassName="h-7 sm:h-9 xl:h-10" />
 
-            <nav className="hidden h-full min-w-0 flex-1 items-stretch justify-center gap-1 px-3 xl:flex">
+            <nav className="hidden h-full min-w-0 flex-1 items-stretch justify-center gap-0 px-1 xl:flex 2xl:gap-1 2xl:px-3">
               {HEADER_NAV_ITEMS.map((item) => {
                 const hasMega = isMegaNavItem(item);
                 const isOpen = openMegaItem?.href === item.href;
@@ -301,7 +301,7 @@ export function Header() {
                 return (
                   <div
                     key={item.href}
-                    className="flex items-stretch"
+                    className="flex shrink-0 items-stretch"
                     onMouseEnter={() => {
                       setOpenMegaHref(hasMega ? item.href : null);
                       loadMegaFacets(item);
@@ -314,7 +314,7 @@ export function Header() {
                     <a
                       href={regionalHref(item.href)}
                       className={cn(
-                        "group relative inline-flex h-full items-center gap-1 whitespace-nowrap px-3 text-[15px] font-medium transition-colors duration-[var(--duration-snap)]",
+                        "group relative inline-flex h-full items-center gap-1 whitespace-nowrap px-1 text-sm font-medium transition-colors duration-[var(--duration-snap)] 2xl:px-3 2xl:text-[15px]",
                         hasMega
                           ? isOpen
                             ? "text-brand"
@@ -334,7 +334,7 @@ export function Header() {
                       {hasMega && (
                         <span
                           className={cn(
-                            "absolute bottom-0 left-3 right-3 h-0.5 rounded-full transition-all duration-[var(--duration-snap)]",
+                            "absolute bottom-0 left-1 right-1 h-0.5 rounded-full transition-all duration-[var(--duration-snap)] 2xl:left-3 2xl:right-3",
                             isOpen
                               ? "bg-brand opacity-100"
                               : "bg-brand/60 opacity-0 group-hover:opacity-100",

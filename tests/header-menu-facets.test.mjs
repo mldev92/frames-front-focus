@@ -144,4 +144,8 @@ test("desktop header keeps the approved compact navigation labels", async () => 
   assert.ok(!menu.includes('{ label: "Солнцезащитные", href: catalogHref("solntsezashchitnye")'));
   assert.ok(!menu.includes('{ label: "Оптика СПб"'));
   assert.ok(header.includes("whitespace-nowrap"));
+  assert.ok(header.includes('max-w-[1600px]'));
+  assert.ok(header.includes('className="flex shrink-0 items-stretch"'));
+  assert.ok(header.includes('px-1 text-sm'));
+  assert.ok(header.includes('2xl:px-3 2xl:text-[15px]'));
 });
