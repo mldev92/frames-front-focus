@@ -20,6 +20,9 @@ test("Novokuznetsk routing replaces every SPb-only SEO destination", async () =>
   assert.match(source, /NVK_ROUTE_FALLBACKS\.get\(href\)/);
   assert.match(store, /skipHydration: true/);
   assert.match(root, /useCityStore\.persist\.rehydrate\(\)/);
+  assert.match(root, /REGIONAL_REDIRECT_BOOTSTRAP/);
+  assert.match(root, /localStorage\.getItem\(\"o100-city-v2\"\)/);
+  assert.match(root, /if\(target\)location\.replace/);
 });
 
 test("shared navigation suppresses SPb-only links and contacts for Novokuznetsk", async () => {

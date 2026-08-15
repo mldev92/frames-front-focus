@@ -106,6 +106,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+const REGIONAL_REDIRECT_BOOTSTRAP = `(function(){try{
+  var stored=JSON.parse(localStorage.getItem("o100-city-v2")||"null");
+  if(!stored||!stored.state||stored.state.city!=="nvk")return;
+  var path=location.pathname.endsWith("/")?location.pathname:location.pathname+"/";
+  var fallbacks={
+    "/optika-spb/":"/contacts/",
+    "/linzy-spb/":"/catalog_n/kontaktnye_linzy_/",
+    "/tsvetnye-linzy-s-dioptriyami/":"/catalog_n/kontaktnye_linzy_/tsvetnye/",
+    "/biometriya-glaza/":"/kabinet-diagnostiki-nk/",
+    "/kabinet-diagnostiki-spb/":"/kabinet-diagnostiki-nk/"
+  };
+  var target=fallbacks[path];
+  if(target)location.replace(target+location.search+location.hash);
+}catch(_error){}})();`;
+
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
@@ -113,6 +128,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
+        <script dangerouslySetInnerHTML={{ __html: REGIONAL_REDIRECT_BOOTSTRAP }} />
         {children}
         <Scripts />
       </body>
