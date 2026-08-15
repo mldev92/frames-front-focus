@@ -59,7 +59,8 @@ export function Header() {
     const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
     if (nextHref === currentHref) return;
 
-    window.location.assign(nextHref);
+    const redirectTimer = window.setTimeout(() => window.location.assign(nextHref), 0);
+    return () => window.clearTimeout(redirectTimer);
   }, [cityCode, cityHydrated, mounted]);
 
   useEffect(() => {
