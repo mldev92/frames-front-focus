@@ -29,6 +29,7 @@ test("shared navigation suppresses SPb-only links and contacts for Novokuznetsk"
   assert.match(footer, /city === "spb" \|\| !\[/);
   assert.match(footer, /city === "spb" \?/);
   assert.match(header, /cityCode === "nvk" \? NK_SALONS\[0\] : PRIMARY_SALON/);
+  assert.match(header, /if \(!mounted \|\| !cityHydrated\) return/);
   assert.match(megaMenu, /Контактные линзы в Новокузнецке/);
   assert.match(megaMenu, /Доставка и самовывоз/);
 });

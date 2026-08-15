@@ -46,21 +46,21 @@ export function Header() {
   const [openMegaHref, setOpenMegaHref] = useState<string | null>(null);
   const [facetStates, setFacetStates] = useState<Record<string, FacetLoadState>>({});
 
-  const { city: cityCode, setCity: setCityCode } = useCityStore();
+  const { city: cityCode, hydrated: cityHydrated, setCity: setCityCode } = useCityStore();
   const [cityOpen, setCityOpen] = useState(false);
   const cityRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted || !cityHydrated) return;
 
     const nextHref = regionalLocationHref(window.location, cityCode);
     const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
     if (nextHref === currentHref) return;
 
     window.location.assign(nextHref);
-  }, [cityCode, mounted]);
+  }, [cityCode, cityHydrated, mounted]);
 
   useEffect(() => {
     if (!cityOpen) return;
