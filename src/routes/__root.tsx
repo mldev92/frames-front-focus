@@ -16,6 +16,7 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 import { MessengerFAB } from "@/components/MessengerFAB";
 import { installClientErrorReporting } from "@/lib/monitoring";
 import { useEffect } from "react";
+import { useCityStore } from "@/lib/store/city";
 
 function NotFoundComponent() {
   return (
@@ -121,7 +122,10 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  useEffect(() => installClientErrorReporting(), []);
+  useEffect(() => {
+    installClientErrorReporting();
+    void useCityStore.persist.rehydrate();
+  }, []);
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip">

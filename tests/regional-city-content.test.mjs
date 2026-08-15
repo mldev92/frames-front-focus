@@ -6,6 +6,8 @@ const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
 test("Novokuznetsk routing replaces every SPb-only SEO destination", async () => {
   const source = await read("../src/lib/city-routing.ts");
+  const store = await read("../src/lib/store/city.ts");
+  const root = await read("../src/routes/__root.tsx");
   const expectedMappings = [
     '["/optika-spb/", "/contacts/"]',
     '["/linzy-spb/", "/catalog_n/kontaktnye_linzy_/"]',
@@ -16,6 +18,8 @@ test("Novokuznetsk routing replaces every SPb-only SEO destination", async () =>
   for (const mapping of expectedMappings) assert.ok(source.includes(mapping));
   assert.match(source, /city === "nvk"/);
   assert.match(source, /NVK_ROUTE_FALLBACKS\.get\(href\)/);
+  assert.match(store, /skipHydration: true/);
+  assert.match(root, /useCityStore\.persist\.rehydrate\(\)/);
 });
 
 test("shared navigation suppresses SPb-only links and contacts for Novokuznetsk", async () => {

@@ -20,6 +20,7 @@ export const useCityStore = create<CityStore>()(
     }),
     {
       name: "o100-city-v2",
+      skipHydration: true,
       partialize: (state) => ({ city: state.city }),
       onRehydrateStorage: () => (state) => state?.setHydrated(true),
     },
