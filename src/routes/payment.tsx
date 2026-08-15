@@ -13,6 +13,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 import { Reveal } from "@/components/Reveal";
+import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/payment")({
   head: () => ({
@@ -68,13 +69,6 @@ const deliveryCards = [
   },
 ];
 
-const promoItems = [
-  "СДЭК до пункта выдачи или до адреса",
-  "Самовывоз из салона на Кирочной 17",
-  "Оплата наличными, картой и онлайн",
-  "Доставка после полной оплаты заказа",
-];
-
 const callouts: IconItem[] = [
   {
     title: "Стоимость доставки рассчитывается при оформлении заказа.",
@@ -87,6 +81,14 @@ const callouts: IconItem[] = [
 ];
 
 function PaymentPage() {
+  const city = useCityStore((state) => state.city);
+  const promoItems = [
+    "СДЭК до пункта выдачи или до адреса",
+    city === "nvk" ? "Самовывоз из салонов Новокузнецка" : "Самовывоз из салона на Кирочной 17",
+    "Оплата наличными, картой и онлайн",
+    "Доставка после полной оплаты заказа",
+  ];
+
   return (
     <div className="bg-background">
       <nav className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-4 text-[13px] text-muted-foreground lg:px-8">
@@ -151,10 +153,7 @@ function PaymentPage() {
         </div>
       </section>
 
-      <section
-        className="flex overflow-hidden bg-brand text-white"
-        aria-label="Акции и доставка"
-      >
+      <section className="flex overflow-hidden bg-brand text-white" aria-label="Акции и доставка">
         <div className="z-10 flex shrink-0 items-center gap-2 bg-black/15 px-4 py-3 text-xs font-semibold sm:px-6 sm:text-[13px]">
           <Truck className="h-[18px] w-[18px]" strokeWidth={1.75} />
           <span>

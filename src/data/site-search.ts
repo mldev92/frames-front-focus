@@ -4,6 +4,7 @@ export interface SiteSearchEntry {
   href: string;
   type: "Страница" | "Услуга" | "Категория";
   keywords: string[];
+  region?: "spb";
 }
 
 const entries: SiteSearchEntry[] = [
@@ -13,6 +14,7 @@ const entries: SiteSearchEntry[] = [
     href: "/biometriya-glaza/",
     type: "Услуга",
     keywords: ["биометрия", "биометрия глаза", "измерение глаза", "длина глаза", "пзо", "lenstar"],
+    region: "spb",
   },
   {
     title: "Диагностика зрения в Санкт-Петербурге",
@@ -20,6 +22,7 @@ const entries: SiteSearchEntry[] = [
     href: "/kabinet-diagnostiki-spb/",
     type: "Услуга",
     keywords: ["диагностика", "проверка зрения", "офтальмолог", "врач", "прием", "приём"],
+    region: "spb",
   },
   {
     title: "Контактные линзы в Санкт-Петербурге",
@@ -27,6 +30,7 @@ const entries: SiteSearchEntry[] = [
     href: "/linzy-spb/",
     type: "Страница",
     keywords: ["линзы", "контактные линзы", "купить линзы", "линзы спб"],
+    region: "spb",
   },
   {
     title: "Цветные линзы с диоптриями",
@@ -34,6 +38,7 @@ const entries: SiteSearchEntry[] = [
     href: "/tsvetnye-linzy-s-dioptriyami/",
     type: "Страница",
     keywords: ["цветные линзы", "линзы с диоптриями", "цветные линзы с диоптриями"],
+    region: "spb",
   },
   {
     title: "Оптика в Санкт-Петербурге",
@@ -41,6 +46,7 @@ const entries: SiteSearchEntry[] = [
     href: "/optika-spb/",
     type: "Страница",
     keywords: ["оптика", "оптика спб", "салон оптики", "кирочная 17"],
+    region: "spb",
   },
   {
     title: "Подбор очков",
@@ -77,7 +83,16 @@ export function searchSiteContent(query: string, limit = 8): SiteSearchEntry[] {
     .map((entry) => {
       const title = normalize(entry.title);
       const haystack = normalize([entry.title, entry.description, ...entry.keywords].join(" "));
-      const score = title === term ? 100 : title.startsWith(term) ? 80 : title.includes(term) ? 60 : haystack.includes(term) ? 40 : 0;
+      const score =
+        title === term
+          ? 100
+          : title.startsWith(term)
+            ? 80
+            : title.includes(term)
+              ? 60
+              : haystack.includes(term)
+                ? 40
+                : 0;
       return { entry, score };
     })
     .filter((item) => item.score > 0)

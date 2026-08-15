@@ -15,21 +15,21 @@ import { SalonsSection } from "@/components/SalonsSection";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { Reveal } from "@/components/Reveal";
-import { catalogHref, categoryToSegment } from "@/data/categories";
+import { catalogHref, categoryToSegment, regionalCatalogHref } from "@/data/categories";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
 import { Calendar, Users, Award, Phone, Send } from "lucide-react";
 import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
-import { CONTACT, PRIMARY_SALON } from "@/data/contact";
+import { CONTACT, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
 import { useCityStore } from "@/lib/store/city";
 import { getHomepageData, getProductGallery } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ОПТИКА 100% — оправы, очки и контактные линзы в Санкт-Петербурге" },
+      { title: "ОПТИКА 100% — оправы, очки и контактные линзы" },
       {
         name: "description",
         content:
@@ -37,12 +37,12 @@ export const Route = createFileRoute("/")({
       },
       {
         property: "og:title",
-        content: "ОПТИКА 100% — оправы, очки и контактные линзы в Санкт-Петербурге",
+        content: "ОПТИКА 100% — оправы, очки и контактные линзы",
       },
       {
         property: "og:description",
         content:
-          "Большой выбор оправ и линз, услуги клиники зрения, салоны в центре Санкт-Петербурга.",
+          "Большой выбор оправ и линз, услуги клиники зрения, профессиональный подбор и доставка.",
       },
       { property: "og:image", content: "/main_banner_3.webp" },
     ],
@@ -411,17 +411,9 @@ function MainV2Page() {
         `}</style>
 
         {/* Banner A — new_main_banner.png */}
-        <img
-          src="/new_main_banner.webp"
-          alt=""
-          className="o100-hero-banner o100-hero-banner-a"
-        />
+        <img src="/new_main_banner.webp" alt="" className="o100-hero-banner o100-hero-banner-a" />
         {/* Banner B — main_banner_3.png */}
-        <img
-          src="/main_banner_3.webp"
-          alt=""
-          className="o100-hero-banner o100-hero-banner-b"
-        />
+        <img src="/main_banner_3.webp" alt="" className="o100-hero-banner o100-hero-banner-b" />
         {/* Warm "sun" glow on the right — pulsing light source */}
         <div aria-hidden className="o100-hero-sun" />
         {/* Soft left-side wash so text stays legible (pulsing intensity, drifts laterally) */}
@@ -479,9 +471,8 @@ function MainV2Page() {
                 >
                   Записаться на проверку
                 </button>
-                <Link
-                  to="/catalog_s/$category"
-                  params={{ category: "opravy" }}
+                <a
+                  href={catalogHref("opravy", city)}
                   className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold border border-foreground text-foreground bg-transparent hover:bg-foreground hover:text-background transition-colors"
                 >
                   <svg
@@ -500,7 +491,7 @@ function MainV2Page() {
                     />
                   </svg>
                   Примерить онлайн
-                </Link>
+                </a>
               </div>
 
               <div
@@ -527,7 +518,12 @@ function MainV2Page() {
                   className="group flex items-start gap-2.5 text-inherit no-underline transition-transform duration-200 hover:-translate-y-px"
                 >
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand/10 text-brand transition-colors duration-200 group-hover:bg-brand/15">
-                    <img src="/t_icon_red.webp" alt="" loading="lazy" className="h-5 w-4 object-contain" />
+                    <img
+                      src="/t_icon_red.webp"
+                      alt=""
+                      loading="lazy"
+                      className="h-5 w-4 object-contain"
+                    />
                   </span>
                   <div className="flex min-w-0 flex-col">
                     <strong className="border-b border-dashed border-transparent font-serif text-[18px] leading-[1.1] text-foreground transition-colors group-hover:border-brand/40">
@@ -710,14 +706,13 @@ function MainV2Page() {
                 Подберите свои идеальные очки
               </h2>
             </div>
-            <Link
-              to="/catalog_s/$category"
-              params={{ category: "opravy" }}
+            <a
+              href={catalogHref("opravy", city)}
               className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium"
               style={{ color: "var(--brand)" }}
             >
               Смотреть все категории <ArrowRight className="h-4 w-4" />
-            </Link>
+            </a>
           </Reveal>
 
           {/* Grid layout per screenshot: tall left + wide top-right + 2 bottom-right tiles */}
@@ -763,14 +758,13 @@ function MainV2Page() {
 
           {/* Mobile "see all" link */}
           <div className="mt-6 sm:hidden">
-            <Link
-              to="/catalog_s/$category"
-              params={{ category: "opravy" }}
+            <a
+              href={catalogHref("opravy", city)}
               className="inline-flex items-center gap-1.5 text-sm font-medium"
               style={{ color: "var(--brand)" }}
             >
               Смотреть все категории <ArrowRight className="h-4 w-4" />
-            </Link>
+            </a>
           </div>
         </div>
       </section>
@@ -970,9 +964,7 @@ function MainV2Page() {
           6a. CONTACT LENS CAROUSEL — real products from catalog data
          ───────────────────────────────────────────────────────────── */}
       {contactLensProducts.length > 0 && (
-        <section
-          style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
-        >
+        <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
           <div className="mx-auto max-w-7xl px-4 lg:px-8">
             <MainV2ContactLensCarousel products={contactLensProducts} promo={lensPromo} />
           </div>
@@ -1177,19 +1169,24 @@ function MainV2Page() {
               >
                 {CONTACT.phone.label}
               </a>
-              <p className="text-xs text-muted-foreground mt-1 mb-4">{PRIMARY_SALON.hours}</p>
+              <p className="text-xs text-muted-foreground mt-1 mb-4">
+                {city === "nvk" ? NK_SALONS[0].hours : PRIMARY_SALON.hours}
+              </p>
               <a
-                href="/optika-spb/"
+                href={city === "nvk" ? "/contacts/" : "/optika-spb/"}
                 className="mb-4 inline-flex text-xs font-medium text-brand transition-opacity hover:opacity-70"
               >
-                Оптика в Санкт-Петербурге →
+                {city === "nvk" ? "Салоны в Новокузнецке →" : "Оптика в Санкт-Петербурге →"}
               </a>
               <div className="flex items-center gap-2 mt-auto">
-                {[
-                  { name: "Email", href: CONTACT.email.href },
-                  { name: "Telegram", href: CONTACT.telegram.href },
-                  { name: "MAX", href: CONTACT.max.href },
-                ].map((m) => (
+                {(city === "nvk"
+                  ? [{ name: "MAX", href: CONTACT.max.href }]
+                  : [
+                      { name: "Email", href: CONTACT.email.href },
+                      { name: "Telegram", href: CONTACT.telegram.href },
+                      { name: "MAX", href: CONTACT.max.href },
+                    ]
+                ).map((m) => (
                   <a
                     key={m.name}
                     href={m.href}
@@ -1215,14 +1212,25 @@ function MainV2Page() {
               <p className="text-sm text-muted-foreground" style={{ marginBottom: 18 }}>
                 Публикуем актуальные предложения в наших официальных каналах.
               </p>
-              <a
-                href={CONTACT.telegram.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
-              >
-                <Send className="h-4 w-4" /> Читать в Telegram
-              </a>
+              {city === "spb" ? (
+                <a
+                  href={CONTACT.telegram.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
+                >
+                  <Send className="h-4 w-4" /> Читать в Telegram
+                </a>
+              ) : (
+                <a
+                  href={CONTACT.max.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
+                >
+                  Читать в MAX
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -1430,11 +1438,11 @@ function MainV2BuyTogetherBanner() {
               Действуют ограничения. Подробности у&nbsp;консультанта в&nbsp;салоне.
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <a href={catalogHref("opravy")} className="o100-bts-btn o100-bts-btn-primary">
+              <a href={catalogHref("opravy", city)} className="o100-bts-btn o100-bts-btn-primary">
                 Купить оправу
               </a>
               <a
-                href={catalogHref("solntsezashchitnye")}
+                href={catalogHref("solntsezashchitnye", city)}
                 className="o100-bts-btn o100-bts-btn-secondary"
               >
                 Купить солнцезащитные очки
@@ -1486,7 +1494,8 @@ function MainV2ProductCard({ product }: { product: Product }) {
   const hasHoverImage = Boolean(hoverImage);
   const dots = product.colors?.slice(0, 4) ?? [];
   const extra = (product.colors?.length ?? 0) - dots.length;
-  const showTryOn = product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
+  const showTryOn =
+    product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
   const productRouteParams = {
     category: categoryToSegment[product.category],
     slug: product.slug,
@@ -1502,15 +1511,17 @@ function MainV2ProductCard({ product }: { product: Product }) {
   const prepareHoverImage = () => {
     if (hoverImage || galleryRequested.current) return;
     galleryRequested.current = true;
-    void getProductGallery(product.slug, city, categoryToSegment[product.category]).then((images) => {
-      const candidate =
-        (images[1] && images[1] !== primaryImage ? images[1] : undefined) ??
-        images.find((image) => image && image !== primaryImage);
-      if (!candidate || typeof Image === "undefined") return;
-      const preload = new Image();
-      preload.onload = () => setFetchedHoverImage(candidate);
-      preload.src = candidate;
-    });
+    void getProductGallery(product.slug, city, categoryToSegment[product.category]).then(
+      (images) => {
+        const candidate =
+          (images[1] && images[1] !== primaryImage ? images[1] : undefined) ??
+          images.find((image) => image && image !== primaryImage);
+        if (!candidate || typeof Image === "undefined") return;
+        const preload = new Image();
+        preload.onload = () => setFetchedHoverImage(candidate);
+        preload.src = candidate;
+      },
+    );
   };
 
   return (
@@ -1645,6 +1656,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
  */
 function MainV2HitsCarousel({ products }: { products: Product[] }) {
   const scroller = useRef<HTMLDivElement>(null);
+  const city = useCityStore((state) => state.city);
   const scrollBy = (dir: 1 | -1) => {
     const el = scroller.current;
     if (!el) return;
@@ -1680,14 +1692,13 @@ function MainV2HitsCarousel({ products }: { products: Product[] }) {
           </h2>
         </div>
         <div className="flex items-center gap-4">
-          <Link
-            to="/catalog_s/$category"
-            params={{ category: "opravy" }}
+          <a
+            href={catalogHref("opravy", city)}
             className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium"
             style={{ color: "var(--brand)" }}
           >
             Смотреть все <ArrowRight className="h-4 w-4" />
-          </Link>
+          </a>
           <div className="hidden md:flex items-center gap-2">
             <button
               type="button"
@@ -1744,6 +1755,7 @@ function MainV2ContactLensCarousel({
   } | null;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
+  const city = useCityStore((state) => state.city);
   const lensPromo = promo ?? DEFAULT_LENS_PROMO;
   const discountPercent = lensPromo.discountPercent ?? DEFAULT_LENS_PROMO.discountPercent;
   const scrollBy = (dir: 1 | -1) => {
@@ -1820,7 +1832,7 @@ function MainV2ContactLensCarousel({
         </div>
         <div className="flex items-center gap-4">
           <a
-            href={lensPromo.href}
+            href={regionalCatalogHref(lensPromo.href, city)}
             className="o100-lens-all-link hidden sm:inline-flex items-center gap-1.5 text-sm font-medium"
             style={{ color: "var(--brand)" }}
           >
@@ -1879,7 +1891,7 @@ function MainV2ContactLensCarousel({
       </Reveal>
       <div className="mt-6 sm:hidden">
         <a
-          href={lensPromo.href}
+          href={regionalCatalogHref(lensPromo.href, city)}
           className="inline-flex items-center gap-1.5 text-sm font-medium"
           style={{ color: "var(--brand)" }}
         >
@@ -2068,7 +2080,7 @@ function MainV2ContactLensCard({
               borderRadius: 4,
               letterSpacing: "0.04em",
             }}
-            >
+          >
             {discountLabel}
           </span>
           <span
@@ -2091,6 +2103,8 @@ function MainV2ContactLensCard({
 }
 
 function MainV2SubscriptionBlock() {
+  const city = useCityStore((state) => state.city);
+
   return (
     <section
       id="lens-subscription"
@@ -2299,7 +2313,7 @@ function MainV2SubscriptionBlock() {
 
               <div className="flex flex-wrap gap-3" style={{ marginTop: 28 }}>
                 <a
-                  href={catalogHref("kontaktnye-linzy")}
+                  href={catalogHref("kontaktnye-linzy", city)}
                   className="o100-sub-btn o100-sub-btn-primary"
                 >
                   Все товары по&nbsp;подписке
@@ -2341,6 +2355,7 @@ function MainV2SubscriptionBlock() {
 }
 
 function CategoryTile({ cell }: { cell: (typeof CAT_CELLS)[number] }) {
+  const city = useCityStore((state) => state.city);
   const isTop = cell.titlePos === "top";
   // Gradient direction depends on text position so the dark wash is
   // always behind the text (top-anchored vs bottom-anchored).
@@ -2349,7 +2364,7 @@ function CategoryTile({ cell }: { cell: (typeof CAT_CELLS)[number] }) {
     : "linear-gradient(180deg, rgba(0,0,0,0) 35%, rgba(0,0,0,0.55) 100%)";
   return (
     <a
-      href={cell.href}
+      href={regionalCatalogHref(cell.href, city)}
       className="o100-cat-tile group relative block rounded-2xl overflow-hidden bg-cream hover:-translate-y-1 transition-transform duration-300 h-full w-full"
     >
       <img

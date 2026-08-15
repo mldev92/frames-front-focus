@@ -11,6 +11,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { serviceHref } from "@/data/services";
+import { useCityStore } from "@/lib/store/city";
 
 const BASE_INCLUDED_FEATURES = [
   "Однодневная сборка в салоне",
@@ -60,6 +62,7 @@ export function ProductInfoSections({
   prescription,
   onPrescriptionChange,
 }: ProductInfoSectionsProps) {
+  const city = useCityStore((state) => state.city);
   const brand = getProductDisplayBrand(product);
   const showFrameValueCard = product.category === "opravy";
   const includesCaseAndCloth = product.includesCaseCloth === true;
@@ -81,11 +84,11 @@ export function ProductInfoSections({
   });
   const measurementLabels = new Set<string>(MEASUREMENTS.flatMap((item) => [...item.labels]));
   const sourceSpecs =
-    usesDetailedContent && product.characteristics?.length ? product.characteristics : product.specs;
+    usesDetailedContent && product.characteristics?.length
+      ? product.characteristics
+      : product.specs;
   const detailSpecs = sourceSpecs.filter(
-    (spec) =>
-      !measurementLabels.has(spec.label) &&
-      !HIDDEN_CHARACTERISTIC_LABELS.has(spec.label),
+    (spec) => !measurementLabels.has(spec.label) && !HIDDEN_CHARACTERISTIC_LABELS.has(spec.label),
   );
   const descriptionHtml = product.descriptionHtml?.trim() ?? "";
   const descriptionText = product.description.trim();
@@ -171,29 +174,30 @@ export function ProductInfoSections({
                 dangerouslySetInnerHTML={{ __html: descriptionHtml }}
               />
             ) : (
-              <p className="max-w-3xl text-sm leading-7 text-muted-foreground">
-                {descriptionText}
-              </p>
+              <p className="max-w-3xl text-sm leading-7 text-muted-foreground">{descriptionText}</p>
             )}
           </section>
         </Reveal>
       )}
 
-      {showPrescription && prescriptionVariant === "contacts" && prescription && onPrescriptionChange && (
-        <Reveal>
-          <section>
-            <SectionHeading
-              title="Нужен рецепт?"
-              note="Можно добавить сейчас или после оформления"
-            />
-            <PrescriptionInput
-              product={product}
-              value={prescription}
-              onChange={onPrescriptionChange}
-            />
-          </section>
-        </Reveal>
-      )}
+      {showPrescription &&
+        prescriptionVariant === "contacts" &&
+        prescription &&
+        onPrescriptionChange && (
+          <Reveal>
+            <section>
+              <SectionHeading
+                title="Нужен рецепт?"
+                note="Можно добавить сейчас или после оформления"
+              />
+              <PrescriptionInput
+                product={product}
+                value={prescription}
+                onChange={onPrescriptionChange}
+              />
+            </section>
+          </Reveal>
+        )}
 
       <Reveal>
         <Accordion type="multiple" className="border-t border-border">
@@ -208,7 +212,7 @@ export function ProductInfoSections({
                   : "Не уверены в размере? Запишитесь на бесплатный подбор в любом из наших салонов. Оптики помогут с выбором формы и посадкой."}
               </p>
               <a
-                href={isContactLens ? "/kabinet-diagnostiki-spb/" : "/podbor-ochkov/"}
+                href={isContactLens ? serviceHref("diagnostika", city) : "/podbor-ochkov/"}
                 className="mt-4 inline-flex items-center gap-2 font-medium text-brand"
               >
                 {isContactLens ? "Подробнее о подборе линз" : "Подробнее о подборе"}
@@ -223,7 +227,11 @@ export function ProductInfoSections({
             </AccordionTrigger>
             <AccordionContent className="pb-6 text-muted-foreground">
               <ul className="space-y-2">
-                <li>Доставка по Санкт-Петербургу от 1 дня</li>
+                <li>
+                  {city === "nvk"
+                    ? "Доставка по Новокузнецку — сроки рассчитываются при оформлении"
+                    : "Доставка по Санкт-Петербургу от 1 дня"}
+                </li>
                 <li>Самовывоз из салонов бесплатно</li>
                 <li>Оплата картой, наличными или через СБП</li>
                 <li>

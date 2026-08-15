@@ -9,7 +9,7 @@ import { PromoCards } from "@/components/PromoCards";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { Reveal } from "@/components/Reveal";
 import { SalonsSection } from "@/components/SalonsSection";
-import { categories, productHref } from "@/data/categories";
+import { categories, catalogHref, productHref, regionalCatalogHref } from "@/data/categories";
 import { bestsellers, newArrivals } from "@/data/products";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
@@ -19,7 +19,7 @@ import { useCityStore } from "@/lib/store/city";
 export const Route = createFileRoute("/main-v2")({
   head: () => ({
     meta: [
-      { title: "ОПТИКА 100% — оправы, очки и контактные линзы в Санкт-Петербурге" },
+      { title: "ОПТИКА 100% — оправы, очки и контактные линзы" },
       {
         name: "description",
         content:
@@ -27,12 +27,12 @@ export const Route = createFileRoute("/main-v2")({
       },
       {
         property: "og:title",
-        content: "ОПТИКА 100% — оправы, очки и контактные линзы в Санкт-Петербурге",
+        content: "ОПТИКА 100% — оправы, очки и контактные линзы",
       },
       {
         property: "og:description",
         content:
-          "Большой выбор оправ и линз, услуги клиники зрения, салоны в центре Санкт-Петербурга.",
+          "Большой выбор оправ и линз, услуги клиники зрения, профессиональный подбор и доставка.",
       },
       { property: "og:image", content: "/main_banner_v4.webp" },
     ],
@@ -101,7 +101,10 @@ function HomePage() {
         .hero-photo-dots{position:absolute!important;top:-16px!important;right:-16px!important;display:grid!important;grid-template-columns:repeat(3,6px)!important;gap:6px!important;opacity:.25!important}
         .hero-photo-dots span{width:6px!important;height:6px!important;border-radius:50%!important;background:rgba(255,200,170,.6)!important}
       `}</style>
-      <section className="relative w-full min-h-[620px] lg:min-h-[700px] overflow-hidden flex items-center" style={{ padding: 'clamp(48px, 8vw, 80px) clamp(24px, 5vw, 64px)' }}>
+      <section
+        className="relative w-full min-h-[620px] lg:min-h-[700px] overflow-hidden flex items-center"
+        style={{ padding: "clamp(48px, 8vw, 80px) clamp(24px, 5vw, 64px)" }}
+      >
         {/* Animated gradient background */}
         <div className="hero-bg" />
         {/* Bokeh particles */}
@@ -113,35 +116,56 @@ function HomePage() {
 
         {/* Full-size banner image */}
         <div className="absolute inset-0 z-[1]">
-          <img
-            src="/main_banner_v4.webp"
-            alt=""
-            className="w-full h-full object-cover"
-          />
+          <img src="/main_banner_v4.webp" alt="" className="w-full h-full object-cover" />
           {/* Gradient overlay — darker on left for text readability */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(26,5,8,0.75) 0%, rgba(26,5,8,0.35) 45%, rgba(26,5,8,0.08) 100%)', backgroundSize: '200% 100%', animation: '_light 8s ease-in-out infinite' }} />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(26,5,8,0.75) 0%, rgba(26,5,8,0.35) 45%, rgba(26,5,8,0.08) 100%)",
+              backgroundSize: "200% 100%",
+              animation: "_light 8s ease-in-out infinite",
+            }}
+          />
         </div>
 
         {/* Text content overlaid */}
         <div className="hero-content">
           <span className="hero-eyebrow">Новая коллекция · Лето 2026</span>
-          <h1 className="hero-h1">Вижу мир на <span style={{ color: "var(--brand)" }}>100%</span></h1>
-          <p className="hero-lead">Более 11&nbsp;000 оправ от 120 брендов. Ручная подгонка в&nbsp;наших салонах в&nbsp;Санкт-Петербурге и&nbsp;Новокузнецке.</p>
+          <h1 className="hero-h1">
+            Вижу мир на <span style={{ color: "var(--brand)" }}>100%</span>
+          </h1>
+          <p className="hero-lead">
+            Более 11&nbsp;000 оправ от 120 брендов. Ручная подгонка в&nbsp;наших салонах в&nbsp;
+            {city === "nvk" ? "Новокузнецке" : "Санкт-Петербурге"}.
+          </p>
           <div className="hero-ctas">
-            <Link
-              to="/catalog_s/$category" params={{ category: "opravy" }}
+            <a
+              href={catalogHref("opravy", city)}
               className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold hover:opacity-90 transition-opacity"
-              style={{ background: '#fff', color: '#1a0508' }}
+              style={{ background: "#fff", color: "#1a0508" }}
             >
               Подобрать оправу
-            </Link>
+            </a>
             <button
               className="inline-flex items-center gap-2 border rounded-full px-7 py-3.5 text-sm font-semibold transition-colors cursor-pointer bg-transparent"
-              style={{ color: '#fff', borderColor: 'rgba(255,255,255,0.35)' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.1)'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.6)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.35)'; }}
+              style={{ color: "#fff", borderColor: "rgba(255,255,255,0.35)" }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.1)";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.6)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "transparent";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.35)";
+              }}
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" style={{ width: '18px', height: '18px' }}>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                style={{ width: "18px", height: "18px" }}
+              >
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
                 <circle cx="12" cy="13" r="4" />
               </svg>
@@ -149,9 +173,18 @@ function HomePage() {
             </button>
           </div>
           <div className="hero-stats">
-            <div><strong>11 000+</strong><span>оправ от 120 брендов</span></div>
-            <div><strong>2 города</strong><span>СПб · Новокузнецк</span></div>
-            <div><strong>4.9 ★</strong><span>1 840 отзывов</span></div>
+            <div>
+              <strong>11 000+</strong>
+              <span>оправ от 120 брендов</span>
+            </div>
+            <div>
+              <strong>{city === "nvk" ? "4 салона" : "Салон в центре"}</strong>
+              <span>{city === "nvk" ? "Новокузнецк" : "Санкт-Петербург"}</span>
+            </div>
+            <div>
+              <strong>4.9 ★</strong>
+              <span>1 840 отзывов</span>
+            </div>
           </div>
         </div>
       </section>
@@ -165,7 +198,7 @@ function HomePage() {
           {fourCats.map((c, i) => (
             <Reveal key={c.slug} delay={i * 80}>
               <a
-                href={c.href}
+                href={regionalCatalogHref(c.href, city)}
                 className="group relative aspect-[3/4] rounded-2xl overflow-hidden block bg-cream hover:shadow-md hover:-translate-y-1 transition-all duration-300"
               >
                 <img
@@ -176,7 +209,9 @@ function HomePage() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-foreground/10 to-transparent" />
                 <div className="absolute bottom-5 left-5 right-5 text-primary-foreground">
-                  <div className="text-xs uppercase tracking-[0.15em] opacity-90 mb-2">{c.short}</div>
+                  <div className="text-xs uppercase tracking-[0.15em] opacity-90 mb-2">
+                    {c.short}
+                  </div>
                   <div className="font-serif text-xl leading-tight mb-4">{c.title}</div>
                   <span className="inline-flex items-center bg-background text-foreground text-sm rounded-full px-4 py-2 group-hover:bg-brand group-hover:text-brand-foreground transition-colors">
                     Смотреть →
@@ -198,12 +233,12 @@ function HomePage() {
               </div>
               <h2 className="font-serif text-3xl lg:text-4xl">Любимые модели сезона</h2>
             </div>
-            <Link
-              to="/catalog_s/$category" params={{ category: "opravy" }}
+            <a
+              href={catalogHref("opravy", city)}
               className="hidden sm:inline-flex items-center gap-2 border border-border rounded-full px-4 py-2 text-sm hover:border-foreground bg-background"
             >
               Смотреть все
-            </Link>
+            </a>
           </Reveal>
           <Reveal delay={120}>
             <ProductCarousel products={hits} />
@@ -233,9 +268,7 @@ function HomePage() {
       {/* SERVICES — lighter, white cards */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-20">
         <Reveal className="text-center max-w-2xl mx-auto mb-12">
-          <div className="text-xs uppercase tracking-[0.2em] text-brand mb-3">
-            Услуги клиники
-          </div>
+          <div className="text-xs uppercase tracking-[0.2em] text-brand mb-3">Услуги клиники</div>
           <h2 className="font-serif text-3xl lg:text-4xl">
             Комплексные услуги по подбору очков и линз
           </h2>
@@ -245,7 +278,14 @@ function HomePage() {
             <Reveal key={s.slug} delay={i * 80}>
               <a
                 href={s.slug === "priem-vracha" ? undefined : serviceHref(s.slug, city)}
-                onClick={s.slug === "priem-vracha" ? (e) => { e.preventDefault(); setAptOpen(true); } : undefined}
+                onClick={
+                  s.slug === "priem-vracha"
+                    ? (e) => {
+                        e.preventDefault();
+                        setAptOpen(true);
+                      }
+                    : undefined
+                }
                 className="group block rounded-2xl overflow-hidden border border-border bg-background hover:shadow-md hover:-translate-y-1 transition-all duration-300 cursor-pointer"
               >
                 <div className="aspect-[4/3] overflow-hidden bg-cream">
@@ -278,8 +318,8 @@ function HomePage() {
               Замедляем прогрессирование близорукости у детей.
             </h2>
             <p className="mt-6 text-base/relaxed text-muted-foreground max-w-lg">
-              Линзы Stellest и MiSight 1-Day, профильный кабинет в нашей клинике,
-              индивидуальная программа наблюдения.
+              Линзы Stellest и MiSight 1-Day, профильный кабинет в нашей клинике, индивидуальная
+              программа наблюдения.
             </p>
             <a
               href={serviceHref("diagnostika", city)}
@@ -309,10 +349,7 @@ function HomePage() {
             </div>
             <h2 className="font-serif text-3xl lg:text-4xl">Свежие статьи</h2>
           </div>
-          <Link
-            to="/blog"
-            className="text-sm hover:text-brand inline-flex items-center gap-1"
-          >
+          <Link to="/blog" className="text-sm hover:text-brand inline-flex items-center gap-1">
             Все статьи <ArrowRight className="h-4 w-4" />
           </Link>
         </Reveal>

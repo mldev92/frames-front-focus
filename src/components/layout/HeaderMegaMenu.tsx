@@ -27,10 +27,7 @@ import { regionalSiteHref } from "@/lib/city-routing";
 import { cn } from "@/lib/utils";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import type { CatalogFacetSummary } from "@/lib/api/bitrix";
-import {
-  availableHeaderMenuItems,
-  isHeaderMenuHrefAvailable,
-} from "@/lib/header-menu-facets";
+import { availableHeaderMenuItems, isHeaderMenuHrefAvailable } from "@/lib/header-menu-facets";
 
 type FrameCategory = "opravy" | "solntsezashchitnye";
 
@@ -184,8 +181,11 @@ type AccessoriesMegaMenu = {
   promoChips: CountChip[];
 };
 
-
-export type HeaderMegaMenu = FramesMegaMenu | ContactMegaMenu | GlassesMegaMenu | AccessoriesMegaMenu;
+export type HeaderMegaMenu =
+  | FramesMegaMenu
+  | ContactMegaMenu
+  | GlassesMegaMenu
+  | AccessoriesMegaMenu;
 
 export interface HeaderNavItem {
   href: string;
@@ -201,7 +201,11 @@ const menuHref = (category: Parameters<typeof catalogHref>[0], params?: Record<s
   let expandedFacet: string | undefined;
   for (const [key, value] of Object.entries(params)) {
     if (value) search.set(key, value);
-    if (!expandedFacet && value && EXPANDABLE_FACET_PARAMS.includes(key as (typeof EXPANDABLE_FACET_PARAMS)[number])) {
+    if (
+      !expandedFacet &&
+      value &&
+      EXPANDABLE_FACET_PARAMS.includes(key as (typeof EXPANDABLE_FACET_PARAMS)[number])
+    ) {
       expandedFacet = key;
     }
   }
@@ -212,8 +216,15 @@ const menuHref = (category: Parameters<typeof catalogHref>[0], params?: Record<s
   return query ? `${href}?${query}${catalogTarget}` : href;
 };
 
-const frameHref = (category: FrameCategory, params?: Record<string, string>) => menuHref(category, params);
+const frameHref = (category: FrameCategory, params?: Record<string, string>) =>
+  menuHref(category, params);
 const regionalMenuHref = (href: string, city: CityCode) => regionalSiteHref(href, city);
+const regionalMenuLabel = (label: string, city: CityCode) => {
+  if (city !== "nvk") return label;
+  if (label === "Контактные линзы в Санкт-Петербурге") return "Контактные линзы в Новокузнецке";
+  if (label === "Доставка по СПб от 1 дня") return "Доставка и самовывоз";
+  return label;
+};
 const formatSphereLabel = (value: string) => (value === "0" ? value : value.replace(/\.00$/, ""));
 const expandHref = (href: string, facet: (typeof EXPANDABLE_FACET_PARAMS)[number]) => {
   const [path, query = ""] = href.split("?");
@@ -289,20 +300,44 @@ const audienceIconBase =
 
 const AudienceIcons = {
   male: (
-    <svg viewBox="0 0 24 24" className={audienceIconBase} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      className={audienceIconBase}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="9" r="4" />
       <path d="M5 21c0-4 3-7 7-7s7 3 7 7" />
     </svg>
   ),
   female: (
-    <svg viewBox="0 0 24 24" className={audienceIconBase} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      className={audienceIconBase}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="8" r="4" />
       <path d="M12 12v8" />
       <path d="M9 17h6" />
     </svg>
   ),
   unisex: (
-    <svg viewBox="0 0 24 24" className={audienceIconBase} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      className={audienceIconBase}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="9" cy="9" r="3" />
       <circle cx="16" cy="9" r="3" />
       <path d="M4 20c0-3 2-5 5-5s5 2 5 5" />
@@ -310,21 +345,45 @@ const AudienceIcons = {
     </svg>
   ),
   kidsTitle: (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 text-brand" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-3.5 w-3.5 text-brand"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="10" r="3" />
       <path d="M7 21c0-3 2-5 5-5s5 2 5 5" />
       <path d="M9 4l3-2 3 2" />
     </svg>
   ),
   boys: (
-    <svg viewBox="0 0 24 24" className="h-4 w-4 text-[oklch(0.50_0.13_240)]" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4 text-[oklch(0.50_0.13_240)]"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="8" r="3.2" />
       <path d="M7 21v-5a5 5 0 0 1 10 0v5" />
       <path d="M9 4.5l3-2 3 2" />
     </svg>
   ),
   girls: (
-    <svg viewBox="0 0 24 24" className="h-4 w-4 text-brand" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-4 w-4 text-brand"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.7"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="8" r="3.2" />
       <path d="M8 21l2-9h4l2 9" />
       <path d="M10 5.5q2-2 4 0" />
@@ -332,12 +391,25 @@ const AudienceIcons = {
   ),
 };
 
-const LensTypeIcon = ({ kind }: { kind: "single" | "progressive" | "bifocal" | "office" | "photo" | "kids" }) => {
-  const base = "h-[18px] w-6 shrink-0 text-muted-foreground transition-colors group-hover:text-brand";
+const LensTypeIcon = ({
+  kind,
+}: {
+  kind: "single" | "progressive" | "bifocal" | "office" | "photo" | "kids";
+}) => {
+  const base =
+    "h-[18px] w-6 shrink-0 text-muted-foreground transition-colors group-hover:text-brand";
 
   if (kind === "progressive") {
     return (
-      <svg viewBox="0 0 30 22" className={base} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        viewBox="0 0 30 22"
+        className={base}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="15" cy="11" r="8" />
         <path d="M15 3v16" />
         <path d="M7 11h16" />
@@ -347,7 +419,15 @@ const LensTypeIcon = ({ kind }: { kind: "single" | "progressive" | "bifocal" | "
 
   if (kind === "bifocal") {
     return (
-      <svg viewBox="0 0 30 22" className={base} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        viewBox="0 0 30 22"
+        className={base}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="15" cy="11" r="8" />
         <path d="M7 13h16" />
       </svg>
@@ -356,7 +436,15 @@ const LensTypeIcon = ({ kind }: { kind: "single" | "progressive" | "bifocal" | "
 
   if (kind === "office") {
     return (
-      <svg viewBox="0 0 30 22" className={base} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        viewBox="0 0 30 22"
+        className={base}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="15" cy="11" r="8" />
         <circle cx="15" cy="11" r="4" />
       </svg>
@@ -365,7 +453,15 @@ const LensTypeIcon = ({ kind }: { kind: "single" | "progressive" | "bifocal" | "
 
   if (kind === "photo") {
     return (
-      <svg viewBox="0 0 30 22" className={base} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        viewBox="0 0 30 22"
+        className={base}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="15" cy="11" r="8" />
         <path d="M15 3v3M15 16v3M3 11h3M24 11h3M6.5 4.5l2 2M21.5 17.5l2 2M19.5 6.5l2-2M8.5 17.5l-2 2" />
       </svg>
@@ -374,7 +470,15 @@ const LensTypeIcon = ({ kind }: { kind: "single" | "progressive" | "bifocal" | "
 
   if (kind === "kids") {
     return (
-      <svg viewBox="0 0 30 22" className={base} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <svg
+        viewBox="0 0 30 22"
+        className={base}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
         <circle cx="15" cy="11" r="8" />
         <circle cx="15" cy="11" r="2" />
         <path d="M11 7l8 8M19 7l-8 8" />
@@ -383,7 +487,15 @@ const LensTypeIcon = ({ kind }: { kind: "single" | "progressive" | "bifocal" | "
   }
 
   return (
-    <svg viewBox="0 0 30 22" className={base} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      viewBox="0 0 30 22"
+      className={base}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="15" cy="11" r="8" />
     </svg>
   );
@@ -406,15 +518,18 @@ function sectionHeader(name: string, action: string, href?: string) {
   );
 }
 
-function buildFrameMega(category: FrameCategory, copy: {
-  allLabel: string;
-  brandHrefLabel: string;
-  brandStrip: string[];
-  featured: FramesMegaMenu["featured"];
-  summary: string;
-  title: string;
-  titleEmphasis: string;
-}): FramesMegaMenu {
+function buildFrameMega(
+  category: FrameCategory,
+  copy: {
+    allLabel: string;
+    brandHrefLabel: string;
+    brandStrip: string[];
+    featured: FramesMegaMenu["featured"];
+    summary: string;
+    title: string;
+    titleEmphasis: string;
+  },
+): FramesMegaMenu {
   return {
     kind: "frames",
     allHref: catalogHref(category),
@@ -591,12 +706,24 @@ function buildFrameMega(category: FrameCategory, copy: {
       { label: "TR-90", count: "142", href: frameHref(category, { material: "TR-90" }) },
       { label: "Нейлон", count: "88", href: frameHref(category, { material: "Нейлон" }) },
       { label: "Pebax", count: "42", href: frameHref(category, { material: "Pebax" }) },
-      { label: "Комбинированный", count: "186", href: frameHref(category, { material: "Комбинированный" }) },
+      {
+        label: "Комбинированный",
+        count: "186",
+        href: frameHref(category, { material: "Комбинированный" }),
+      },
     ],
     pricePresets: [
       { label: "Доступные", price: "до 5 000 ₽", href: frameHref(category, { priceMax: "5000" }) },
-      { label: "Средний", price: "5 000 — 12 000 ₽", href: frameHref(category, { priceMin: "5000", priceMax: "12000" }) },
-      { label: "Премиум", price: "12 000 — 25 000 ₽", href: frameHref(category, { priceMin: "12000", priceMax: "25000" }) },
+      {
+        label: "Средний",
+        price: "5 000 — 12 000 ₽",
+        href: frameHref(category, { priceMin: "5000", priceMax: "12000" }),
+      },
+      {
+        label: "Премиум",
+        price: "12 000 — 25 000 ₽",
+        href: frameHref(category, { priceMin: "12000", priceMax: "25000" }),
+      },
       { label: "Премиум+", price: "от 25 000 ₽", href: frameHref(category, { priceMin: "25000" }) },
     ],
     // Collection tags have no server facet. Do not advertise shortcuts that
@@ -617,13 +744,7 @@ const FRAMES_MENU = buildFrameMega("opravy", {
   summary: "Формы, размеры и материалы",
   allLabel: "Смотреть все оправы",
   brandHrefLabel: "Оправы",
-  brandStrip: [
-    "O.D.L",
-    "STEPPER",
-    "SILHOUETTE",
-    "POLAROID",
-    "FURLA",
-  ],
+  brandStrip: ["O.D.L", "STEPPER", "SILHOUETTE", "POLAROID", "FURLA"],
   featured: {
     eyebrow: "Сентябрьская подборка",
     title: "O.D.L. — собственный дизайн",
@@ -642,13 +763,7 @@ const SUNGLASSES_MENU = buildFrameMega("solntsezashchitnye", {
   summary: "UV-защита и поляризация",
   allLabel: "Смотреть все солнцезащитные",
   brandHrefLabel: "Солнцезащитные",
-  brandStrip: [
-    "POLAROID",
-    "RAY-BAN",
-    "VOGUE",
-    "GUESS",
-    "DACKOR",
-  ],
+  brandStrip: ["POLAROID", "RAY-BAN", "VOGUE", "GUESS", "DACKOR"],
   featured: {
     eyebrow: "Редакция Optika 100%",
     title: "Лёгкие и прочные оправы",
@@ -753,9 +868,21 @@ const CONTACT_MENU: ContactMegaMenu = {
     },
   ],
   brands: [
-    { label: "Acuvue", count: "142 SKU", href: menuHref("kontaktnye-linzy", { brand: "Johnson & Johnson" }) },
-    { label: "CooperVision", count: "96 SKU", href: menuHref("kontaktnye-linzy", { brand: "Cooper Vision" }) },
-    { label: "Bausch+Lomb", count: "62 SKU", href: menuHref("kontaktnye-linzy", { brand: "Bausch & Lomb" }) },
+    {
+      label: "Acuvue",
+      count: "142 SKU",
+      href: menuHref("kontaktnye-linzy", { brand: "Johnson & Johnson" }),
+    },
+    {
+      label: "CooperVision",
+      count: "96 SKU",
+      href: menuHref("kontaktnye-linzy", { brand: "Cooper Vision" }),
+    },
+    {
+      label: "Bausch+Lomb",
+      count: "62 SKU",
+      href: menuHref("kontaktnye-linzy", { brand: "Bausch & Lomb" }),
+    },
     { label: "Alcon", count: "42 SKU", href: menuHref("kontaktnye-linzy", { brand: "Alcon" }) },
   ],
   helper: {
@@ -765,9 +892,21 @@ const CONTACT_MENU: ContactMegaMenu = {
     secondaryHref: "/contacts/",
   },
   utilities: [
-    { label: "Контактные линзы в Санкт-Петербурге", href: "/linzy-spb/", icon: <MapPin className="h-4 w-4" /> },
-    { label: "Подписка на линзы −15%", href: catalogHref("kontaktnye-linzy"), icon: <CalendarRange className="h-4 w-4" /> },
-    { label: "Все растворы и уход", href: catalogHref("aksessuary"), icon: <Droplets className="h-4 w-4" /> },
+    {
+      label: "Контактные линзы в Санкт-Петербурге",
+      href: "/linzy-spb/",
+      icon: <MapPin className="h-4 w-4" />,
+    },
+    {
+      label: "Подписка на линзы −15%",
+      href: catalogHref("kontaktnye-linzy"),
+      icon: <CalendarRange className="h-4 w-4" />,
+    },
+    {
+      label: "Все растворы и уход",
+      href: catalogHref("aksessuary"),
+      icon: <Droplets className="h-4 w-4" />,
+    },
     { label: "Доставка", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
     { label: "Гид по подбору", href: "/podbor-ochkov/", icon: <BookOpen className="h-4 w-4" /> },
   ],
@@ -811,15 +950,42 @@ const GLASSES_MENU: GlassesMegaMenu = {
     },
   ],
   manufacturers: [
-    { label: "ZEISS", meta: "Германия", tag: "Premium", href: menuHref("linzy-dlya-ochkov", { brand: "ZEISS (Германия)" }) },
-    { label: "Essilor", meta: "Франция", tag: "Топ", href: menuHref("linzy-dlya-ochkov", { brand: "Ессилор (Франция)" }) },
-    { label: "Hoya", meta: "Япония", tag: "Премиум", href: menuHref("linzy-dlya-ochkov", { brand: "Hoya (Япония)" }) },
+    {
+      label: "ZEISS",
+      meta: "Германия",
+      tag: "Premium",
+      href: menuHref("linzy-dlya-ochkov", { brand: "ZEISS (Германия)" }),
+    },
+    {
+      label: "Essilor",
+      meta: "Франция",
+      tag: "Топ",
+      href: menuHref("linzy-dlya-ochkov", { brand: "Ессилор (Франция)" }),
+    },
+    {
+      label: "Hoya",
+      meta: "Япония",
+      tag: "Премиум",
+      href: menuHref("linzy-dlya-ochkov", { brand: "Hoya (Япония)" }),
+    },
   ],
   lightTransmissionValues: [
-    { label: "Прозрачная", href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Прозрачная" }) },
-    { label: "Фотохромная", href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Фотохромная" }) },
-    { label: "Тонированная", href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Тонированная" }) },
-    { label: "Поляризованная", href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Поляризованная" }) },
+    {
+      label: "Прозрачная",
+      href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Прозрачная" }),
+    },
+    {
+      label: "Фотохромная",
+      href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Фотохромная" }),
+    },
+    {
+      label: "Тонированная",
+      href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Тонированная" }),
+    },
+    {
+      label: "Поляризованная",
+      href: menuHref("linzy-dlya-ochkov", { lightTransmission: "Поляризованная" }),
+    },
   ],
   materials: [],
   technologies: [
@@ -831,10 +997,30 @@ const GLASSES_MENU: GlassesMegaMenu = {
     { label: "Сферический", href: menuHref("linzy-dlya-ochkov", { design: "Сферический" }) },
   ],
   purposes: [
-    { label: "Для работы за ПК", count: "21", href: menuHref("linzy-dlya-ochkov", { purpose: "Для гаджетов" }), icon: <Laptop className="h-4 w-4" /> },
-    { label: "Для вождения", count: "3", href: menuHref("linzy-dlya-ochkov", { purpose: "Для вождения" }), icon: <Car className="h-4 w-4" /> },
-    { label: "Для чтения и офиса", count: "6", href: menuHref("linzy-dlya-ochkov", { lensType: "Офисные" }), icon: <BookOpen className="h-4 w-4" /> },
-    { label: "Детские", count: "10", href: menuHref("linzy-dlya-ochkov", { gender: "Детские" }), icon: <Eye className="h-4 w-4" /> },
+    {
+      label: "Для работы за ПК",
+      count: "21",
+      href: menuHref("linzy-dlya-ochkov", { purpose: "Для гаджетов" }),
+      icon: <Laptop className="h-4 w-4" />,
+    },
+    {
+      label: "Для вождения",
+      count: "3",
+      href: menuHref("linzy-dlya-ochkov", { purpose: "Для вождения" }),
+      icon: <Car className="h-4 w-4" />,
+    },
+    {
+      label: "Для чтения и офиса",
+      count: "6",
+      href: menuHref("linzy-dlya-ochkov", { lensType: "Офисные" }),
+      icon: <BookOpen className="h-4 w-4" />,
+    },
+    {
+      label: "Детские",
+      count: "10",
+      href: menuHref("linzy-dlya-ochkov", { gender: "Детские" }),
+      icon: <Eye className="h-4 w-4" />,
+    },
   ],
   promotion: {
     eyebrow: "Акции и предложения",
@@ -852,10 +1038,26 @@ const GLASSES_MENU: GlassesMegaMenu = {
     ],
   },
   utilities: [
-    { label: "Установка линз в свою оправу", href: catalogHref("linzy-dlya-ochkov"), icon: <Glasses className="h-4 w-4" /> },
-    { label: "Гид: индекс vs толщина", href: "/blog/linzy-dlya-ochkov/vidy-ochkovykh-linz", icon: <FileText className="h-4 w-4" /> },
-    { label: "Срок изготовления от 1 часа", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
-    { label: "Кабинет диагностики", href: "/kabinet-diagnostiki-spb", icon: <BookOpen className="h-4 w-4" /> },
+    {
+      label: "Установка линз в свою оправу",
+      href: catalogHref("linzy-dlya-ochkov"),
+      icon: <Glasses className="h-4 w-4" />,
+    },
+    {
+      label: "Гид: индекс vs толщина",
+      href: "/blog/linzy-dlya-ochkov/vidy-ochkovykh-linz",
+      icon: <FileText className="h-4 w-4" />,
+    },
+    {
+      label: "Срок изготовления от 1 часа",
+      href: "/payment/",
+      icon: <Truck className="h-4 w-4" />,
+    },
+    {
+      label: "Кабинет диагностики",
+      href: "/kabinet-diagnostiki-spb",
+      icon: <BookOpen className="h-4 w-4" />,
+    },
   ],
   featured: {
     eyebrow: "Stellest · контроль миопии",
@@ -869,7 +1071,6 @@ const GLASSES_MENU: GlassesMegaMenu = {
     ctaLabel: "Смотреть линзы",
   },
 };
-
 
 // Canonical Bitrix section paths (1:1 URL parity with optika100.com):
 //   soputstvuyushchie_tovary/aksessuary/   → "Для контактных линз" group
@@ -889,28 +1090,68 @@ const ACCESSORIES_MENU: AccessoriesMegaMenu = {
       title: "Для контактных линз",
       allHref: `${ACC}/aksessuary/`,
       items: [
-        { label: "Для контактных линз — все", href: `${ACC}/aksessuary/`, icon: <Eye className="h-4 w-4" /> },
-        { label: "Очистители и капли", href: accSection("aksessuary", "ochistiteli_i_kapli"), icon: <Droplets className="h-4 w-4" /> },
-        { label: "Растворы", href: accSection("aksessuary", "rastvory"), icon: <Droplets className="h-4 w-4" /> },
+        {
+          label: "Для контактных линз — все",
+          href: `${ACC}/aksessuary/`,
+          icon: <Eye className="h-4 w-4" />,
+        },
+        {
+          label: "Очистители и капли",
+          href: accSection("aksessuary", "ochistiteli_i_kapli"),
+          icon: <Droplets className="h-4 w-4" />,
+        },
+        {
+          label: "Растворы",
+          href: accSection("aksessuary", "rastvory"),
+          icon: <Droplets className="h-4 w-4" />,
+        },
       ],
     },
     {
       title: "Для очков",
       allHref: `${ACC}/dlya_ochkov/`,
       items: [
-        { label: "Для очков — все", href: `${ACC}/dlya_ochkov/`, icon: <Glasses className="h-4 w-4" /> },
-        { label: "Окклюдеры", href: accSection("dlya_ochkov", "okkllyudery"), icon: <ShieldCheck className="h-4 w-4" /> },
-        { label: "Салфетки", href: accSection("dlya_ochkov", "salfetki"), icon: <Layers className="h-4 w-4" /> },
-        { label: "Стопперы", href: accSection("dlya_ochkov", "stoper"), icon: <Circle className="h-4 w-4" /> },
-        { label: "Цепочки/шнурки", href: accSection("dlya_ochkov", "tsepochki"), icon: <Palette className="h-4 w-4" /> },
+        {
+          label: "Для очков — все",
+          href: `${ACC}/dlya_ochkov/`,
+          icon: <Glasses className="h-4 w-4" />,
+        },
+        {
+          label: "Окклюдеры",
+          href: accSection("dlya_ochkov", "okkllyudery"),
+          icon: <ShieldCheck className="h-4 w-4" />,
+        },
+        {
+          label: "Салфетки",
+          href: accSection("dlya_ochkov", "salfetki"),
+          icon: <Layers className="h-4 w-4" />,
+        },
+        {
+          label: "Стопперы",
+          href: accSection("dlya_ochkov", "stoper"),
+          icon: <Circle className="h-4 w-4" />,
+        },
+        {
+          label: "Цепочки/шнурки",
+          href: accSection("dlya_ochkov", "tsepochki"),
+          icon: <Palette className="h-4 w-4" />,
+        },
       ],
     },
   ],
   utilities: [
-    { label: "Все средства ухода", href: catalogHref("aksessuary"), icon: <Droplets className="h-4 w-4" /> },
+    {
+      label: "Все средства ухода",
+      href: catalogHref("aksessuary"),
+      icon: <Droplets className="h-4 w-4" />,
+    },
     { label: "Ремонт очков", href: "/remont-ochkov/", icon: <Glasses className="h-4 w-4" /> },
     { label: "Доставка по СПб от 1 дня", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
-    { label: "Гид по уходу за линзами", href: "/blog/kontaktnye-linzy/", icon: <BookOpen className="h-4 w-4" /> },
+    {
+      label: "Гид по уходу за линзами",
+      href: "/blog/kontaktnye-linzy/",
+      icon: <BookOpen className="h-4 w-4" />,
+    },
   ],
   promoChips: [
     { label: "Растворы от 290 ₽", href: accSection("aksessuary", "rastvory") },
@@ -929,7 +1170,6 @@ const ACCESSORIES_MENU: AccessoriesMegaMenu = {
   },
 };
 
-
 export const HEADER_NAV_ITEMS: HeaderNavItem[] = [
   { label: "Оправы", href: catalogHref("opravy"), mega: FRAMES_MENU },
   { label: "Солнцезащитные очки", href: catalogHref("solntsezashchitnye"), mega: SUNGLASSES_MENU },
@@ -940,7 +1180,9 @@ export const HEADER_NAV_ITEMS: HeaderNavItem[] = [
   { label: "Салоны", href: "/contacts/" },
 ];
 
-export function isMegaNavItem(item: HeaderNavItem): item is HeaderNavItem & { mega: HeaderMegaMenu } {
+export function isMegaNavItem(
+  item: HeaderNavItem,
+): item is HeaderNavItem & { mega: HeaderMegaMenu } {
   return Boolean(item.mega);
 }
 
@@ -975,7 +1217,11 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
 
           <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1.38fr_1fr_1fr_0.92fr]">
             <section>
-              {sectionHeader("Форма", "Все формы", regionalMenuHref(expandHref(menu.allHref, "shape"), city))}
+              {sectionHeader(
+                "Форма",
+                "Все формы",
+                regionalMenuHref(expandHref(menu.allHref, "shape"), city),
+              )}
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {menu.shapes.map((item) => (
                   <a
@@ -983,7 +1229,9 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                     href={regionalMenuHref(item.href, city)}
                     className="group relative flex aspect-[1/0.82] flex-col items-center justify-between rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 text-center transition-all hover:-translate-y-0.5 hover:border-brand"
                   >
-                    <span className="mt-2 flex w-full items-center justify-center">{item.icon}</span>
+                    <span className="mt-2 flex w-full items-center justify-center">
+                      {item.icon}
+                    </span>
                     <span className="text-[11.5px] font-medium leading-tight text-foreground transition-colors group-hover:text-brand">
                       {item.label}
                     </span>
@@ -993,7 +1241,11 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Пол / возраст", "Все", regionalMenuHref(expandHref(menu.allHref, "gender"), city))}
+              {sectionHeader(
+                "Пол / возраст",
+                "Все",
+                regionalMenuHref(expandHref(menu.allHref, "gender"), city),
+              )}
               <div className="grid grid-cols-2 gap-1.5">
                 {menu.demographics.map((item) => (
                   <a
@@ -1011,44 +1263,44 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
               </div>
 
               {(menu.kidsGroup.href || menu.kidsGroup.items.length > 0) && (
-              <div className="mt-3 border-t border-dashed border-border pt-3">
-                <div className="mb-2 flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
-                    {AudienceIcons.kidsTitle}
-                    Детские
-                  </span>
-                  {menu.kidsGroup.href && (
-                    <a
-                      href={regionalMenuHref(menu.kidsGroup.href, city)}
-                      className={sectionActionClass}
-                    >
-                      Все
-                      <ArrowRight className="h-3 w-3" />
-                    </a>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  {menu.kidsGroup.items.map((item) => (
-                    <a
-                      key={item.label}
-                      href={regionalMenuHref(item.href, city)}
-                      className="group grid grid-cols-[32px_1fr_auto] items-center gap-2.5 rounded-[14px] border border-[#ece7df] bg-white px-3 py-2 transition-colors hover:border-brand hover:bg-brand-50"
-                    >
-                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#ece7df] bg-[var(--cream)]">
-                        {item.icon}
-                      </span>
-                      <span className="min-w-0 leading-[1.15]">
-                        <span className="block text-[12.5px] font-medium text-foreground">
-                          {item.label}
+                <div className="mt-3 border-t border-dashed border-border pt-3">
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
+                      {AudienceIcons.kidsTitle}
+                      Детские
+                    </span>
+                    {menu.kidsGroup.href && (
+                      <a
+                        href={regionalMenuHref(menu.kidsGroup.href, city)}
+                        className={sectionActionClass}
+                      >
+                        Все
+                        <ArrowRight className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    {menu.kidsGroup.items.map((item) => (
+                      <a
+                        key={item.label}
+                        href={regionalMenuHref(item.href, city)}
+                        className="group grid grid-cols-[32px_1fr_auto] items-center gap-2.5 rounded-[14px] border border-[#ece7df] bg-white px-3 py-2 transition-colors hover:border-brand hover:bg-brand-50"
+                      >
+                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-full border border-[#ece7df] bg-[var(--cream)]">
+                          {item.icon}
                         </span>
-                        <span className="mt-0.5 block text-[10.5px] text-muted-foreground">
-                          {item.meta}
+                        <span className="min-w-0 leading-[1.15]">
+                          <span className="block text-[12.5px] font-medium text-foreground">
+                            {item.label}
+                          </span>
+                          <span className="mt-0.5 block text-[10.5px] text-muted-foreground">
+                            {item.meta}
+                          </span>
                         </span>
-                      </span>
-                    </a>
-                  ))}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-              </div>
               )}
 
               <div className="mt-5 border-t border-dashed border-border pt-4">
@@ -1072,10 +1324,18 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Материал", "Все", regionalMenuHref(expandHref(menu.allHref, "material"), city))}
+              {sectionHeader(
+                "Материал",
+                "Все",
+                regionalMenuHref(expandHref(menu.allHref, "material"), city),
+              )}
               <div className="flex flex-wrap gap-2">
                 {menu.materials.map((item) => (
-                  <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
+                  <a
+                    key={item.label}
+                    href={regionalMenuHref(item.href, city)}
+                    className={chipClass}
+                  >
                     <span>{item.label}</span>
                   </a>
                 ))}
@@ -1092,8 +1352,12 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                       href={regionalMenuHref(preset.href, city)}
                       className="rounded-[12px] border border-[#ece7df] bg-white px-3 py-2 text-left transition-colors hover:border-brand hover:bg-brand-50"
                     >
-                      <strong className="block text-[12px] font-semibold text-foreground">{preset.label}</strong>
-                      <span className="mt-1 block font-mono text-[11px] text-muted-foreground">{preset.price}</span>
+                      <strong className="block text-[12px] font-semibold text-foreground">
+                        {preset.label}
+                      </strong>
+                      <span className="mt-1 block font-mono text-[11px] text-muted-foreground">
+                        {preset.price}
+                      </span>
                     </a>
                   ))}
                 </div>
@@ -1106,7 +1370,11 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {menu.tags.map((item) => (
-                      <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
+                      <a
+                        key={item.label}
+                        href={regionalMenuHref(item.href, city)}
+                        className={chipClass}
+                      >
                         {item.label}
                       </a>
                     ))}
@@ -1124,7 +1392,9 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
               <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">
                 {menu.featured.eyebrow}
               </span>
-              <h3 className="font-serif text-[20px] leading-tight text-foreground">{menu.featured.title}</h3>
+              <h3 className="font-serif text-[20px] leading-tight text-foreground">
+                {menu.featured.title}
+              </h3>
               <div className="overflow-hidden rounded-[14px] border border-[#e8dfd4] bg-white">
                 <img
                   src={menu.featured.imageSrc}
@@ -1132,9 +1402,13 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                   className="h-44 w-full object-cover"
                 />
               </div>
-              <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
+              <p className="text-[12.5px] leading-6 text-muted-foreground">
+                {menu.featured.description}
+              </p>
               <div className="mt-auto flex items-center justify-between border-t border-dashed border-border pt-3">
-                <span className="font-serif text-[22px] leading-none text-foreground">{menu.featured.price}</span>
+                <span className="font-serif text-[22px] leading-none text-foreground">
+                  {menu.featured.price}
+                </span>
                 {menu.featured.ctaHref && (
                   <a
                     href={regionalMenuHref(menu.featured.ctaHref, city)}
@@ -1168,7 +1442,10 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                 </a>
               ))}
             </div>
-            <a href={regionalMenuHref(menu.brandStripHref, city)} className="shrink-0 text-sm text-muted-foreground transition-colors hover:text-brand">
+            <a
+              href={regionalMenuHref(menu.brandStripHref, city)}
+              className="shrink-0 text-sm text-muted-foreground transition-colors hover:text-brand"
+            >
               Все бренды →
             </a>
           </div>
@@ -1208,7 +1485,11 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
 
           <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1.16fr_1.04fr_1fr_0.9fr]">
             <section>
-              {sectionHeader("Режим / замена", "Все", regionalMenuHref(expandHref(menu.allHref, "wearMode"), city))}
+              {sectionHeader(
+                "Режим / замена",
+                "Все",
+                regionalMenuHref(expandHref(menu.allHref, "wearMode"), city),
+              )}
               <div className="space-y-2">
                 {menu.contactModes.map((item) => (
                   <a
@@ -1220,8 +1501,12 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                       {item.icon}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block text-[13.5px] font-medium text-foreground">{item.label}</span>
-                      <span className="mt-0.5 block text-[11.5px] text-muted-foreground">{item.meta}</span>
+                      <span className="block text-[13.5px] font-medium text-foreground">
+                        {item.label}
+                      </span>
+                      <span className="mt-0.5 block text-[11.5px] text-muted-foreground">
+                        {item.meta}
+                      </span>
                     </span>
                   </a>
                 ))}
@@ -1229,7 +1514,11 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Параметры", "Все параметры", regionalMenuHref(expandHref(menu.allHref, "sphere"), city))}
+              {sectionHeader(
+                "Параметры",
+                "Все параметры",
+                regionalMenuHref(expandHref(menu.allHref, "sphere"), city),
+              )}
               <div className="space-y-4">
                 <div>
                   <div className="mb-2 flex items-baseline justify-between gap-2">
@@ -1262,7 +1551,11 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {menu.cylinder.map((item) => (
-                      <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
+                      <a
+                        key={item.label}
+                        href={regionalMenuHref(item.href, city)}
+                        className={chipClass}
+                      >
                         {item.label}
                       </a>
                     ))}
@@ -1276,7 +1569,11 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {menu.addition.map((item) => (
-                      <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
+                      <a
+                        key={item.label}
+                        href={regionalMenuHref(item.href, city)}
+                        className={chipClass}
+                      >
                         {item.label}
                       </a>
                     ))}
@@ -1289,7 +1586,11 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {menu.bcValues.map((item) => (
-                      <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
+                      <a
+                        key={item.label}
+                        href={regionalMenuHref(item.href, city)}
+                        className={chipClass}
+                      >
                         {item.label}
                       </a>
                     ))}
@@ -1299,7 +1600,11 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Дизайн", "Все", regionalMenuHref(expandHref(menu.allHref, "design"), city))}
+              {sectionHeader(
+                "Дизайн",
+                "Все",
+                regionalMenuHref(expandHref(menu.allHref, "design"), city),
+              )}
               <div className="grid grid-cols-2 gap-2">
                 {menu.needs.map((item) => (
                   <a
@@ -1328,7 +1633,9 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                       href={regionalMenuHref(item.href, city)}
                       className="rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 transition-colors hover:border-brand hover:bg-brand-50"
                     >
-                      <span className="block text-[13px] font-semibold text-foreground">{item.label}</span>
+                      <span className="block text-[13px] font-semibold text-foreground">
+                        {item.label}
+                      </span>
                     </a>
                   ))}
                 </div>
@@ -1339,7 +1646,9 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
               <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/90">
                 Не знаете параметры?
               </span>
-              <h3 className="mt-4 font-serif text-[22px] leading-tight text-white">{menu.helper.title}</h3>
+              <h3 className="mt-4 font-serif text-[22px] leading-tight text-white">
+                {menu.helper.title}
+              </h3>
               <p className="mt-3 text-[13px] leading-6 text-white/70">{menu.helper.text}</p>
               <div className="mt-5 space-y-2">
                 <button
@@ -1369,7 +1678,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                 className="inline-flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-3 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand"
               >
                 <span className="text-muted-foreground">{item.icon}</span>
-                <span>{item.label}</span>
+                <span>{regionalMenuLabel(item.label, city)}</span>
               </a>
             ))}
           </div>
@@ -1409,7 +1718,11 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
 
           <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1fr_0.95fr_1fr_0.95fr_0.85fr]">
             <section>
-              {sectionHeader("Тип линзы", "Все", regionalMenuHref(expandHref(menu.allHref, "lensType"), city))}
+              {sectionHeader(
+                "Тип линзы",
+                "Все",
+                regionalMenuHref(expandHref(menu.allHref, "lensType"), city),
+              )}
               <div className="space-y-1">
                 {menu.lensTypes.map((item) => (
                   <a
@@ -1422,7 +1735,9 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                       <span className="block text-[13.5px] font-medium text-foreground group-hover:text-brand">
                         {item.label}
                       </span>
-                      <span className="mt-0.5 block text-[11.5px] text-muted-foreground">{item.meta}</span>
+                      <span className="mt-0.5 block text-[11.5px] text-muted-foreground">
+                        {item.meta}
+                      </span>
                     </span>
                   </a>
                 ))}
@@ -1445,7 +1760,11 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Производитель", "Все", regionalMenuHref(expandHref(menu.allHref, "brand"), city))}
+              {sectionHeader(
+                "Производитель",
+                "Все",
+                regionalMenuHref(expandHref(menu.allHref, "brand"), city),
+              )}
               <div className="space-y-2">
                 {menu.manufacturers.map((item) => (
                   <a
@@ -1454,8 +1773,12 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                     className="flex items-center justify-between rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 transition-colors hover:border-brand hover:bg-brand-50"
                   >
                     <span>
-                      <span className="block text-[13px] font-semibold text-foreground">{item.label}</span>
-                      <span className="mt-1 block text-[11px] text-muted-foreground">{item.meta}</span>
+                      <span className="block text-[13px] font-semibold text-foreground">
+                        {item.label}
+                      </span>
+                      <span className="mt-1 block text-[11px] text-muted-foreground">
+                        {item.meta}
+                      </span>
                     </span>
                     {item.tag && (
                       <span className="rounded-full bg-brand-50 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand">
@@ -1472,7 +1795,11 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {menu.lightTransmissionValues.map((item) => (
-                    <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
+                    <a
+                      key={item.label}
+                      href={regionalMenuHref(item.href, city)}
+                      className={chipClass}
+                    >
                       {item.label}
                     </a>
                   ))}
@@ -1486,7 +1813,11 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {menu.materials.map((item) => (
-                      <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
+                      <a
+                        key={item.label}
+                        href={regionalMenuHref(item.href, city)}
+                        className={chipClass}
+                      >
                         {item.label}
                       </a>
                     ))}
@@ -1496,7 +1827,11 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Дизайн линзы", "Все", regionalMenuHref(expandHref(menu.allHref, "design"), city))}
+              {sectionHeader(
+                "Дизайн линзы",
+                "Все",
+                regionalMenuHref(expandHref(menu.allHref, "design"), city),
+              )}
               <div className="grid grid-cols-2 gap-2">
                 {menu.technologies.map((item) => (
                   <a
@@ -1510,11 +1845,14 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                   </a>
                 ))}
               </div>
-
             </section>
 
             <section>
-              {sectionHeader("Назначение", "Все", regionalMenuHref(expandHref(menu.allHref, "purpose"), city))}
+              {sectionHeader(
+                "Назначение",
+                "Все",
+                regionalMenuHref(expandHref(menu.allHref, "purpose"), city),
+              )}
               <div className="space-y-2">
                 {menu.purposes.map((item) => (
                   <a
@@ -1534,14 +1872,21 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-brand">
                   Подбор по рецепту
                 </span>
-                <h3 className="mt-2 font-serif text-[17px] leading-tight text-foreground">{menu.rxHelper.title}</h3>
+                <h3 className="mt-2 font-serif text-[17px] leading-tight text-foreground">
+                  {menu.rxHelper.title}
+                </h3>
                 <div className="mt-3 grid grid-cols-2 gap-2">
                   {menu.rxHelper.fields.map((field) => (
-                    <div key={field.label} className="rounded-[12px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-2">
+                    <div
+                      key={field.label}
+                      className="rounded-[12px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-2"
+                    >
                       <span className="block font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
                         {field.label}
                       </span>
-                      <span className="mt-1 block text-[13px] font-medium text-foreground">{field.value}</span>
+                      <span className="mt-1 block text-[13px] font-medium text-foreground">
+                        {field.value}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -1564,7 +1909,9 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
               <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">
                 {menu.featured.eyebrow}
               </span>
-              <h3 className="font-serif text-[20px] leading-tight text-foreground">{menu.featured.title}</h3>
+              <h3 className="font-serif text-[20px] leading-tight text-foreground">
+                {menu.featured.title}
+              </h3>
               <div className="overflow-hidden rounded-[14px] border border-[#e8dfd4] bg-white">
                 <img
                   src={menu.featured.imageSrc}
@@ -1572,7 +1919,9 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                   className="h-44 w-full object-cover"
                 />
               </div>
-              <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
+              <p className="text-[12.5px] leading-6 text-muted-foreground">
+                {menu.featured.description}
+              </p>
               {menu.featured.meta && (
                 <span className="inline-flex max-w-full rounded-full border border-[#e4dbcf] bg-white px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-brand">
                   {menu.featured.meta}
@@ -1610,7 +1959,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
                 className="inline-flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-3 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand"
               >
                 <span className="text-muted-foreground">{item.icon}</span>
-                <span>{item.label}</span>
+                <span>{regionalMenuLabel(item.label, city)}</span>
               </a>
             ))}
           </div>
@@ -1674,7 +2023,11 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {menu.promoChips.map((chip) => (
-                        <a key={chip.label} href={regionalMenuHref(chip.href, city)} className={chipClass}>
+                        <a
+                          key={chip.label}
+                          href={regionalMenuHref(chip.href, city)}
+                          className={chipClass}
+                        >
                           {chip.label}
                         </a>
                       ))}
@@ -1693,7 +2046,9 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
               <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-brand">
                 {menu.featured.eyebrow}
               </span>
-              <h3 className="font-serif text-[20px] leading-tight text-foreground">{menu.featured.title}</h3>
+              <h3 className="font-serif text-[20px] leading-tight text-foreground">
+                {menu.featured.title}
+              </h3>
               <div className="overflow-hidden rounded-[14px] border border-[#e8dfd4] bg-white">
                 <img
                   src={menu.featured.imageSrc}
@@ -1701,7 +2056,9 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
                   className="h-40 w-full object-cover"
                 />
               </div>
-              <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
+              <p className="text-[12.5px] leading-6 text-muted-foreground">
+                {menu.featured.description}
+              </p>
               {menu.featured.meta && (
                 <span className="inline-flex max-w-full rounded-full border border-[#e4dbcf] bg-white px-3 py-1.5 text-[10.5px] font-semibold uppercase tracking-[0.12em] text-brand">
                   {menu.featured.meta}
@@ -1729,7 +2086,6 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
             </aside>
           </div>
 
-
           <div className="mt-6 grid gap-3 border-t border-[#ece7df] pt-4 md:grid-cols-2 xl:grid-cols-4">
             {menu.utilities.map((item) => (
               <a
@@ -1738,7 +2094,7 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
                 className="inline-flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-3 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand"
               >
                 <span className="text-muted-foreground">{item.icon}</span>
-                <span>{item.label}</span>
+                <span>{regionalMenuLabel(item.label, city)}</span>
               </a>
             ))}
           </div>
@@ -1771,9 +2127,10 @@ function filterMegaMenu(
       brandStrip: availableHeaderMenuItems(menu.brandStrip, summary),
       featured: {
         ...menu.featured,
-        ctaHref: menu.featured.ctaHref && isHeaderMenuHrefAvailable(menu.featured.ctaHref, summary)
-          ? menu.featured.ctaHref
-          : undefined,
+        ctaHref:
+          menu.featured.ctaHref && isHeaderMenuHrefAvailable(menu.featured.ctaHref, summary)
+            ? menu.featured.ctaHref
+            : undefined,
       },
     };
   }
@@ -1810,13 +2167,16 @@ export function HeaderMegaPanel({
   facetStatus: "loading" | "ready" | "error";
 }) {
   const filteredMenu = filterMegaMenu(menu, facetSummary);
-  const panel = filteredMenu.kind === "frames"
-    ? <FramesMegaPanel menu={filteredMenu} />
-    : filteredMenu.kind === "contact"
-      ? <ContactMegaPanel menu={filteredMenu} />
-      : filteredMenu.kind === "accessories"
-        ? <AccessoriesMegaPanel menu={filteredMenu} />
-        : <GlassesMegaPanel menu={filteredMenu} />;
+  const panel =
+    filteredMenu.kind === "frames" ? (
+      <FramesMegaPanel menu={filteredMenu} />
+    ) : filteredMenu.kind === "contact" ? (
+      <ContactMegaPanel menu={filteredMenu} />
+    ) : filteredMenu.kind === "accessories" ? (
+      <AccessoriesMegaPanel menu={filteredMenu} />
+    ) : (
+      <GlassesMegaPanel menu={filteredMenu} />
+    );
 
   return (
     <div className="relative">

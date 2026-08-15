@@ -10,7 +10,7 @@ export const Route = createFileRoute("/uslugi")({
       {
         name: "description",
         content:
-          "Запись к врачу-офтальмологу, диагностика зрения, подбор очков, ремонт. Услуги клиники ОПТИКА 100% в Санкт-Петербурге.",
+          "Запись к врачу-офтальмологу, диагностика зрения, подбор очков и ремонт. Услуги клиники ОПТИКА 100%.",
       },
       { property: "og:title", content: "Услуги клиники · ОПТИКА 100%" },
       {
@@ -29,9 +29,7 @@ function ServicesHub() {
     <div>
       <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-4 lg:px-8 py-16 lg:py-20">
-          <div className="text-xs uppercase tracking-[0.2em] text-brand mb-3">
-            Клиника зрения
-          </div>
+          <div className="text-xs uppercase tracking-[0.2em] text-brand mb-3">Клиника зрения</div>
           <h1 className="font-serif text-4xl lg:text-6xl max-w-3xl">
             Услуги, которые делают выбор очков простым.
           </h1>

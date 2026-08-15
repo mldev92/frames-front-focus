@@ -3,15 +3,12 @@ import { Search, User, Heart, ShoppingBag, Menu, X, ChevronDown } from "lucide-r
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
-import { CONTACT, PRIMARY_SALON } from "@/data/contact";
+import { CONTACT, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
 import { HEADER_NAV_ITEMS, HeaderMegaPanel, isMegaNavItem } from "./HeaderMegaMenu";
 import { SiteLogo } from "./SiteLogo";
 import { useCityStore, type CityCode, CITY_LABELS } from "@/lib/store/city";
 import { regionalLocationHref, regionalSiteHref } from "@/lib/city-routing";
-import {
-  getCatalogFacetSummary,
-  type CatalogFacetSummary,
-} from "@/lib/api/bitrix";
+import { getCatalogFacetSummary, type CatalogFacetSummary } from "@/lib/api/bitrix";
 import { catalogSegmentFromHref } from "@/lib/header-menu-facets";
 
 const CITIES: { code: CityCode; label: string }[] = [
@@ -87,6 +84,7 @@ export function Header() {
 
   const cityLabel = CITY_LABELS[cityCode] ?? cityCode;
   const regionalHref = (href: string) => regionalSiteHref(href, cityCode);
+  const localSalon = cityCode === "nvk" ? NK_SALONS[0] : PRIMARY_SALON;
 
   const [promoIdx, setPromoIdx] = useState(0);
   const [promoVisible, setPromoVisible] = useState(true);
@@ -133,7 +131,8 @@ export function Header() {
   };
 
   const openMegaFacetState = (() => {
-    if (!openMegaItem || !isMegaNavItem(openMegaItem) || openMegaItem.mega.kind === "accessories") return undefined;
+    if (!openMegaItem || !isMegaNavItem(openMegaItem) || openMegaItem.mega.kind === "accessories")
+      return undefined;
     const segment = catalogSegmentFromHref(openMegaItem.mega.allHref);
     return segment ? facetStates[`${cityCode}:${segment}`] : undefined;
   })();
@@ -398,8 +397,14 @@ export function Header() {
               >
                 <HeaderMegaPanel
                   menu={openMegaItem.mega!}
-                  facetSummary={openMegaFacetState?.status === "ready" ? openMegaFacetState.summary : undefined}
-                  facetStatus={openMegaItem.mega!.kind === "accessories" ? "ready" : (openMegaFacetState?.status ?? "loading")}
+                  facetSummary={
+                    openMegaFacetState?.status === "ready" ? openMegaFacetState.summary : undefined
+                  }
+                  facetStatus={
+                    openMegaItem.mega!.kind === "accessories"
+                      ? "ready"
+                      : (openMegaFacetState?.status ?? "loading")
+                  }
                 />
               </div>
             )}
@@ -434,10 +439,16 @@ export function Header() {
             </nav>
 
             <div className="mt-8 space-y-3 text-sm text-muted-foreground">
-              <p>ул. Кирочная, 17 · м. {PRIMARY_SALON.metro}</p>
-              <a href={CONTACT.email.href} className="block">
-                {CONTACT.email.label}
-              </a>
+              <p>{localSalon.routeQuery}</p>
+              {cityCode === "spb" ? (
+                <a href={CONTACT.email.href} className="block">
+                  {CONTACT.email.label}
+                </a>
+              ) : (
+                <a href={CONTACT.phone.href} className="block">
+                  {CONTACT.phone.label}
+                </a>
+              )}
             </div>
           </div>
         </div>

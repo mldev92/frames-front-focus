@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/o-nas")({
   head: () => ({
@@ -7,7 +8,7 @@ export const Route = createFileRoute("/o-nas")({
       {
         name: "description",
         content:
-          "ОПТИКА 100% — сеть оптических салонов в Санкт-Петербурге с собственной клиникой и онлайн-магазином.",
+          "ОПТИКА 100% — сеть оптических салонов с собственной клиникой и интернет-магазином.",
       },
       { property: "og:title", content: "О компании · ОПТИКА 100%" },
     ],
@@ -16,13 +17,14 @@ export const Route = createFileRoute("/o-nas")({
 });
 
 function AboutPage() {
+  const city = useCityStore((state) => state.city);
+  const cityInPrepositional = city === "nvk" ? "Новокузнецке" : "Санкт-Петербурге";
+
   return (
     <div>
       <section className="bg-surface">
         <div className="mx-auto max-w-4xl px-4 lg:px-8 py-20 text-center">
-          <div className="text-xs uppercase tracking-[0.2em] text-brand mb-4">
-            О компании
-          </div>
+          <div className="text-xs uppercase tracking-[0.2em] text-brand mb-4">О компании</div>
           <h1 className="font-serif text-4xl lg:text-6xl leading-tight">
             Зрение — главное чувство. Мы заботимся о нём с 2005 года.
           </h1>
@@ -31,14 +33,13 @@ function AboutPage() {
 
       <section className="mx-auto max-w-3xl px-4 lg:px-8 py-16 prose prose-neutral">
         <p className="text-lg text-muted-foreground">
-          ОПТИКА 100% — сеть оптических салонов в Санкт-Петербурге. У нас работают
-          врачи-офтальмологи, оптики и мастера по ремонту, а ассортимент включает оправы и
-          линзы ведущих мировых брендов.
+          ОПТИКА 100% — сеть оптических салонов в {cityInPrepositional}. У нас работают
+          врачи-офтальмологи, оптики и мастера по ремонту, а ассортимент включает оправы и линзы
+          ведущих мировых брендов.
         </p>
         <p className="mt-6 text-muted-foreground">
-          Мы открыли первый салон на Кирочной в 2005 году и с тех пор выросли в сеть из
-          нескольких салонов и интернет-магазина. Сегодня нам доверяют тысячи клиентов в
-          Санкт-Петербурге.
+          Мы работаем с 2005 года и с тех пор выросли в сеть салонов и интернет-магазин. Сегодня нам
+          доверяют тысячи клиентов в {cityInPrepositional}.
         </p>
       </section>
 
@@ -46,7 +47,10 @@ function AboutPage() {
         {[
           ["20+", "лет опыта"],
           ["50 000+", "довольных клиентов"],
-          ["3", "салона в СПб"],
+          [
+            city === "nvk" ? "4" : "1",
+            city === "nvk" ? "салона в Новокузнецке" : "салон в Санкт-Петербурге",
+          ],
         ].map(([n, l]) => (
           <div key={l} className="bg-surface p-8 rounded-sm">
             <div className="font-serif text-5xl text-brand">{n}</div>
@@ -67,9 +71,8 @@ function AboutPage() {
               Посмотрите, почему нам доверяют заботу о зрении.
             </h2>
             <p className="mt-4 text-sm sm:text-base text-muted-foreground leading-7">
-              Это короткое видео помогает лучше почувствовать наш подход: внимательная
-              консультация, качественные линзы и оправы, а также сервис, к которому хочется
-              возвращаться.
+              Это короткое видео помогает лучше почувствовать наш подход: внимательная консультация,
+              качественные линзы и оправы, а также сервис, к которому хочется возвращаться.
             </p>
           </div>
 

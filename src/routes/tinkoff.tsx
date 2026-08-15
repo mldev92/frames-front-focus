@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/tinkoff")({
   head: () => ({
@@ -22,15 +23,16 @@ const BULLETS = [
   "Доступно для граждан РФ от 18 до 70 лет",
 ];
 
-const STEPS = [
-  "Выберите оправы или линзы в каталоге Санкт-Петербурга",
-  "Нажмите кнопку «Забронировать» или «в Корзину» на странице товара",
-  "Заполните форму — мы свяжемся с вами для подтверждения",
-  "Получите товар в салоне и оформите рассрочку на месте",
-  "Сумма делится на 3 равных платежа, списывается автоматически",
-];
-
 function TinkoffPage() {
+  const city = useCityStore((state) => state.city);
+  const steps = [
+    `Выберите оправы или линзы в каталоге ${city === "nvk" ? "Новокузнецка" : "Санкт-Петербурга"}`,
+    "Нажмите кнопку «Забронировать» или «в Корзину» на странице товара",
+    "Заполните форму — мы свяжемся с вами для подтверждения",
+    "Получите товар в салоне и оформите рассрочку на месте",
+    "Сумма делится на 3 равных платежа, списывается автоматически",
+  ];
+
   return (
     <div className="mx-auto max-w-5xl px-5 py-8 pb-16">
       {/* Hero */}
@@ -45,9 +47,7 @@ function TinkoffPage() {
         }}
       >
         <img src="/icon_tbank.svg" alt="Т-Банк" className="mb-4 h-12 w-auto" />
-        <h1 className="mb-6 text-4xl font-medium text-gray-900">
-          Рассрочка от Т&#8209;Банка
-        </h1>
+        <h1 className="mb-6 text-4xl font-medium text-gray-900">Рассрочка от Т&#8209;Банка</h1>
         <ul className="space-y-2">
           {BULLETS.map((b) => (
             <li
@@ -68,7 +68,7 @@ function TinkoffPage() {
         Как оформить рассрочку в Т&#8209;Банке?
       </h2>
       <ul className="space-y-2.5">
-        {STEPS.map((step, i) => (
+        {steps.map((step, i) => (
           <li
             key={i}
             className="flex items-start gap-3 rounded-lg bg-gray-50 px-4 py-3.5 text-sm leading-relaxed"

@@ -18,7 +18,8 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
-import { CONTACT, PRIMARY_SALON } from "@/data/contact";
+import { CONTACT, NK_SALONS, SPB_SALONS } from "@/data/contact";
+import { useCityStore } from "@/lib/store/city";
 
 type IconItem = {
   title: string;
@@ -128,6 +129,10 @@ const primaryButton =
 const secondaryButton =
   "inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-medium transition-colors hover:border-foreground hover:bg-foreground hover:text-primary-foreground";
 export function RepairPage() {
+  const city = useCityStore((state) => state.city);
+  const localSalon = city === "nvk" ? NK_SALONS[0] : SPB_SALONS[0];
+  const cityInPrepositional = city === "nvk" ? "Новокузнецке" : "Санкт-Петербурге";
+
   return (
     <div className="bg-background">
       <nav className="mx-auto flex max-w-7xl items-center gap-2 px-4 py-4 text-[13px] text-muted-foreground lg:px-8">
@@ -149,7 +154,7 @@ export function RepairPage() {
             <h1 className="font-serif text-4xl leading-[1.06] text-foreground sm:text-5xl lg:text-6xl">
               Ремонт очков
               <br />
-              в&nbsp;Санкт-Петербурге
+              в&nbsp;{cityInPrepositional}
             </h1>
             <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">
               Качественный ремонт очков с применением оригинальных комплектующих и современного
@@ -239,7 +244,9 @@ export function RepairPage() {
       <section className="mx-auto max-w-7xl px-4 py-14 lg:px-8 lg:py-20">
         <Reveal>
           <h2 className="font-serif text-3xl leading-tight text-foreground lg:text-4xl">
-            Адрес нашего салона в&nbsp;Санкт-Петербурге
+            {city === "nvk" ? "Адрес одного из наших салонов" : "Адрес нашего салона"}
+            {" в\u00a0"}
+            {cityInPrepositional}
           </h2>
         </Reveal>
 
@@ -248,19 +255,21 @@ export function RepairPage() {
             <h3 className="text-lg font-semibold leading-snug text-foreground">
               Салон оптики «Оптика 100%»
               <br />
-              {PRIMARY_SALON.routeQuery}
+              {localSalon.routeQuery}
             </h3>
 
             <div className="mt-5 space-y-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-3">
-                <span className="inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white">
-                  М
-                </span>
-                <span>Чернышевская — 5 мин пешком</span>
-              </div>
+              {localSalon.metro && (
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full bg-brand text-[10px] font-bold text-white">
+                    М
+                  </span>
+                  <span>{localSalon.metro} — 5 мин пешком</span>
+                </div>
+              )}
               <div className="flex items-center gap-3">
                 <Clock className="h-4 w-4 shrink-0" />
-                <span>Ежедневно с 10:00 до 20:00</span>
+                <span>{localSalon.hours}</span>
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 shrink-0" />
@@ -285,7 +294,7 @@ export function RepairPage() {
             className="flex min-h-[320px] flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface text-muted-foreground"
           >
             <MapPin className="h-10 w-10" strokeWidth={1.5} />
-            <span className="text-sm">Яндекс Карта · Санкт-Петербург</span>
+            <span className="text-sm">Яндекс Карта · {localSalon.cityLabel}</span>
             <span className="text-xs opacity-60">Вставьте iframe Яндекс.Карт</span>
           </Reveal>
         </div>

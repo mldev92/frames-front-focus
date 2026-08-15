@@ -10,8 +10,17 @@ import {
   type AppointmentData,
   type AppointmentSlot,
 } from "@/lib/api/bitrix";
-import { Check, ChevronDown, MapPin, ArrowRight, ArrowLeft, CalendarDays, Clock3 } from "lucide-react";
+import {
+  Check,
+  ChevronDown,
+  MapPin,
+  ArrowRight,
+  ArrowLeft,
+  CalendarDays,
+  Clock3,
+} from "lucide-react";
 import { toast } from "sonner";
+import { useCityStore } from "@/lib/store/city";
 
 type AgeType = "adult" | "child";
 type ServiceType = "glasses" | "contacts";
@@ -81,10 +90,15 @@ interface Props {
 }
 
 export function AppointmentModal({ open, onOpenChange }: Props) {
+  const city = useCityStore((state) => state.city);
+  const availableSalons = APPOINTMENT_SALONS.filter((salon) =>
+    city === "nvk" ? salon.city === "nk" : salon.city === "spb",
+  );
+  const defaultSalon = availableSalons[0];
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState<Direction>("forward");
 
-  const [salonId, setSalonId] = useState(APPOINTMENT_SALONS[0].id);
+  const [salonId, setSalonId] = useState(defaultSalon.id);
   const [ageType, setAgeType] = useState<AgeType>("adult");
   const [salonOpen, setSalonOpen] = useState(false);
 
@@ -111,12 +125,10 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const [resendingCode, setResendingCode] = useState(false);
   const [verifyingCode, setVerifyingCode] = useState(false);
 
-  const selectedSalon = APPOINTMENT_SALONS.find((item) => item.id === salonId) ?? APPOINTMENT_SALONS[0];
+  const selectedSalon = availableSalons.find((item) => item.id === salonId) ?? defaultSalon;
   const groupedSlots = groupSlotsByDay(slots);
   const selectedGroup =
-    groupedSlots.find((group) => group.dateKey === selectedDateKey) ??
-    groupedSlots[0] ??
-    null;
+    groupedSlots.find((group) => group.dateKey === selectedDateKey) ?? groupedSlots[0] ?? null;
   const selectedSlot = slots.find((slot) => slot.id === selectedSlotId) ?? null;
   const birthDateMax = new Date().toISOString().slice(0, 10);
   const confirmationSecondsLeft =
@@ -126,6 +138,12 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     setSelectedDateKey("");
     setSelectedSlotId("");
   }, [salonId, ageType, service]);
+
+  useEffect(() => {
+    if (!availableSalons.some((salon) => salon.id === salonId)) {
+      setSalonId(defaultSalon.id);
+    }
+  }, [availableSalons, defaultSalon.id, salonId]);
 
   useEffect(() => {
     if (groupedSlots.length === 0) {
@@ -176,7 +194,12 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setSlotsError(getUserFacingError(err, "Не удалось загрузить свободное время. Попробуйте ещё раз или позвоните в салон."));
+        setSlotsError(
+          getUserFacingError(
+            err,
+            "Не удалось загрузить свободное время. Попробуйте ещё раз или позвоните в салон.",
+          ),
+        );
       })
       .finally(() => {
         if (!cancelled) {
@@ -192,7 +215,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   function reset() {
     setStep(1);
     setDirection("forward");
-    setSalonId(APPOINTMENT_SALONS[0].id);
+    setSalonId(defaultSalon.id);
     setAgeType("adult");
     setSalonOpen(false);
     setService("glasses");
@@ -285,7 +308,12 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       setConfirmationMessage(confirmation.message ?? "");
       go(4);
     } catch (err: unknown) {
-      toast.error(getUserFacingError(err, "Не удалось оформить запись. Попробуйте ещё раз или позвоните нам напрямую."));
+      toast.error(
+        getUserFacingError(
+          err,
+          "Не удалось оформить запись. Попробуйте ещё раз или позвоните нам напрямую.",
+        ),
+      );
     } finally {
       setSubmitting(false);
     }
@@ -310,7 +338,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       setConfirmationMessage(confirmation.message ?? "Новый код отправлен.");
       toast.success("Код подтверждения отправлен повторно.");
     } catch (err: unknown) {
-      toast.error(getUserFacingError(err, "Не удалось отправить код повторно. Попробуйте ещё раз."));
+      toast.error(
+        getUserFacingError(err, "Не удалось отправить код повторно. Попробуйте ещё раз."),
+      );
     } finally {
       setResendingCode(false);
     }
@@ -339,7 +369,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       setConfirmationMessage("");
       setTimeout(() => handleClose(false), 2800);
     } catch (err: unknown) {
-      toast.error(getUserFacingError(err, "Не удалось подтвердить код. Проверьте СМС и попробуйте ещё раз."));
+      toast.error(
+        getUserFacingError(err, "Не удалось подтвердить код. Проверьте СМС и попробуйте ещё раз."),
+      );
     } finally {
       setVerifyingCode(false);
     }
@@ -375,9 +407,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
               <div className="text-brand uppercase tracking-[0.25em] text-[10px] font-semibold mb-3">
                 Онлайн-запись
               </div>
-              <h2 className="font-serif text-3xl leading-tight text-white">
-                Запись к&nbsp;врачу
-              </h2>
+              <h2 className="font-serif text-3xl leading-tight text-white">Запись к&nbsp;врачу</h2>
               <p className="mt-3 text-[12px] text-white/55 leading-relaxed max-w-[220px]">
                 Выберите филиал, услугу, время и подтвердите номер телефона кодом из СМС.
               </p>
@@ -401,7 +431,12 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                     >
                       {done ? <Check className="h-3.5 w-3.5" /> : idx}
                     </div>
-                    <div className={cn("flex flex-col transition-opacity duration-300", !active && !done && "opacity-40")}>
+                    <div
+                      className={cn(
+                        "flex flex-col transition-opacity duration-300",
+                        !active && !done && "opacity-40",
+                      )}
+                    >
                       <span className="text-[13px] font-medium text-white leading-tight">
                         {item.label}
                       </span>
@@ -448,7 +483,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                         </button>
                         {salonOpen && (
                           <div className="absolute left-0 right-0 top-full mt-2 bg-background border border-border rounded-xl shadow-lg z-30 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150">
-                            {APPOINTMENT_SALONS.map((salon) => (
+                            {availableSalons.map((salon) => (
                               <button
                                 key={salon.id}
                                 type="button"
@@ -462,7 +497,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                                 )}
                               >
                                 <span className="min-w-0 truncate">{salon.appointmentLabel}</span>
-                                {salon.id === salonId && <Check className="h-3.5 w-3.5 text-brand shrink-0" />}
+                                {salon.id === salonId && (
+                                  <Check className="h-3.5 w-3.5 text-brand shrink-0" />
+                                )}
                               </button>
                             ))}
                           </div>
@@ -471,7 +508,11 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                       <div className="flex items-center gap-2 px-1 text-[11px] text-foreground/55">
                         <span className="h-1.5 w-1.5 rounded-full bg-success" />
                         <span>
-                          {selectedSalon.metro ? <>м.&nbsp;{selectedSalon.metro}</> : selectedSalon.cityLabel}
+                          {selectedSalon.metro ? (
+                            <>м.&nbsp;{selectedSalon.metro}</>
+                          ) : (
+                            selectedSalon.cityLabel
+                          )}
                           {" · "}Сегодня до&nbsp;{selectedSalon.closesAt}
                         </span>
                       </div>
@@ -500,7 +541,10 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
               )}
 
               {step === 2 && (
-                <div key="step-2" className={cn("flex h-full min-h-0 flex-col px-6 py-8 md:p-10", slideIn)}>
+                <div
+                  key="step-2"
+                  className={cn("flex h-full min-h-0 flex-col px-6 py-8 md:p-10", slideIn)}
+                >
                   <div className="flex-1 min-h-0 overflow-y-auto pr-1">
                     <div className="mx-auto flex w-full max-w-[720px] flex-col gap-6 pb-2">
                       <div className="space-y-3">
@@ -521,7 +565,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                       <div className="space-y-3">
                         <div className="flex items-center justify-between gap-3">
                           <FieldLabel>Свободное время</FieldLabel>
-                          <span className="shrink-0 text-[11px] text-right text-foreground/45">Слоты загружаются из ANZ</span>
+                          <span className="shrink-0 text-[11px] text-right text-foreground/45">
+                            Слоты загружаются из ANZ
+                          </span>
                         </div>
 
                         {slotsLoading && (
@@ -538,7 +584,8 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
 
                         {!slotsLoading && !slotsError && slots.length === 0 && (
                           <div className="rounded-2xl border border-border bg-background p-5 text-sm text-foreground/60">
-                            Для выбранного филиала и типа записи пока нет свободных слотов. Попробуйте другой филиал или позвоните нам.
+                            Для выбранного филиала и типа записи пока нет свободных слотов.
+                            Попробуйте другой филиал или позвоните нам.
                           </div>
                         )}
 
@@ -570,7 +617,8 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                                             {formatSlotDayShort(group.slots[0].timeBegin)}
                                           </span>
                                           <span className="mt-1 text-[11px] text-foreground/45">
-                                            {group.slots.length} {pluralizeSlots(group.slots.length)}
+                                            {group.slots.length}{" "}
+                                            {pluralizeSlots(group.slots.length)}
                                           </span>
                                         </button>
                                       );
@@ -606,11 +654,17 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                                             <Clock3 className="h-4 w-4 text-brand" />
                                             <span>{formatSlotTime(slot.timeBegin)}</span>
                                           </div>
-                                          {selected && <Check className="h-4 w-4 shrink-0 text-brand" />}
+                                          {selected && (
+                                            <Check className="h-4 w-4 shrink-0 text-brand" />
+                                          )}
                                         </div>
-                                        <div className="mt-1 text-[12px] text-foreground/55">{slot.doctorName}</div>
+                                        <div className="mt-1 text-[12px] text-foreground/55">
+                                          {slot.doctorName}
+                                        </div>
                                         <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-foreground/35">
-                                          {slot.servicePrice !== null ? formatPrice(slot.servicePrice) : "Запись"}
+                                          {slot.servicePrice !== null
+                                            ? formatPrice(slot.servicePrice)
+                                            : "Запись"}
                                         </div>
                                       </button>
                                     );
@@ -643,20 +697,47 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                   >
                     {selectedSlot && (
                       <div className="rounded-[1.5rem] border border-border bg-background px-4 py-4 text-sm text-foreground/70">
-                        <div className="font-semibold text-foreground">{selectedSalon.appointmentLabel}</div>
+                        <div className="font-semibold text-foreground">
+                          {selectedSalon.appointmentLabel}
+                        </div>
                         <div className="mt-1">{selectedSlot.serviceName}</div>
                         <div className="mt-2 text-[12px] text-foreground/55">
-                          {formatSlotDay(selectedSlot.timeBegin)} · {formatSlotTime(selectedSlot.timeBegin)} · {selectedSlot.doctorName}
+                          {formatSlotDay(selectedSlot.timeBegin)} ·{" "}
+                          {formatSlotTime(selectedSlot.timeBegin)} · {selectedSlot.doctorName}
                         </div>
                       </div>
                     )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <InlineField id="ap-ln" label="Фамилия *" placeholder="Иванов" value={lastName} onChange={setLastName} required autoComplete="family-name" />
-                      <InlineField id="ap-fn" label="Имя *" placeholder="Иван" value={firstName} onChange={setFirstName} required autoComplete="given-name" />
+                      <InlineField
+                        id="ap-ln"
+                        label="Фамилия *"
+                        placeholder="Иванов"
+                        value={lastName}
+                        onChange={setLastName}
+                        required
+                        autoComplete="family-name"
+                      />
+                      <InlineField
+                        id="ap-fn"
+                        label="Имя *"
+                        placeholder="Иван"
+                        value={firstName}
+                        onChange={setFirstName}
+                        required
+                        autoComplete="given-name"
+                      />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <InlineField id="ap-pn" label="Отчество *" placeholder="Иванович" value={patronymic} onChange={setPatronymic} required autoComplete="additional-name" />
+                      <InlineField
+                        id="ap-pn"
+                        label="Отчество *"
+                        placeholder="Иванович"
+                        value={patronymic}
+                        onChange={setPatronymic}
+                        required
+                        autoComplete="additional-name"
+                      />
                       <InlineField
                         id="ap-bd"
                         label="Дата рождения"
@@ -702,7 +783,10 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
 
                     <p className="text-[10.5px] text-foreground/40 leading-relaxed text-center -mt-1">
                       Отправляя данные, вы соглашаетесь с{" "}
-                      <a href="/politika-konfidentsialnosti" className="underline hover:text-foreground transition-colors">
+                      <a
+                        href="/politika-konfidentsialnosti"
+                        className="underline hover:text-foreground transition-colors"
+                      >
                         политикой конфиденциальности
                       </a>
                       .
@@ -732,10 +816,13 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                     >
                       {selectedSlot && (
                         <div className="rounded-[1.5rem] border border-border bg-background px-4 py-4 text-sm text-foreground/70">
-                          <div className="font-semibold text-foreground">{selectedSalon.appointmentLabel}</div>
+                          <div className="font-semibold text-foreground">
+                            {selectedSalon.appointmentLabel}
+                          </div>
                           <div className="mt-1">{selectedSlot.serviceName}</div>
                           <div className="mt-2 text-[12px] text-foreground/55">
-                            {formatSlotDay(selectedSlot.timeBegin)} · {formatSlotTime(selectedSlot.timeBegin)} · {selectedSlot.doctorName}
+                            {formatSlotDay(selectedSlot.timeBegin)} ·{" "}
+                            {formatSlotTime(selectedSlot.timeBegin)} · {selectedSlot.doctorName}
                           </div>
                         </div>
                       )}
@@ -764,7 +851,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                           autoComplete="one-time-code"
                           placeholder="1234"
                           value={confirmationCode}
-                          onChange={(e) => setConfirmationCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                          onChange={(e) =>
+                            setConfirmationCode(e.target.value.replace(/\D/g, "").slice(0, 4))
+                          }
                           maxLength={4}
                           className="w-full bg-background border border-border rounded-xl py-3 px-4 text-center text-xl tracking-[0.35em] focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand transition-all shadow-xs"
                         />
@@ -853,12 +942,7 @@ function formatRussianPhone(value: string): string {
 
   normalized = normalized.slice(0, 11);
   const local = normalized.slice(1);
-  const parts = [
-    local.slice(0, 3),
-    local.slice(3, 6),
-    local.slice(6, 8),
-    local.slice(8, 10),
-  ];
+  const parts = [local.slice(0, 3), local.slice(3, 6), local.slice(6, 8), local.slice(8, 10)];
 
   let formatted = "+7";
   if (parts[0]) formatted += ` (${parts[0]}`;
@@ -1008,7 +1092,12 @@ function ChoiceCard({
       >
         {eyebrow}
       </div>
-      <div className={cn("text-[14px] font-medium leading-snug", selected ? "text-white" : "text-foreground")}>
+      <div
+        className={cn(
+          "text-[14px] font-medium leading-snug",
+          selected ? "text-white" : "text-foreground",
+        )}
+      >
         {title}
       </div>
       {selected && (

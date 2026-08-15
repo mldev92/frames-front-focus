@@ -5,6 +5,8 @@ import { searchProducts } from "@/lib/api/bitrix";
 import type { Product } from "@/data/types";
 import { ProductCard } from "@/components/ProductCard";
 import { searchSiteContent } from "@/data/site-search";
+import { useCityStore } from "@/lib/store/city";
+import { regionalSiteHref } from "@/lib/city-routing";
 
 export const Route = createFileRoute("/search")({
   validateSearch: (s: Record<string, unknown>): { q: string } => ({
@@ -20,10 +22,7 @@ export const Route = createFileRoute("/search")({
     return { pages, products };
   },
   head: () => ({
-    meta: [
-      { title: "Поиск · ОПТИКА 100%" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Поиск · ОПТИКА 100%" }, { name: "robots", content: "noindex" }],
   }),
   component: SearchPage,
 });
@@ -33,6 +32,8 @@ function SearchPage() {
   const { pages, products } = Route.useLoaderData();
   const navigate = Route.useNavigate();
   const [query, setQuery] = useState(q);
+  const city = useCityStore((state) => state.city);
+  const regionalPages = pages.filter((page) => city === "spb" || page.region !== "spb");
 
   const term = q.trim();
 
@@ -59,21 +60,31 @@ function SearchPage() {
 
       {term && (
         <p className="mt-6 text-sm text-muted-foreground">
-          {pages.length + products.length > 0
-            ? `Найдено: ${pages.length + products.length}`
+          {regionalPages.length + products.length > 0
+            ? `Найдено: ${regionalPages.length + products.length}`
             : "Ничего не найдено. Попробуйте изменить запрос."}
         </p>
       )}
 
-      {pages.length > 0 && (
+      {regionalPages.length > 0 && (
         <section className="mt-8" aria-labelledby="site-search-pages">
-          <h2 id="site-search-pages" className="font-serif text-2xl">Страницы, услуги и категории</h2>
+          <h2 id="site-search-pages" className="font-serif text-2xl">
+            Страницы, услуги и категории
+          </h2>
           <div className="mt-4 grid gap-3 sm:grid-cols-2">
-            {pages.map((page) => (
-              <a key={page.href} href={page.href} className="rounded-2xl border border-border bg-card p-5 transition-colors hover:border-brand/40">
-                <span className="text-xs font-medium uppercase tracking-wide text-brand">{page.type}</span>
+            {regionalPages.map((page) => (
+              <a
+                key={page.href}
+                href={regionalSiteHref(page.href, city)}
+                className="rounded-2xl border border-border bg-card p-5 transition-colors hover:border-brand/40"
+              >
+                <span className="text-xs font-medium uppercase tracking-wide text-brand">
+                  {page.type}
+                </span>
                 <span className="mt-2 block text-lg font-medium">{page.title}</span>
-                <span className="mt-2 block text-sm leading-6 text-muted-foreground">{page.description}</span>
+                <span className="mt-2 block text-sm leading-6 text-muted-foreground">
+                  {page.description}
+                </span>
               </a>
             ))}
           </div>
@@ -83,7 +94,7 @@ function SearchPage() {
       {products.length > 0 && <h2 className="mt-10 font-serif text-2xl">Товары</h2>}
       <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-10">
         {products.map((p: Product) => (
-          <ProductCard key={p.slug} product={p} />
+          <ProductCard key={p.slug} product={p} city={city} />
         ))}
       </div>
     </div>

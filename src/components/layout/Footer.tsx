@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Mail, MessageCircle, Send } from "lucide-react";
+import { Mail, MessageCircle, Phone, Send } from "lucide-react";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { CONTACT } from "@/data/contact";
 import { SiteLogo } from "./SiteLogo";
 import { useCityStore } from "@/lib/store/city";
-import { regionalCatalogHref } from "@/data/categories";
 import { serviceHref } from "@/data/services";
+import { regionalSiteHref } from "@/lib/city-routing";
 
 const COLS = [
   {
@@ -57,6 +57,13 @@ export function Footer() {
   const currentYear = new Date().getFullYear();
   const city = useCityStore((state) => state.city);
   const [appointmentOpen, setAppointmentOpen] = useState(false);
+  const cityColumns = COLS.map((column) => ({
+    ...column,
+    links: column.links.filter(
+      ([, href]) =>
+        city === "spb" || !["/linzy-spb/", "/biometriya-glaza/", "/optika-spb/"].includes(href),
+    ),
+  }));
 
   return (
     <footer className="mt-24 pt-16 pb-8" style={{ background: "#FFFEFE" }}>
@@ -70,7 +77,7 @@ export function Footer() {
             </p>
           </div>
 
-          {COLS.map((col) => (
+          {cityColumns.map((col) => (
             <div key={col.title}>
               <div className="font-serif text-sm uppercase tracking-wider mb-4">{col.title}</div>
               <ul className="space-y-2 text-sm text-muted-foreground">
@@ -90,7 +97,7 @@ export function Footer() {
                         </button>
                       ) : (
                         <a
-                          href={regionalCatalogHref(resolvedHref, city)}
+                          href={regionalSiteHref(resolvedHref, city)}
                           className="hover:text-foreground transition-colors"
                         >
                           {label}
@@ -106,21 +113,35 @@ export function Footer() {
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs text-muted-foreground">
           <div>
-            © {currentYear} ОПТИКА 100% · ул. Кирочная, 17, СПб ·{" "}
-            <a href={CONTACT.email.href} className="hover:text-foreground">
-              {CONTACT.email.label}
-            </a>
+            © {currentYear} ОПТИКА 100% ·{" "}
+            {city === "spb" ? (
+              <>
+                ул. Кирочная, 17, СПб ·{" "}
+                <a href={CONTACT.email.href} className="hover:text-foreground">
+                  {CONTACT.email.label}
+                </a>
+              </>
+            ) : (
+              <>
+                Новокузнецк ·{" "}
+                <a href={CONTACT.phone.href} className="hover:text-foreground">
+                  {CONTACT.phone.label}
+                </a>
+              </>
+            )}
           </div>
           <div className="flex gap-4">
-            <a
-              href={CONTACT.telegram.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Telegram"
-              className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
-            >
-              <Send className="h-5 w-5" />
-            </a>
+            {city === "spb" && (
+              <a
+                href={CONTACT.telegram.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Telegram"
+                className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
+              >
+                <Send className="h-5 w-5" />
+              </a>
+            )}
             <a
               href={CONTACT.max.href}
               target="_blank"
@@ -130,13 +151,23 @@ export function Footer() {
             >
               <MessageCircle className="h-5 w-5" />
             </a>
-            <a
-              href={CONTACT.email.href}
-              aria-label="Email"
-              className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
-            >
-              <Mail className="h-5 w-5" />
-            </a>
+            {city === "spb" ? (
+              <a
+                href={CONTACT.email.href}
+                aria-label="Email"
+                className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
+              >
+                <Mail className="h-5 w-5" />
+              </a>
+            ) : (
+              <a
+                href={CONTACT.phone.href}
+                aria-label="Телефон"
+                className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
+              >
+                <Phone className="h-5 w-5" />
+              </a>
+            )}
           </div>
         </div>
       </div>

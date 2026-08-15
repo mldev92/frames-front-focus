@@ -4,13 +4,13 @@ import { RepairPage } from "@/components/pages/RepairPage";
 export const Route = createFileRoute("/remont-ochkov")({
   head: () => ({
     meta: [
-      { title: "Ремонт очков в Санкт-Петербурге · ОПТИКА 100%" },
+      { title: "Ремонт очков · ОПТИКА 100%" },
       {
         name: "description",
         content:
-          "Ремонт очков в Санкт-Петербурге: замена заушников, носоупоров, винтов, правка оправы, установка линз и чистка очков в салоне ОПТИКА 100%.",
+          "Ремонт очков: замена заушников, носоупоров, винтов, правка оправы, установка линз и чистка очков в салонах ОПТИКА 100%.",
       },
-      { property: "og:title", content: "Ремонт очков в Санкт-Петербурге · ОПТИКА 100%" },
+      { property: "og:title", content: "Ремонт очков · ОПТИКА 100%" },
       {
         property: "og:description",
         content:

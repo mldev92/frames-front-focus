@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart, formatPrice } from "@/lib/store/cart";
+import { useCityStore } from "@/lib/store/city";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CONTACT } from "@/data/contact";
 import { createOrder, getOrderDeliveryOptions, getStoreApiUrl } from "@/lib/api/bitrix";
@@ -107,19 +108,33 @@ const PAYMENT_OPTIONS: Array<{ code: PaymentCode; label: string; sub: string }> 
     label: "Наличными или по карте при выдаче",
     sub: "Оплата при получении заказа в салоне.",
   },
-  { code: "yookassa_card", label: "Оплата картой Юkassa", sub: "Онлайн-оплата банковской картой после подтверждения заказа." },
-  { code: "t_installment", label: "Т-Рассрочка", sub: "Рассрочка от Т-Банка — без переплат, до 12 месяцев." },
+  {
+    code: "yookassa_card",
+    label: "Оплата картой Юkassa",
+    sub: "Онлайн-оплата банковской картой после подтверждения заказа.",
+  },
+  {
+    code: "t_installment",
+    label: "Т-Рассрочка",
+    sub: "Рассрочка от Т-Банка — без переплат, до 12 месяцев.",
+  },
 ];
 
 function Checkout() {
   const isMobile = useIsMobile();
+  const regionalCity = useCityStore((state) => state.city);
+  const regionalCityHydrated = useCityStore((state) => state.hydrated);
   const { totals, lines, setQty, clear } = useCart();
   const { subtotal } = totals();
 
   const [open, setOpen] = useState<string | null>("region");
-  const [city, setCity] = useState<CheckoutCity>("Санкт-Петербург");
+  const [city, setCity] = useState<CheckoutCity>(() =>
+    regionalCity === "nvk" ? "Новокузнецк" : "Санкт-Петербург",
+  );
   const [citySearch, setCitySearch] = useState("");
-  const [delivery, setDelivery] = useState<DeliveryCode>("salon_pickup_spb");
+  const [delivery, setDelivery] = useState<DeliveryCode>(() =>
+    regionalCity === "nvk" ? "sdek_courier" : "salon_pickup_spb",
+  );
   const [address, setAddress] = useState("");
   const [payment, setPayment] = useState<PaymentCode>("cash_on_pickup");
   const [promoVisible, setPromoVisible] = useState(false);
@@ -132,12 +147,21 @@ function Checkout() {
   const [trackNumber, setTrackNumber] = useState("");
   const [pickupPoint, setPickupPoint] = useState<PickupPoint | null>(null);
   const [pickupWidgetLoading, setPickupWidgetLoading] = useState(false);
-  const [quotedDeliveryOptions, setQuotedDeliveryOptions] = useState<DeliveryQuoteOption[] | null>(null);
+  const [quotedDeliveryOptions, setQuotedDeliveryOptions] = useState<DeliveryQuoteOption[] | null>(
+    null,
+  );
   const [deliveryLoading, setDeliveryLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<string | null>(null);
   const pickupWidgetHostId = "optika100-sdek-widget-host";
   const pickupWidgetAssetFlag = "data-optika100-sdek-widget";
+
+  useEffect(() => {
+    if (!regionalCityHydrated) return;
+    const nextCity = regionalCity === "nvk" ? "Новокузнецк" : "Санкт-Петербург";
+    setCity(nextCity);
+    setDelivery(nextCity === "Санкт-Петербург" ? "salon_pickup_spb" : "sdek_courier");
+  }, [regionalCity, regionalCityHydrated]);
 
   const toggle = (id: string) => setOpen((prev) => (prev === id ? null : id));
   const fallbackDeliveryOptions = useMemo(() => getDeliveryOptions(city), [city]);
@@ -157,16 +181,24 @@ function Checkout() {
       errors: option.errors,
     }));
   }, [fallbackDeliveryOptions, quotedDeliveryOptions]);
-  const selectedDelivery = deliveryOptions.find((option) => option.code === delivery) ?? deliveryOptions[0];
+  const selectedDelivery =
+    deliveryOptions.find((option) => option.code === delivery) ?? deliveryOptions[0];
   const paymentOptions = useMemo(
-    () => PAYMENT_OPTIONS.filter((option) => option.code !== "cash_on_pickup" || selectedDelivery.code === "salon_pickup_spb"),
+    () =>
+      PAYMENT_OPTIONS.filter(
+        (option) =>
+          option.code !== "cash_on_pickup" || selectedDelivery.code === "salon_pickup_spb",
+      ),
     [selectedDelivery.code],
   );
-  const selectedPayment = paymentOptions.find((option) => option.code === payment) ?? paymentOptions[0];
+  const selectedPayment =
+    paymentOptions.find((option) => option.code === payment) ?? paymentOptions[0];
   const deliveryPrice = selectedDelivery.price ?? 0;
   const orderTotal = subtotal + deliveryPrice;
   const isFree = selectedDelivery.price === 0 || selectedDelivery.free;
-  const storeApiBase = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ?? "https://optika100.com";
+  const storeApiBase =
+    (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ??
+    "https://optika100.com";
   const getSdekWidgetUrl = (path: string) => {
     if (typeof window === "undefined") return getStoreApiUrl(path);
     return `${window.location.origin}/api/store/${path}`;
@@ -184,7 +216,10 @@ function Checkout() {
   }, [city, orderTotal]);
   const pickupWidgetAjaxUrl = useMemo(() => getSdekWidgetUrl("sdek_ajax_proxy.php"), []);
   const pickupWidgetAssetProxyUrl = useMemo(() => getSdekWidgetUrl("sdek_asset_proxy.php"), []);
-  const pickupWidgetAssetOrigin = useMemo(() => new URL(getStoreApiUrl("sdek_widget_frame.php")).origin, []);
+  const pickupWidgetAssetOrigin = useMemo(
+    () => new URL(getStoreApiUrl("sdek_widget_frame.php")).origin,
+    [],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -223,7 +258,9 @@ function Checkout() {
   }, [payment, paymentOptions]);
 
   const formatPickupAddress = (point: Pick<PickupPoint, "address">) =>
-    point.address.toLowerCase().includes(city.toLowerCase()) ? point.address : `${city}, ${point.address}`;
+    point.address.toLowerCase().includes(city.toLowerCase())
+      ? point.address
+      : `${city}, ${point.address}`;
 
   const stripPickupMarker = (value: string) => value.replace(/\s+#S[^\s]+$/u, "").trim();
 
@@ -253,11 +290,21 @@ function Checkout() {
     };
 
     const onWidgetSelected = (event: Event) => {
-      onMessage(new MessageEvent("message", { data: (event as CustomEvent).detail, origin: window.location.origin }));
+      onMessage(
+        new MessageEvent("message", {
+          data: (event as CustomEvent).detail,
+          origin: window.location.origin,
+        }),
+      );
     };
 
     const onWidgetError = (event: Event) => {
-      onMessage(new MessageEvent("message", { data: (event as CustomEvent).detail, origin: window.location.origin }));
+      onMessage(
+        new MessageEvent("message", {
+          data: (event as CustomEvent).detail,
+          origin: window.location.origin,
+        }),
+      );
     };
 
     window.addEventListener("message", onMessage);
@@ -328,8 +375,14 @@ function Checkout() {
       .replaceAll('"/bitrix/js/ipol.sdek/ajax.php', `"${pickupWidgetAjaxUrl}`)
       .replaceAll("'/bitrix/js/ipol.sdek/ajax.php", `'${pickupWidgetAjaxUrl}`)
       .replaceAll(`${pickupWidgetAssetOrigin}/bitrix/js/ipol.sdek/ajax.php`, pickupWidgetAjaxUrl)
-      .replaceAll('"/bitrix/images/ipol.sdek/', `"${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent("/bitrix/images/ipol.sdek/")}`)
-      .replaceAll("'/bitrix/images/ipol.sdek/", `'${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent("/bitrix/images/ipol.sdek/")}`)
+      .replaceAll(
+        '"/bitrix/images/ipol.sdek/',
+        `"${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent("/bitrix/images/ipol.sdek/")}`,
+      )
+      .replaceAll(
+        "'/bitrix/images/ipol.sdek/",
+        `'${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent("/bitrix/images/ipol.sdek/")}`,
+      )
       .replaceAll('"/bitrix/', `"${pickupWidgetAssetOrigin}/bitrix/`)
       .replaceAll("'/bitrix/", `'${pickupWidgetAssetOrigin}/bitrix/`)
       .replaceAll('"/upload/', `"${pickupWidgetAssetOrigin}/upload/`)
@@ -394,15 +447,21 @@ function Checkout() {
     const host = document.createElement("div");
     host.id = pickupWidgetHostId;
     host.setAttribute(pickupWidgetAssetFlag, "true");
-    const bodyNodes = Array.from(parsed.body.childNodes).filter((node) => node.nodeName.toLowerCase() !== "script");
+    const bodyNodes = Array.from(parsed.body.childNodes).filter(
+      (node) => node.nodeName.toLowerCase() !== "script",
+    );
     bodyNodes.forEach((node) => host.appendChild(node.cloneNode(true)));
     rewriteWidgetElementUrls(host);
     document.body.appendChild(host);
 
-    for (const script of Array.from(parsed.head.querySelectorAll("script")).filter(isAllowedWidgetScript)) {
+    for (const script of Array.from(parsed.head.querySelectorAll("script")).filter(
+      isAllowedWidgetScript,
+    )) {
       await loadExternalScript(script);
     }
-    for (const script of Array.from(parsed.body.querySelectorAll("script")).filter(isAllowedWidgetScript)) {
+    for (const script of Array.from(parsed.body.querySelectorAll("script")).filter(
+      isAllowedWidgetScript,
+    )) {
       await loadExternalScript(script);
     }
   };
@@ -414,33 +473,39 @@ function Checkout() {
       cleanupInjectedWidget();
       const runtimeWidgetUrl = new URL(pickupWidgetUrl);
       runtimeWidgetUrl.searchParams.set("_", String(Date.now()));
-      
+
       // Create modal overlay
       const overlay = document.createElement("div");
       overlay.id = pickupWidgetHostId;
       overlay.setAttribute(pickupWidgetAssetFlag, "true");
-      overlay.style.cssText = "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;";
-      
+      overlay.style.cssText =
+        "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;";
+
       // Close button
       const closeBtn = document.createElement("button");
       closeBtn.textContent = "✕";
-      closeBtn.style.cssText = "position:absolute;top:16px;right:16px;z-index:1;width:40px;height:40px;border-radius:50%;border:none;background:white;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);";
+      closeBtn.style.cssText =
+        "position:absolute;top:16px;right:16px;z-index:1;width:40px;height:40px;border-radius:50%;border:none;background:white;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);";
       closeBtn.onclick = () => {
         setPickupWidgetLoading(false);
         cleanupInjectedWidget();
       };
-      
+
       // Iframe
       const iframe = document.createElement("iframe");
       iframe.src = runtimeWidgetUrl.toString();
-      iframe.style.cssText = "width:min(100vw,900px);height:min(100vh,700px);border:none;border-radius:12px;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,0.2);";
+      iframe.style.cssText =
+        "width:min(100vw,900px);height:min(100vh,700px);border:none;border-radius:12px;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,0.2);";
       iframe.onload = () => setPickupWidgetLoading(false);
-      iframe.onerror = () => { setPickupWidgetLoading(false); toast.error("Не удалось загрузить виджет СДЭК"); };
-      
+      iframe.onerror = () => {
+        setPickupWidgetLoading(false);
+        toast.error("Не удалось загрузить виджет СДЭК");
+      };
+
       overlay.appendChild(closeBtn);
       overlay.appendChild(iframe);
       document.body.appendChild(overlay);
-      
+
       // Close on overlay click (not iframe)
       overlay.addEventListener("click", (e) => {
         if (e.target === overlay) {
@@ -470,8 +535,12 @@ function Checkout() {
       return;
     }
     const needsAddress = selectedDelivery.requiresAddress || selectedDelivery.requiresPickupPoint;
-    if (!fullName.trim() || phone.replace(/\D/g, "").length < 10
-      || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || (needsAddress && !address.trim())) {
+    if (
+      !fullName.trim() ||
+      phone.replace(/\D/g, "").length < 10 ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ||
+      (needsAddress && !address.trim())
+    ) {
       setOpen("buyer");
       toast.error("Проверьте контактные данные");
       return;
@@ -487,24 +556,30 @@ function Checkout() {
         : undefined;
       const deliveryAddress = selectedDelivery.requiresPickupPoint
         ? pickupPayload?.address?.trim() || address.trim()
-        : address.trim() || (selectedDelivery.code === "salon_pickup_spb" ? "Самовывоз из салона «Оптика 100%», ул. Кирочная, 17" : undefined);
-      const result = await createOrder({
-        customer: {
-          fullName: fullName.trim(),
-          phone: phone.trim(),
-          email: email.trim(),
+        : address.trim() ||
+          (selectedDelivery.code === "salon_pickup_spb"
+            ? "Самовывоз из салона «Оптика 100%», ул. Кирочная, 17"
+            : undefined);
+      const result = await createOrder(
+        {
+          customer: {
+            fullName: fullName.trim(),
+            phone: phone.trim(),
+            email: email.trim(),
+          },
+          lines,
+          city,
+          delivery: selectedDelivery.label,
+          deliveryCode: selectedDelivery.code,
+          payment: selectedPayment.label,
+          paymentCode: selectedPayment.code,
+          address: deliveryAddress,
+          pickupPoint: pickupPayload,
+          trackNumber: trackNumber.trim() || undefined,
+          comment: comment.trim() || undefined,
         },
-        lines,
-        city,
-        delivery: selectedDelivery.label,
-        deliveryCode: selectedDelivery.code,
-        payment: selectedPayment.label,
-        paymentCode: selectedPayment.code,
-        address: deliveryAddress,
-        pickupPoint: pickupPayload,
-        trackNumber: trackNumber.trim() || undefined,
-        comment: comment.trim() || undefined,
-      }, idempotencyKey);
+        idempotencyKey,
+      );
       setCompletedOrder(result.accountNumber);
       clear();
       toast.success(`Заказ №${result.accountNumber} создан`);
@@ -520,8 +595,8 @@ function Checkout() {
       <div className="mx-auto max-w-2xl px-4 py-24 text-center">
         <h1 className="font-serif text-4xl">Заказ создан</h1>
         <p className="mt-4 text-muted-foreground">
-          Номер заказа: <strong className="text-foreground">{completedOrder}</strong>. Мы свяжемся
-          с вами для подтверждения доставки и оплаты.
+          Номер заказа: <strong className="text-foreground">{completedOrder}</strong>. Мы свяжемся с
+          вами для подтверждения доставки и оплаты.
         </p>
         <Link to="/" className="mt-8 inline-flex rounded-full bg-brand px-7 py-3 text-white">
           Вернуться на главную
@@ -562,7 +637,6 @@ function Checkout() {
       >
         {/* Left — accordion sections */}
         <div style={{ display: "flex", minWidth: 0, flexDirection: "column", gap: "12px" }}>
-
           <SectionCard
             id="region"
             icon={<MapPin size={18} />}
@@ -594,7 +668,12 @@ function Checkout() {
                 value={citySearch}
                 onChange={(e) => setCitySearch(e.target.value)}
                 className="w-full bg-background border border-border"
-                style={{ borderRadius: "8px", padding: "10px 12px 10px 36px", fontSize: "15px", outline: "none" }}
+                style={{
+                  borderRadius: "8px",
+                  padding: "10px 12px 10px 36px",
+                  fontSize: "15px",
+                  outline: "none",
+                }}
               />
             </div>
           </SectionCard>
@@ -666,8 +745,21 @@ function Checkout() {
                 gap: "12px",
               }}
             >
-              <Field label="Ф.И.О." placeholder="Иванов Иван Иванович" required value={fullName} onChange={setFullName} />
-              <Field label="E-Mail" type="email" placeholder="example@mail.ru" required value={email} onChange={setEmail} />
+              <Field
+                label="Ф.И.О."
+                placeholder="Иванов Иван Иванович"
+                required
+                value={fullName}
+                onChange={setFullName}
+              />
+              <Field
+                label="E-Mail"
+                type="email"
+                placeholder="example@mail.ru"
+                required
+                value={email}
+                onChange={setEmail}
+              />
             </div>
             <div
               style={{
@@ -677,19 +769,31 @@ function Checkout() {
                 gap: "12px",
               }}
             >
-              <Field label="Телефон" type="tel" placeholder="+7 (___) ___-__-__" required value={phone} onChange={setPhone} />
-              <Field label="Трек-номер СДЭК" placeholder="Если уже есть" value={trackNumber} onChange={setTrackNumber} />
-            </div>
-            {selectedDelivery.code !== 'salon_pickup_spb' && (
-            <div style={{ marginTop: "12px" }}>
               <Field
-                label="Адрес доставки"
-                placeholder="Город, улица, дом, квартира"
+                label="Телефон"
+                type="tel"
+                placeholder="+7 (___) ___-__-__"
                 required
-                value={address}
-                onChange={setAddress}
+                value={phone}
+                onChange={setPhone}
+              />
+              <Field
+                label="Трек-номер СДЭК"
+                placeholder="Если уже есть"
+                value={trackNumber}
+                onChange={setTrackNumber}
               />
             </div>
+            {selectedDelivery.code !== "salon_pickup_spb" && (
+              <div style={{ marginTop: "12px" }}>
+                <Field
+                  label="Адрес доставки"
+                  placeholder="Город, улица, дом, квартира"
+                  required
+                  value={address}
+                  onChange={setAddress}
+                />
+              </div>
             )}
           </SectionCard>
 
@@ -704,7 +808,11 @@ function Checkout() {
             {lines.length === 0 ? (
               <p className="text-muted-foreground text-sm">
                 Корзина пуста.{" "}
-                <Link to="/catalog_s/$category" params={{ category: "opravy" }} className="text-brand">
+                <Link
+                  to="/catalog_s/$category"
+                  params={{ category: "opravy" }}
+                  className="text-brand"
+                >
                   В каталог
                 </Link>
               </p>
@@ -727,7 +835,13 @@ function Checkout() {
                         src={line.image}
                         alt={line.name}
                         referrerPolicy="no-referrer"
-                        style={{ width: "56px", height: "56px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }}
+                        style={{
+                          width: "56px",
+                          height: "56px",
+                          objectFit: "cover",
+                          borderRadius: "6px",
+                          flexShrink: 0,
+                        }}
                       />
                     ) : (
                       <div
@@ -741,7 +855,9 @@ function Checkout() {
                       />
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: "14px", fontWeight: 500, marginBottom: "2px" }}>{line.name}</div>
+                      <div style={{ fontSize: "14px", fontWeight: 500, marginBottom: "2px" }}>
+                        {line.name}
+                      </div>
                       {line.parameters.color && (
                         <div className="text-muted-foreground" style={{ fontSize: "12px" }}>
                           Цвет: {line.parameters.color}
@@ -758,13 +874,28 @@ function Checkout() {
                       onDec={() => setQty(line.lineId, line.qty - 1)}
                       onInc={() => setQty(line.lineId, line.qty + 1)}
                     />
-                    <div style={{ fontWeight: 600, fontSize: "15px", minWidth: "72px", textAlign: "right", flexShrink: 0 }}>
+                    <div
+                      style={{
+                        fontWeight: 600,
+                        fontSize: "15px",
+                        minWidth: "72px",
+                        textAlign: "right",
+                        flexShrink: 0,
+                      }}
+                    >
                       {formatPrice(line.price * line.qty)}
                     </div>
                   </div>
                 ))}
                 <div>
-                  <label style={{ display: "block", fontSize: "13px", fontWeight: 500, marginBottom: "6px" }}>
+                  <label
+                    style={{
+                      display: "block",
+                      fontSize: "13px",
+                      fontWeight: 500,
+                      marginBottom: "6px",
+                    }}
+                  >
                     Особые пожелания
                   </label>
                   <textarea
@@ -773,7 +904,13 @@ function Checkout() {
                     onChange={(e) => setComment(e.target.value)}
                     rows={3}
                     className="w-full bg-background border border-border"
-                    style={{ borderRadius: "8px", padding: "10px 12px", fontSize: "15px", outline: "none", resize: "vertical" }}
+                    style={{
+                      borderRadius: "8px",
+                      padding: "10px 12px",
+                      fontSize: "15px",
+                      outline: "none",
+                      resize: "vertical",
+                    }}
                   />
                 </div>
               </div>
@@ -791,7 +928,14 @@ function Checkout() {
               boxShadow: "0 2px 4px oklch(0 0 0 / 0.06), 0 8px 20px oklch(0 0 0 / 0.08)",
             }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "16px",
+              }}
+            >
               <h3 className="font-serif" style={{ fontSize: "18px", fontWeight: 400 }}>
                 Ваш заказ
               </h3>
@@ -801,15 +945,31 @@ function Checkout() {
             </div>
 
             {lines.length > 0 && (
-              <div style={{ marginBottom: "16px", display: "flex", flexDirection: "column", gap: "10px" }}>
+              <div
+                style={{
+                  marginBottom: "16px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
+              >
                 {lines.map((line) => (
-                  <div key={line.lineId} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                  <div
+                    key={line.lineId}
+                    style={{ display: "flex", gap: "10px", alignItems: "center" }}
+                  >
                     {line.image ? (
                       <img
                         src={line.image}
                         alt={line.name}
                         referrerPolicy="no-referrer"
-                        style={{ width: "48px", height: "48px", objectFit: "cover", borderRadius: "6px", flexShrink: 0 }}
+                        style={{
+                          width: "48px",
+                          height: "48px",
+                          objectFit: "cover",
+                          borderRadius: "6px",
+                          flexShrink: 0,
+                        }}
                       />
                     ) : (
                       <div
@@ -889,7 +1049,15 @@ function Checkout() {
                 type="button"
                 onClick={() => setPromoVisible((v) => !v)}
                 className="text-muted-foreground text-sm"
-                style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                }}
               >
                 <Tag size={14} />
                 Есть промокод?
@@ -902,7 +1070,13 @@ function Checkout() {
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
                     className="bg-background border border-border"
-                    style={{ flex: 1, borderRadius: "8px", padding: "10px 12px", fontSize: "14px", outline: "none" }}
+                    style={{
+                      flex: 1,
+                      borderRadius: "8px",
+                      padding: "10px 12px",
+                      fontSize: "14px",
+                      outline: "none",
+                    }}
                   />
                   <button
                     type="button"
@@ -924,7 +1098,14 @@ function Checkout() {
             </div>
 
             {/* Agreement */}
-            <div style={{ display: "flex", alignItems: "flex-start", gap: "10px", marginBottom: "16px" }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "10px",
+                marginBottom: "16px",
+              }}
+            >
               <button
                 type="button"
                 onClick={() => setAgreed((v) => !v)}
@@ -945,9 +1126,16 @@ function Checkout() {
               >
                 {agreed && <Check size={13} color="white" strokeWidth={3} />}
               </button>
-              <p className="text-muted-foreground" style={{ fontSize: "12px", lineHeight: "1.5", margin: 0 }}>
+              <p
+                className="text-muted-foreground"
+                style={{ fontSize: "12px", lineHeight: "1.5", margin: 0 }}
+              >
                 Я согласен(а) с{" "}
-                <a href="/politika-konfidentsialnosti/" className="text-brand" style={{ textDecoration: "underline" }}>
+                <a
+                  href="/politika-konfidentsialnosti/"
+                  className="text-brand"
+                  style={{ textDecoration: "underline" }}
+                >
                   условиями обработки данных
                 </a>
               </p>
@@ -981,10 +1169,18 @@ function Checkout() {
             </button>
 
             {/* Trust badges */}
-            <div style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "10px" }}>
-              <TrustBadge icon={<Shield size={15} />} text="Безопасная оплата через защищённое соединение" />
+            <div
+              style={{ marginTop: "20px", display: "flex", flexDirection: "column", gap: "10px" }}
+            >
+              <TrustBadge
+                icon={<Shield size={15} />}
+                text="Безопасная оплата через защищённое соединение"
+              />
               <TrustBadge icon={<Truck size={15} />} text="Бесплатный самовывоз из салона" />
-              <TrustBadge icon={<Phone size={15} />} text={`Поддержка специалистов ${CONTACT.phone.label}`} />
+              <TrustBadge
+                icon={<Phone size={15} />}
+                text={`Поддержка специалистов ${CONTACT.phone.label}`}
+              />
             </div>
           </div>
         </aside>
@@ -1121,7 +1317,13 @@ function SectionCard({
           {!isOpen && subtitle && (
             <div
               className="text-muted-foreground"
-              style={{ fontSize: "13px", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+              style={{
+                fontSize: "13px",
+                marginTop: "1px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
             >
               {subtitle}
             </div>
@@ -1130,7 +1332,11 @@ function SectionCard({
         <ChevronDown
           size={18}
           className="text-muted-foreground"
-          style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.25s ease", flexShrink: 0 }}
+          style={{
+            transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
+            transition: "transform 0.25s ease",
+            flexShrink: 0,
+          }}
         />
       </button>
       {isOpen && (
@@ -1196,18 +1402,31 @@ function DeliveryCard({
             flexShrink: 0,
           }}
         >
-          {selected && <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "white" }} />}
+          {selected && (
+            <div
+              style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "white" }}
+            />
+          )}
         </div>
         {option.logo && (
           <img
             src={option.logo}
             alt=""
-            style={{ width: "56px", maxHeight: "32px", objectFit: "contain", flexShrink: 0, marginTop: "1px" }}
+            style={{
+              width: "56px",
+              maxHeight: "32px",
+              objectFit: "contain",
+              flexShrink: 0,
+              marginTop: "1px",
+            }}
           />
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: "14px", fontWeight: 600 }}>{option.label}</div>
-          <div className="text-muted-foreground" style={{ fontSize: "12px", marginTop: "4px", lineHeight: 1.45 }}>
+          <div
+            className="text-muted-foreground"
+            style={{ fontSize: "12px", marginTop: "4px", lineHeight: 1.45 }}
+          >
             {option.description}
           </div>
           {(option.priceFormatted || option.period) && (
@@ -1231,7 +1450,10 @@ function DeliveryCard({
             </div>
           )}
           {pickupPoint && (
-            <div className="text-muted-foreground" style={{ fontSize: "12px", marginTop: "10px", lineHeight: 1.45 }}>
+            <div
+              className="text-muted-foreground"
+              style={{ fontSize: "12px", marginTop: "10px", lineHeight: 1.45 }}
+            >
               Выбран пункт: {pickupPoint.address}
             </div>
           )}
@@ -1313,7 +1535,11 @@ function RadioCard({
           flexShrink: 0,
         }}
       >
-        {selected && <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "white" }} />}
+        {selected && (
+          <div
+            style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "white" }}
+          />
+        )}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: "14px", fontWeight: 500 }}>{label}</div>
@@ -1340,8 +1566,15 @@ function RadioCard({
   );
 }
 
-
-function CityChip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
+function CityChip({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"
@@ -1435,8 +1668,12 @@ function QtyControl({ qty, onDec, onInc }: { qty: number; onDec: () => void; onI
 function TrustBadge({ icon, text }: { icon: ReactNode; text: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-      <div className="text-muted-foreground" style={{ flexShrink: 0 }}>{icon}</div>
-      <span className="text-muted-foreground" style={{ fontSize: "12px", lineHeight: "1.4" }}>{text}</span>
+      <div className="text-muted-foreground" style={{ flexShrink: 0 }}>
+        {icon}
+      </div>
+      <span className="text-muted-foreground" style={{ fontSize: "12px", lineHeight: "1.4" }}>
+        {text}
+      </span>
     </div>
   );
 }
@@ -1453,7 +1690,9 @@ function SummaryRow({
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
       <span className="text-muted-foreground text-sm">{label}</span>
-      <span className="text-sm" style={{ fontWeight: 500, ...valueStyle }}>{value}</span>
+      <span className="text-sm" style={{ fontWeight: 500, ...valueStyle }}>
+        {value}
+      </span>
     </div>
   );
 }
@@ -1475,10 +1714,7 @@ function Field({
 }) {
   return (
     <label style={{ display: "block" }}>
-      <span
-        className="text-sm"
-        style={{ display: "block", marginBottom: "6px", fontWeight: 500 }}
-      >
+      <span className="text-sm" style={{ display: "block", marginBottom: "6px", fontWeight: 500 }}>
         {label}
         {required && <span className="text-brand"> *</span>}
       </span>
