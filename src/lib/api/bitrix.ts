@@ -344,6 +344,8 @@ export interface CatalogPage {
   source: "index" | "fallback";
 }
 
+export type CatalogFacetSummary = Pick<CatalogPage, "total" | "facets">;
+
 /** Thrown when the server has no valid catalog index (HTTP 503 index_not_ready). */
 export class IndexNotReadyError extends Error {
   constructor() { super("catalog index not ready"); this.name = "IndexNotReadyError"; }
@@ -387,6 +389,30 @@ export async function getCatalogPage(
       min: prices.length ? Math.min(...prices) : 0,
       max: prices.length ? Math.max(...prices) : 0,
     },
+    facets: data.facets ?? {},
+  };
+}
+
+/** Lightweight header-menu facet lookup; intentionally skips product hydration. */
+export async function getCatalogFacetSummary(
+  categoryOrSegment: string,
+  city: "spb" | "nvk" = "spb",
+  signal?: AbortSignal,
+): Promise<CatalogFacetSummary> {
+  if (!BASE) throw new Error("VITE_BITRIX_API is required");
+  const params = new URLSearchParams({
+    category: categoryOrSegment,
+    v2: "1",
+    facets: "1",
+    limit: "1",
+    city,
+  });
+  const res = await apiFetch(url(`products.php?${params.toString()}`), { signal });
+  if (res.status === 503) throw new IndexNotReadyError();
+  if (!res.ok) throw new Error(`Bitrix API ${res.status} for catalog facet summary`);
+  const data = (await res.json()) as Partial<CatalogPage>;
+  return {
+    total: data.total ?? 0,
     facets: data.facets ?? {},
   };
 }

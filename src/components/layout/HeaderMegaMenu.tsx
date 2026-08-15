@@ -26,6 +26,11 @@ import { EXPANDABLE_FACET_PARAMS } from "@/lib/catalog-route";
 import { regionalSiteHref } from "@/lib/city-routing";
 import { cn } from "@/lib/utils";
 import { AppointmentModal } from "@/components/AppointmentModal";
+import type { CatalogFacetSummary } from "@/lib/api/bitrix";
+import {
+  availableHeaderMenuItems,
+  isHeaderMenuHrefAvailable,
+} from "@/lib/header-menu-facets";
 
 type FrameCategory = "opravy" | "solntsezashchitnye";
 
@@ -73,7 +78,7 @@ type FramesMegaMenu = {
   brandStrip: CountChip[];
   brandStripHref: string;
   featured: {
-    ctaHref: string;
+    ctaHref?: string;
     description: string;
     eyebrow: string;
     imageAlt: string;
@@ -92,7 +97,7 @@ type FramesMegaMenu = {
   demographics: DemographicCard[];
   kidsGroup: {
     count: string;
-    href: string;
+    href?: string;
     items: KidsCard[];
   };
 };
@@ -593,12 +598,9 @@ function buildFrameMega(category: FrameCategory, copy: {
       { label: "Премиум", price: "12 000 — 25 000 ₽", href: frameHref(category, { priceMin: "12000", priceMax: "25000" }) },
       { label: "Премиум+", price: "от 25 000 ₽", href: frameHref(category, { priceMin: "25000" }) },
     ],
-    tags: [
-      { label: "Новинки", href: frameHref(category, { tag: "Новинки" }) },
-      { label: "Хит сезона", href: frameHref(category, { tag: "Хит сезона" }) },
-      { label: "Скидка", href: frameHref(category, { tag: "Скидка" }) },
-      { label: "Винтаж", href: frameHref(category, { tag: "Винтаж" }) },
-    ],
+    // Collection tags have no server facet. Do not advertise shortcuts that
+    // silently fall back to the unfiltered catalog.
+    tags: [],
     featured: copy.featured,
     brandStrip: copy.brandStrip.map((brand) => ({
       label: brand,
@@ -721,10 +723,10 @@ const CONTACT_MENU: ContactMegaMenu = {
     { label: "High", href: `${catalogHref("kontaktnye-linzy")}multifokalnye/` },
   ],
   bcValues: [
-    { label: "8.4", href: menuHref("kontaktnye-linzy", { bc: "8.4", addition: "Low,Med,High" }) },
-    { label: "8.6", href: menuHref("kontaktnye-linzy", { bc: "8.6", addition: "Low,Med,High" }) },
-    { label: "8.7", href: menuHref("kontaktnye-linzy", { bc: "8.7", addition: "Low,Med,High" }) },
-    { label: "9.0", href: menuHref("kontaktnye-linzy", { bc: "9.0", addition: "Low,Med,High" }) },
+    { label: "8.4", href: menuHref("kontaktnye-linzy", { bc: "8.4" }) },
+    { label: "8.6", href: menuHref("kontaktnye-linzy", { bc: "8.6" }) },
+    { label: "8.7", href: menuHref("kontaktnye-linzy", { bc: "8.7" }) },
+    { label: "9.0", href: menuHref("kontaktnye-linzy", { bc: "9.0" }) },
   ],
   // Дизайн — the only contact-lens "type" facet that actually maps to a
   // Bitrix property (DESIGN). The previous 6 chips (Для сухих глаз, UV-
@@ -750,9 +752,9 @@ const CONTACT_MENU: ContactMegaMenu = {
     },
   ],
   brands: [
-    { label: "Acuvue", count: "142 SKU", href: menuHref("kontaktnye-linzy", { brand: "Acuvue" }) },
-    { label: "CooperVision", count: "96 SKU", href: menuHref("kontaktnye-linzy", { brand: "CooperVision" }) },
-    { label: "Bausch+Lomb", count: "62 SKU", href: menuHref("kontaktnye-linzy", { brand: "Bausch+Lomb" }) },
+    { label: "Acuvue", count: "142 SKU", href: menuHref("kontaktnye-linzy", { brand: "Johnson & Johnson" }) },
+    { label: "CooperVision", count: "96 SKU", href: menuHref("kontaktnye-linzy", { brand: "Cooper Vision" }) },
+    { label: "Bausch+Lomb", count: "62 SKU", href: menuHref("kontaktnye-linzy", { brand: "Bausch & Lomb" }) },
     { label: "Alcon", count: "42 SKU", href: menuHref("kontaktnye-linzy", { brand: "Alcon" }) },
   ],
   helper: {
@@ -782,14 +784,14 @@ const GLASSES_MENU: GlassesMegaMenu = {
       label: "Однофокальные",
       meta: "Одна оптическая зона",
       count: "41",
-      href: menuHref("linzy-dlya-ochkov", { lensType: "Однофокальные" }),
+      href: menuHref("linzy-dlya-ochkov", { lensType: "Монофокальный" }),
       icon: <LensTypeIcon kind="single" />,
     },
     {
       label: "Прогрессивные",
       meta: "Плавный переход даль↔близь",
       count: "15",
-      href: menuHref("linzy-dlya-ochkov", { lensType: "Прогрессивные" }),
+      href: menuHref("linzy-dlya-ochkov", { lensType: "Прогрессивный" }),
       icon: <LensTypeIcon kind="progressive" />,
     },
     {
@@ -803,7 +805,7 @@ const GLASSES_MENU: GlassesMegaMenu = {
       label: "Perifocal",
       meta: "Контроль периферического дефокуса",
       count: "4",
-      href: menuHref("linzy-dlya-ochkov", { lensType: "Perifocal" }),
+      href: menuHref("linzy-dlya-ochkov", { lensType: "Поддержка аккомодации" }),
       icon: <LensTypeIcon kind="kids" />,
     },
   ],
@@ -824,14 +826,14 @@ const GLASSES_MENU: GlassesMegaMenu = {
     { label: "Асферический", href: menuHref("linzy-dlya-ochkov", { design: "Асферический" }) },
     { label: "Бифокальный", href: menuHref("linzy-dlya-ochkov", { design: "Бифокальный" }) },
     { label: "Индивидуальный", href: menuHref("linzy-dlya-ochkov", { design: "Индивидуальный" }) },
-    { label: "Прогрессивный", href: menuHref("linzy-dlya-ochkov", { design: "Прогрессивный" }) },
+    { label: "Прогрессивный", href: menuHref("linzy-dlya-ochkov", { lensType: "Прогрессивный" }) },
     { label: "Сферический", href: menuHref("linzy-dlya-ochkov", { design: "Сферический" }) },
   ],
   purposes: [
-    { label: "Для работы за ПК", count: "21", href: menuHref("linzy-dlya-ochkov", { purpose: "Для работы с гаджетами" }), icon: <Laptop className="h-4 w-4" /> },
+    { label: "Для работы за ПК", count: "21", href: menuHref("linzy-dlya-ochkov", { purpose: "Для гаджетов" }), icon: <Laptop className="h-4 w-4" /> },
     { label: "Для вождения", count: "3", href: menuHref("linzy-dlya-ochkov", { purpose: "Для вождения" }), icon: <Car className="h-4 w-4" /> },
-    { label: "Для чтения и офиса", count: "6", href: menuHref("linzy-dlya-ochkov", { purpose: "Для чтения и работы на среднем расстоянии (компьютер)" }), icon: <BookOpen className="h-4 w-4" /> },
-    { label: "Детские", count: "10", href: menuHref("linzy-dlya-ochkov", { purpose: "Детские линзы" }), icon: <Eye className="h-4 w-4" /> },
+    { label: "Для чтения и офиса", count: "6", href: menuHref("linzy-dlya-ochkov", { lensType: "Офисные" }), icon: <BookOpen className="h-4 w-4" /> },
+    { label: "Детские", count: "10", href: menuHref("linzy-dlya-ochkov", { gender: "Детские" }), icon: <Eye className="h-4 w-4" /> },
   ],
   promotion: {
     eyebrow: "Акции и предложения",
@@ -862,7 +864,7 @@ const GLASSES_MENU: GlassesMegaMenu = {
     imageSrc: "/stellest/hero-child-stellest.webp",
     imageAlt: "Линзы Stellest для контроля миопии",
     price: "от 21 900 ₽ за пару",
-    ctaHref: menuHref("linzy-dlya-ochkov", { technology: "STELLEST" }),
+    ctaHref: "/stellest-katalog-s-linzami/",
     ctaLabel: "Смотреть линзы",
   },
 };
@@ -1008,19 +1010,22 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                 ))}
               </div>
 
+              {(menu.kidsGroup.href || menu.kidsGroup.items.length > 0) && (
               <div className="mt-3 border-t border-dashed border-border pt-3">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <span className="inline-flex items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.14em] text-muted-foreground">
                     {AudienceIcons.kidsTitle}
                     Детские
                   </span>
-                  <a
-                    href={regionalMenuHref(menu.kidsGroup.href, city)}
-                    className={sectionActionClass}
-                  >
-                    Все
-                    <ArrowRight className="h-3 w-3" />
-                  </a>
+                  {menu.kidsGroup.href && (
+                    <a
+                      href={regionalMenuHref(menu.kidsGroup.href, city)}
+                      className={sectionActionClass}
+                    >
+                      Все
+                      <ArrowRight className="h-3 w-3" />
+                    </a>
+                  )}
                 </div>
                 <div className="flex flex-col gap-1.5">
                   {menu.kidsGroup.items.map((item) => (
@@ -1044,6 +1049,7 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                   ))}
                 </div>
               </div>
+              )}
 
               <div className="mt-5 border-t border-dashed border-border pt-4">
                 <div className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
@@ -1093,18 +1099,20 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                 </div>
               </div>
 
-              <div className="mt-5 border-t border-dashed border-border pt-4">
-                <div className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
-                  Тег коллекции
+              {menu.tags.length > 0 && (
+                <div className="mt-5 border-t border-dashed border-border pt-4">
+                  <div className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">
+                    Тег коллекции
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {menu.tags.map((item) => (
+                      <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
+                        {item.label}
+                      </a>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {menu.tags.map((item) => (
-                    <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
-                      {item.label}
-                    </a>
-                  ))}
-                </div>
-              </div>
+              )}
             </section>
 
             <aside
@@ -1127,13 +1135,15 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
               <p className="text-[12.5px] leading-6 text-muted-foreground">{menu.featured.description}</p>
               <div className="mt-auto flex items-center justify-between border-t border-dashed border-border pt-3">
                 <span className="font-serif text-[22px] leading-none text-foreground">{menu.featured.price}</span>
-                <a
-                  href={regionalMenuHref(menu.featured.ctaHref, city)}
-                  className="inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
-                >
-                  К коллекции
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </a>
+                {menu.featured.ctaHref && (
+                  <a
+                    href={regionalMenuHref(menu.featured.ctaHref, city)}
+                    className="inline-flex items-center gap-1 text-[12.5px] font-medium text-brand transition-colors hover:text-brand/80"
+                  >
+                    К коллекции
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </a>
+                )}
               </div>
             </aside>
           </div>
@@ -1738,9 +1748,84 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
   );
 }
 
-export function HeaderMegaPanel({ menu }: { menu: HeaderMegaMenu }) {
-  if (menu.kind === "frames") return <FramesMegaPanel menu={menu} />;
-  if (menu.kind === "contact") return <ContactMegaPanel menu={menu} />;
-  if (menu.kind === "accessories") return <AccessoriesMegaPanel menu={menu} />;
-  return <GlassesMegaPanel menu={menu} />;
+function filterMegaMenu(
+  menu: HeaderMegaMenu,
+  summary: CatalogFacetSummary | undefined,
+): HeaderMegaMenu {
+  if (menu.kind === "accessories") return menu;
+  if (menu.kind === "frames") {
+    return {
+      ...menu,
+      shapes: availableHeaderMenuItems(menu.shapes, summary),
+      demographics: availableHeaderMenuItems(menu.demographics, summary),
+      kidsGroup: {
+        ...menu.kidsGroup,
+        href: isHeaderMenuHrefAvailable(menu.kidsGroup.href ?? "", summary)
+          ? menu.kidsGroup.href
+          : undefined,
+        items: availableHeaderMenuItems(menu.kidsGroup.items, summary),
+      },
+      construction: availableHeaderMenuItems(menu.construction, summary),
+      materials: availableHeaderMenuItems(menu.materials, summary),
+      tags: [],
+      brandStrip: availableHeaderMenuItems(menu.brandStrip, summary),
+      featured: {
+        ...menu.featured,
+        ctaHref: menu.featured.ctaHref && isHeaderMenuHrefAvailable(menu.featured.ctaHref, summary)
+          ? menu.featured.ctaHref
+          : undefined,
+      },
+    };
+  }
+  if (menu.kind === "contact") {
+    return {
+      ...menu,
+      contactModes: availableHeaderMenuItems(menu.contactModes, summary),
+      sphereValues: availableHeaderMenuItems(menu.sphereValues, summary),
+      cylinder: availableHeaderMenuItems(menu.cylinder, summary),
+      addition: availableHeaderMenuItems(menu.addition, summary),
+      bcValues: availableHeaderMenuItems(menu.bcValues, summary),
+      needs: availableHeaderMenuItems(menu.needs, summary),
+      brands: availableHeaderMenuItems(menu.brands, summary),
+    };
+  }
+  return {
+    ...menu,
+    lensTypes: availableHeaderMenuItems(menu.lensTypes, summary),
+    manufacturers: availableHeaderMenuItems(menu.manufacturers, summary),
+    lightTransmissionValues: availableHeaderMenuItems(menu.lightTransmissionValues, summary),
+    materials: availableHeaderMenuItems(menu.materials, summary),
+    technologies: availableHeaderMenuItems(menu.technologies, summary),
+    purposes: availableHeaderMenuItems(menu.purposes, summary),
+  };
+}
+
+export function HeaderMegaPanel({
+  menu,
+  facetSummary,
+  facetStatus,
+}: {
+  menu: HeaderMegaMenu;
+  facetSummary?: CatalogFacetSummary;
+  facetStatus: "loading" | "ready" | "error";
+}) {
+  const filteredMenu = filterMegaMenu(menu, facetSummary);
+  const panel = filteredMenu.kind === "frames"
+    ? <FramesMegaPanel menu={filteredMenu} />
+    : filteredMenu.kind === "contact"
+      ? <ContactMegaPanel menu={filteredMenu} />
+      : filteredMenu.kind === "accessories"
+        ? <AccessoriesMegaPanel menu={filteredMenu} />
+        : <GlassesMegaPanel menu={filteredMenu} />;
+
+  return (
+    <div className="relative">
+      {menu.kind !== "accessories" && facetStatus !== "ready" && (
+        <div className="pointer-events-none absolute right-5 top-5 z-10 rounded-full border border-[#e4dbcf] bg-white/95 px-3 py-1.5 text-[11px] text-muted-foreground shadow-sm">
+          {facetStatus === "error" ? "Фильтры временно недоступны" : "Проверяем наличие…"}
+        </div>
+      )}
+      {panel}
+    </div>
+  );
 }

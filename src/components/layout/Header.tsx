@@ -8,6 +8,11 @@ import { HEADER_NAV_ITEMS, HeaderMegaPanel, isMegaNavItem } from "./HeaderMegaMe
 import { SiteLogo } from "./SiteLogo";
 import { useCityStore, type CityCode, CITY_LABELS } from "@/lib/store/city";
 import { regionalLocationHref, regionalSiteHref } from "@/lib/city-routing";
+import {
+  getCatalogFacetSummary,
+  type CatalogFacetSummary,
+} from "@/lib/api/bitrix";
+import { catalogSegmentFromHref } from "@/lib/header-menu-facets";
 
 const CITIES: { code: CityCode; label: string }[] = [
   { code: "spb", label: "Санкт-Петербург" },
@@ -29,12 +34,20 @@ const PROMOS = [
   },
 ];
 
+type FacetLoadState =
+  | { status: "loading" }
+  | { status: "ready"; summary: CatalogFacetSummary }
+  | { status: "error" };
+
+const facetSummaryCache = new Map<string, Promise<CatalogFacetSummary>>();
+
 export function Header() {
   const { totals, open: openCart, saved } = useCart();
   const { count } = totals();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [openMegaHref, setOpenMegaHref] = useState<string | null>(null);
+  const [facetStates, setFacetStates] = useState<Record<string, FacetLoadState>>({});
 
   const { city: cityCode, setCity: setCityCode } = useCityStore();
   const [cityOpen, setCityOpen] = useState(false);
@@ -93,6 +106,37 @@ export function Header() {
   const openMegaItem = HEADER_NAV_ITEMS.find(
     (item) => item.href === openMegaHref && isMegaNavItem(item),
   );
+
+  const loadMegaFacets = (item: (typeof HEADER_NAV_ITEMS)[number]) => {
+    if (!isMegaNavItem(item) || item.mega.kind === "accessories") return;
+    const segment = catalogSegmentFromHref(item.mega.allHref);
+    if (!segment) return;
+    const key = `${cityCode}:${segment}`;
+    if (facetStates[key]?.status === "loading" || facetStates[key]?.status === "ready") return;
+
+    setFacetStates((current) => ({ ...current, [key]: { status: "loading" } }));
+    let request = facetSummaryCache.get(key);
+    if (!request) {
+      request = getCatalogFacetSummary(segment, cityCode);
+      facetSummaryCache.set(key, request);
+    }
+    void request.then(
+      (summary) => {
+        setFacetStates((current) => ({ ...current, [key]: { status: "ready", summary } }));
+      },
+      (error) => {
+        facetSummaryCache.delete(key);
+        console.error("[header] catalog facet summary failed:", error);
+        setFacetStates((current) => ({ ...current, [key]: { status: "error" } }));
+      },
+    );
+  };
+
+  const openMegaFacetState = (() => {
+    if (!openMegaItem || !isMegaNavItem(openMegaItem) || openMegaItem.mega.kind === "accessories") return undefined;
+    const segment = catalogSegmentFromHref(openMegaItem.mega.allHref);
+    return segment ? facetStates[`${cityCode}:${segment}`] : undefined;
+  })();
 
   return (
     <>
@@ -258,8 +302,14 @@ export function Header() {
                   <div
                     key={item.href}
                     className="flex items-stretch"
-                    onMouseEnter={() => setOpenMegaHref(hasMega ? item.href : null)}
-                    onFocusCapture={() => setOpenMegaHref(hasMega ? item.href : null)}
+                    onMouseEnter={() => {
+                      setOpenMegaHref(hasMega ? item.href : null);
+                      loadMegaFacets(item);
+                    }}
+                    onFocusCapture={() => {
+                      setOpenMegaHref(hasMega ? item.href : null);
+                      loadMegaFacets(item);
+                    }}
                   >
                     <a
                       href={regionalHref(item.href)}
@@ -346,7 +396,11 @@ export function Header() {
                 className="absolute inset-x-0 top-full z-50 hidden pt-1 xl:block"
                 onMouseEnter={() => setOpenMegaHref(openMegaItem.href)}
               >
-                <HeaderMegaPanel menu={openMegaItem.mega!} />
+                <HeaderMegaPanel
+                  menu={openMegaItem.mega!}
+                  facetSummary={openMegaFacetState?.status === "ready" ? openMegaFacetState.summary : undefined}
+                  facetStatus={openMegaItem.mega!.kind === "accessories" ? "ready" : (openMegaFacetState?.status ?? "loading")}
+                />
               </div>
             )}
           </div>
