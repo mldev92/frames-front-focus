@@ -24,14 +24,19 @@ test("contact-lens root category has approved metadata, H1, canonical, and scope
   assert.ok(!view.includes("catalog_n"));
 });
 
-test("contact-lens category content contains required navigation, CTA, image, and section order", async () => {
+test("contact-lens category is product-first while retaining navigation, image, and SEO section order", async () => {
   const metadata = await read("../src/data/contact-lens-catalog-seo.ts");
   const content = await read("../src/components/ContactLensCatalogSeo.tsx");
+  const view = await read("../src/components/CatalogRouteView.tsx");
+  const listing = await read("../src/components/CatalogListing.tsx");
   for (const slug of ["prozrachnye", "tsvetnye", "toricheskie", "multifokalnye", "dlya_kontrolya_miopii"]) {
     assert.ok(metadata.includes(`/catalog_s/kontaktnye_linzy_/${slug}/`));
   }
-  assert.ok(content.includes('href="#catalog-products"'));
-  assert.ok(content.includes('id="catalog-products"') || (await read("../src/components/CatalogRouteView.tsx")).includes('catalogId={isContactLensRoot ? "catalog-products"'));
+  assert.ok(!content.includes('href="#catalog-products"'));
+  assert.ok(view.includes('catalogId={isContactLensRoot ? "catalog-products"'));
+  assert.ok(listing.includes('id={catalogId}'));
+  assert.ok(!view.includes("headerAfterTitle="));
+  assert.ok(view.indexOf("<CatalogListing") < view.indexOf("<ContactLensCatalogGuide"));
   assert.ok(content.includes('src="/podbor_linz.webp"'));
   assert.ok(content.includes('alt="Контактная линза крупным планом — Оптика 100%"'));
 
@@ -51,6 +56,12 @@ test("contact-lens category content contains required navigation, CTA, image, an
     assert.ok(next > previous, `${heading} must appear in the approved order`);
     previous = next;
   }
+});
+
+test("contact-lens header filters land directly on the product grid", async () => {
+  const menu = await read("../src/components/layout/HeaderMegaMenu.tsx");
+  assert.ok(menu.includes('category === "kontaktnye-linzy" && query ? "#catalog-products" : ""'));
+  assert.ok(menu.includes('`${href}?${query}${catalogTarget}`'));
 });
 
 test("catalog count is dynamic and commercial or medical guarantees are absent", async () => {

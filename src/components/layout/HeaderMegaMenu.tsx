@@ -208,7 +208,8 @@ const menuHref = (category: Parameters<typeof catalogHref>[0], params?: Record<s
   if (expandedFacet) search.set("expand", expandedFacet);
 
   const query = search.toString();
-  return query ? `${href}?${query}` : href;
+  const catalogTarget = category === "kontaktnye-linzy" && query ? "#catalog-products" : "";
+  return query ? `${href}?${query}${catalogTarget}` : href;
 };
 
 const frameHref = (category: FrameCategory, params?: Record<string, string>) => menuHref(category, params);

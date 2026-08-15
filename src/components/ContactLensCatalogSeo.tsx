@@ -27,7 +27,7 @@ export function ContactLensCatalogNavigation() {
   );
 }
 
-export function ContactLensCatalogIntro({ total }: { total: number }) {
+export function ContactLensCatalogGuide({ total }: { total: number }) {
   const benefits = [
     { icon: Eye, title: `${total} моделей`, text: "По текущим параметрам каталога" },
     { icon: Stethoscope, title: "Подбор с офтальмологом", text: "Диагностика зрения и параметров линз" },
@@ -36,7 +36,10 @@ export function ContactLensCatalogIntro({ total }: { total: number }) {
   ];
 
   return (
-    <div className="mb-10 space-y-10 text-[15px] leading-7 text-foreground/85">
+    <section
+      className="mx-auto max-w-7xl space-y-10 px-6 pb-4 pt-12 text-[15px] leading-7 text-foreground/85"
+      aria-label="О контактных линзах и подборе"
+    >
       <div className="grid gap-7 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
         <div className="max-w-4xl">
           <p>
@@ -44,9 +47,6 @@ export function ContactLensCatalogIntro({ total }: { total: number }) {
             для разных задач и режимов ношения. В каталоге представлены Acuvue, Air Optix, Biofinity,
             Dailies, CooperVision и другие бренды; цены и доступные параметры загружаются из действующего каталога.
           </p>
-          <a href="#catalog-products" className="mt-6 inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-85">
-            Выбери свои линзы <ChevronRight aria-hidden className="h-4 w-4" />
-          </a>
         </div>
         <img src="/podbor_linz.webp" alt="Контактная линза крупным планом — Оптика 100%" className="aspect-[16/9] w-full rounded-2xl bg-surface object-cover" />
       </div>
@@ -88,7 +88,7 @@ export function ContactLensCatalogIntro({ total }: { total: number }) {
           <li><strong>Редкое ношение.</strong> Однодневные модели часто практичнее, поскольку срок плановой замены считают от вскрытия упаковки.</li>
         </ul>
       </section>
-    </div>
+    </section>
   );
 }
 

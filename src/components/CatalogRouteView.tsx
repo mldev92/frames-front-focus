@@ -4,7 +4,7 @@ import { CatalogListing, type CatalogStateChange } from "@/components/CatalogLis
 import { CatalogSeoContent } from "@/components/CatalogSeoContent";
 import {
   ContactLensCatalogFooter,
-  ContactLensCatalogIntro,
+  ContactLensCatalogGuide,
   ContactLensCatalogNavigation,
 } from "@/components/ContactLensCatalogSeo";
 import { categoryForCatalogPath, catalogSectionTitle } from "@/data/categories";
@@ -98,7 +98,6 @@ export function CatalogRouteView({
         title={isContactLensRoot ? "Контактные линзы в Санкт-Петербурге" : catalogSectionTitle(sectionPath, config.title)}
         subtitle={isContactLensRoot ? undefined : config.subtitle}
         headerBeforeTitle={isContactLensRoot ? <ContactLensCatalogNavigation /> : undefined}
-        headerAfterTitle={isContactLensRoot ? <ContactLensCatalogIntro total={result.data.total} /> : undefined}
         catalogId={isContactLensRoot ? "catalog-products" : undefined}
         data={result.data}
         facets={config.facets ?? []}
@@ -115,6 +114,7 @@ export function CatalogRouteView({
         city={city}
         onStateChange={onStateChange}
       />
+      {isContactLensRoot && <ContactLensCatalogGuide total={result.data.total} />}
       {isContactLensRoot && <ContactLensCatalogFooter />}
       {city === "spb" && <CatalogSeoContent sectionPath={sectionPath} />}
     </>
