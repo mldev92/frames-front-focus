@@ -932,11 +932,10 @@ const ACCESSORIES_MENU: AccessoriesMegaMenu = {
 
 export const HEADER_NAV_ITEMS: HeaderNavItem[] = [
   { label: "Оправы", href: catalogHref("opravy"), mega: FRAMES_MENU },
-  { label: "Солнцезащитные", href: catalogHref("solntsezashchitnye"), mega: SUNGLASSES_MENU },
+  { label: "Солнцезащитные очки", href: catalogHref("solntsezashchitnye"), mega: SUNGLASSES_MENU },
   { label: "Контактные линзы", href: catalogHref("kontaktnye-linzy"), mega: CONTACT_MENU },
   { label: "Линзы для очков", href: catalogHref("linzy-dlya-ochkov"), mega: GLASSES_MENU },
   { label: "Аксессуары", href: catalogHref("aksessuary"), mega: ACCESSORIES_MENU },
-  { label: "Оптика СПб", href: "/optika-spb/" },
   { label: "Услуги", href: "/#services" },
   { label: "Салоны", href: "/contacts/" },
 ];

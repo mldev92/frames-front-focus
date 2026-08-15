@@ -314,7 +314,7 @@ export function Header() {
                     <a
                       href={regionalHref(item.href)}
                       className={cn(
-                        "group relative inline-flex h-full items-center gap-1 px-3 text-[15px] font-medium transition-colors duration-[var(--duration-snap)]",
+                        "group relative inline-flex h-full items-center gap-1 whitespace-nowrap px-3 text-[15px] font-medium transition-colors duration-[var(--duration-snap)]",
                         hasMega
                           ? isOpen
                             ? "text-brand"

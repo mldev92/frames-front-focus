@@ -129,3 +129,19 @@ test("header menu uses canonical catalog values for repaired shortcuts", async (
   ])
     assert.ok(!source.includes(stale), `stale mapping remains: ${stale}`);
 });
+
+test("desktop header keeps the approved compact navigation labels", async () => {
+  const menu = await readFile(
+    new URL("../src/components/layout/HeaderMegaMenu.tsx", import.meta.url),
+    "utf8",
+  );
+  const header = await readFile(
+    new URL("../src/components/layout/Header.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.ok(menu.includes('{ label: "Солнцезащитные очки", href: catalogHref("solntsezashchitnye")'));
+  assert.ok(!menu.includes('{ label: "Солнцезащитные", href: catalogHref("solntsezashchitnye")'));
+  assert.ok(!menu.includes('{ label: "Оптика СПб"'));
+  assert.ok(header.includes("whitespace-nowrap"));
+});
