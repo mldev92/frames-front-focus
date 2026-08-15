@@ -81,3 +81,9 @@ test("shared route metadata stays city-neutral", async () => {
     assert.doesNotMatch(headBlock, /Санкт-Петербург|Петербург|СПб/);
   }
 });
+
+test("catalog banners regionalize their catalog and service links", async () => {
+  const source = await read("../src/components/CatalogBanner.tsx");
+
+  assert.match(source, /regionalSiteHref\(banner\.href, city\)/);
+});

@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 import type { CatalogBannerData } from "@/data/catalog-banners";
 import { useCityStore } from "@/lib/store/city";
-import { diagnosticsHref } from "@/data/services";
+import { regionalSiteHref } from "@/lib/city-routing";
 import { cn } from "@/lib/utils";
 
 interface CatalogBannerProps {
@@ -39,7 +39,7 @@ const variantClasses: Record<
 export function CatalogBanner({ banner, className, style }: CatalogBannerProps) {
   const variant = variantClasses[banner.variant];
   const city = useCityStore((state) => state.city);
-  const href = banner.href === "/kabinet-diagnostiki-spb" ? diagnosticsHref(city) : banner.href;
+  const href = banner.href ? regionalSiteHref(banner.href, city) : undefined;
   const isInteractive = Boolean(href && banner.cta);
   const BannerTag = isInteractive ? "a" : "div";
 
