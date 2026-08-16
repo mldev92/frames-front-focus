@@ -19,6 +19,7 @@ import {
   type PurposeOption,
 } from "./data";
 import { getRecommendedLensIndex } from "./logic";
+import { LensRequestForm } from "./LensRequestForm";
 
 type Eye = { sph: string; cyl: string; axi: string; add: string };
 const emptyEye: Eye = { sph: "", cyl: "", axi: "", add: "" };
@@ -327,10 +328,15 @@ export function LensWizard({
             {step === 5 && <StepBrand value={brand} onChange={setBrand} />}
             {step === 6 && (
               <StepResults
+                frame={frame}
+                selectedColor={selectedColor}
                 purpose={purpose}
                 rxMode={rxMode}
                 od={od}
                 os={os}
+                pd={pd}
+                pdNear={pdNear}
+                twoPd={twoPd}
                 priorities={priorities}
                 lensFinish={lensFinish}
                 photochromicColor={photochromicColor}
@@ -362,10 +368,10 @@ export function LensWizard({
             </button>
           ) : (
             <a
-              href="/contacts/"
+              href="#lens-request-form"
               className="shrink-0 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground transition-opacity hover:opacity-90 sm:px-8"
             >
-              Оставить заявку на подбор
+              Перейти к заявке
             </a>
           )}
         </div>
@@ -952,20 +958,30 @@ function StepBrand({
 }
 
 function StepResults({
+  frame,
+  selectedColor,
   purpose,
   rxMode,
   od,
   os,
+  pd,
+  pdNear,
+  twoPd,
   priorities,
   lensFinish,
   photochromicColor,
   coatingPackage,
   brand,
 }: {
+  frame: Product;
+  selectedColor?: string;
   purpose: PurposeOption | null;
   rxMode: RxMode;
   od: Eye;
   os: Eye;
+  pd: string;
+  pdNear: string;
+  twoPd: boolean;
   priorities: PriorityOption[];
   lensFinish: LensFinishOption | null;
   photochromicColor: PhotochromicColorId | null;
@@ -977,6 +993,53 @@ function StepResults({
     rxMode === "has" ? getRecommendedLensIndex(od, os) : null;
   const formatSphericalEquivalent = (value: number) =>
     `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
+  const requestDraft = {
+    frame: {
+      id: frame.id,
+      slug: frame.slug,
+      name: frame.name,
+      brand: frame.brand,
+      color: selectedColor,
+      price: frame.price,
+    },
+    selection: {
+      purpose: purpose?.title ?? "",
+      rxMode: rxMode === "has" ? ("has" as const) : ("none" as const),
+      priorities: priorities.map((item) => item.title),
+      finish: lensFinish?.title ?? "",
+      photochromicColor: colorTitle,
+      coating: coatingPackage?.title ?? "",
+      brand: brand?.title ?? "",
+    },
+    prescription:
+      rxMode === "has" && indexRecommendation
+        ? {
+            od: {
+              sph: od.sph,
+              cyl: od.cyl,
+              axis: od.axi,
+              add: od.add,
+              sphericalEquivalent: formatSphericalEquivalent(
+                indexRecommendation.odSphericalEquivalent,
+              ),
+            },
+            os: {
+              sph: os.sph,
+              cyl: os.cyl,
+              axis: os.axi,
+              add: os.add,
+              sphericalEquivalent: formatSphericalEquivalent(
+                indexRecommendation.osSphericalEquivalent,
+              ),
+            },
+            pdMode: twoPd ? ("monocular" as const) : ("binocular" as const),
+            pd: twoPd ? undefined : pd,
+            pdOd: twoPd ? pd : undefined,
+            pdOs: twoPd ? pdNear : undefined,
+            recommendedIndex: indexRecommendation.index,
+          }
+        : null,
+  };
   const rows = [
     ["Назначение", purpose?.title],
     ["Рецепт", rxMode === "has" ? "Введён" : "Нет — предварительный подбор"],
@@ -1044,6 +1107,8 @@ function StepResults({
           наценки. Специалист подтвердит итоговую стоимость перед заказом.
         </p>
       </div>
+
+      <LensRequestForm draft={requestDraft} />
     </div>
   );
 }
