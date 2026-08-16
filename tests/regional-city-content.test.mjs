@@ -96,3 +96,12 @@ test("frame-lens menu links installation into an existing frame to services", as
     /label: "Установка линз в свою оправу",\s+href: "\/#services"/,
   );
 });
+
+test("frame-lens production-time utility has no destination", async () => {
+  const source = await read("../src/components/layout/HeaderMegaMenu.tsx");
+
+  assert.match(
+    source,
+    /label: "Срок изготовления от 1 часа",\s+icon:/,
+  );
+});

@@ -63,7 +63,7 @@ type KidsCard = CardLink & {
 };
 
 type UtilityLink = {
-  href: string;
+  href?: string;
   icon: ReactNode;
   label: string;
 };
@@ -1050,7 +1050,6 @@ const GLASSES_MENU: GlassesMegaMenu = {
     },
     {
       label: "Срок изготовления от 1 часа",
-      href: "/payment/",
       icon: <Truck className="h-4 w-4" />,
     },
     {
@@ -1674,7 +1673,7 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
             {menu.utilities.map((item) => (
               <a
                 key={item.label}
-                href={regionalMenuHref(item.href, city)}
+                href={item.href ? regionalMenuHref(item.href, city) : undefined}
                 className="inline-flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-3 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand"
               >
                 <span className="text-muted-foreground">{item.icon}</span>
@@ -1955,7 +1954,7 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
             {menu.utilities.map((item) => (
               <a
                 key={item.label}
-                href={regionalMenuHref(item.href, city)}
+                href={item.href ? regionalMenuHref(item.href, city) : undefined}
                 className="inline-flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-3 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand"
               >
                 <span className="text-muted-foreground">{item.icon}</span>
@@ -2090,7 +2089,7 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
             {menu.utilities.map((item) => (
               <a
                 key={item.label}
-                href={regionalMenuHref(item.href, city)}
+                href={item.href ? regionalMenuHref(item.href, city) : undefined}
                 className="inline-flex items-center gap-2 rounded-[14px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-3 text-[12.5px] text-foreground transition-colors hover:border-brand hover:text-brand"
               >
                 <span className="text-muted-foreground">{item.icon}</span>
