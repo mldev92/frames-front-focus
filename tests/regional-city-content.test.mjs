@@ -87,3 +87,12 @@ test("catalog banners regionalize their catalog and service links", async () => 
 
   assert.match(source, /regionalSiteHref\(banner\.href, city\)/);
 });
+
+test("frame-lens menu links installation into an existing frame to services", async () => {
+  const source = await read("../src/components/layout/HeaderMegaMenu.tsx");
+
+  assert.match(
+    source,
+    /label: "Установка линз в свою оправу",\s+href: "\/#services"/,
+  );
+});

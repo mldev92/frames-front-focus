@@ -1040,7 +1040,7 @@ const GLASSES_MENU: GlassesMegaMenu = {
   utilities: [
     {
       label: "Установка линз в свою оправу",
-      href: catalogHref("linzy-dlya-ochkov"),
+      href: "/#services",
       icon: <Glasses className="h-4 w-4" />,
     },
     {
