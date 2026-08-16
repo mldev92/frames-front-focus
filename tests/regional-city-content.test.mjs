@@ -112,3 +112,15 @@ test("contact-lens menu hides subscription promo and links its guide to the lens
   assert.doesNotMatch(source, /Подписка на линзы −15%/);
   assert.match(source, /label: "Гид по подбору", href: "\/linzy-spb"/);
 });
+
+test("about page uses current company figures and footer exposes one about link", async () => {
+  const about = await read("../src/routes/o-nas.tsx");
+  const footer = await read("../src/components/layout/Footer.tsx");
+
+  assert.doesNotMatch(about, /2005|50 000\+/);
+  assert.match(about, /с 2006 года/);
+  assert.match(about, /90 000\+/);
+  assert.match(about, /5 салонов/);
+  assert.match(about, /1 в СПБ и 4 в Новокузнецке/);
+  assert.doesNotMatch(footer, /Почему мы\?|\/o-nas\/#pochemu-my/);
+});

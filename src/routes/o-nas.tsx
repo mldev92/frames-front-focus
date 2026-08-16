@@ -26,7 +26,7 @@ function AboutPage() {
         <div className="mx-auto max-w-4xl px-4 lg:px-8 py-20 text-center">
           <div className="text-xs uppercase tracking-[0.2em] text-brand mb-4">О компании</div>
           <h1 className="font-serif text-4xl lg:text-6xl leading-tight">
-            Зрение — главное чувство. Мы заботимся о нём с 2005 года.
+            Зрение — главное чувство. Мы заботимся о нём с 2006 года.
           </h1>
         </div>
       </section>
@@ -38,7 +38,7 @@ function AboutPage() {
           ведущих мировых брендов.
         </p>
         <p className="mt-6 text-muted-foreground">
-          Мы работаем с 2005 года и с тех пор выросли в сеть салонов и интернет-магазин. Сегодня нам
+          Мы работаем с 2006 года и с тех пор выросли в сеть салонов и интернет-магазин. Сегодня нам
           доверяют тысячи клиентов в {cityInPrepositional}.
         </p>
       </section>
@@ -46,11 +46,8 @@ function AboutPage() {
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-12 grid md:grid-cols-3 gap-8 text-center">
         {[
           ["20+", "лет опыта"],
-          ["50 000+", "довольных клиентов"],
-          [
-            city === "nvk" ? "4" : "1",
-            city === "nvk" ? "салона в Новокузнецке" : "салон в Санкт-Петербурге",
-          ],
+          ["90 000+", "довольных клиентов"],
+          ["5 салонов", "1 в СПБ и 4 в Новокузнецке"],
         ].map(([n, l]) => (
           <div key={l} className="bg-surface p-8 rounded-sm">
             <div className="font-serif text-5xl text-brand">{n}</div>

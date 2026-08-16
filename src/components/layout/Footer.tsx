@@ -35,7 +35,6 @@ const COLS = [
     links: [
       ["О нас", "/o-nas"],
       ["Оптика в Санкт-Петербурге", "/optika-spb/"],
-      ["Почему мы?", "/o-nas/#pochemu-my"],
       ["Салоны", "/contacts/"],
       ["Блог", "/blog/"],
       ["Покрытия очковых линз", "/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/"],
