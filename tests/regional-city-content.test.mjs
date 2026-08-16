@@ -105,3 +105,10 @@ test("frame-lens production-time utility has no destination", async () => {
     /label: "Срок изготовления от 1 часа",\s+icon:/,
   );
 });
+
+test("contact-lens menu hides subscription promo and links its guide to the lens landing", async () => {
+  const source = await read("../src/components/layout/HeaderMegaMenu.tsx");
+
+  assert.doesNotMatch(source, /Подписка на линзы −15%/);
+  assert.match(source, /label: "Гид по подбору", href: "\/linzy-spb"/);
+});

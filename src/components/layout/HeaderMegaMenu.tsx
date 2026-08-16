@@ -898,17 +898,12 @@ const CONTACT_MENU: ContactMegaMenu = {
       icon: <MapPin className="h-4 w-4" />,
     },
     {
-      label: "Подписка на линзы −15%",
-      href: catalogHref("kontaktnye-linzy"),
-      icon: <CalendarRange className="h-4 w-4" />,
-    },
-    {
       label: "Все растворы и уход",
       href: catalogHref("aksessuary"),
       icon: <Droplets className="h-4 w-4" />,
     },
     { label: "Доставка", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
-    { label: "Гид по подбору", href: "/podbor-ochkov/", icon: <BookOpen className="h-4 w-4" /> },
+    { label: "Гид по подбору", href: "/linzy-spb", icon: <BookOpen className="h-4 w-4" /> },
   ],
 };
 
