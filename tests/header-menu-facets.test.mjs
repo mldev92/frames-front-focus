@@ -46,6 +46,30 @@ test("facet links stay hidden until the API confirms inventory", async () => {
   );
 });
 
+test("omitted regional offer facets preserve configured parameter shortcuts", async () => {
+  const { isHeaderMenuHrefAvailable } = await loadFacetHelpers();
+  const regionalSummary = {
+    total: 63,
+    facets: {
+      brand: { "Cooper Vision": 27 },
+      wearMode: { "Однодневные": 28 },
+      design: { "Торические": 10 },
+    },
+  };
+
+  assert.equal(
+    isHeaderMenuHrefAvailable(
+      "/catalog_n/kontaktnye_linzy_/?sphere=%E2%88%926.00",
+      regionalSummary,
+    ),
+    true,
+  );
+  assert.equal(
+    isHeaderMenuHrefAvailable("/catalog_n/kontaktnye_linzy_/?bc=8.6", regionalSummary),
+    true,
+  );
+});
+
 test("numeric facets normalize unicode minus, plus signs, and trailing zeroes", async () => {
   const { isHeaderMenuHrefAvailable } = await loadFacetHelpers();
   assert.equal(

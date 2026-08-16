@@ -79,9 +79,18 @@ export function isHeaderMenuHrefAvailable(
   if (selectedFacets.length === 0) return true;
   if (!summary) return false;
 
-  return selectedFacets.every(([key, values]) =>
-    values.some((value) => facetValueHasProducts(summary.facets[key], value)),
-  );
+  return selectedFacets.every(([key, values]) => {
+    const counts = summary.facets[key];
+
+    // Some regional catalog responses omit offer-level facets altogether
+    // (currently sphere/cylinder/addition/BC for Novokuznetsk). That means the
+    // API cannot validate this shortcut, not that every configured value has
+    // zero inventory. Preserve the menu controls unless the facet is present
+    // and explicitly disproves the requested value.
+    if (!counts) return true;
+
+    return values.some((value) => facetValueHasProducts(counts, value));
+  });
 }
 
 export function availableHeaderMenuItems<T extends { href: string }>(
