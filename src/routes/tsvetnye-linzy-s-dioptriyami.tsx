@@ -82,7 +82,7 @@ function CorrectiveColoredLensesPage() {
           по рецепту, параметрам глаза и посадке конкретной модели.
         </p>
       }
-      heroImage="/lenses_2.webp"
+      heroImage="/tsvetnye_linzy_dioptrii.webp"
       heroAlt="Цветные контактные линзы с диоптриями"
       breadcrumbs={breadcrumbs}
       features={[

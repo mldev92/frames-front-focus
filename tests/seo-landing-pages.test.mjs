@@ -95,6 +95,7 @@ test("corrective colored products require a non-zero sphere and use final produc
   const source = await read("../src/routes/tsvetnye-linzy-s-dioptriyami.tsx");
   assert.match(source, /parsed !== 0/);
   assert.match(source, /productHref=\{`\/catalog_s\/tsvetnye\/\$\{product\.slug\}\/`\}/);
+  assert.ok(source.includes('heroImage="/tsvetnye_linzy_dioptrii.webp"'));
 });
 
 test("catalog SEO content is limited to the two approved SPb section paths", async () => {
