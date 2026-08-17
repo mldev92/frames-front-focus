@@ -1,13 +1,32 @@
+import { articleHref, articles } from "@/data/articles";
+
 export interface SiteSearchEntry {
   title: string;
   description: string;
   href: string;
-  type: "Страница" | "Услуга" | "Категория";
+  type: "Страница" | "Услуга" | "Категория" | "Статья";
   keywords: string[];
   region?: "spb";
 }
 
-const entries: SiteSearchEntry[] = [
+const pageEntries: SiteSearchEntry[] = [
+  {
+    title: "Контроль миопии у детей",
+    description:
+      "Причины и признаки детской близорукости, оценка риска, методы контроля миопии и запись на диагностику.",
+    href: "/stellest-katalog-s-linzami/",
+    type: "Страница",
+    keywords: [
+      "миопия у детей",
+      "близорукость у детей",
+      "детская миопия",
+      "детская близорукость",
+      "контроль миопии",
+      "лечение миопии",
+      "stellest",
+      "misight",
+    ],
+  },
   {
     title: "Биометрия глаза",
     description: "Измерение параметров глаза, подготовка, проведение и запись в Санкт-Петербурге.",
@@ -70,6 +89,27 @@ const entries: SiteSearchEntry[] = [
     keywords: ["мультифокальные линзы", "пресбиопия", "линзы для близи"],
   },
 ];
+
+const articleKeywords: Partial<Record<string, string[]>> = {
+  "perifocal-perifokal": [
+    "миопия у детей",
+    "близорукость у детей",
+    "детская миопия",
+    "детская близорукость",
+    "лечение миопии",
+    "контроль миопии",
+  ],
+};
+
+const articleEntries: SiteSearchEntry[] = articles.map((article) => ({
+  title: article.title,
+  description: article.excerpt,
+  href: articleHref(article),
+  type: "Статья",
+  keywords: [article.category, ...(articleKeywords[article.slug] ?? [])],
+}));
+
+const entries = [...pageEntries, ...articleEntries];
 
 function normalize(value: string) {
   return value.toLocaleLowerCase("ru-RU").replace(/ё/g, "е").trim();

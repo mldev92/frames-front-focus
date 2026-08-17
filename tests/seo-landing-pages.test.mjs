@@ -149,6 +149,16 @@ test("site search can discover the biometry landing page", async () => {
   assert.match(searchIndex, /"биометрия глаза"/);
 });
 
+test("site search includes published articles and the child-myopia information page", async () => {
+  const searchIndex = await read("../src/data/site-search.ts");
+  assert.match(searchIndex, /articles\.map/);
+  assert.match(searchIndex, /type: "Статья"/);
+  assert.match(searchIndex, /title: "Контроль миопии у детей"/);
+  assert.match(searchIndex, /href: "\/stellest-katalog-s-linzami\/"/);
+  assert.match(searchIndex, /"миопия у детей"/);
+  assert.match(searchIndex, /"perifocal-perifokal"/);
+});
+
 test("owner-approved informational topics were not reduced to the initial short draft", async () => {
   const biometry = await read("../src/routes/biometriya-glaza.tsx");
   const lenses = await read("../src/routes/linzy-spb.tsx");
