@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Eye, ShieldCheck, Stethoscope, Truck } from "lucide-react";
+import { useEffect } from "react";
 import { SeoLandingPage, type SeoFaqItem } from "@/components/pages/SeoLandingPage";
 import { breadcrumbSchema, faqSchema } from "@/lib/seo-schema";
 import { getCatalogPage } from "@/lib/api/bitrix";
 import { formatPrice } from "@/lib/store/cart";
+import { useCityStore } from "@/lib/store/city";
 
 const canonical = "https://optika100.com/linzy-spb/";
 const title = "Контактные линзы в Санкт-Петербурге — купить с доставкой | Оптика 100%";
@@ -76,6 +78,13 @@ export const Route = createFileRoute("/linzy-spb")({
 
 function LinzySpbPage() {
   const prices = Route.useLoaderData();
+  const city = useCityStore((state) => state.city);
+  const cityHydrated = useCityStore((state) => state.hydrated);
+  const setCity = useCityStore((state) => state.setCity);
+
+  useEffect(() => {
+    if (cityHydrated && city !== "spb") setCity("spb");
+  }, [city, cityHydrated, setCity]);
 
   return (
     <SeoLandingPage

@@ -112,7 +112,6 @@ const REGIONAL_REDIRECT_BOOTSTRAP = `(function(){try{
   var path=location.pathname.endsWith("/")?location.pathname:location.pathname+"/";
   var fallbacks={
     "/optika-spb/":"/contacts/",
-    "/linzy-spb/":"/catalog_n/kontaktnye_linzy_/",
     "/tsvetnye-linzy-s-dioptriyami/":"/catalog_n/kontaktnye_linzy_/tsvetnye/",
     "/biometriya-glaza/":"/kabinet-diagnostiki-nk/",
     "/kabinet-diagnostiki-spb/":"/kabinet-diagnostiki-nk/"

@@ -4,18 +4,21 @@ import test from "node:test";
 
 const read = (path) => readFile(new URL(path, import.meta.url), "utf8");
 
-test("Novokuznetsk routing replaces every SPb-only SEO destination", async () => {
+test("regional routing preserves the explicit SPb lens landing", async () => {
   const source = await read("../src/lib/city-routing.ts");
   const store = await read("../src/lib/store/city.ts");
   const root = await read("../src/routes/__root.tsx");
+  const lenses = await read("../src/routes/linzy-spb.tsx");
   const expectedMappings = [
     '["/optika-spb/", "/contacts/"]',
-    '["/linzy-spb/", "/catalog_n/kontaktnye_linzy_/"]',
     '["/tsvetnye-linzy-s-dioptriyami/", "/catalog_n/kontaktnye_linzy_/tsvetnye/"]',
     '["/biometriya-glaza/", "/kabinet-diagnostiki-nk/"]',
   ];
 
   for (const mapping of expectedMappings) assert.ok(source.includes(mapping));
+  assert.doesNotMatch(source, /\["\/linzy-spb\/?", "\/catalog_n\/kontaktnye_linzy_\/"\]/);
+  assert.doesNotMatch(root, /"\/linzy-spb\/":"\/catalog_n\/kontaktnye_linzy_\/"/);
+  assert.match(lenses, /if \(cityHydrated && city !== "spb"\) setCity\("spb"\)/);
   assert.match(source, /city === "nvk"/);
   assert.match(source, /NVK_ROUTE_FALLBACKS\.get\(href\)/);
   assert.match(store, /skipHydration: true/);

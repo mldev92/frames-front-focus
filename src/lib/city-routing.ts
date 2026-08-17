@@ -12,8 +12,6 @@ const DIAGNOSTICS_PATHS = new Set([
 const NVK_ROUTE_FALLBACKS = new Map<string, string>([
   ["/optika-spb", "/contacts/"],
   ["/optika-spb/", "/contacts/"],
-  ["/linzy-spb", "/catalog_n/kontaktnye_linzy_/"],
-  ["/linzy-spb/", "/catalog_n/kontaktnye_linzy_/"],
   ["/tsvetnye-linzy-s-dioptriyami", "/catalog_n/kontaktnye_linzy_/tsvetnye/"],
   ["/tsvetnye-linzy-s-dioptriyami/", "/catalog_n/kontaktnye_linzy_/tsvetnye/"],
   ["/biometriya-glaza", "/kabinet-diagnostiki-nk/"],
