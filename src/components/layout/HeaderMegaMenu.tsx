@@ -19,7 +19,6 @@ import {
   ShieldCheck,
   Sun,
   Truck,
-  Upload,
 } from "lucide-react";
 import { catalogHref } from "@/data/categories";
 import { EXPANDABLE_FACET_PARAMS } from "@/lib/catalog-route";
@@ -1653,13 +1652,6 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
                   Записаться в салон
                   <ArrowRight className="h-4 w-4" />
                 </button>
-                <a
-                  href={regionalMenuHref(menu.helper.secondaryHref, city)}
-                  className="inline-flex w-full items-center justify-between rounded-full border border-white/20 px-4 py-3 text-[12.5px] font-medium text-white transition-colors hover:bg-white/10"
-                >
-                  Загрузить рецепт
-                  <Upload className="h-4 w-4" />
-                </a>
               </div>
             </aside>
           </div>

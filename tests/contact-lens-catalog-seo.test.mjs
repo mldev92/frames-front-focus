@@ -62,6 +62,7 @@ test("contact-lens header filters land directly on the product grid", async () =
   const menu = await read("../src/components/layout/HeaderMegaMenu.tsx");
   assert.ok(menu.includes('category === "kontaktnye-linzy" && query ? "#catalog-products" : ""'));
   assert.ok(menu.includes('`${href}?${query}${catalogTarget}`'));
+  assert.ok(!menu.includes("Загрузить рецепт"));
 });
 
 test("catalog count is dynamic and commercial or medical guarantees are absent", async () => {
