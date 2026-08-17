@@ -6,7 +6,7 @@ export function CatalogSeoContent({ sectionPath }: { sectionPath: string }) {
 
   return (
     <section className="mx-auto max-w-7xl px-4 pb-16 pt-10 lg:px-8" aria-label="Полезная информация о категории">
-      <div className="max-w-4xl space-y-6 text-[15px] leading-7 text-foreground/85 [&_a]:text-brand [&_a]:underline-offset-4 hover:[&_a]:underline [&_h2]:font-serif [&_h2]:text-3xl [&_h3]:pt-2 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:pl-1 [&_ul]:ml-5 [&_ul]:list-disc [&_ul]:space-y-2">
+      <div className="max-w-4xl space-y-6 text-[15px] leading-7 text-foreground/85 [&_a]:text-brand [&_a]:underline-offset-4 [&_a:hover]:underline [&_h2]:font-serif [&_h2]:text-3xl [&_h3]:pt-2 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:pl-1 [&_ul]:ml-5 [&_ul]:list-disc [&_ul]:space-y-2">
         {entry.content === "colored" ? <ColoredLensesContent /> : <MultifocalLensesContent />}
       </div>
     </section>

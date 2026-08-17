@@ -104,6 +104,18 @@ test("catalog SEO content is limited to the two approved SPb section paths", asy
   assert.ok(!source.includes("catalog_n"));
 });
 
+test("SEO content underlines only the link being hovered", async () => {
+  const sources = await Promise.all([
+    read("../src/components/CatalogSeoContent.tsx"),
+    read("../src/components/ContactLensCatalogSeo.tsx"),
+    read("../src/components/pages/SeoLandingPage.tsx"),
+  ]);
+  for (const source of sources) {
+    assert.ok(source.includes("[&_a:hover]:underline"));
+    assert.ok(!source.includes("hover:[&_a]:underline"));
+  }
+});
+
 test("production sitemap policy contains only the four approved landing entries", async () => {
   const source = await read("../scripts/generate-production-manifest.mjs");
   for (const [slug] of routes) assert.ok(source.includes(`["/${slug}/"`));

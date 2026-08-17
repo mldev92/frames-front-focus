@@ -135,7 +135,7 @@ export function SeoLandingPage({
       )}
 
       <div className="mx-auto max-w-5xl px-4 py-12 lg:px-8 lg:py-16">
-        <article className="space-y-6 text-[15px] leading-7 text-foreground/85 [&_a]:text-brand [&_a]:underline-offset-4 hover:[&_a]:underline [&_h2]:pt-5 [&_h2]:font-serif [&_h2]:text-3xl [&_h2]:leading-tight [&_h3]:pt-2 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:pl-1 [&_p]:max-w-4xl [&_strong]:font-semibold [&_ul]:ml-5 [&_ul]:list-disc [&_ul]:space-y-2">
+        <article className="space-y-6 text-[15px] leading-7 text-foreground/85 [&_a]:text-brand [&_a]:underline-offset-4 [&_a:hover]:underline [&_h2]:pt-5 [&_h2]:font-serif [&_h2]:text-3xl [&_h2]:leading-tight [&_h3]:pt-2 [&_h3]:text-lg [&_h3]:font-semibold [&_li]:pl-1 [&_p]:max-w-4xl [&_strong]:font-semibold [&_ul]:ml-5 [&_ul]:list-disc [&_ul]:space-y-2">
           {children}
         </article>
 
