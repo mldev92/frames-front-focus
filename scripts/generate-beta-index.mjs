@@ -40,15 +40,42 @@ async function ensureShellStillExists() {
   }
 }
 
+async function writeRoutePage(pathname, expectedContent) {
+  const routePath = path.join(clientDir, pathname.replace(/^\/+|\/+$/g, ""), "index.html");
+  await mkdir(path.dirname(routePath), { recursive: true });
+  await writeFile(routePath, await renderPage(pathname, expectedContent), "utf8");
+}
+
 await ensureShellStillExists();
 const homepageHtml = await renderPage("/", ["Видеть мир", "Популярные модели"]);
 await writeFile(indexPath, homepageHtml, "utf8");
-const contactLensPath = path.join(clientDir, "catalog_s", "kontaktnye_linzy_", "index.html");
-await mkdir(path.dirname(contactLensPath), { recursive: true });
-const contactLensHtml = await renderPage("/catalog_s/kontaktnye_linzy_/", [
+await writeRoutePage("/catalog_s/kontaktnye_linzy_/", [
   "Контактные линзы в Санкт-Петербурге",
   "Почему линзы выбирают у нас",
   "FAQPage",
 ]);
-await writeFile(contactLensPath, contactLensHtml, "utf8");
-console.log("Generated homepage and contact-lens category HTML from SSR.");
+await writeRoutePage("/catalog_n/kontaktnye_linzy_/", [
+  "Контактные линзы",
+  "Фильтры",
+]);
+await writeRoutePage("/linzy-spb/", [
+  "Контактные линзы в Санкт-Петербурге",
+  "Какие контактные линзы можно выбрать",
+  "FAQPage",
+]);
+await writeRoutePage("/optika-spb/", [
+  "Оптика в Санкт-Петербурге",
+  "Проверка зрения и подбор коррекции",
+  "FAQPage",
+]);
+await writeRoutePage("/tsvetnye-linzy-s-dioptriyami/", [
+  "Цветные линзы с диоптриями",
+  "Почему нужен отдельный подбор",
+  "FAQPage",
+]);
+await writeRoutePage("/biometriya-glaza/", [
+  "Биометрия глаза",
+  "Как проходит биометрия",
+  "FAQPage",
+]);
+console.log("Generated homepage, contact-lens category, and SEO landing HTML from SSR.");

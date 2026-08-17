@@ -121,8 +121,8 @@ test("beta and production builds include the contact-lens category prerender con
   const beta = await read("../scripts/generate-beta-index.mjs");
   const manifest = await read("../scripts/generate-production-manifest.mjs");
   const validator = await read("../scripts/validate-production-build.mjs");
-  assert.ok(beta.includes('"catalog_s", "kontaktnye_linzy_", "index.html"'));
-  assert.ok(beta.includes('renderPage("/catalog_s/kontaktnye_linzy_/"'));
+  assert.ok(beta.includes('writeRoutePage("/catalog_s/kontaktnye_linzy_/"'));
+  assert.ok(beta.includes('writeRoutePage("/catalog_n/kontaktnye_linzy_/"'));
   assert.ok(manifest.includes('["spb", "catalog_s", "kontaktnye_linzy_"]'));
   assert.ok(validator.includes("O100_PRERENDER_ROUTES"));
 });

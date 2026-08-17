@@ -51,6 +51,14 @@ test("SEO landing routes declare approved H1 and absolute self-canonical", async
   }
 });
 
+test("beta build publishes route-specific HTML for every SEO landing", async () => {
+  const generator = await read("../scripts/generate-beta-index.mjs");
+  for (const [slug, h1] of routes) {
+    assert.ok(generator.includes(`writeRoutePage("/${slug}/"`));
+    assert.ok(generator.includes(`"${h1}"`));
+  }
+});
+
 test("SPb landing sources contain no Novokuznetsk store link", async () => {
   for (const [slug] of routes) {
     const source = await read(`../src/routes/${slug}.tsx`);
