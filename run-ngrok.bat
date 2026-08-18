@@ -1,5 +1,14 @@
 @echo off
-cd /d C:\Users\stavo\PycharmProjects\glasses\lovable_frontend_design
+rem Run from this script's own directory, wherever the repo is checked out.
+cd /d "%~dp0"
+
+where ngrok >nul 2>nul
+if errorlevel 1 (
+    echo ERROR: ngrok was not found on PATH.
+    echo Install it from https://ngrok.com/download, or add ngrok.exe to PATH.
+    pause
+    exit /b 1
+)
 
 echo ============================================
 echo   frames-front-focus  |  port 8080
@@ -19,7 +28,7 @@ echo Vite is up.
 echo.
 
 echo [2/2] Starting ngrok tunnel...
-start "frames-front-focus (Ngrok)" cmd /c "C:\Users\stavo\PycharmProjects\Morse\johnasmessieai_11labs_outbound_calls\ngrok.exe http 8080"
+start "frames-front-focus (Ngrok)" cmd /c "ngrok http 8080"
 
 timeout /t 4 /nobreak >nul
 for /f "tokens=*" %%a in ('curl -s http://localhost:4040/api/tunnels 2^>nul') do set "TUNNEL_JSON=%%a"
