@@ -7,6 +7,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "content:localize": "node scripts/localize-blog-assets.mjs",
+    "photo:pipeline": "node scripts/frame-photo-pipeline.mjs",
     "build:beta": "npm run content:localize && vite build --config vite.config.beta.ts && node scripts/generate-beta-index.mjs",
     "manifest:production": "node scripts/generate-production-manifest.mjs",
     "content:production": "node scripts/import-blog-articles.mjs",
