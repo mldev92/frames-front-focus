@@ -7,7 +7,7 @@ export interface LensIndexRecommendation {
   odSphericalEquivalent: number;
   osSphericalEquivalent: number;
   governingAbsSphericalEquivalent: number;
-  index: "1.50" | "1.60" | "1.67" | "1.74";
+  index: "1.50" | "1.60" | "1.67";
 }
 
 function parsePrescriptionValue(value: string): number | null {
@@ -39,14 +39,16 @@ export function getRecommendedLensIndex(
     Math.abs(osSphericalEquivalent),
   );
 
-  // TZ 2.1 scale: 0.00-1.75 -> 1.50; 2.00-3.75 -> 1.60; 4.00-7.50 -> 1.67; >=8.00 -> 1.74.
-  // The spec patches its own gaps upward: 1.76-1.99 -> 1.60 and 3.76-3.99 -> 1.67.
-  // 7.51-7.99 is left undefined by the spec; kept at 1.67 pending the owner's answer.
+  // TZ 2.1 publishes: 0.00-1.75 -> 1.50; 2.00-3.75 -> 1.60; 4.00-7.50 -> 1.67;
+  // >=8.00 -> 1.74, patching its own gaps upward (1.76-1.99, 3.76-3.99).
+  //
+  // Owner decision 2026-08-22: 1.74 is stocked in only some lens categories, so
+  // it is excluded from recommendations entirely -- everything from 3.76 upward
+  // recommends 1.67. This also settles the 7.51-7.99 band the TZ left undefined.
   let index: LensIndexRecommendation["index"];
   if (governingAbsSphericalEquivalent <= 1.75) index = "1.50";
   else if (governingAbsSphericalEquivalent <= 3.75) index = "1.60";
-  else if (governingAbsSphericalEquivalent < 8) index = "1.67";
-  else index = "1.74";
+  else index = "1.67";
 
   return {
     odSphericalEquivalent,
