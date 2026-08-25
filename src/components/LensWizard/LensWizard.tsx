@@ -5,33 +5,43 @@ import { formatPrice } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
 import {
   BRANDS,
-  COATING_PACKAGES,
   CONSULTATION,
-  LENS_FINISHES,
+  DESIGNS,
+  LENS_TYPES,
   PHOTOCHROMIC_COLORS,
-  PRIORITIES,
+  PHOTOCHROMIC_TECHS,
   PURPOSES,
+  SUN_VARIANTS,
+  THICKNESSES,
   type BrandOption,
-  type CoatingPackageOption,
-  type LensFinishOption,
+  type DesignOption,
+  type LensTypeOption,
   type PhotochromicColorId,
-  type PriorityOption,
+  type PhotochromicTechOption,
   type PurposeOption,
+  type SunVariantOption,
+  type ThicknessOption,
 } from "./data";
-import { getRecommendedLensIndex } from "./logic";
+import { getRecommendedLensIndex, type LensIndexRecommendation } from "./logic";
 import { LensRequestForm } from "./LensRequestForm";
 
 type Eye = { sph: string; cyl: string; axi: string; add: string };
 const emptyEye: Eye = { sph: "", cyl: "", axi: "", add: "" };
 
-type StepId = 1 | 2 | 3 | 4 | 5 | 6;
-const STEPS: { id: StepId; label: string; sub?: string }[] = [
+/**
+ * Step order mirrors the customer's reference wizard: Назначение → Рецепт →
+ * Линзы → Толщина → Дизайн → Бренд → Результаты (handoff §1, 2026-08-22).
+ */
+type StepId = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+const LAST_STEP: StepId = 7;
+const STEPS: { id: StepId; label: string }[] = [
   { id: 1, label: "Назначение" },
   { id: 2, label: "Рецепт" },
-  { id: 3, label: "Что важнее" },
-  { id: 4, label: "Затемнение и защита" },
-  { id: 5, label: "Бренд" },
-  { id: 6, label: "Результаты" },
+  { id: 3, label: "Линзы" },
+  { id: 4, label: "Толщина" },
+  { id: 5, label: "Дизайн" },
+  { id: 6, label: "Бренд" },
+  { id: 7, label: "Результаты" },
 ];
 
 type RxMode = "has" | "none" | null;
@@ -57,12 +67,29 @@ export function LensWizard({
   const [pdNear, setPdNear] = useState("");
   const [twoPd, setTwoPd] = useState(false);
   const [rxMode, setRxMode] = useState<RxMode>(null);
-  const [priorities, setPriorities] = useState<PriorityOption[]>([]);
-  const [lensFinish, setLensFinish] = useState<LensFinishOption | null>(null);
+  const [lensType, setLensType] = useState<LensTypeOption | null>(null);
+  const [photochromicTech, setPhotochromicTech] = useState<PhotochromicTechOption | null>(null);
   const [photochromicColor, setPhotochromicColor] = useState<PhotochromicColorId | null>(null);
-  const [coatingPackage, setCoatingPackage] = useState<CoatingPackageOption | null>(null);
+  const [sunVariant, setSunVariant] = useState<SunVariantOption | null>(null);
+  const [thickness, setThickness] = useState<ThicknessOption | null>(null);
+  // Whether the customer picked the thickness themselves. While false, the
+  // recommendation from the prescription may keep (re)selecting the card.
+  const [thicknessTouched, setThicknessTouched] = useState(false);
+  const [design, setDesign] = useState<DesignOption | null>(null);
   const [brand, setBrand] = useState<BrandOption | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const indexRecommendation = useMemo(
+    () => (rxMode === "has" ? getRecommendedLensIndex(od, os) : null),
+    [rxMode, od, os],
+  );
+  const recommendedThickness = useMemo(
+    () =>
+      indexRecommendation
+        ? THICKNESSES.find((option) => option.index === indexRecommendation.index) ?? null
+        : null,
+    [indexRecommendation],
+  );
 
   useEffect(() => {
     if (open) {
@@ -79,7 +106,17 @@ export function LensWizard({
 
   if (!open) return null;
 
-  const goNext = () => setStep((s) => (s < 6 ? ((s + 1) as StepId) : s));
+  const goNext = () =>
+    setStep((s) => {
+      const next = s < LAST_STEP ? ((s + 1) as StepId) : s;
+      // Entering «Толщина»: preselect the computed index unless the customer
+      // already made their own choice (handoff §1 — the recommendation is kept
+      // as a preselection the customer may override).
+      if (next === 4 && !thicknessTouched && recommendedThickness) {
+        setThickness(recommendedThickness);
+      }
+      return next;
+    });
   const goBack = () => setStep((s) => (s > 1 ? ((s - 1) as StepId) : s));
 
   const resetWizard = () => {
@@ -91,10 +128,13 @@ export function LensWizard({
     setPdNear("");
     setTwoPd(false);
     setRxMode(null);
-    setPriorities([]);
-    setLensFinish(null);
+    setLensType(null);
+    setPhotochromicTech(null);
     setPhotochromicColor(null);
-    setCoatingPackage(null);
+    setSunVariant(null);
+    setThickness(null);
+    setThicknessTouched(false);
+    setDesign(null);
     setBrand(null);
   };
 
@@ -124,16 +164,18 @@ export function LensWizard({
         return eyeIsComplete(od) && eyeIsComplete(os) && pdIsComplete && addIsComplete;
       }
       case 3:
-        return priorities.length > 0;
-      case 4:
         return (
-          !!lensFinish &&
-          !!coatingPackage &&
-          (lensFinish.id !== "photochromic" || !!photochromicColor)
+          !!lensType &&
+          (lensType.id !== "photochromic" || !!photochromicTech) &&
+          (lensType.id !== "sun" || !!sunVariant)
         );
+      case 4:
+        return !!thickness;
       case 5:
-        return !!brand;
+        return !!design;
       case 6:
+        return !!brand;
+      case 7:
         return true;
       default:
         return false;
@@ -180,7 +222,9 @@ export function LensWizard({
             })}
           </nav>
           <div className="ml-auto flex items-center gap-3 md:hidden">
-            <span className="text-xs text-muted-foreground">Шаг {step}/6</span>
+            <span className="text-xs text-muted-foreground">
+              Шаг {step}/{LAST_STEP}
+            </span>
           </div>
           <button
             onClick={closeWizard}
@@ -275,10 +319,13 @@ export function LensWizard({
                   setOs(emptyEye);
                   setPd("");
                   setPdNear("");
-                  setPriorities([]);
-                  setLensFinish(null);
+                  setLensType(null);
+                  setPhotochromicTech(null);
                   setPhotochromicColor(null);
-                  setCoatingPackage(null);
+                  setSunVariant(null);
+                  setThickness(null);
+                  setThicknessTouched(false);
+                  setDesign(null);
                   setBrand(null);
                 }}
               />
@@ -301,32 +348,38 @@ export function LensWizard({
               />
             )}
             {step === 3 && (
-              <StepPriorities
-                value={priorities}
-                onChange={(option) =>
-                  setPriorities((current) =>
-                    current.some((item) => item.id === option.id)
-                      ? current.filter((item) => item.id !== option.id)
-                      : [...current, option],
-                  )
-                }
+              <StepLensType
+                lensType={lensType}
+                setLensType={(option) => {
+                  setLensType(option);
+                  if (option.id !== "photochromic") {
+                    setPhotochromicTech(null);
+                    setPhotochromicColor(null);
+                  }
+                  if (option.id !== "sun") setSunVariant(null);
+                }}
+                photochromicTech={photochromicTech}
+                setPhotochromicTech={setPhotochromicTech}
+                photochromicColor={photochromicColor}
+                setPhotochromicColor={setPhotochromicColor}
+                sunVariant={sunVariant}
+                setSunVariant={setSunVariant}
               />
             )}
             {step === 4 && (
-              <StepProtection
-                finish={lensFinish}
-                setFinish={(option) => {
-                  setLensFinish(option);
-                  if (option.id !== "photochromic") setPhotochromicColor(null);
+              <StepThickness
+                value={thickness}
+                onChange={(option) => {
+                  setThickness(option);
+                  setThicknessTouched(true);
                 }}
-                photochromicColor={photochromicColor}
-                setPhotochromicColor={setPhotochromicColor}
-                coatingPackage={coatingPackage}
-                setCoatingPackage={setCoatingPackage}
+                recommendation={indexRecommendation}
+                recommendedThickness={recommendedThickness}
               />
             )}
-            {step === 5 && <StepBrand value={brand} onChange={setBrand} />}
-            {step === 6 && (
+            {step === 5 && <StepDesign value={design} onChange={setDesign} purpose={purpose} />}
+            {step === 6 && <StepBrand value={brand} onChange={setBrand} />}
+            {step === 7 && (
               <StepResults
                 frame={frame}
                 selectedColor={selectedColor}
@@ -337,11 +390,15 @@ export function LensWizard({
                 pd={pd}
                 pdNear={pdNear}
                 twoPd={twoPd}
-                priorities={priorities}
-                lensFinish={lensFinish}
+                lensType={lensType}
+                photochromicTech={photochromicTech}
                 photochromicColor={photochromicColor}
-                coatingPackage={coatingPackage}
+                sunVariant={sunVariant}
+                thickness={thickness}
+                recommendedThickness={recommendedThickness}
+                design={design}
                 brand={brand}
+                indexRecommendation={indexRecommendation}
               />
             )}
           </main>
@@ -358,7 +415,7 @@ export function LensWizard({
               Стоимость линз — после проверки подбора
             </div>
           </div>
-          {step < 6 ? (
+          {step < LAST_STEP ? (
             <button
               onClick={goNext}
               disabled={!canProceed}
@@ -395,8 +452,6 @@ function OptionCard({
   active,
   title,
   description,
-  count,
-  fromPrice,
   warning,
   badge,
   icon,
@@ -406,8 +461,6 @@ function OptionCard({
   active: boolean;
   title: string;
   description?: string;
-  count?: number;
-  fromPrice?: number;
   warning?: string;
   badge?: string;
   icon?: React.ReactNode;
@@ -425,10 +478,10 @@ function OptionCard({
       )}
     >
       <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <h3 className="font-serif text-lg">{title}</h3>
           {badge && (
-            <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[10px] uppercase tracking-wider">
+            <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-brand">
               {badge}
             </span>
           )}
@@ -440,20 +493,6 @@ function OptionCard({
           </p>
         )}
       </div>
-      {(count !== undefined || fromPrice !== undefined) && (
-        <div className="hidden shrink-0 flex-col items-end gap-1.5 text-right sm:flex">
-          {count !== undefined && (
-            <span className="rounded-md bg-surface px-2.5 py-1 text-xs text-muted-foreground">
-              {count.toLocaleString("ru-RU")} линз
-            </span>
-          )}
-          {fromPrice !== undefined && fromPrice > 0 && (
-            <span className="rounded-md bg-surface px-2.5 py-1 text-xs text-muted-foreground">
-              от {fromPrice.toLocaleString("ru-RU")} ₽
-            </span>
-          )}
-        </div>
-      )}
       {rightSlot && <div className="shrink-0">{rightSlot}</div>}
       {icon && (
         <div
@@ -789,12 +828,6 @@ function StepRx({
             </div>
           )}
         </div>
-        {purpose?.id === "myopia-control" && (
-          <p className="text-xs leading-relaxed text-muted-foreground">
-            Для ZEISS MyoCare/MyoCare S потребуются именно монокулярные PD и дополнительные
-            параметры посадки оправы.
-          </p>
-        )}
       </div>
 
       <div className="mt-8">
@@ -804,92 +837,65 @@ function StepRx({
   );
 }
 
-function StepPriorities({
-  value,
-  onChange,
-}: {
-  value: PriorityOption[];
-  onChange: (v: PriorityOption) => void;
-}) {
-  return (
-    <div>
-      <StepHeader
-        title="Что для вас важнее?"
-        subtitle="Можно выбрать несколько приоритетов. Они будут использоваться для сортировки совместимых линз."
-      />
-      <div className="space-y-3">
-        {PRIORITIES.map((option) => {
-          const active = value.some((item) => item.id === option.id);
-          const Icon = option.icon;
-          return (
-            <OptionCard
-              key={option.id}
-              active={active}
-              title={option.title}
-              description={option.description}
-              icon={<Icon className="h-7 w-7" />}
-              rightSlot={
-                <span
-                  className={cn(
-                    "flex h-6 w-6 items-center justify-center rounded-full border",
-                    active ? "border-brand bg-brand text-brand-foreground" : "border-border",
-                  )}
-                >
-                  {active && <Check className="h-3.5 w-3.5" />}
-                </span>
-              }
-              onClick={() => onChange(option)}
-            />
-          );
-        })}
-        <ConsultationCard />
-      </div>
-    </div>
-  );
-}
-
-function StepProtection({
-  finish,
-  setFinish,
+function StepLensType({
+  lensType,
+  setLensType,
+  photochromicTech,
+  setPhotochromicTech,
   photochromicColor,
   setPhotochromicColor,
-  coatingPackage,
-  setCoatingPackage,
+  sunVariant,
+  setSunVariant,
 }: {
-  finish: LensFinishOption | null;
-  setFinish: (v: LensFinishOption) => void;
+  lensType: LensTypeOption | null;
+  setLensType: (v: LensTypeOption) => void;
+  photochromicTech: PhotochromicTechOption | null;
+  setPhotochromicTech: (v: PhotochromicTechOption) => void;
   photochromicColor: PhotochromicColorId | null;
   setPhotochromicColor: (v: PhotochromicColorId) => void;
-  coatingPackage: CoatingPackageOption | null;
-  setCoatingPackage: (v: CoatingPackageOption) => void;
+  sunVariant: SunVariantOption | null;
+  setSunVariant: (v: SunVariantOption) => void;
 }) {
   return (
     <div>
       <StepHeader
-        title="Затемнение и защита"
-        subtitle="Покажем только сочетания, доступные для конкретной линзы и бренда."
+        title="Какие линзы вам нужны?"
+        subtitle="Прозрачные, фотохромные или солнцезащитные. Доступность проверяется по конкретной позиции прайса."
       />
-
-      <h2 className="mb-3 font-serif text-xl">Тип линзы</h2>
       <div className="space-y-3">
-        {LENS_FINISHES.map((option) => (
+        {LENS_TYPES.map((option) => (
           <OptionCard
             key={option.id}
-            active={finish?.id === option.id}
+            active={lensType?.id === option.id}
             title={option.title}
             description={option.description}
-            onClick={() => setFinish(option)}
+            onClick={() => setLensType(option)}
           />
         ))}
       </div>
 
-      {finish?.id === "photochromic" && (
+      {lensType?.id === "photochromic" && (
         <section className="mt-7 rounded-xl border border-border p-5">
-          <h2 className="font-serif text-xl">Цвет фотохрома</h2>
+          <h2 className="font-serif text-xl">Технология фотохрома</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Доступность цвета будет проверяться по конкретной позиции прайса.
+            Выберите семейство светоадаптивных линз.
           </p>
-          <div className="mt-4 flex flex-wrap gap-3">
+          <div className="mt-4 space-y-3">
+            {PHOTOCHROMIC_TECHS.map((tech) => (
+              <OptionCard
+                key={tech.id}
+                active={photochromicTech?.id === tech.id}
+                title={tech.title}
+                description={tech.description}
+                onClick={() => setPhotochromicTech(tech)}
+              />
+            ))}
+          </div>
+          <h3 className="mt-6 font-medium">Цвет затемнения</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Необязательно — доступность цвета проверит специалист.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-3">
             {PHOTOCHROMIC_COLORS.map((color) => (
               <button
                 key={color.id}
@@ -911,15 +917,107 @@ function StepProtection({
         </section>
       )}
 
-      <h2 className="mb-3 mt-8 font-serif text-xl">Пакет покрытия</h2>
+      {lensType?.id === "sun" && (
+        <section className="mt-7 rounded-xl border border-border p-5">
+          <h2 className="font-serif text-xl">Вариант затемнения</h2>
+          <div className="mt-4 space-y-3">
+            {SUN_VARIANTS.map((variant) => (
+              <OptionCard
+                key={variant.id}
+                active={sunVariant?.id === variant.id}
+                title={variant.title}
+                description={variant.description}
+                onClick={() => setSunVariant(variant)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      <div className="mt-8">
+        <ConsultationCard />
+      </div>
+    </div>
+  );
+}
+
+function StepThickness({
+  value,
+  onChange,
+  recommendation,
+  recommendedThickness,
+}: {
+  value: ThicknessOption | null;
+  onChange: (v: ThicknessOption) => void;
+  recommendation: LensIndexRecommendation | null;
+  recommendedThickness: ThicknessOption | null;
+}) {
+  return (
+    <div>
+      <StepHeader
+        title="Толщина и материал линз"
+        subtitle="Чем выше индекс, тем тоньше и легче линза при том же рецепте."
+      />
+      {recommendation && recommendedThickness && (
+        <div className="mb-5 flex gap-3 rounded-xl border border-brand/20 bg-brand/5 p-4 text-sm">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+          <p>
+            По вашему рецепту (сфероэквивалент до{" "}
+            {recommendation.governingAbsSphericalEquivalent.toFixed(2).replace(".", ",")}) мы
+            рекомендуем индекс {recommendation.index}. Вы можете выбрать другой вариант — специалист
+            проверит совместимость.
+          </p>
+        </div>
+      )}
       <div className="space-y-3">
-        {COATING_PACKAGES.map((option) => (
+        {THICKNESSES.map((option) => (
           <OptionCard
             key={option.id}
-            active={coatingPackage?.id === option.id}
+            active={value?.id === option.id}
             title={option.title}
             description={option.description}
-            onClick={() => setCoatingPackage(option)}
+            badge={
+              recommendedThickness?.id === option.id ? "Рекомендуем по вашему рецепту" : undefined
+            }
+            onClick={() => onChange(option)}
+          />
+        ))}
+        <ConsultationCard />
+      </div>
+    </div>
+  );
+}
+
+function StepDesign({
+  value,
+  onChange,
+  purpose,
+}: {
+  value: DesignOption | null;
+  onChange: (v: DesignOption) => void;
+  purpose: PurposeOption | null;
+}) {
+  const multifocal = purpose?.id === "multifocal";
+  return (
+    <div>
+      <StepHeader
+        title="Дизайн линз"
+        subtitle="Дизайн определяет, как распределены зоны чёткого зрения по поверхности линзы."
+      />
+      <div className="space-y-3">
+        {DESIGNS.map((option) => (
+          <OptionCard
+            key={option.id}
+            active={value?.id === option.id}
+            title={option.title}
+            description={option.description}
+            warning={option.warning}
+            badge={
+              multifocal && (option.id === "progressive" || option.id === "office")
+                ? "Для дали и близи"
+                : undefined
+            }
+            onClick={() => onChange(option)}
           />
         ))}
         <ConsultationCard />
@@ -967,11 +1065,15 @@ function StepResults({
   pd,
   pdNear,
   twoPd,
-  priorities,
-  lensFinish,
+  lensType,
+  photochromicTech,
   photochromicColor,
-  coatingPackage,
+  sunVariant,
+  thickness,
+  recommendedThickness,
+  design,
   brand,
+  indexRecommendation,
 }: {
   frame: Product;
   selectedColor?: string;
@@ -982,17 +1084,33 @@ function StepResults({
   pd: string;
   pdNear: string;
   twoPd: boolean;
-  priorities: PriorityOption[];
-  lensFinish: LensFinishOption | null;
+  lensType: LensTypeOption | null;
+  photochromicTech: PhotochromicTechOption | null;
   photochromicColor: PhotochromicColorId | null;
-  coatingPackage: CoatingPackageOption | null;
+  sunVariant: SunVariantOption | null;
+  thickness: ThicknessOption | null;
+  recommendedThickness: ThicknessOption | null;
+  design: DesignOption | null;
   brand: BrandOption | null;
+  indexRecommendation: LensIndexRecommendation | null;
 }) {
   const colorTitle = PHOTOCHROMIC_COLORS.find((color) => color.id === photochromicColor)?.title;
-  const indexRecommendation =
-    rxMode === "has" ? getRecommendedLensIndex(od, os) : null;
   const formatSphericalEquivalent = (value: number) =>
     `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
+
+  const lensTypeSummary = lensType
+    ? [
+        lensType.title,
+        lensType.id === "photochromic" ? photochromicTech?.title : undefined,
+        lensType.id === "photochromic" ? colorTitle : undefined,
+        lensType.id === "sun" ? sunVariant?.title : undefined,
+      ]
+        .filter(Boolean)
+        .join(" · ")
+    : "";
+  const thicknessIsRecommended =
+    !!thickness && !!recommendedThickness && thickness.id === recommendedThickness.id;
+
   const requestDraft = {
     frame: {
       id: frame.id,
@@ -1005,10 +1123,11 @@ function StepResults({
     selection: {
       purpose: purpose?.title ?? "",
       rxMode: rxMode === "has" ? ("has" as const) : ("none" as const),
-      priorities: priorities.map((item) => item.title),
-      finish: lensFinish?.title ?? "",
+      finish: lensTypeSummary,
       photochromicColor: colorTitle,
-      coating: coatingPackage?.title ?? "",
+      thickness: thickness?.title ?? "",
+      thicknessIsRecommended,
+      design: design?.title ?? "",
       brand: brand?.title ?? "",
     },
     prescription:
@@ -1040,6 +1159,7 @@ function StepResults({
           }
         : null,
   };
+
   const rows = [
     ["Назначение", purpose?.title],
     ["Рецепт", rxMode === "has" ? "Введён" : "Нет — предварительный подбор"],
@@ -1049,16 +1169,14 @@ function StepResults({
         ? `OD ${formatSphericalEquivalent(indexRecommendation.odSphericalEquivalent)} · OS ${formatSphericalEquivalent(indexRecommendation.osSphericalEquivalent)}`
         : null,
     ],
+    ["Линзы", lensTypeSummary || null],
     [
-      "Индекс для обеих линз",
-      indexRecommendation
-        ? `${indexRecommendation.index} — по глазу с большей нагрузкой`
+      "Толщина",
+      thickness
+        ? thickness.title + (thicknessIsRecommended ? " — рекомендовано по рецепту" : "")
         : null,
     ],
-    ["Приоритеты", priorities.map((item) => item.title).join(", ")],
-    ["Тип линзы", lensFinish?.title],
-    ["Цвет фотохрома", colorTitle],
-    ["Покрытие", coatingPackage?.title],
+    ["Дизайн", design?.title],
     ["Бренд", brand?.title],
   ];
 
@@ -1066,7 +1184,7 @@ function StepResults({
     <div>
       <StepHeader
         title="Предварительный подбор сформирован"
-        subtitle="Рекомендуемый индекс рассчитан по рецепту. Точные модели и ориентировочные цены появятся после подключения актуальных прайсов."
+        subtitle="Точные модели и ориентировочные цены появятся после подключения актуальных прайсов."
       />
 
       <section className="rounded-xl border border-border bg-surface/50 p-5">
@@ -1086,14 +1204,14 @@ function StepResults({
       <div className="mt-6 grid gap-3 md:grid-cols-3">
         {[
           ["Лучший по цене", "Минимальная цена среди совместимых позиций"],
-          ["Оптимальный выбор", "Баланс ваших приоритетов, цены и покрытия"],
+          ["Оптимальный выбор", "Баланс цены, покрытия и ваших условий"],
           ["Премиум", "Верхние линейки и индивидуальные дизайны"],
         ].map(([title, description]) => (
           <article key={title} className="rounded-xl border border-dashed border-border p-5">
             <h3 className="font-serif text-lg">{title}</h3>
             <p className="mt-2 text-sm text-muted-foreground">{description}</p>
             <div className="mt-4 text-xs font-medium uppercase tracking-wider text-brand">
-              Требуется актуальный прайс
+              Появится после подключения прайсов
             </div>
           </article>
         ))}
@@ -1102,9 +1220,8 @@ function StepResults({
       <div className="mt-6 flex gap-3 rounded-xl border border-brand/20 bg-brand/5 p-4 text-sm">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
         <p>
-          Индекс для пары рассчитывается по большему значению OD/OS и применяется к обеим линзам.
-          Будущая цена будет ориентировочной: она зависит от актуального курса ЦБ + 2% и настроенной
-          наценки. Специалист подтвердит итоговую стоимость перед заказом.
+          Рекомендуемый индекс рассчитывается по глазу с большей нагрузкой и применяется к обеим
+          линзам. Итоговую модель и стоимость подтвердит специалист перед заказом.
         </p>
       </div>
 

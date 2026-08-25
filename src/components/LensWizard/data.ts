@@ -1,27 +1,29 @@
 import {
   BookOpen,
   Car,
-  CircleDollarSign,
   Eye,
-  Feather,
-  Glasses,
   Layers,
   Monitor,
   Phone,
-  ShieldCheck,
   Sparkles,
-  WandSparkles,
+  Sun,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+/**
+ * Step structure and wording follow the customer's reference wizard
+ * (masterglasses.ru lens quiz), which the owner chose over ТЗ §3 where the two
+ * conflict — decision of 2026-08-22, recorded in LENS_SELECTOR_HANDOFF.md §1.
+ */
+
 export type PurposeId =
   | "distance"
-  | "reading"
-  | "computer"
+  | "near"
   | "multifocal"
   | "driving"
-  | "myopia-control"
-  | "everyday";
+  | "computer"
+  | "image"
+  | "sun-protection";
 
 export interface PurposeOption {
   id: PurposeId;
@@ -35,45 +37,45 @@ export const PURPOSES: PurposeOption[] = [
   {
     id: "distance",
     title: "Для дали",
-    subtitle: "Для повседневного зрения вдаль",
+    subtitle: "Ежедневные очки для дали — вождение, прогулки, просмотр TV",
     icon: Eye,
   },
   {
-    id: "reading",
-    title: "Для чтения",
-    subtitle: "Для работы вблизи и мелких деталей",
+    id: "near",
+    title: "Для близи",
+    subtitle: "Для чтения и работы вблизи",
     icon: BookOpen,
   },
   {
-    id: "computer",
-    title: "Для компьютера и гаджетов",
-    subtitle: "Для экранов и комфортной работы на близком и среднем расстоянии",
-    icon: Monitor,
-  },
-  {
     id: "multifocal",
-    title: "Для дали и близи",
-    subtitle: "Одна пара очков для нескольких расстояний",
+    title: "Мультифокальные",
+    subtitle: "Одна пара очков для всех расстояний",
     icon: Layers,
     requiresAdd: true,
   },
   {
     id: "driving",
     title: "Для вождения",
-    subtitle: "Приоритет контраста и защиты от бликов",
+    subtitle: "Улучшают контраст и защищают от бликов и засветов днём и ночью",
     icon: Car,
   },
   {
-    id: "myopia-control",
-    title: "Контроль миопии у ребёнка",
-    subtitle: "Специальная ветка с обязательной проверкой рецепта и оправы",
-    icon: Glasses,
+    id: "computer",
+    title: "Компьютерные",
+    subtitle: "Для работы с экранами и цифровыми устройствами",
+    icon: Monitor,
   },
   {
-    id: "everyday",
-    title: "Универсальные на каждый день",
-    subtitle: "Практичный вариант для постоянного ношения",
+    id: "image",
+    title: "Имиджевые",
+    subtitle: "Без диоптрий и рецепта — оправа как модный аксессуар",
     icon: Sparkles,
+  },
+  {
+    id: "sun-protection",
+    title: "Для защиты от солнца",
+    subtitle: "Фотохромные или тонированные, с защитой от УФ-лучей",
+    icon: Sun,
   },
 ];
 
@@ -83,87 +85,96 @@ export const CONSULTATION = {
   icon: Phone,
 };
 
-export type PriorityId =
-  | "thinner"
-  | "lighter"
-  | "screens"
-  | "driving"
-  | "comfort"
-  | "budget"
-  | "premium";
+export type LensTypeId = "clear" | "photochromic" | "sun";
 
-export interface PriorityOption {
-  id: PriorityId;
-  title: string;
-  description: string;
-  icon: LucideIcon;
-}
-
-export const PRIORITIES: PriorityOption[] = [
-  {
-    id: "thinner",
-    title: "Хочу потоньше",
-    description: "Учитывать рекомендуемый или более высокий индекс",
-    icon: WandSparkles,
-  },
-  {
-    id: "lighter",
-    title: "Хочу легче",
-    description: "Отдавать приоритет лёгким материалам",
-    icon: Feather,
-  },
-  {
-    id: "screens",
-    title: "Часто работаю за экраном",
-    description: "Учитывать цифровые дизайны и совместимую защиту",
-    icon: Monitor,
-  },
-  {
-    id: "driving",
-    title: "Много вожу автомобиль",
-    description: "Учитывать водительские дизайны и защиту от бликов",
-    icon: Car,
-  },
-  {
-    id: "comfort",
-    title: "Максимальная прозрачность и комфорт",
-    description: "Приоритет индивидуальных дизайнов и премиальных покрытий",
-    icon: ShieldCheck,
-  },
-  {
-    id: "budget",
-    title: "Бюджетный вариант",
-    description: "Сначала показывать доступные совместимые решения",
-    icon: CircleDollarSign,
-  },
-  {
-    id: "premium",
-    title: "Премиум",
-    description: "Приоритет верхних линеек и индивидуальных дизайнов",
-    icon: Sparkles,
-  },
-];
-
-export type LensFinishId = "clear" | "photochromic" | "tinted" | "polarized";
-
-export interface LensFinishOption {
-  id: LensFinishId;
+export interface LensTypeOption {
+  id: LensTypeId;
   title: string;
   description: string;
 }
 
-export const LENS_FINISHES: LensFinishOption[] = [
-  { id: "clear", title: "Прозрачные", description: "Без постоянного затемнения" },
+export const LENS_TYPES: LensTypeOption[] = [
+  {
+    id: "clear",
+    title: "Прозрачные",
+    description: "Линзы для повседневного использования",
+  },
   {
     id: "photochromic",
     title: "Фотохромные",
-    description: "Темнеют на улице и светлеют в помещении",
+    description: "Хамелеон. Прозрачные в помещении, тёмные на солнце",
   },
-  { id: "tinted", title: "Тонированные", description: "С постоянным затемнением" },
+  {
+    id: "sun",
+    title: "Солнечные очки",
+    description: "Тонированные, зеркальные или поляризованные",
+  },
+];
+
+export type PhotochromicTechId =
+  | "transitions-gen-s"
+  | "transitions-xtractive-ng"
+  | "xtractive-polarized"
+  | "photofusion"
+  | "photofusion-x";
+
+export interface PhotochromicTechOption {
+  id: PhotochromicTechId;
+  title: string;
+  description: string;
+}
+
+export const PHOTOCHROMIC_TECHS: PhotochromicTechOption[] = [
+  {
+    id: "transitions-gen-s",
+    title: "Transitions Gen S",
+    description: "Новое поколение Transitions: быстрое затемнение и осветление",
+  },
+  {
+    id: "transitions-xtractive-ng",
+    title: "Transitions XTRActive NG",
+    description: "Максимальное затемнение, срабатывают и за рулём",
+  },
+  {
+    id: "xtractive-polarized",
+    title: "Transitions XTRActive Polarized",
+    description: "Фотохром с поляризацией в затемнённом состоянии",
+  },
+  {
+    id: "photofusion",
+    title: "PhotoFusion",
+    description: "Светоадаптивные линзы от ZEISS",
+  },
+  {
+    id: "photofusion-x",
+    title: "PhotoFusion X",
+    description: "Флагманский фотохром ZEISS: быстрее темнеет и светлеет",
+  },
+];
+
+export type SunVariantId = "tinted" | "mirrored" | "polarized";
+
+export interface SunVariantOption {
+  id: SunVariantId;
+  title: string;
+  description: string;
+}
+
+export const SUN_VARIANTS: SunVariantOption[] = [
+  {
+    id: "tinted",
+    title: "Тонированные",
+    description: "Постоянное затемнение выбранного цвета и плотности",
+  },
+  {
+    id: "mirrored",
+    title: "Зеркальные",
+    description: "Зеркальное покрытие поверх тонировки",
+  },
   {
     id: "polarized",
-    title: "Поляризационные",
-    description: "Снижают отражённые блики при совместимом дизайне",
+    title: "Поляризованные",
+    description: "Убирают отражённые блики от воды, дороги и капота",
   },
 ];
 
@@ -175,29 +186,92 @@ export const PHOTOCHROMIC_COLORS: { id: PhotochromicColorId; title: string; swat
   { id: "green", title: "Зелёный", swatch: "#526b58" },
 ];
 
-export type CoatingPackageId = "basic" | "comfort" | "premium";
+export type ThicknessId = "1.50" | "poly-159" | "1.60" | "1.67" | "1.74" | "mineral";
 
-export interface CoatingPackageOption {
-  id: CoatingPackageId;
+export interface ThicknessOption {
+  id: ThicknessId;
   title: string;
   description: string;
+  /** The recommendation scale value this card corresponds to, if any. */
+  index?: "1.50" | "1.60" | "1.67";
 }
 
-export const COATING_PACKAGES: CoatingPackageOption[] = [
+export const THICKNESSES: ThicknessOption[] = [
   {
-    id: "basic",
-    title: "Базовое покрытие",
-    description: "Практичная защита в рамках доступных вариантов бренда",
+    id: "1.50",
+    title: "1.5 — Базовый пластик",
+    description:
+      "Стандартные полимерные линзы для слабой степени аметропии. Оптимальное сочетание цены и качества",
+    index: "1.50",
   },
   {
-    id: "comfort",
-    title: "Комфорт",
-    description: "Улучшенная прозрачность и удобство ежедневного ухода",
+    id: "poly-159",
+    title: "Поликарбонат или Trivex (1.59)",
+    description:
+      "Ударопрочные защитные линзы. Тоньше стандартного пластика до 22%, идеальны для активного образа жизни",
   },
   {
-    id: "premium",
-    title: "Премиум",
-    description: "Максимальная защита и характеристики среди совместимых покрытий",
+    id: "1.60",
+    title: "1.6 — Утончённый пластик",
+    description:
+      "Облегчённые и утончённые линзы для средней и высокой степени аметропии. Комфортны в ношении",
+    index: "1.60",
+  },
+  {
+    id: "1.67",
+    title: "1.67 — Высокий индекс",
+    description:
+      "Ультратонкие и ультралёгкие линзы для сильных рецептов. Эстетичный внешний вид при высоких диоптриях",
+    index: "1.67",
+  },
+  {
+    id: "1.74",
+    title: "1.74 — Высокий индекс",
+    description:
+      "Самые тонкие и лёгкие линзы для очень высоких диоптрий. Максимальная эстетика, чуть более долгая адаптация",
+  },
+  {
+    id: "mineral",
+    title: "Минеральные линзы",
+    description:
+      "Стеклянные линзы с отличными оптическими свойствами и устойчивостью к царапинам. Тяжелее пластика, для ободковых оправ",
+  },
+];
+
+export type DesignId = "spherical" | "aspheric" | "progressive" | "office";
+
+export interface DesignOption {
+  id: DesignId;
+  title: string;
+  description: string;
+  warning?: string;
+}
+
+export const DESIGNS: DesignOption[] = [
+  {
+    id: "spherical",
+    title: "Сферические",
+    description:
+      "Одинаковый радиус кривизны по всей поверхности. Чёткое изображение в центре линзы",
+  },
+  {
+    id: "aspheric",
+    title: "Асферические",
+    description:
+      "Переменный радиус кривизны: чёткое зрение по всему полю, тоньше и легче, не искажают пропорции глаз",
+  },
+  {
+    id: "progressive",
+    title: "Прогрессивные",
+    description:
+      "Плавный переход между ближним, средним и дальним полем зрения. Подходят для вождения",
+  },
+  {
+    id: "office",
+    title: "Офисные",
+    description:
+      "Для ближнего и среднего расстояния — чтение и работа за компьютером до 1,5 метров",
+    warning: "Не подходят для вождения",
   },
 ];
 
@@ -233,6 +307,6 @@ export const BRANDS: BrandOption[] = [
   {
     id: "synchrony",
     title: "Synchrony",
-    description: "Single Vision, Progressive, Workplace, Bifocal и доступные покрытия",
+    description: "Вторая линейка ZEISS: Single Vision, Progressive, Workplace, Bifocal",
   },
 ];

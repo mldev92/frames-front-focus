@@ -12,10 +12,15 @@ export interface LensSelectionRequestDraft {
   selection: {
     purpose: string;
     rxMode: "has" | "none";
-    priorities: string[];
+    /** The «Линзы» step: type plus its variant, e.g. "Фотохромные · Transitions Gen S". */
     finish: string;
     photochromicColor?: string;
-    coating: string;
+    /** The «Толщина» step card title. */
+    thickness: string;
+    /** True when the customer kept the index computed from the prescription. */
+    thicknessIsRecommended: boolean;
+    /** The «Дизайн» step card title. */
+    design: string;
     brand: string;
   };
   prescription: {
