@@ -23,6 +23,11 @@ import {
   type ThicknessOption,
 } from "./data";
 import { getRecommendedLensIndex, type LensIndexRecommendation } from "./logic";
+import {
+  fetchLensRecommendation,
+  type LensRecommendCard,
+  type LensRecommendResponse,
+} from "@/lib/api/lens-recommend";
 import { LensRequestForm } from "./LensRequestForm";
 
 type Eye = { sph: string; cyl: string; axi: string; add: string };
@@ -1201,21 +1206,16 @@ function StepResults({
         </dl>
       </section>
 
-      <div className="mt-6 grid gap-3 md:grid-cols-3">
-        {[
-          ["Лучший по цене", "Минимальная цена среди совместимых позиций"],
-          ["Оптимальный выбор", "Баланс цены, покрытия и ваших условий"],
-          ["Премиум", "Верхние линейки и индивидуальные дизайны"],
-        ].map(([title, description]) => (
-          <article key={title} className="rounded-xl border border-dashed border-border p-5">
-            <h3 className="font-serif text-lg">{title}</h3>
-            <p className="mt-2 text-sm text-muted-foreground">{description}</p>
-            <div className="mt-4 text-xs font-medium uppercase tracking-wider text-brand">
-              Появится после подключения прайсов
-            </div>
-          </article>
-        ))}
-      </div>
+      <LensPriceCards
+        rxMode={rxMode}
+        od={od}
+        os={os}
+        lensType={lensType}
+        photochromicTech={photochromicTech}
+        sunVariant={sunVariant}
+        thickness={thickness}
+        brand={brand}
+      />
 
       <div className="mt-6 flex gap-3 rounded-xl border border-brand/20 bg-brand/5 p-4 text-sm">
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
@@ -1226,6 +1226,238 @@ function StepResults({
       </div>
 
       <LensRequestForm draft={requestDraft} />
+    </div>
+  );
+}
+
+/* ----------------------------- Price cards ----------------------------- */
+
+/** The «Толщина» card as the endpoint's index filter; null = cannot filter. */
+function thicknessToIndex(thickness: ThicknessOption | null): string | null {
+  switch (thickness?.id) {
+    case "1.50":
+      return "1.50";
+    case "poly-159":
+      return "1.59";
+    case "1.60":
+      return "1.60";
+    case "1.67":
+      return "1.67";
+    case "1.74":
+      return "1.74";
+    default:
+      return null; // минеральные: material, not an index — the manager quotes it
+  }
+}
+
+/** Treatment keyword for the chosen photochromic tech / sun variant. */
+function tintKeyword(
+  lensType: LensTypeOption | null,
+  tech: PhotochromicTechOption | null,
+  sun: SunVariantOption | null,
+): string | undefined {
+  if (lensType?.id === "photochromic" && tech) {
+    switch (tech.id) {
+      case "transitions-gen-s":
+        return "Gen S";
+      case "transitions-xtractive-ng":
+        return "XTRActive";
+      // The supplier sheets spell it both "XTRActive" and "XRTActive", so match
+      // on the Polarized half.
+      case "xtractive-polarized":
+        return "Pola";
+      case "photofusion":
+        return "PhotoFusion";
+      case "photofusion-x":
+        return "PhotoFusion X";
+    }
+  }
+  if (lensType?.id === "sun" && sun) {
+    switch (sun.id) {
+      case "tinted":
+        return "Окрашен|тониров|Tint";
+      case "mirrored":
+        return "Mirror|зеркал";
+      case "polarized":
+        return "Pola|Xperio|поляриз";
+    }
+  }
+  return undefined;
+}
+
+const CARD_LABELS: { key: keyof LensRecommendResponse["cards"]; title: string; note: string }[] = [
+  { key: "best_price", title: "Лучший по цене", note: "Минимальная цена среди совместимых позиций" },
+  { key: "optimal", title: "Оптимальный выбор", note: "Средняя по цене совместимая позиция" },
+  { key: "premium", title: "Премиум", note: "Верхние линейки и индивидуальные дизайны" },
+];
+
+function LensPriceCards({
+  rxMode,
+  od,
+  os,
+  lensType,
+  photochromicTech,
+  sunVariant,
+  thickness,
+  brand,
+}: {
+  rxMode: RxMode;
+  od: Eye;
+  os: Eye;
+  lensType: LensTypeOption | null;
+  photochromicTech: PhotochromicTechOption | null;
+  sunVariant: SunVariantOption | null;
+  thickness: ThicknessOption | null;
+  brand: BrandOption | null;
+}) {
+  const [state, setState] = useState<
+    | { kind: "idle" | "loading" | "error" }
+    | { kind: "loaded"; data: LensRecommendResponse }
+  >({ kind: "idle" });
+
+  const index = thicknessToIndex(thickness);
+  const canQuery = rxMode === "has" && od.sph !== "" && od.cyl !== "" && os.sph !== "" && os.cyl !== "";
+
+  useEffect(() => {
+    if (!canQuery) return;
+    const controller = new AbortController();
+    setState({ kind: "loading" });
+    fetchLensRecommendation(
+      {
+        odSph: od.sph,
+        odCyl: od.cyl,
+        osSph: os.sph,
+        osCyl: os.cyl,
+        index: index ?? undefined,
+        lensType: lensType?.id,
+        tint: tintKeyword(lensType, photochromicTech, sunVariant),
+        brand: brand && brand.id !== "all" ? brand.id : undefined,
+      },
+      controller.signal,
+    )
+      .then((data) => setState({ kind: "loaded", data }))
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        console.error("[lens-recommend]", error);
+        setState({ kind: "error" });
+      });
+    return () => controller.abort();
+    // The wizard state is frozen while the results step is shown, so fetching
+    // once per mount with the values captured here is enough.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!canQuery) {
+    return (
+      <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <p>
+          Ориентировочные цены рассчитываются по рецепту. Без рецепта специалист подберёт модели и
+          назовёт стоимость после консультации — отправьте заявку ниже.
+        </p>
+      </div>
+    );
+  }
+
+  if (index === null) {
+    return (
+      <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <p>
+          Минеральные линзы рассчитываются специалистом по конкретному рецепту — отправьте заявку
+          ниже, и мы назовём точную стоимость.
+        </p>
+      </div>
+    );
+  }
+
+  if (state.kind === "loading" || state.kind === "idle") {
+    return (
+      <div className="mt-6 grid gap-3 md:grid-cols-3">
+        {CARD_LABELS.map(({ key, title }) => (
+          <article key={key} className="animate-pulse rounded-xl border border-border p-5">
+            <h3 className="font-serif text-lg">{title}</h3>
+            <div className="mt-3 h-4 w-3/4 rounded bg-surface" />
+            <div className="mt-2 h-4 w-1/2 rounded bg-surface" />
+            <div className="mt-4 h-7 w-2/5 rounded bg-surface" />
+          </article>
+        ))}
+      </div>
+    );
+  }
+
+  if (state.kind !== "loaded") {
+    return (
+      <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <p>
+          Не удалось получить ориентировочные цены. Отправьте заявку ниже — специалист рассчитает
+          стоимость и свяжется с вами.
+        </p>
+      </div>
+    );
+  }
+
+  const { data } = state;
+  const shown = CARD_LABELS.map(({ key, title, note }) => ({
+    key,
+    title,
+    note,
+    card: data.cards[key],
+  })).filter((entry): entry is typeof entry & { card: LensRecommendCard } => !!entry.card);
+
+  if (shown.length === 0) {
+    return (
+      <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <p>
+          Под выбранные условия не нашлось готовых позиций прайса. Отправьте заявку ниже —
+          специалист подберёт вариант вручную.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-6">
+      <div className="grid gap-3 md:grid-cols-3">
+        {shown.map(({ key, title, note, card }) => (
+          <article key={key} className="flex flex-col rounded-xl border border-border p-5">
+            <h3 className="font-serif text-lg">{title}</h3>
+            <div className="mt-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {card.supplier}
+            </div>
+            <div className="mt-1 text-sm font-medium">{card.line}</div>
+            {(card.coating || card.treatment) && (
+              <div className="mt-1 text-xs text-muted-foreground">
+                {[card.coating, card.treatment.replace(/\s+/g, " ")].filter(Boolean).join(" · ")}
+              </div>
+            )}
+            <div className="mt-auto pt-4">
+              {card.retailPriceRub !== null ? (
+                <>
+                  <div className="font-serif text-2xl">
+                    {formatPrice(card.retailPriceRub)}
+                  </div>
+                  <div className="text-xs text-muted-foreground">за одну линзу</div>
+                </>
+              ) : (
+                <div className="text-sm font-medium text-brand">Цена по запросу</div>
+              )}
+              {card.rxFit !== "yes" && (
+                <div className="mt-2 text-xs text-amber-700">
+                  Совместимость с рецептом проверит специалист
+                </div>
+              )}
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground">{note}</p>
+          </article>
+        ))}
+      </div>
+      <p className="mt-3 text-xs text-muted-foreground">
+        Подобрано позиций: {data.matchCount.toLocaleString("ru-RU")}. Цены ориентировочные, за одну
+        линзу; итоговую стоимость пары подтвердит специалист.
+      </p>
     </div>
   );
 }
