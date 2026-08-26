@@ -1583,8 +1583,11 @@ type ChosenOffer = {
 
 /** Flattened for the salon email — the backend reads scalars out of `selection`. */
 function formatChosenOffer(offer: ChosenOffer) {
+  // Pair first, matching what the card leads with — it is what the customer pays.
   const price =
-    offer.priceRub !== null ? `${formatPrice(offer.priceRub)} за линзу` : "цена по запросу";
+    offer.priceRub !== null
+      ? `${formatPrice(offer.priceRub * 2)} за пару (${formatPrice(offer.priceRub)} за линзу)`
+      : "цена по запросу";
   // `supplier` is a slug ("zeiss") and `line` usually already opens with the
   // brand ("ZEISS Single Vision…") — printing both gives "zeiss ZEISS …".
   const supplier = offer.supplier.toUpperCase();
@@ -1594,11 +1597,57 @@ function formatChosenOffer(offer: ChosenOffer) {
   return `${offer.tier} — ${product}, ${price}`;
 }
 
-const CARD_LABELS: { key: keyof LensRecommendResponse["cards"]; title: string; note: string }[] = [
-  { key: "best_price", title: "Лучший по цене", note: "Минимальная цена среди совместимых позиций" },
-  { key: "optimal", title: "Оптимальный выбор", note: "Средняя по цене совместимая позиция" },
-  { key: "premium", title: "Премиум", note: "Верхние линейки и индивидуальные дизайны" },
+/**
+ * The three result tiers, after the customer's reference wizard
+ * (masterglasses.ru): a named, colour-coded tier per card is what stops the
+ * three offers reading as one block of grey text.
+ *
+ * The accents are equal-lightness OKLCH (L 0.52) so they read as one deliberate
+ * ladder rather than three unrelated colours, and all clear 4.5:1 on
+ * `--background`. They are deliberately not `--brand`: brand red stays reserved
+ * for «this is your selection».
+ */
+const TIERS: {
+  key: keyof LensRecommendResponse["cards"];
+  title: string;
+  note: string;
+  accent: string;
+}[] = [
+  {
+    key: "best_price",
+    title: "Базовый вариант",
+    note: "Минимальная цена среди совместимых позиций",
+    accent: "oklch(0.52 0.12 255)",
+  },
+  {
+    key: "optimal",
+    title: "Улучшенный вариант",
+    note: "Средняя по цене совместимая позиция",
+    accent: "oklch(0.52 0.13 150)",
+  },
+  {
+    key: "premium",
+    title: "Премиум вариант",
+    note: "Верхние линейки и индивидуальные дизайны",
+    accent: "oklch(0.52 0.12 70)",
+  },
 ];
+
+/**
+ * `availability` is salon|warehouse|order (see _lens.php). The reference shows
+ * a manufacturing time here («Изготовление 3 дня»); we have no day counts in
+ * the price lists, so state the stock position instead of inventing numbers.
+ */
+function availabilityBadge(availability: string): { label: string; good: boolean } {
+  switch (availability) {
+    case "salon":
+      return { label: "Есть в салоне", good: true };
+    case "warehouse":
+      return { label: "На складе поставщика", good: true };
+    default:
+      return { label: "Под заказ — рецептурная", good: false };
+  }
+}
 
 function LensPriceCards({
   chosen,
@@ -1687,9 +1736,11 @@ function LensPriceCards({
   if (state.kind === "loading" || state.kind === "idle") {
     return (
       <div className="mt-6 grid gap-3 md:grid-cols-3">
-        {CARD_LABELS.map(({ key, title }) => (
+        {TIERS.map(({ key, title, accent }) => (
           <article key={key} className="animate-pulse rounded-xl border border-border p-5">
-            <h3 className="font-serif text-lg">{title}</h3>
+            <h3 className="font-serif text-xl" style={{ color: accent }}>
+              {title}
+            </h3>
             <div className="mt-3 h-4 w-3/4 rounded bg-surface" />
             <div className="mt-2 h-4 w-1/2 rounded bg-surface" />
             <div className="mt-4 h-7 w-2/5 rounded bg-surface" />
@@ -1712,10 +1763,11 @@ function LensPriceCards({
   }
 
   const { data } = state;
-  const shown = CARD_LABELS.map(({ key, title, note }) => ({
+  const shown = TIERS.map(({ key, title, note, accent }) => ({
     key,
     title,
     note,
+    accent,
     card: data.cards[key],
   })).filter((entry): entry is typeof entry & { card: LensRecommendCard } => !!entry.card);
 
@@ -1745,100 +1797,145 @@ function LensPriceCards({
         aria-label={`Варианты линз: ${shown.length} ${pluralOptions(shown.length)}`}
         className="mt-4 grid gap-4 md:grid-cols-3"
       >
-        {shown.map(({ key, title, note, card }) => {
+        {shown.map(({ key, title, note, accent, card }) => {
           const selected = chosen?.tier === title;
+          const stock = availabilityBadge(card.availability);
+          const product = card.line.toUpperCase().startsWith(card.supplier.toUpperCase())
+            ? card.line
+            : `${card.supplier.toUpperCase()} ${card.line}`;
           return (
-            <button
+            <article
               key={key}
-              type="button"
-              aria-pressed={selected}
-              onClick={() =>
-                onChoose(
-                  selected
-                    ? null
-                    : {
-                        tier: title,
-                        supplier: card.supplier,
-                        line: card.line,
-                        priceRub: card.retailPriceRub,
-                      },
-                )
-              }
               style={{
                 transitionDuration: "var(--duration-snap)",
                 transitionTimingFunction: "var(--ease-editorial)",
               }}
               className={cn(
-                "group relative flex scroll-mb-32 flex-col rounded-xl border p-5 text-left",
-                "transition-[border-color,background-color,box-shadow,transform]",
-                "hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0",
-                selected
-                  ? "border-brand bg-brand/5 shadow-sm"
-                  : "border-border hover:border-foreground/30",
+                "flex scroll-mb-32 flex-col rounded-xl border bg-background p-5",
+                "transition-[border-color,background-color,box-shadow]",
+                selected ? "border-brand bg-brand/5 shadow-sm" : "border-border",
               )}
             >
-              {selected && (
-                <span className="absolute right-4 top-4 grid h-6 w-6 place-items-center rounded-full bg-brand">
-                  <Check className="h-3.5 w-3.5 text-brand-foreground" strokeWidth={3} />
-                </span>
-              )}
-              <div
-                className={cn(
-                  "pr-8 text-[10px] font-semibold uppercase tracking-[0.14em]",
-                  selected ? "text-brand" : "text-muted-foreground",
-                )}
-              >
-                {title}
-              </div>
-              <div className="mt-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                {card.supplier}
-              </div>
-              <div className="mt-1 text-sm font-medium">{card.line}</div>
-              {(card.coating || card.treatment) && (
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {[card.coating, card.treatment.replace(/\s+/g, " ")].filter(Boolean).join(" · ")}
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  {/* The tier name, colour-coded — the reference's main device
+                      for keeping three offers visually apart. */}
+                  <h3 className="font-serif text-xl" style={{ color: accent }}>
+                    {title}
+                  </h3>
+                  <div className="mt-3 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                    Линза
+                  </div>
+                  <div className="mt-1 text-sm font-medium leading-snug">{product}</div>
+                  {(card.coating || card.treatment) && (
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {[card.coating, card.treatment.replace(/\s+/g, " ")]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </div>
+                  )}
                 </div>
-              )}
-              <div className="mt-auto pt-4">
+                {/* Stands in for the reference's rendered product image. */}
+                <div
+                  aria-hidden
+                  className="grid h-[72px] w-[72px] shrink-0 place-items-center rounded-lg text-white"
+                  style={{ backgroundColor: accent }}
+                >
+                  <div className="text-center leading-none">
+                    <div className="font-serif text-xl">{card.index ?? "—"}</div>
+                    <div className="mt-1 text-[9px] uppercase tracking-wider opacity-80">индекс</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4">
                 {card.retailPriceRub !== null ? (
                   <>
+                    {/* The reference leads with the price of the PAIR — which is
+                        what the customer actually pays. Per-lens stays, smaller. */}
                     <div className="font-serif text-[28px] leading-none">
-                      {formatPrice(card.retailPriceRub)}
+                      {formatPrice(card.retailPriceRub * 2)}
                     </div>
-                    <div className="mt-1 text-xs text-muted-foreground">за одну линзу</div>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      за пару линз · {formatPrice(card.retailPriceRub)} за одну
+                    </div>
                   </>
                 ) : (
                   <div className="text-sm font-medium text-brand">Цена по запросу</div>
                 )}
+              </div>
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium",
+                    stock.good
+                      ? "bg-[color-mix(in_oklch,var(--success)_14%,transparent)] text-[oklch(0.45_0.13_150)]"
+                      : "bg-amber-50 text-amber-800",
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "h-1.5 w-1.5 rounded-full",
+                      stock.good ? "bg-[var(--success)]" : "bg-amber-500",
+                    )}
+                  />
+                  {stock.label}
+                </span>
                 {card.rxFit !== "yes" && (
-                  <div className="mt-2 text-xs text-amber-700">
-                    Совместимость с рецептом проверит специалист
-                  </div>
+                  <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-800">
+                    Совместимость проверит специалист
+                  </span>
                 )}
               </div>
+
               <p className="mt-3 text-xs text-muted-foreground">{note}</p>
-              {/* Says out loud what the hover lift only implies. */}
-              <span
+
+              {/* An explicit CTA, like the reference's «добавить эти линзы» —
+                  a whole-card click target left the action ambiguous. */}
+              <button
+                type="button"
+                aria-pressed={selected}
+                onClick={() =>
+                  onChoose(
+                    selected
+                      ? null
+                      : {
+                          tier: title,
+                          supplier: card.supplier,
+                          line: card.line,
+                          priceRub: card.retailPriceRub,
+                        },
+                  )
+                }
+                style={{
+                  transitionDuration: "var(--duration-snap)",
+                  transitionTimingFunction: "var(--ease-editorial)",
+                }}
                 className={cn(
-                  "mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium",
-                  selected ? "text-brand" : "text-foreground/60 group-hover:text-foreground",
+                  "mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold",
+                  "transition-[background-color,color,box-shadow,transform]",
+                  "hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+                  selected
+                    ? "bg-brand text-brand-foreground"
+                    : "bg-foreground text-background hover:opacity-90",
                 )}
               >
                 {selected ? (
                   <>
-                    <Check className="h-4 w-4" /> Выбрано
+                    <Check className="h-4 w-4" strokeWidth={3} /> Эти линзы выбраны
                   </>
                 ) : (
-                  "Выбрать этот вариант"
+                  "Выбрать эти линзы"
                 )}
-              </span>
-            </button>
+              </button>
+            </article>
           );
         })}
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
-        Подобрано позиций: {data.matchCount.toLocaleString("ru-RU")}. Итоговую стоимость пары
-        подтвердит специалист.
+        Всего подходящих позиций: {data.matchCount.toLocaleString("ru-RU")}. Цены ориентировочные;
+        итоговую стоимость пары подтвердит специалист.
       </p>
     </div>
   );
