@@ -1799,7 +1799,13 @@ function LensPriceCards({
       <div
         role="group"
         aria-label={`Варианты линз: ${shown.length} ${pluralOptions(shown.length)}`}
-        className="mt-4 grid gap-4 md:grid-cols-3"
+        // Seven named rows — header, «Линза», specs, price, badges, note, CTA —
+        // that each card spans as a subgrid, so every one of those bands lines
+        // up across all three cards no matter how long its product name runs.
+        // The note row is 1fr, so the slack collects there and the CTAs sit on
+        // one line. Mobile keeps the plain flex column: nothing to align when
+        // the cards are stacked.
+        className="mt-4 grid gap-4 md:grid-cols-3 md:grid-rows-[auto_auto_auto_auto_auto_1fr_auto]"
       >
         {shown.map(({ key, title, note, accent, card }) => {
           const selected = chosen?.tier === title;
@@ -1816,29 +1822,19 @@ function LensPriceCards({
               }}
               className={cn(
                 "flex scroll-mb-32 flex-col rounded-xl border bg-background p-5",
+                "md:row-span-7 md:grid md:grid-rows-subgrid md:gap-0",
                 "transition-[border-color,background-color,box-shadow]",
                 selected ? "border-brand bg-brand/5 shadow-sm" : "border-border",
               )}
             >
+              {/* 1 — header. Optional blocks below are rendered even when empty
+                  so every card contributes the same seven rows to the subgrid. */}
               <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  {/* The tier name, colour-coded — the reference's main device
-                      for keeping three offers visually apart. */}
-                  <h3 className="font-serif text-xl" style={{ color: accent }}>
-                    {title}
-                  </h3>
-                  <div className="mt-3 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
-                    Линза
-                  </div>
-                  <div className="mt-1 text-sm font-medium leading-snug">{product}</div>
-                  {(card.coating || card.treatment) && (
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      {[card.coating, card.treatment.replace(/\s+/g, " ")]
-                        .filter(Boolean)
-                        .join(" · ")}
-                    </div>
-                  )}
-                </div>
+                {/* The tier name, colour-coded — the reference's main device for
+                    keeping three offers visually apart. */}
+                <h3 className="font-serif text-xl leading-tight" style={{ color: accent }}>
+                  {title}
+                </h3>
                 {/* Stands in for the reference's rendered product image. */}
                 <div
                   aria-hidden
@@ -1852,6 +1848,20 @@ function LensPriceCards({
                 </div>
               </div>
 
+              {/* 2 — the product */}
+              <div className="mt-4">
+                <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                  Линза
+                </div>
+                <div className="mt-1 text-sm font-medium leading-snug">{product}</div>
+              </div>
+
+              {/* 3 — coating and treatment */}
+              <div className="mt-1 text-xs text-muted-foreground">
+                {[card.coating, card.treatment.replace(/\s+/g, " ")].filter(Boolean).join(" · ")}
+              </div>
+
+              {/* 4 — price */}
               <div className="mt-4">
                 {card.retailPriceRub !== null ? (
                   <>
@@ -1869,7 +1879,8 @@ function LensPriceCards({
                 )}
               </div>
 
-              <div className="mt-3 flex flex-wrap gap-2">
+              {/* 5 — stock and fit */}
+              <div className="mt-3 flex flex-wrap content-start gap-2">
                 <span
                   className={cn(
                     "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium",
@@ -1893,9 +1904,10 @@ function LensPriceCards({
                 )}
               </div>
 
+              {/* 6 — what the tier means. 1fr row: the slack collects here. */}
               <p className="mt-3 text-xs text-muted-foreground">{note}</p>
 
-              {/* An explicit CTA, like the reference's «добавить эти линзы» —
+              {/* 7 — an explicit CTA, like the reference's «добавить эти линзы» —
                   a whole-card click target left the action ambiguous. */}
               <button
                 type="button"
