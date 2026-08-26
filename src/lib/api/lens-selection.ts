@@ -22,6 +22,12 @@ export interface LensSelectionRequestDraft {
     /** The «Дизайн» step card title. */
     design: string;
     brand: string;
+    /**
+     * The price card the customer picked on the results step, flattened for the
+     * salon email, e.g. "Оптимальный выбор — ZEISS SmartLife 1.67, 8 500 ₽ за линзу".
+     * Absent when they sent the request without picking one.
+     */
+    chosenOffer?: string;
   };
   prescription: {
     od: { sph: string; cyl: string; axis: string; add: string; sphericalEquivalent: string };

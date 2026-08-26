@@ -258,7 +258,10 @@ export function LensWizard({
   })();
 
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col bg-background">
+    // Tailwind v4's preflight dropped `cursor: pointer` on <button>, so every
+    // card in the wizard was showing an arrow — a large part of why the option
+    // and price cards did not read as clickable. Scoped to the wizard.
+    <div className="fixed inset-0 z-[60] flex flex-col bg-background [&_button:not(:disabled)]:cursor-pointer">
       {/* Top stepper */}
       <header className="sticky top-0 z-10 border-b border-border bg-background">
         <div className="flex items-center gap-6 px-4 py-3 lg:px-8">
@@ -832,19 +835,17 @@ function StepRx({
   if (mode === "none") {
     return (
       <div>
-        <StepHeader
-          title="Подбор без рецепта"
-          subtitle="Вы сможете пройти остальные шаги, но результат останется предварительным."
+        <StepHeader title="Подбор без рецепта" />
+        {/* This screen used to be a lone grey box headed «Точную совместимость и
+            итоговую цену определить нельзя», which read as a dead end even
+            though «Далее» was enabled. State the outcome instead: the choice is
+            made, it is fine, and the caveat is a footnote — not the headline. */}
+        <DecidedCard
+          eyebrow="Можно продолжать"
+          title="Подбираем без рецепта"
+          reason="Пройдём оставшиеся шаги и покажем подходящие варианты линз. Нажмите «Далее», чтобы продолжить."
+          note="Точную совместимость и итоговую стоимость подтвердит специалист: рецепт понадобится только при оформлении заказа, его можно передать позже."
         />
-        <div className="flex items-start gap-3 rounded-xl border border-border bg-surface/60 p-5 text-sm">
-          <Info className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
-          <div>
-            <div className="font-medium">Точную совместимость и итоговую цену определить нельзя</div>
-            <p className="mt-1 text-muted-foreground">
-              Для оформления заказа потребуется загрузить рецепт или передать его специалисту.
-            </p>
-          </div>
-        </div>
         <button
           type="button"
           onClick={() => setMode(null)}
@@ -1100,17 +1101,25 @@ function StepLensType({
   );
 }
 
-/** Карточка принятого решения. Не кнопка: нажатие ничего не переключает. */
-function DecidedThicknessCard({
-  option,
+/**
+ * Карточка принятого решения. Не кнопка: нажатие ничего не переключает.
+ *
+ * The wizard's one way of saying «this is settled, and here is why» — used for
+ * the prescription-derived thickness and for the no-prescription branch, both
+ * of which previously announced themselves in alert-shaped boxes.
+ */
+function DecidedCard({
   eyebrow,
+  title,
   reason,
   note,
+  description,
 }: {
-  option: ThicknessOption;
   eyebrow: string;
+  title: string;
   reason?: string;
   note?: string;
+  description?: string;
 }) {
   return (
     <div className="relative rounded-xl border border-brand bg-brand/5 p-4 shadow-sm lg:p-5">
@@ -1120,10 +1129,10 @@ function DecidedThicknessCard({
       <div className="pr-8 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand">
         {eyebrow}
       </div>
-      <h3 className="mt-1.5 pr-8 font-serif text-lg">{option.title}</h3>
+      <h3 className="mt-1.5 pr-8 font-serif text-lg">{title}</h3>
       {reason && <p className="mt-1.5 text-[13px] leading-relaxed text-foreground/75">{reason}</p>}
       {note && <p className="mt-2 text-xs text-muted-foreground">{note}</p>}
-      <p className="mt-3 text-sm text-muted-foreground">{option.description}</p>
+      {description && <p className="mt-3 text-sm text-muted-foreground">{description}</p>}
     </div>
   );
 }
@@ -1178,8 +1187,9 @@ function StepThickness({
         <>
           <StepHeader title="Толщина и материал линз" />
           <div className="lg:hidden">
-            <DecidedThicknessCard
-              option={featured!}
+            <DecidedCard
+              title={featured!.title}
+              description={featured!.description}
               eyebrow={isRecommended ? "Подобрано по вашему рецепту" : "Ваш выбор"}
               reason={
                 isRecommended && recommendation
@@ -1367,6 +1377,9 @@ function StepResults({
   brand: BrandOption | null;
   indexRecommendation: LensIndexRecommendation | null;
 }) {
+  // The picked price card lives here, not in LensPriceCards, because it has to
+  // reach requestDraft — the customer choosing «Премиум» is part of the request.
+  const [chosenOffer, setChosenOffer] = useState<ChosenOffer | null>(null);
   const colorTitle = PHOTOCHROMIC_COLORS.find((color) => color.id === photochromicColor)?.title;
   const formatSphericalEquivalent = (value: number) =>
     `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
@@ -1402,6 +1415,7 @@ function StepResults({
       thicknessIsRecommended,
       design: design?.title ?? "",
       brand: brand?.title ?? "",
+      chosenOffer: chosenOffer ? formatChosenOffer(chosenOffer) : undefined,
     },
     prescription:
       rxMode === "has" && indexRecommendation
@@ -1457,6 +1471,7 @@ function StepResults({
     ],
     ["Дизайн", design?.title],
     ["Бренд", brand?.title],
+    ["Выбранный вариант", chosenOffer ? formatChosenOffer(chosenOffer) : null],
   ];
 
   return (
@@ -1481,6 +1496,8 @@ function StepResults({
       </section>
 
       <LensPriceCards
+        chosen={chosenOffer}
+        onChoose={setChosenOffer}
         rxMode={rxMode}
         od={od}
         os={os}
@@ -1556,6 +1573,27 @@ function tintKeyword(
   return undefined;
 }
 
+/** The price card the customer picked, kept small enough to live in the request. */
+type ChosenOffer = {
+  tier: string;
+  supplier: string;
+  line: string;
+  priceRub: number | null;
+};
+
+/** Flattened for the salon email — the backend reads scalars out of `selection`. */
+function formatChosenOffer(offer: ChosenOffer) {
+  const price =
+    offer.priceRub !== null ? `${formatPrice(offer.priceRub)} за линзу` : "цена по запросу";
+  // `supplier` is a slug ("zeiss") and `line` usually already opens with the
+  // brand ("ZEISS Single Vision…") — printing both gives "zeiss ZEISS …".
+  const supplier = offer.supplier.toUpperCase();
+  const product = offer.line.toUpperCase().startsWith(supplier)
+    ? offer.line
+    : `${supplier} ${offer.line}`;
+  return `${offer.tier} — ${product}, ${price}`;
+}
+
 const CARD_LABELS: { key: keyof LensRecommendResponse["cards"]; title: string; note: string }[] = [
   { key: "best_price", title: "Лучший по цене", note: "Минимальная цена среди совместимых позиций" },
   { key: "optimal", title: "Оптимальный выбор", note: "Средняя по цене совместимая позиция" },
@@ -1563,6 +1601,8 @@ const CARD_LABELS: { key: keyof LensRecommendResponse["cards"]; title: string; n
 ];
 
 function LensPriceCards({
+  chosen,
+  onChoose,
   rxMode,
   od,
   os,
@@ -1572,6 +1612,8 @@ function LensPriceCards({
   thickness,
   brand,
 }: {
+  chosen: ChosenOffer | null;
+  onChoose: (offer: ChosenOffer | null) => void;
   rxMode: RxMode;
   od: Eye;
   os: Eye;
@@ -1690,44 +1732,113 @@ function LensPriceCards({
   }
 
   return (
-    <div className="mt-6">
-      <div className="grid gap-3 md:grid-cols-3">
-        {shown.map(({ key, title, note, card }) => (
-          <article key={key} className="flex flex-col rounded-xl border border-border p-5">
-            <h3 className="font-serif text-lg">{title}</h3>
-            <div className="mt-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              {card.supplier}
-            </div>
-            <div className="mt-1 text-sm font-medium">{card.line}</div>
-            {(card.coating || card.treatment) && (
-              <div className="mt-1 text-xs text-muted-foreground">
-                {[card.coating, card.treatment.replace(/\s+/g, " ")].filter(Boolean).join(" · ")}
-              </div>
-            )}
-            <div className="mt-auto pt-4">
-              {card.retailPriceRub !== null ? (
-                <>
-                  <div className="font-serif text-2xl">
-                    {formatPrice(card.retailPriceRub)}
-                  </div>
-                  <div className="text-xs text-muted-foreground">за одну линзу</div>
-                </>
-              ) : (
-                <div className="text-sm font-medium text-brand">Цена по запросу</div>
+    <div className="mt-8">
+      {/* These were three identical grey boxes with no hover, no cursor and no
+          selected state, so they read as one block of text rather than as three
+          offers the customer can choose between. */}
+      <h2 className="font-serif text-xl">Подходящие варианты линз</h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Выберите вариант — он попадёт в заявку. Цены ориентировочные, за одну линзу.
+      </p>
+      <div
+        role="group"
+        aria-label={`Варианты линз: ${shown.length} ${pluralOptions(shown.length)}`}
+        className="mt-4 grid gap-4 md:grid-cols-3"
+      >
+        {shown.map(({ key, title, note, card }) => {
+          const selected = chosen?.tier === title;
+          return (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={selected}
+              onClick={() =>
+                onChoose(
+                  selected
+                    ? null
+                    : {
+                        tier: title,
+                        supplier: card.supplier,
+                        line: card.line,
+                        priceRub: card.retailPriceRub,
+                      },
+                )
+              }
+              style={{
+                transitionDuration: "var(--duration-snap)",
+                transitionTimingFunction: "var(--ease-editorial)",
+              }}
+              className={cn(
+                "group relative flex scroll-mb-32 flex-col rounded-xl border p-5 text-left",
+                "transition-[border-color,background-color,box-shadow,transform]",
+                "hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+                selected
+                  ? "border-brand bg-brand/5 shadow-sm"
+                  : "border-border hover:border-foreground/30",
               )}
-              {card.rxFit !== "yes" && (
-                <div className="mt-2 text-xs text-amber-700">
-                  Совместимость с рецептом проверит специалист
+            >
+              {selected && (
+                <span className="absolute right-4 top-4 grid h-6 w-6 place-items-center rounded-full bg-brand">
+                  <Check className="h-3.5 w-3.5 text-brand-foreground" strokeWidth={3} />
+                </span>
+              )}
+              <div
+                className={cn(
+                  "pr-8 text-[10px] font-semibold uppercase tracking-[0.14em]",
+                  selected ? "text-brand" : "text-muted-foreground",
+                )}
+              >
+                {title}
+              </div>
+              <div className="mt-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                {card.supplier}
+              </div>
+              <div className="mt-1 text-sm font-medium">{card.line}</div>
+              {(card.coating || card.treatment) && (
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {[card.coating, card.treatment.replace(/\s+/g, " ")].filter(Boolean).join(" · ")}
                 </div>
               )}
-            </div>
-            <p className="mt-3 text-xs text-muted-foreground">{note}</p>
-          </article>
-        ))}
+              <div className="mt-auto pt-4">
+                {card.retailPriceRub !== null ? (
+                  <>
+                    <div className="font-serif text-[28px] leading-none">
+                      {formatPrice(card.retailPriceRub)}
+                    </div>
+                    <div className="mt-1 text-xs text-muted-foreground">за одну линзу</div>
+                  </>
+                ) : (
+                  <div className="text-sm font-medium text-brand">Цена по запросу</div>
+                )}
+                {card.rxFit !== "yes" && (
+                  <div className="mt-2 text-xs text-amber-700">
+                    Совместимость с рецептом проверит специалист
+                  </div>
+                )}
+              </div>
+              <p className="mt-3 text-xs text-muted-foreground">{note}</p>
+              {/* Says out loud what the hover lift only implies. */}
+              <span
+                className={cn(
+                  "mt-4 inline-flex items-center gap-1.5 text-[13px] font-medium",
+                  selected ? "text-brand" : "text-foreground/60 group-hover:text-foreground",
+                )}
+              >
+                {selected ? (
+                  <>
+                    <Check className="h-4 w-4" /> Выбрано
+                  </>
+                ) : (
+                  "Выбрать этот вариант"
+                )}
+              </span>
+            </button>
+          );
+        })}
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
-        Подобрано позиций: {data.matchCount.toLocaleString("ru-RU")}. Цены ориентировочные, за одну
-        линзу; итоговую стоимость пары подтвердит специалист.
+        Подобрано позиций: {data.matchCount.toLocaleString("ru-RU")}. Итоговую стоимость пары
+        подтвердит специалист.
       </p>
     </div>
   );
