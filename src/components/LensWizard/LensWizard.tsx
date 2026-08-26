@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Check, ChevronLeft, HelpCircle, Info, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  ChevronDown,
+  ChevronLeft,
+  ChevronUp,
+  HelpCircle,
+  Info,
+  X,
+} from "lucide-react";
 import type { Product } from "@/data/types";
 import { formatPrice } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
@@ -29,6 +38,7 @@ import {
   type LensRecommendResponse,
 } from "@/lib/api/lens-recommend";
 import { LensRequestForm } from "./LensRequestForm";
+import { ScrollHorizon } from "./ScrollHorizon";
 
 type Eye = { sph: string; cyl: string; axi: string; add: string };
 const emptyEye: Eye = { sph: "", cyl: "", axi: "", add: "" };
@@ -50,6 +60,37 @@ const STEPS: { id: StepId; label: string }[] = [
 ];
 
 type RxMode = "has" | "none" | null;
+
+const PRELIMINARY_NOTICE =
+  "Подбор предварительный. Точную модель, совместимость и стоимость линз подтвердит менеджер перед оформлением заказа.";
+
+/** Russian plural for «вариант». */
+function pluralOptions(n: number) {
+  const d10 = n % 10;
+  const d100 = n % 100;
+  if (d10 === 1 && d100 !== 11) return "вариант";
+  if (d10 >= 2 && d10 <= 4 && (d100 < 12 || d100 > 14)) return "варианта";
+  return "вариантов";
+}
+
+/**
+ * Плоскоязычное объяснение рекомендации. Ключи — единственные значения,
+ * которые может вернуть getRecommendedLensIndex() (см. logic.ts; 1.74
+ * исключён владельцем 2026-08-22 по наличию на складе).
+ */
+const RECOMMENDATION_REASON: Record<string, string> = {
+  "1.50":
+    "Рецепт небольшой — линзы и так получатся тонкими, переплачивать за высокий индекс не нужно.",
+  "1.60": "Рецепт средней силы — эти линзы заметно тоньше базовых и при этом не самые дорогие.",
+  "1.67":
+    "Рецепт довольно сильный — такие линзы получаются заметно тоньше и легче, очки не будут выглядеть массивными.",
+};
+
+/**
+ * «Лестница индексов» против «особых материалов». Считается по id, а НЕ по
+ * полю `index`: у 1.74 его нет, но это всё равно индексная линза.
+ */
+const MATERIAL_IDS = new Set(["poly-159", "mineral"]);
 
 export function LensWizard({
   open,
@@ -106,7 +147,9 @@ export function LensWizard({
   }, [open]);
 
   useEffect(() => {
-    if (open) scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    // "auto", not "smooth": smooth-scrolling a 1600px reset on every step
+    // change is animation nobody asked for.
+    if (open) scrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
   }, [open, step]);
 
   if (!open) return null;
@@ -187,6 +230,33 @@ export function LensWizard({
     }
   })();
 
+  // Why «Далее» is dead. Rendered in the footer as its own row so it never
+  // competes with the frame name for space, and announced politely so screen
+  // readers get it even in browse modes that skip disabled controls.
+  const blockedReason: string | null = (() => {
+    if (canProceed || step === LAST_STEP) return null;
+    switch (step) {
+      case 1:
+        return "Выберите назначение очков";
+      case 2:
+        return rxMode === null
+          ? "Выберите вариант — с рецептом или без"
+          : "Заполните данные для обоих глаз и межзрачковое расстояние";
+      case 3:
+        if (!lensType) return "Выберите тип линз";
+        if (lensType.id === "photochromic") return "Ниже — выберите технологию фотохрома";
+        return "Ниже — выберите вариант затемнения";
+      case 4:
+        return "Выберите толщину линз";
+      case 5:
+        return "Выберите дизайн линз";
+      case 6:
+        return "Выберите бренд";
+      default:
+        return null;
+    }
+  })();
+
   return (
     <div className="fixed inset-0 z-[60] flex flex-col bg-background">
       {/* Top stepper */}
@@ -239,14 +309,26 @@ export function LensWizard({
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="block px-4 pb-3 md:hidden">
+        <div className="flex items-center gap-2 px-4 pb-3 md:hidden">
+          {step > 1 && (
+            <button
+              type="button"
+              onClick={goBack}
+              aria-label={`Назад к шагу ${step - 1}: ${STEPS[step - 2].label}`}
+              className="-my-1 -ml-2 rounded-full p-2 text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+              style={{ transitionDuration: "var(--duration-snap)" }}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+          )}
           <div className="text-xs uppercase tracking-wider text-brand">{STEPS[step - 1].label}</div>
         </div>
       </header>
 
       {/* Body */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto">
-        <div className="mx-auto grid w-full max-w-[1400px] gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:px-8 lg:py-10">
+      <div className="relative min-h-0 flex-1">
+        <div ref={scrollRef} className="h-full overflow-y-auto overscroll-contain">
+        <div className="mx-auto grid w-full max-w-[1400px] gap-8 px-4 pb-14 pt-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] lg:px-8 lg:py-10">
           {/* LEFT: frame preview */}
           <aside className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
             <button
@@ -281,34 +363,23 @@ export function LensWizard({
 
           {/* RIGHT: step content */}
           <main className="min-w-0">
-            <div className="mb-5 flex items-center gap-3 rounded-xl border border-border bg-surface/60 p-3 lg:hidden">
-              <img
-                src={previewImage ?? frame.images[0]}
-                alt={frame.name}
-                className="h-16 w-20 shrink-0 object-contain mix-blend-multiply"
-              />
-              <div className="min-w-0">
-                <div className="truncate text-sm font-medium">
-                  {frame.brand} {frame.name}
-                </div>
-                {selectedColor && (
-                  <div className="mt-1 text-xs text-muted-foreground">Цвет: {selectedColor}</div>
-                )}
-              </div>
-            </div>
-
-            <div className="mb-6 flex gap-3 rounded-xl border border-brand/20 bg-brand/5 p-4 text-sm">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-              <p>
-                Подбор предварительный. Точную модель, совместимость и стоимость линз подтвердит
-                менеджер перед оформлением заказа.
+            {/* Expectation-setter, shown where expectations are formed (step 1)
+                and where they are acted on (step 7) — not on all seven steps in
+                the alert costume that made it read as an alarm. */}
+            {step === 1 && (
+              <p className="mb-5 flex items-start gap-2 text-[13px] leading-relaxed text-muted-foreground">
+                <Info className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.75} />
+                {PRELIMINARY_NOTICE}
               </p>
-            </div>
+            )}
 
+            {/* Mobile uses the chevron in the sticky step-label row instead. */}
             {step > 1 && (
               <button
+                type="button"
                 onClick={goBack}
-                className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+                className="mb-4 hidden items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground lg:inline-flex"
+                style={{ transitionDuration: "var(--duration-snap)" }}
               >
                 <ChevronLeft className="h-4 w-4" /> Назад
               </button>
@@ -408,22 +479,46 @@ export function LensWizard({
             )}
           </main>
         </div>
+        </div>
+        <ScrollHorizon scrollRef={scrollRef} />
       </div>
 
       {/* Sticky footer */}
-      <footer className="sticky bottom-0 z-10 border-t border-border bg-background">
+      <footer className="sticky bottom-0 z-10 border-t border-border bg-background pb-[env(safe-area-inset-bottom)]">
+        {blockedReason && (
+          <div
+            id="wizard-block-hint"
+            role="status"
+            aria-live="polite"
+            className="border-b border-border/60 px-4 py-2 text-[12px] leading-tight text-foreground/70 lg:px-8"
+          >
+            {blockedReason}
+          </div>
+        )}
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 lg:px-8 lg:py-4">
-          <div className="min-w-0 text-sm">
-            <div className="text-xs text-muted-foreground">Оправа</div>
-            <strong className="font-serif text-lg sm:text-xl">{formatPrice(frame.price)}</strong>
-            <div className="hidden text-xs text-muted-foreground sm:block">
-              Стоимость линз — после проверки подбора
+          <div className="flex min-w-0 items-center gap-3">
+            <img
+              src={previewImage ?? frame.images[0]}
+              alt=""
+              aria-hidden
+              className="h-10 w-12 shrink-0 object-contain mix-blend-multiply lg:hidden"
+            />
+            <div className="min-w-0 text-sm">
+              <div className="truncate text-xs text-muted-foreground">
+                {frame.brand} {frame.name}
+                {selectedColor ? ` · ${selectedColor}` : ""}
+              </div>
+              <strong className="font-serif text-lg sm:text-xl">{formatPrice(frame.price)}</strong>
+              <div className="hidden text-xs text-muted-foreground sm:block">
+                Стоимость линз — после проверки подбора
+              </div>
             </div>
           </div>
           {step < LAST_STEP ? (
             <button
               onClick={goNext}
               disabled={!canProceed}
+              aria-describedby={blockedReason ? "wizard-block-hint" : undefined}
               className="shrink-0 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground transition-opacity hover:opacity-90 disabled:opacity-40 sm:px-8"
             >
               Далее
@@ -444,21 +539,43 @@ export function LensWizard({
 
 /* --------------------------- Step components --------------------------- */
 
-function StepHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+function StepHeader({
+  title,
+  subtitle,
+  count,
+}: {
+  title: string;
+  subtitle?: string;
+  /** How many options this step offers — the cheapest possible "there is more below". */
+  count?: number;
+}) {
   return (
     <div className="mb-6">
-      <h1 className="font-serif text-2xl lg:text-3xl">{title}</h1>
+      <div className="flex items-baseline justify-between gap-3">
+        <h1 className="font-serif text-2xl lg:text-3xl">{title}</h1>
+        {count != null && (
+          <span className="shrink-0 text-[11px] uppercase tracking-[0.14em] tabular-nums text-muted-foreground">
+            {count} {pluralOptions(count)}
+          </span>
+        )}
+      </div>
       {subtitle && <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>}
     </div>
   );
 }
 
+/**
+ * `bg-brand/5` + `border-brand` + `text-brand` is reserved for the customer's
+ * own selection and the system's recommendation. Informational prose never
+ * wears it — that reservation is what stopped step 4 reading as two alarms.
+ */
 function OptionCard({
   active,
   title,
   description,
   warning,
   badge,
+  meta,
   icon,
   rightSlot,
   onClick,
@@ -468,6 +585,7 @@ function OptionCard({
   description?: string;
   warning?: string;
   badge?: string;
+  meta?: React.ReactNode;
   icon?: React.ReactNode;
   rightSlot?: React.ReactNode;
   onClick: () => void;
@@ -477,8 +595,12 @@ function OptionCard({
       type="button"
       onClick={onClick}
       aria-pressed={active}
+      style={{
+        transitionDuration: "var(--duration-snap)",
+        transitionTimingFunction: "var(--ease-editorial)",
+      }}
       className={cn(
-        "group flex w-full items-start gap-4 rounded-xl border bg-background p-5 text-left transition-all",
+        "group flex w-full scroll-mb-32 items-start gap-3 rounded-xl border bg-background p-4 text-left transition-colors lg:scroll-mb-8 lg:gap-4 lg:p-5",
         active ? "border-brand bg-brand/5 shadow-sm" : "border-border hover:border-foreground/30",
       )}
     >
@@ -491,7 +613,18 @@ function OptionCard({
             </span>
           )}
         </div>
-        {description && <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>}
+        {description && (
+          <p
+            className={cn(
+              "mt-1.5 text-sm text-muted-foreground",
+              // The card the customer chose is the one they can read in full.
+              !active && "line-clamp-2 lg:line-clamp-none",
+            )}
+          >
+            {description}
+          </p>
+        )}
+        {meta && <p className="mt-1.5 text-xs text-muted-foreground">{meta}</p>}
         {warning && (
           <p className="mt-2 inline-flex items-center gap-1 text-xs text-amber-700">
             <HelpCircle className="h-3 w-3" /> {warning}
@@ -502,7 +635,7 @@ function OptionCard({
       {icon && (
         <div
           className={cn(
-            "flex h-14 w-14 shrink-0 items-center justify-center rounded-xl",
+            "flex h-12 w-12 shrink-0 items-center justify-center rounded-xl lg:h-14 lg:w-14",
             active ? "bg-brand text-brand-foreground" : "bg-surface text-muted-foreground",
           )}
         >
@@ -518,13 +651,13 @@ function ConsultationCard() {
   return (
     <a
       href="/contacts/"
-      className="flex items-center gap-4 rounded-xl border border-border bg-background p-5 transition-colors hover:border-foreground/30"
+      className="flex items-center gap-4 rounded-xl border border-border bg-background p-4 transition-colors hover:border-foreground/30 lg:p-5"
     >
       <div className="flex-1">
         <h3 className="font-serif text-lg">{CONSULTATION.title}</h3>
         <p className="mt-1 text-sm text-brand">{CONSULTATION.subtitle}</p>
       </div>
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand/10 text-brand">
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-brand lg:h-14 lg:w-14">
         <Icon className="h-6 w-6" />
       </div>
     </a>
@@ -540,8 +673,12 @@ function StepPurpose({
 }) {
   return (
     <div>
-      <StepHeader title="Для чего вы используете очки?" />
-      <div className="space-y-3">
+      <StepHeader title="Для чего вы используете очки?" count={PURPOSES.length} />
+      <div
+        role="group"
+        aria-label={`Назначение очков: ${PURPOSES.length} ${pluralOptions(PURPOSES.length)}`}
+        className="space-y-3"
+      >
         {PURPOSES.map((p) => {
           const Icon = p.icon;
           return (
@@ -550,11 +687,13 @@ function StepPurpose({
               active={value?.id === p.id}
               title={p.title}
               description={p.subtitle}
-              icon={<Icon className="h-7 w-7" />}
+              icon={<Icon className="h-6 w-6 lg:h-7 lg:w-7" />}
               onClick={() => onChange(p)}
             />
           );
         })}
+      </div>
+      <div className="mt-6">
         <ConsultationCard />
       </div>
     </div>
@@ -682,6 +821,8 @@ function StepRx({
             description="Покажем только предварительный вариант без проверки по диоптриям"
             onClick={() => setMode("none")}
           />
+        </div>
+        <div className="mt-6">
           <ConsultationCard />
         </div>
       </div>
@@ -796,7 +937,7 @@ function StepRx({
         })}
       </div>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6 space-y-4 rounded-xl border border-border p-4 lg:p-5">
         <label className="flex items-center gap-2 text-sm">
           <input
             type="checkbox"
@@ -865,9 +1006,14 @@ function StepLensType({
     <div>
       <StepHeader
         title="Какие линзы вам нужны?"
+        count={LENS_TYPES.length}
         subtitle="Прозрачные, фотохромные или солнцезащитные. Доступность проверяется по конкретной позиции прайса."
       />
-      <div className="space-y-3">
+      <div
+        role="group"
+        aria-label={`Тип линз: ${LENS_TYPES.length} ${pluralOptions(LENS_TYPES.length)}`}
+        className="space-y-3"
+      >
         {LENS_TYPES.map((option) => (
           <OptionCard
             key={option.id}
@@ -885,7 +1031,11 @@ function StepLensType({
           <p className="mt-1 text-sm text-muted-foreground">
             Выберите семейство светоадаптивных линз.
           </p>
-          <div className="mt-4 space-y-3">
+          <div
+            role="group"
+            aria-label={`Технология фотохрома: ${PHOTOCHROMIC_TECHS.length} ${pluralOptions(PHOTOCHROMIC_TECHS.length)}`}
+            className="mt-4 space-y-3"
+          >
             {PHOTOCHROMIC_TECHS.map((tech) => (
               <OptionCard
                 key={tech.id}
@@ -925,7 +1075,11 @@ function StepLensType({
       {lensType?.id === "sun" && (
         <section className="mt-7 rounded-xl border border-border p-5">
           <h2 className="font-serif text-xl">Вариант затемнения</h2>
-          <div className="mt-4 space-y-3">
+          <div
+            role="group"
+            aria-label={`Вариант затемнения: ${SUN_VARIANTS.length} ${pluralOptions(SUN_VARIANTS.length)}`}
+            className="mt-4 space-y-3"
+          >
             {SUN_VARIANTS.map((variant) => (
               <OptionCard
                 key={variant.id}
@@ -946,6 +1100,34 @@ function StepLensType({
   );
 }
 
+/** Карточка принятого решения. Не кнопка: нажатие ничего не переключает. */
+function DecidedThicknessCard({
+  option,
+  eyebrow,
+  reason,
+  note,
+}: {
+  option: ThicknessOption;
+  eyebrow: string;
+  reason?: string;
+  note?: string;
+}) {
+  return (
+    <div className="relative rounded-xl border border-brand bg-brand/5 p-4 shadow-sm lg:p-5">
+      <span className="absolute right-4 top-4 grid h-6 w-6 place-items-center rounded-full bg-brand">
+        <Check className="h-3.5 w-3.5 text-brand-foreground" strokeWidth={3} />
+      </span>
+      <div className="pr-8 text-[10px] font-semibold uppercase tracking-[0.14em] text-brand">
+        {eyebrow}
+      </div>
+      <h3 className="mt-1.5 pr-8 font-serif text-lg">{option.title}</h3>
+      {reason && <p className="mt-1.5 text-[13px] leading-relaxed text-foreground/75">{reason}</p>}
+      {note && <p className="mt-2 text-xs text-muted-foreground">{note}</p>}
+      <p className="mt-3 text-sm text-muted-foreground">{option.description}</p>
+    </div>
+  );
+}
+
 function StepThickness({
   value,
   onChange,
@@ -957,36 +1139,108 @@ function StepThickness({
   recommendation: LensIndexRecommendation | null;
   recommendedThickness: ThicknessOption | null;
 }) {
+  // Mount state, never reactive state: the list must never collapse under the
+  // customer's finger. goNext() preselects recommendedThickness, so `value` is
+  // normally already set when we arrive.
+  const [showAll, setShowAll] = useState(!recommendedThickness);
+
+  const featured = value ?? recommendedThickness;
+  const isRecommended = !!featured && featured.id === recommendedThickness?.id;
+  const se = recommendation
+    ? recommendation.governingAbsSphericalEquivalent.toFixed(2).replace(".", ",")
+    : null;
+
+  // Порядок показа: сначала лестница индексов, затем особые материалы.
+  // data.ts НЕ трогаем — разбиение только на отрисовке.
+  const ladder = THICKNESSES.filter((o) => !MATERIAL_IDS.has(o.id));
+  const materials = THICKNESSES.filter((o) => MATERIAL_IDS.has(o.id));
+
+  const groupHeading =
+    "mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground";
+
+  const renderCard = (option: ThicknessOption) => (
+    <OptionCard
+      key={option.id}
+      active={value?.id === option.id}
+      title={option.title}
+      description={option.description}
+      badge={recommendedThickness?.id === option.id ? "По вашему рецепту" : undefined}
+      onClick={() => onChange(option)}
+    />
+  );
+
+  // Свёрнутый вид — только на мобильных. На десктопе места хватает на все шесть.
+  const collapsed = !showAll && !!featured;
+
   return (
     <div>
-      <StepHeader
-        title="Толщина и материал линз"
-        subtitle="Чем выше индекс, тем тоньше и легче линза при том же рецепте."
-      />
-      {recommendation && recommendedThickness && (
-        <div className="mb-5 flex gap-3 rounded-xl border border-brand/20 bg-brand/5 p-4 text-sm">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-          <p>
-            По вашему рецепту (сфероэквивалент до{" "}
-            {recommendation.governingAbsSphericalEquivalent.toFixed(2).replace(".", ",")}) мы
-            рекомендуем индекс {recommendation.index}. Вы можете выбрать другой вариант — специалист
-            проверит совместимость.
-          </p>
-        </div>
+      {collapsed ? (
+        <>
+          <StepHeader title="Толщина и материал линз" />
+          <div className="lg:hidden">
+            <DecidedThicknessCard
+              option={featured!}
+              eyebrow={isRecommended ? "Подобрано по вашему рецепту" : "Ваш выбор"}
+              reason={
+                isRecommended && recommendation
+                  ? RECOMMENDATION_REASON[recommendation.index]
+                  : undefined
+              }
+              note={
+                isRecommended && se
+                  ? `Сфероэквивалент ${se} — считаем по глазу с большей нагрузкой.`
+                  : undefined
+              }
+            />
+            <button
+              type="button"
+              aria-expanded={false}
+              aria-controls="thickness-options"
+              onClick={() => setShowAll(true)}
+              className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-4 py-3 text-[13px] font-medium text-foreground/70 transition-colors hover:border-foreground/30 hover:text-foreground"
+              style={{ transitionDuration: "var(--duration-snap)" }}
+            >
+              Другие варианты · {THICKNESSES.length - 1}
+              <ChevronDown className="h-4 w-4" />
+            </button>
+          </div>
+        </>
+      ) : (
+        <StepHeader
+          title="Толщина и материал линз"
+          count={THICKNESSES.length}
+          subtitle="Чем выше индекс, тем тоньше и легче линза при том же рецепте."
+        />
       )}
-      <div className="space-y-3">
-        {THICKNESSES.map((option) => (
-          <OptionCard
-            key={option.id}
-            active={value?.id === option.id}
-            title={option.title}
-            description={option.description}
-            badge={
-              recommendedThickness?.id === option.id ? "Рекомендуем по вашему рецепту" : undefined
-            }
-            onClick={() => onChange(option)}
-          />
-        ))}
+
+      {/* На десктопе список виден всегда; на мобильных — только когда развёрнут. */}
+      <div className={collapsed ? "hidden lg:block" : undefined}>
+        {recommendedThickness && showAll && (
+          <button
+            type="button"
+            aria-expanded
+            aria-controls="thickness-options"
+            onClick={() => setShowAll(false)}
+            className="mb-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-foreground/60 transition-colors hover:text-foreground lg:hidden"
+            style={{ transitionDuration: "var(--duration-snap)" }}
+          >
+            <ChevronUp className="h-4 w-4" /> Свернуть
+          </button>
+        )}
+
+        <div
+          id="thickness-options"
+          role="group"
+          aria-label={`Толщина и материал линз: ${THICKNESSES.length} ${pluralOptions(THICKNESSES.length)}`}
+        >
+          <div className={groupHeading}>По индексу</div>
+          <div className="space-y-3">{ladder.map(renderCard)}</div>
+          <div className={cn(groupHeading, "mt-6")}>Особые материалы</div>
+          <div className="space-y-3">{materials.map(renderCard)}</div>
+        </div>
+      </div>
+
+      <div className="mt-6">
         <ConsultationCard />
       </div>
     </div>
@@ -1007,9 +1261,14 @@ function StepDesign({
     <div>
       <StepHeader
         title="Дизайн линз"
+        count={DESIGNS.length}
         subtitle="Дизайн определяет, как распределены зоны чёткого зрения по поверхности линзы."
       />
-      <div className="space-y-3">
+      <div
+        role="group"
+        aria-label={`Дизайн линз: ${DESIGNS.length} ${pluralOptions(DESIGNS.length)}`}
+        className="space-y-3"
+      >
         {DESIGNS.map((option) => (
           <OptionCard
             key={option.id}
@@ -1025,6 +1284,8 @@ function StepDesign({
             onClick={() => onChange(option)}
           />
         ))}
+      </div>
+      <div className="mt-6">
         <ConsultationCard />
       </div>
     </div>
@@ -1042,9 +1303,14 @@ function StepBrand({
     <div>
       <StepHeader
         title="Выберите бренд"
+        count={BRANDS.length}
         subtitle="Бренд применяется после проверки назначения, рецепта и выбранных условий."
       />
-      <div className="space-y-3">
+      <div
+        role="group"
+        aria-label={`Бренд: ${BRANDS.length} ${pluralOptions(BRANDS.length)}`}
+        className="space-y-3"
+      >
         {BRANDS.map((o) => (
           <OptionCard
             key={o.id}
@@ -1054,6 +1320,8 @@ function StepBrand({
             onClick={() => onChange(o)}
           />
         ))}
+      </div>
+      <div className="mt-6">
         <ConsultationCard />
       </div>
     </div>
@@ -1166,6 +1434,12 @@ function StepResults({
   };
 
   const rows = [
+    // Makes the deleted mobile frame strip lossless: the frame is still named
+    // on the step where the customer reviews what they are about to request.
+    [
+      "Оправа",
+      `${frame.brand} ${frame.name}${selectedColor ? ` · ${selectedColor}` : ""}`,
+    ],
     ["Назначение", purpose?.title],
     ["Рецепт", rxMode === "has" ? "Введён" : "Нет — предварительный подбор"],
     [
@@ -1217,13 +1491,10 @@ function StepResults({
         brand={brand}
       />
 
-      <div className="mt-6 flex gap-3 rounded-xl border border-brand/20 bg-brand/5 p-4 text-sm">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
-        <p>
-          Рекомендуемый индекс рассчитывается по глазу с большей нагрузкой и применяется к обеим
-          линзам. Итоговую модель и стоимость подтвердит специалист перед заказом.
-        </p>
-      </div>
+      <p className="mt-8 border-t border-border pt-4 text-[13px] leading-relaxed text-muted-foreground">
+        Рекомендуемый индекс рассчитан по глазу с большей нагрузкой и применён к обеим линзам.{" "}
+        {PRELIMINARY_NOTICE}
+      </p>
 
       <LensRequestForm draft={requestDraft} />
     </div>
@@ -1350,7 +1621,7 @@ function LensPriceCards({
   if (!canQuery) {
     return (
       <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <p>
           Ориентировочные цены рассчитываются по рецепту. Без рецепта специалист подберёт модели и
           назовёт стоимость после консультации — отправьте заявку ниже.
@@ -1362,7 +1633,7 @@ function LensPriceCards({
   if (index === null) {
     return (
       <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <p>
           Минеральные линзы рассчитываются специалистом по конкретному рецепту — отправьте заявку
           ниже, и мы назовём точную стоимость.
@@ -1389,7 +1660,7 @@ function LensPriceCards({
   if (state.kind !== "loaded") {
     return (
       <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <p>
           Не удалось получить ориентировочные цены. Отправьте заявку ниже — специалист рассчитает
           стоимость и свяжется с вами.
@@ -1409,7 +1680,7 @@ function LensPriceCards({
   if (shown.length === 0) {
     return (
       <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-brand" />
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
         <p>
           Под выбранные условия не нашлось готовых позиций прайса. Отправьте заявку ниже —
           специалист подберёт вариант вручную.
