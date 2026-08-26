@@ -19,6 +19,12 @@ export interface LensRecommendQuery {
   tint?: string;
   /** Supplier slug: essilor / zeiss / hoya / synchrony. Omit for all. */
   brand?: string;
+  /**
+   * The «Дизайн» step. The endpoint drops only designs that plainly contradict
+   * this — the price lists carry no design column, so a quarter of the
+   * catalogue is unclassifiable and must not be filtered away.
+   */
+  design?: "spherical" | "aspheric" | "progressive" | "office";
 }
 
 export interface LensRecommendCard {
@@ -72,6 +78,7 @@ export async function fetchLensRecommendation(
   if (query.lensType) params.set("lensType", query.lensType);
   if (query.tint) params.set("tint", query.tint);
   if (query.brand) params.set("brand", query.brand);
+  if (query.design) params.set("design", query.design);
 
   const res = await apiFetch(getStoreApiUrl(`lens_recommend.php?${params.toString()}`), {
     signal,

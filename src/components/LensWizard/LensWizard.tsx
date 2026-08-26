@@ -1499,6 +1499,7 @@ function StepResults({
         chosen={chosenOffer}
         onChoose={setChosenOffer}
         rxMode={rxMode}
+        design={design}
         od={od}
         os={os}
         lensType={lensType}
@@ -1653,6 +1654,7 @@ function LensPriceCards({
   chosen,
   onChoose,
   rxMode,
+  design,
   od,
   os,
   lensType,
@@ -1664,6 +1666,7 @@ function LensPriceCards({
   chosen: ChosenOffer | null;
   onChoose: (offer: ChosenOffer | null) => void;
   rxMode: RxMode;
+  design: DesignOption | null;
   od: Eye;
   os: Eye;
   lensType: LensTypeOption | null;
@@ -1694,6 +1697,7 @@ function LensPriceCards({
         lensType: lensType?.id,
         tint: tintKeyword(lensType, photochromicTech, sunVariant),
         brand: brand && brand.id !== "all" ? brand.id : undefined,
+        design: design?.id,
       },
       controller.signal,
     )
