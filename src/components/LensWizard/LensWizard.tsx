@@ -464,6 +464,7 @@ export function LensWizard({
             {step === 6 && <StepBrand value={brand} onChange={setBrand} />}
             {step === 7 && (
               <StepResults
+                onEditStep={setStep}
                 frame={frame}
                 selectedColor={selectedColor}
                 purpose={purpose}
@@ -1343,6 +1344,7 @@ function StepBrand({
 }
 
 function StepResults({
+  onEditStep,
   frame,
   selectedColor,
   purpose,
@@ -1362,6 +1364,8 @@ function StepResults({
   brand,
   indexRecommendation,
 }: {
+  /** Jump back to a step, so a dead end can offer a way out of itself. */
+  onEditStep: (step: StepId) => void;
   frame: Product;
   selectedColor?: string;
   purpose: PurposeOption | null;
@@ -1482,7 +1486,11 @@ function StepResults({
     <div>
       <StepHeader
         title="Предварительный подбор сформирован"
-        subtitle="Точные модели и ориентировочные цены появятся после подключения актуальных прайсов."
+        subtitle={
+          rxMode === "has"
+            ? "Ниже — подходящие линзы с ориентировочными ценами. Точную модель и совместимость подтвердит специалист."
+            : "Ниже — линзы с выбранными параметрами и ориентировочными ценами. Точный расчёт специалист сделает по рецепту."
+        }
       />
 
       <section className="rounded-xl border border-border bg-surface/50 p-5">
@@ -1502,6 +1510,7 @@ function StepResults({
       <LensPriceCards
         chosen={chosenOffer}
         onChoose={setChosenOffer}
+        onEditStep={onEditStep}
         rxMode={rxMode}
         design={design}
         od={od}
@@ -1514,7 +1523,9 @@ function StepResults({
       />
 
       <p className="mt-8 border-t border-border pt-4 text-[13px] leading-relaxed text-muted-foreground">
-        Рекомендуемый индекс рассчитан по глазу с большей нагрузкой и применён к обеим линзам.{" "}
+        {indexRecommendation
+          ? "Рекомендуемый индекс рассчитан по глазу с большей нагрузкой и применён к обеим линзам. "
+          : "Толщину вы выбрали сами — по рецепту мы бы посчитали её за вас, по глазу с большей нагрузкой. "}
         {PRELIMINARY_NOTICE}
       </p>
 
@@ -1666,6 +1677,60 @@ const TIERS: {
 const LIST_PAGE_SIZE = 40;
 
 /**
+ * A result-step message that is not a list of offers.
+ *
+ * Every one of these used to be a grey box of prose ending in "отправьте
+ * заявку ниже", which reads as a dead end however true it is. Each now names
+ * what is actually missing and carries the steps that would change it, so the
+ * customer has somewhere to go besides the form.
+ */
+function ResultNotice({
+  title,
+  children,
+  actions,
+}: {
+  title: string;
+  children: React.ReactNode;
+  actions?: { label: string; onClick: () => void }[];
+}) {
+  return (
+    <div className="mt-6 rounded-xl border border-border bg-surface/60 p-4">
+      <div className="flex gap-3">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+        <div className="min-w-0">
+          <p className="text-sm font-medium">{title}</p>
+          <div className="mt-1 space-y-2 text-sm leading-relaxed text-muted-foreground">
+            {children}
+          </div>
+        </div>
+      </div>
+      {!!actions?.length && (
+        <div className="mt-3 flex flex-wrap gap-2 sm:ml-7">
+          {actions.map(({ label, onClick }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={onClick}
+              style={{
+                transitionDuration: "var(--duration-snap)",
+                transitionTimingFunction: "var(--ease-editorial)",
+              }}
+              className={cn(
+                "inline-flex min-h-10 items-center rounded-full border border-border bg-background",
+                "px-4 text-xs font-medium transition-[border-color,background-color]",
+                "hover:border-foreground/30 hover:bg-surface",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
  * The design read out of the product name, for the full list's rows.
  *
  * 'unknown' renders as nothing: about a quarter of the catalogue is a bare
@@ -1699,6 +1764,7 @@ function availabilityBadge(availability: string): { label: string; good: boolean
 function LensPriceCards({
   chosen,
   onChoose,
+  onEditStep,
   rxMode,
   design,
   od,
@@ -1711,6 +1777,7 @@ function LensPriceCards({
 }: {
   chosen: ChosenOffer | null;
   onChoose: (offer: ChosenOffer | null) => void;
+  onEditStep: (step: StepId) => void;
   rxMode: RxMode;
   design: DesignOption | null;
   od: Eye;
@@ -1738,7 +1805,15 @@ function LensPriceCards({
   }>({ open: false, rows: [], total: 0, sort: "price_asc", loading: false, error: false });
 
   const index = thicknessToIndex(thickness);
-  const canQuery = rxMode === "has" && od.sph !== "" && od.cyl !== "" && os.sph !== "" && os.cyl !== "";
+  // «Рецепта нет» is not a reason to show nothing. That branch still collects
+  // «Линзы», «Толщина», «Дизайн», «Бренд» and the tint — five real filters that
+  // price perfectly well. What a prescription adds is the manufacturable-range
+  // check, so its absence costs a caveat, not the whole result.
+  const hasRx =
+    rxMode === "has" && od.sph !== "" && od.cyl !== "" && os.sph !== "" && os.cyl !== "";
+  // The index is the one thing the endpoint cannot do without: with no
+  // prescription to compute it from, it is all there is to filter on.
+  const canQuery = index !== null;
 
   // The wizard state is frozen on the results step, so the query is captured
   // once. Every later page then pages through exactly the criteria the three
@@ -1746,10 +1821,9 @@ function LensPriceCards({
   const queryRef = useRef<LensRecommendQuery | null>(null);
   if (queryRef.current === null) {
     queryRef.current = {
-      odSph: od.sph,
-      odCyl: od.cyl,
-      osSph: os.sph,
-      osCyl: os.cyl,
+      ...(hasRx
+        ? { odSph: od.sph, odCyl: od.cyl, osSph: os.sph, osCyl: os.cyl }
+        : {}),
       index: index ?? undefined,
       lensType: lensType?.id,
       tint: tintKeyword(lensType, photochromicTech, sunVariant),
@@ -1789,14 +1863,19 @@ function LensPriceCards({
       });
   };
 
-  useEffect(() => {
-    if (!canQuery) return;
+  // Named, not inlined in the effect, so the error state can offer a retry.
+  // A network blip used to end the wizard in a paragraph.
+  const cardsFetch = useRef<AbortController | null>(null);
+  const loadCards = () => {
+    if (!queryRef.current) return;
+    cardsFetch.current?.abort();
     const controller = new AbortController();
+    cardsFetch.current = controller;
     setState({ kind: "loading" });
     // The first page comes back with the cards. It costs about 12 kB, and it
     // is what lets the button carry the real count and open without a wait.
     fetchLensRecommendation(
-      { ...queryRef.current!, list: true, limit: LIST_PAGE_SIZE, sort: "price_asc" },
+      { ...queryRef.current, list: true, limit: LIST_PAGE_SIZE, sort: "price_asc" },
       controller.signal,
     )
       .then((data) => {
@@ -1812,33 +1891,34 @@ function LensPriceCards({
         console.error("[lens-recommend]", error);
         setState({ kind: "error" });
       });
-    return () => controller.abort();
+  };
+
+  useEffect(() => {
+    if (canQuery) loadCards();
+    return () => cardsFetch.current?.abort();
     // The wizard state is frozen while the results step is shown, so fetching
     // once per mount with the values captured here is enough.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!canQuery) {
-    return (
-      <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-        <p>
-          Ориентировочные цены рассчитываются по рецепту. Без рецепта специалист подберёт модели и
-          назовёт стоимость после консультации — отправьте заявку ниже.
-        </p>
-      </div>
-    );
-  }
-
+  // The only genuine dead end left: минеральные линзы are not in the imported
+  // price lists at all, so there is no number to show. Say that, and offer the
+  // step that would change it instead of only pointing at the form.
   if (index === null) {
     return (
-      <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+      <ResultNotice
+        title="Минеральные линзы мы считаем вручную"
+        actions={[{ label: "Выбрать другую толщину", onClick: () => onEditStep(4) }]}
+      >
         <p>
-          Минеральные линзы рассчитываются специалистом по конкретному рецепту — отправьте заявку
-          ниже, и мы назовём точную стоимость.
+          Минеральных (стеклянных) линз нет в онлайн-прайсе, поэтому цену здесь показать не
+          получится — её называет специалист.
         </p>
-      </div>
+        <p>
+          Отправьте заявку ниже: мы посчитаем стоимость и свяжемся с вами. Либо вернитесь к шагу
+          «Толщина» — для пластиковых линз цены видны сразу.
+        </p>
+      </ResultNotice>
     );
   }
 
@@ -1861,13 +1941,18 @@ function LensPriceCards({
 
   if (state.kind !== "loaded") {
     return (
-      <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+      <ResultNotice
+        title="Цены не загрузились"
+        actions={[{ label: "Попробовать снова", onClick: loadCards }]}
+      >
         <p>
-          Не удалось получить ориентировочные цены. Отправьте заявку ниже — специалист рассчитает
-          стоимость и свяжется с вами.
+          Не дозвонились до прайса — обычно это связь, а не ваш подбор. Попробуйте ещё раз.
         </p>
-      </div>
+        <p>
+          Если не получится, отправьте заявку ниже: все выбранные параметры уже собраны, специалист
+          рассчитает стоимость и свяжется с вами.
+        </p>
+      </ResultNotice>
     );
   }
 
@@ -1882,13 +1967,24 @@ function LensPriceCards({
 
   if (shown.length === 0) {
     return (
-      <div className="mt-6 flex gap-3 rounded-xl border border-border bg-surface/60 p-4 text-sm">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+      <ResultNotice
+        title="Под эти параметры готовых позиций в прайсе нет"
+        actions={[
+          { label: "Изменить бренд", onClick: () => onEditStep(6) },
+          { label: "Изменить дизайн", onClick: () => onEditStep(5) },
+          { label: "Изменить толщину", onClick: () => onEditStep(4) },
+          { label: "Изменить тип линз", onClick: () => onEditStep(3) },
+        ]}
+      >
         <p>
-          Под выбранные условия не нашлось готовых позиций прайса. Отправьте заявку ниже —
-          специалист подберёт вариант вручную.
+          Чаще всего дело в сочетании: например, выбранный бренд не выпускает такой дизайн в этой
+          толщине. Измените один шаг — обычно этого хватает.
         </p>
-      </div>
+        <p>
+          Или отправьте заявку ниже: специалист подберёт вариант вручную, в том числе из позиций,
+          которых нет в онлайн-прайсе.
+        </p>
+      </ResultNotice>
     );
   }
 
@@ -1899,8 +1995,33 @@ function LensPriceCards({
           offers the customer can choose between. */}
       <h2 className="font-serif text-xl">Подходящие варианты линз</h2>
       <p className="mt-1 text-sm text-muted-foreground">
-        Выберите вариант — он попадёт в заявку. Цены ориентировочные, за одну линзу.
+        Выберите вариант — он попадёт в заявку. Цены ориентировочные, указаны за пару.
       </p>
+
+      {/* Named once, here, rather than as an amber badge on all forty rows: with
+          no prescription EVERY position is unverified, so a per-row badge would
+          carry no information and would drown the one it does carry — the stock
+          position. Deliberately not `border-brand`: brand red is the customer's
+          own selection, never informational prose. */}
+      {data.prescription === null && (
+        <div className="mt-4 rounded-xl border border-border bg-surface/60 p-4">
+          <div className="flex gap-3">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+            <div className="min-w-0 text-sm leading-relaxed">
+              <p className="font-medium">Расчёт без рецепта</p>
+              <p className="mt-1 text-muted-foreground">
+                Цены посчитаны по параметрам, которые вы выбрали выше. Не хватает только диоптрий:
+                без них нельзя проверить, выпускается ли конкретная линза в вашей силе — это
+                подтвердит специалист.
+              </p>
+              <p className="mt-2 text-muted-foreground">
+                Если рецепт есть, добавьте его в заявку ниже — расчёт станет точным. Если нет,
+                специалист предложит проверку зрения.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <div
         role="group"
         aria-label={`Варианты линз: ${shown.length} ${pluralOptions(shown.length)}`}
@@ -2003,7 +2124,7 @@ function LensPriceCards({
                   />
                   {stock.label}
                 </span>
-                {card.rxFit !== "yes" && (
+                {data.prescription !== null && card.rxFit !== "yes" && (
                   <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-800">
                     Совместимость проверит специалист
                   </span>

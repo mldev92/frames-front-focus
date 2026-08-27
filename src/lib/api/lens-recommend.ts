@@ -7,11 +7,23 @@ import { apiFetch } from "@/lib/api/security";
  */
 
 export interface LensRecommendQuery {
-  odSph: string;
-  odCyl: string;
-  osSph: string;
-  osCyl: string;
-  /** The «Толщина» pick, e.g. "1.67"; omit to use the computed index. */
+  /**
+   * The prescription — **all four or none**. The endpoint refuses a half-filled
+   * one rather than quietly quoting against a filter the customer cannot see.
+   *
+   * Omitting it is the wizard's «рецепта нет» branch: the answers still price,
+   * but nothing can be checked against a manufacturable range, so every result
+   * comes back with `rxFit: "unknown"` and `managerCheckRequired`.
+   */
+  odSph?: string;
+  odCyl?: string;
+  osSph?: string;
+  osCyl?: string;
+  /**
+   * The «Толщина» pick, e.g. "1.67". Optional with a prescription (the index is
+   * computed from it), **required without one** — it is then the only thing
+   * left to filter on.
+   */
   index?: string;
   /** The «Линзы» step. */
   lensType?: "clear" | "photochromic" | "sun";
@@ -67,6 +79,7 @@ export interface LensRecommendCard {
 }
 
 export interface LensRecommendResponse {
+  /** null when the query carried no prescription — nothing was computed. */
   prescription: {
     odSphericalEquivalent: number;
     osSphericalEquivalent: number;
@@ -103,12 +116,14 @@ export async function fetchLensRecommendation(
   query: LensRecommendQuery,
   signal?: AbortSignal,
 ): Promise<LensRecommendResponse> {
-  const params = new URLSearchParams({
-    odSph: query.odSph,
-    odCyl: query.odCyl,
-    osSph: query.osSph,
-    osCyl: query.osCyl,
-  });
+  const params = new URLSearchParams();
+  // All four or none, matching what the endpoint accepts.
+  if (query.odSph && query.odCyl && query.osSph && query.osCyl) {
+    params.set("odSph", query.odSph);
+    params.set("odCyl", query.odCyl);
+    params.set("osSph", query.osSph);
+    params.set("osCyl", query.osCyl);
+  }
   if (query.index) params.set("index", query.index);
   if (query.lensType) params.set("lensType", query.lensType);
   if (query.tint) params.set("tint", query.tint);
