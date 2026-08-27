@@ -25,14 +25,39 @@ export interface LensRecommendQuery {
    * catalogue is unclassifiable and must not be filtered away.
    */
   design?: "spherical" | "aspheric" | "progressive" | "office";
+  /**
+   * Ask for one page of the whole match list — what «Посмотреть все варианты»
+   * opens — alongside the three cards. Off by default: the endpoint's response
+   * is unchanged without it.
+   */
+  list?: boolean;
+  offset?: number;
+  /** Server caps this at 100. */
+  limit?: number;
+  sort?: LensListSort;
 }
 
+export type LensListSort = "price_asc" | "price_desc";
+
 export interface LensRecommendCard {
+  /**
+   * Identifies the OFFER, not the catalogue row: the supplier sheets price the
+   * same product in several prescription bands, and the id ignores the band.
+   * The three cards carry the same ids as the list rows, so a row can tell it
+   * is one of them.
+   */
+  id: string;
   supplier: string;
   line: string;
   index: number | null;
   coating: string;
   treatment: string;
+  /**
+   * progressive | office | bifocal | single | unknown, read out of the product
+   * name. 'unknown' for the ~24 % of the catalogue that is a bare material
+   * name — show nothing there rather than guessing.
+   */
+  design: "progressive" | "office" | "bifocal" | "single" | "unknown";
   availability: string;
   retailPriceRub: number | null;
   priceRub: number | null;
@@ -62,6 +87,16 @@ export interface LensRecommendResponse {
   managerCheckRequired: boolean;
   catalogueSize: number;
   disclaimer: string;
+  /**
+   * Present only when the query asked for `list`. `listTotal` is smaller than
+   * `matchCount`: the latter counts catalogue positions, this counts what a
+   * customer can actually tell apart.
+   */
+  matches?: LensRecommendCard[];
+  listTotal?: number;
+  listOffset?: number;
+  listLimit?: number;
+  listSort?: LensListSort;
 }
 
 export async function fetchLensRecommendation(
@@ -79,6 +114,12 @@ export async function fetchLensRecommendation(
   if (query.tint) params.set("tint", query.tint);
   if (query.brand) params.set("brand", query.brand);
   if (query.design) params.set("design", query.design);
+  if (query.list) {
+    params.set("list", "1");
+    if (query.offset) params.set("offset", String(query.offset));
+    if (query.limit) params.set("limit", String(query.limit));
+    if (query.sort) params.set("sort", query.sort);
+  }
 
   const res = await apiFetch(getStoreApiUrl(`lens_recommend.php?${params.toString()}`), {
     signal,

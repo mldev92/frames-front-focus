@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowLeft,
+  ArrowDownWideNarrow,
+  ArrowUpNarrowWide,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -34,7 +36,9 @@ import {
 import { getRecommendedLensIndex, type LensIndexRecommendation } from "./logic";
 import {
   fetchLensRecommendation,
+  type LensListSort,
   type LensRecommendCard,
+  type LensRecommendQuery,
   type LensRecommendResponse,
 } from "@/lib/api/lens-recommend";
 import { LensRequestForm } from "./LensRequestForm";
@@ -1576,11 +1580,37 @@ function tintKeyword(
 
 /** The price card the customer picked, kept small enough to live in the request. */
 type ChosenOffer = {
+  /**
+   * What was picked, so the same lens reads as chosen wherever it appears:
+   * `tier:premium` from a card, `offer:<id>` from a row of the full list. A
+   * row that is also one of the three cards carries both.
+   */
+  keys: string[];
   tier: string;
   supplier: string;
   line: string;
+  coating?: string;
+  treatment?: string;
   priceRub: number | null;
 };
+
+/** Is this card or row the one the customer picked? */
+function offerIsChosen(chosen: ChosenOffer | null, keys: string[]): boolean {
+  return !!chosen && chosen.keys.some((key) => keys.includes(key));
+}
+
+/** «ESSILOR» + «AS Stylis», without printing the brand twice. */
+function offerProductName(supplier: string, line: string) {
+  // `supplier` is a slug ("zeiss") and `line` usually already opens with the
+  // brand ("ZEISS Single Vision…") — printing both gives "zeiss ZEISS …".
+  const brand = supplier.toUpperCase();
+  return line.toUpperCase().startsWith(brand) ? line : `${brand} ${line}`;
+}
+
+/** Coating and treatment as one line; the sheets wrap treatments over newlines. */
+function offerSpecs(coating?: string, treatment?: string) {
+  return [coating, treatment?.replace(/\s+/g, " ")].filter(Boolean).join(" · ");
+}
 
 /** Flattened for the salon email — the backend reads scalars out of `selection`. */
 function formatChosenOffer(offer: ChosenOffer) {
@@ -1589,13 +1619,11 @@ function formatChosenOffer(offer: ChosenOffer) {
     offer.priceRub !== null
       ? `${formatPrice(offer.priceRub * 2)} за пару (${formatPrice(offer.priceRub)} за линзу)`
       : "цена по запросу";
-  // `supplier` is a slug ("zeiss") and `line` usually already opens with the
-  // brand ("ZEISS Single Vision…") — printing both gives "zeiss ZEISS …".
-  const supplier = offer.supplier.toUpperCase();
-  const product = offer.line.toUpperCase().startsWith(supplier)
-    ? offer.line
-    : `${supplier} ${offer.line}`;
-  return `${offer.tier} — ${product}, ${price}`;
+  // The coating is what separates two otherwise identical rows of the full
+  // list, so a pick made there is ambiguous in the salon's email without it.
+  const specs = offerSpecs(offer.coating, offer.treatment);
+  const product = offerProductName(offer.supplier, offer.line);
+  return `${offer.tier} — ${product}${specs ? ` · ${specs}` : ""}, ${price}`;
 }
 
 /**
@@ -1633,6 +1661,24 @@ const TIERS: {
     accent: "oklch(0.52 0.12 70)",
   },
 ];
+
+/** How many rows one «Показать ещё» adds. The endpoint caps a page at 100. */
+const LIST_PAGE_SIZE = 40;
+
+/**
+ * The design read out of the product name, for the full list's rows.
+ *
+ * 'unknown' renders as nothing: about a quarter of the catalogue is a bare
+ * material name ("PNX", "EYAS", "Orma") whose design the price lists simply do
+ * not carry, and a row must not claim one we cannot read.
+ */
+const DESIGN_LABELS: Record<LensRecommendCard["design"], string> = {
+  single: "однофокальные",
+  progressive: "прогрессивные",
+  office: "офисные",
+  bifocal: "бифокальные",
+  unknown: "",
+};
 
 /**
  * `availability` is salon|warehouse|order (see _lens.php). The reference shows
@@ -1680,28 +1726,87 @@ function LensPriceCards({
     | { kind: "loaded"; data: LensRecommendResponse }
   >({ kind: "idle" });
 
+  // «Посмотреть все варианты»: the rows accumulate page by page, so scrolling
+  // back up after «Показать ещё» does not lose what was already fetched.
+  const [list, setList] = useState<{
+    open: boolean;
+    rows: LensRecommendCard[];
+    total: number;
+    sort: LensListSort;
+    loading: boolean;
+    error: boolean;
+  }>({ open: false, rows: [], total: 0, sort: "price_asc", loading: false, error: false });
+
   const index = thicknessToIndex(thickness);
   const canQuery = rxMode === "has" && od.sph !== "" && od.cyl !== "" && os.sph !== "" && os.cyl !== "";
+
+  // The wizard state is frozen on the results step, so the query is captured
+  // once. Every later page then pages through exactly the criteria the three
+  // cards were priced with, which re-reading the props could not guarantee.
+  const queryRef = useRef<LensRecommendQuery | null>(null);
+  if (queryRef.current === null) {
+    queryRef.current = {
+      odSph: od.sph,
+      odCyl: od.cyl,
+      osSph: os.sph,
+      osCyl: os.cyl,
+      index: index ?? undefined,
+      lensType: lensType?.id,
+      tint: tintKeyword(lensType, photochromicTech, sunVariant),
+      brand: brand && brand.id !== "all" ? brand.id : undefined,
+      design: design?.id,
+    };
+  }
+
+  // One controller for the paging requests: a sort flipped twice quickly would
+  // otherwise land out of order and show rows from the abandoned order.
+  const pageFetch = useRef<AbortController | null>(null);
+  useEffect(() => () => pageFetch.current?.abort(), []);
+
+  const loadPage = (offset: number, sort: LensListSort, replace: boolean) => {
+    if (!queryRef.current) return;
+    pageFetch.current?.abort();
+    const controller = new AbortController();
+    pageFetch.current = controller;
+    setList((prev) => ({ ...prev, loading: true, error: false }));
+    fetchLensRecommendation(
+      { ...queryRef.current, list: true, offset, limit: LIST_PAGE_SIZE, sort },
+      controller.signal,
+    )
+      .then((data) =>
+        setList((prev) => ({
+          ...prev,
+          loading: false,
+          sort,
+          total: data.listTotal ?? prev.total,
+          rows: replace ? (data.matches ?? []) : [...prev.rows, ...(data.matches ?? [])],
+        })),
+      )
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        console.error("[lens-recommend:list]", error);
+        setList((prev) => ({ ...prev, loading: false, error: true }));
+      });
+  };
 
   useEffect(() => {
     if (!canQuery) return;
     const controller = new AbortController();
     setState({ kind: "loading" });
+    // The first page comes back with the cards. It costs about 12 kB, and it
+    // is what lets the button carry the real count and open without a wait.
     fetchLensRecommendation(
-      {
-        odSph: od.sph,
-        odCyl: od.cyl,
-        osSph: os.sph,
-        osCyl: os.cyl,
-        index: index ?? undefined,
-        lensType: lensType?.id,
-        tint: tintKeyword(lensType, photochromicTech, sunVariant),
-        brand: brand && brand.id !== "all" ? brand.id : undefined,
-        design: design?.id,
-      },
+      { ...queryRef.current!, list: true, limit: LIST_PAGE_SIZE, sort: "price_asc" },
       controller.signal,
     )
-      .then((data) => setState({ kind: "loaded", data }))
+      .then((data) => {
+        setState({ kind: "loaded", data });
+        setList((prev) => ({
+          ...prev,
+          rows: data.matches ?? [],
+          total: data.listTotal ?? 0,
+        }));
+      })
       .catch((error) => {
         if (controller.signal.aborted) return;
         console.error("[lens-recommend]", error);
@@ -1808,11 +1913,12 @@ function LensPriceCards({
         className="mt-4 grid gap-4 md:grid-cols-3 md:grid-rows-[auto_auto_auto_auto_auto_1fr_auto]"
       >
         {shown.map(({ key, title, note, accent, card }) => {
-          const selected = chosen?.tier === title;
+          // Both identifiers, so picking this lens down in the full list lights
+          // its tier card up too — they are the same offer, shown twice.
+          const keys = [`tier:${key}`, `offer:${card.id}`];
+          const selected = offerIsChosen(chosen, keys);
           const stock = availabilityBadge(card.availability);
-          const product = card.line.toUpperCase().startsWith(card.supplier.toUpperCase())
-            ? card.line
-            : `${card.supplier.toUpperCase()} ${card.line}`;
+          const product = offerProductName(card.supplier, card.line);
           return (
             <article
               key={key}
@@ -1917,9 +2023,12 @@ function LensPriceCards({
                     selected
                       ? null
                       : {
+                          keys,
                           tier: title,
                           supplier: card.supplier,
                           line: card.line,
+                          coating: card.coating,
+                          treatment: card.treatment,
                           priceRub: card.retailPriceRub,
                         },
                   )
@@ -1949,10 +2058,318 @@ function LensPriceCards({
           );
         })}
       </div>
-      <p className="mt-3 text-xs text-muted-foreground">
-        Всего подходящих позиций: {data.matchCount.toLocaleString("ru-RU")}. Цены ориентировочные;
-        итоговую стоимость пары подтвердит специалист.
+      {list.total > shown.length && (
+        <LensAllOffers
+          list={list}
+          cards={data.cards}
+          chosen={chosen}
+          onChoose={onChoose}
+          onToggle={() => setList((prev) => ({ ...prev, open: !prev.open }))}
+          onSort={(sort) => loadPage(0, sort, true)}
+          onMore={() => loadPage(list.rows.length, list.sort, false)}
+        />
+      )}
+
+      <p className="mt-4 text-xs text-muted-foreground">
+        Цены ориентировочные; итоговую стоимость пары подтвердит специалист.
       </p>
     </div>
   );
+}
+
+/* --------------------------- The whole match list --------------------------- */
+
+/**
+ * «Посмотреть все варианты (N)» and what it opens.
+ *
+ * The reference site (masterglasses.ru) puts this under its three offers, and
+ * it answers the obvious question the three cards raise: the customer has been
+ * shown the cheapest, the median and the dearest, and nothing in between.
+ *
+ * Rows are deliberately denser than the tier cards — the same information, no
+ * tier name, no colour block — so that scanning a few hundred of them stays
+ * possible on a phone.
+ */
+function LensAllOffers({
+  list,
+  cards,
+  chosen,
+  onChoose,
+  onToggle,
+  onSort,
+  onMore,
+}: {
+  list: {
+    open: boolean;
+    rows: LensRecommendCard[];
+    total: number;
+    sort: LensListSort;
+    loading: boolean;
+    error: boolean;
+  };
+  cards: LensRecommendResponse["cards"];
+  chosen: ChosenOffer | null;
+  onChoose: (offer: ChosenOffer | null) => void;
+  onToggle: () => void;
+  onSort: (sort: LensListSort) => void;
+  onMore: () => void;
+}) {
+  // A row that is also one of the three cards says so, rather than looking
+  // like a fourth, unexplained repeat of the same lens.
+  const tierOfOffer = new Map<string, string>();
+  for (const { key, title } of TIERS) {
+    const card = cards[key];
+    if (card) tierOfOffer.set(card.id, title);
+  }
+
+  const remaining = list.total - list.rows.length;
+
+  return (
+    <div className="mt-4">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={list.open}
+        aria-controls="lens-all-offers"
+        style={{
+          transitionDuration: "var(--duration-snap)",
+          transitionTimingFunction: "var(--ease-editorial)",
+        }}
+        className={cn(
+          "inline-flex w-full items-center justify-center gap-2 rounded-full border border-border px-5 py-3",
+          "text-sm font-semibold transition-[background-color,border-color]",
+          "hover:border-foreground/30 hover:bg-surface/60",
+        )}
+      >
+        {list.open ? "Свернуть список" : `Посмотреть все варианты · ${list.total.toLocaleString("ru-RU")}`}
+        {list.open ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+      </button>
+
+      {list.open && (
+        <div id="lens-all-offers" className="mt-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs text-muted-foreground">
+              Показано {list.rows.length.toLocaleString("ru-RU")} из{" "}
+              {list.total.toLocaleString("ru-RU")}
+            </p>
+            <div role="group" aria-label="Сортировка" className="flex gap-1">
+              {(
+                [
+                  { id: "price_asc" as const, label: "Сначала дешевле", Icon: ArrowUpNarrowWide },
+                  { id: "price_desc" as const, label: "Сначала дороже", Icon: ArrowDownWideNarrow },
+                ]
+              ).map(({ id, label, Icon }) => (
+                <button
+                  key={id}
+                  type="button"
+                  aria-pressed={list.sort === id}
+                  disabled={list.loading}
+                  onClick={() => list.sort !== id && onSort(id)}
+                  style={{
+                    transitionDuration: "var(--duration-snap)",
+                    transitionTimingFunction: "var(--ease-editorial)",
+                  }}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium",
+                    "transition-[background-color,border-color,color] disabled:opacity-60",
+                    list.sort === id
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-border text-muted-foreground hover:border-foreground/30",
+                  )}
+                >
+                  <Icon className="h-3.5 w-3.5" aria-hidden />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <ul className="mt-3 space-y-2">
+            {list.rows.map((offer) => (
+              <LensOfferRow
+                key={offer.id}
+                offer={offer}
+                tier={tierOfOffer.get(offer.id)}
+                chosen={chosen}
+                onChoose={onChoose}
+              />
+            ))}
+          </ul>
+
+          {list.error && (
+            <p className="mt-3 flex gap-2 rounded-xl border border-border bg-surface/60 p-3 text-sm">
+              <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              Не удалось загрузить остальные варианты. Отправьте заявку ниже — специалист подберёт
+              вариант вручную.
+            </p>
+          )}
+
+          {remaining > 0 && (
+            <button
+              type="button"
+              onClick={onMore}
+              disabled={list.loading}
+              style={{
+                transitionDuration: "var(--duration-snap)",
+                transitionTimingFunction: "var(--ease-editorial)",
+              }}
+              className={cn(
+                "mt-3 inline-flex w-full items-center justify-center rounded-full border border-border",
+                "px-5 py-3 text-sm font-semibold transition-[background-color,border-color]",
+                "hover:border-foreground/30 hover:bg-surface/60 disabled:opacity-60",
+              )}
+            >
+              {list.loading
+                ? "Загружаем…"
+                : `Показать ещё ${Math.min(remaining, LIST_PAGE_SIZE)}`}
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * One row of the full list.
+ *
+ * Stacked on a phone and a single line from `sm:` up. The price leads with the
+ * pair, like the tier cards, so the two sets of numbers are comparable at a
+ * glance rather than differing by a factor of two.
+ */
+function LensOfferRow({
+  offer,
+  tier,
+  chosen,
+  onChoose,
+}: {
+  offer: LensRecommendCard;
+  tier?: string;
+  chosen: ChosenOffer | null;
+  onChoose: (offer: ChosenOffer | null) => void;
+}) {
+  const keys = tier ? [`offer:${offer.id}`, `tier:${tierKeyOf(tier)}`] : [`offer:${offer.id}`];
+  const selected = offerIsChosen(chosen, keys);
+  const stock = availabilityBadge(offer.availability);
+  const specs = offerSpecs(offer.coating, offer.treatment);
+  const designLabel = DESIGN_LABELS[offer.design] ?? "";
+  const product = offerProductName(offer.supplier, offer.line);
+
+  return (
+    <li>
+      <div
+        style={{
+          transitionDuration: "var(--duration-snap)",
+          transitionTimingFunction: "var(--ease-editorial)",
+        }}
+        className={cn(
+          "grid gap-3 rounded-xl border p-3 transition-[border-color,background-color]",
+          "sm:grid-cols-[1fr_auto] sm:items-center sm:gap-4 sm:p-4",
+          selected ? "border-brand bg-brand/5" : "border-border",
+        )}
+      >
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            {/* Some Essilor lines carry the fitting height inside the product
+                name ("… Установочная высота: Regular – 22 мм, …"), which runs a
+                row to three lines. Clamped, with the full text on hover and in
+                the accessible name of the button below. */}
+            <span className="line-clamp-2 text-sm font-medium leading-snug" title={product}>
+              {product}
+            </span>
+            {tier && (
+              <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                {tier}
+              </span>
+            )}
+          </div>
+          {specs && <p className="mt-1 truncate text-xs text-muted-foreground">{specs}</p>}
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+            {offer.index !== null && <span>индекс {offer.index}</span>}
+            {designLabel && (
+              <>
+                <span aria-hidden>·</span>
+                <span>{designLabel}</span>
+              </>
+            )}
+            <span aria-hidden>·</span>
+            <span className={cn("inline-flex items-center gap-1", !stock.good && "text-amber-700")}>
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  stock.good ? "bg-[var(--success)]" : "bg-amber-500",
+                )}
+              />
+              {stock.label}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:gap-2">
+          <div className="sm:text-right">
+            {offer.retailPriceRub !== null ? (
+              <>
+                <div className="font-serif text-lg leading-none">
+                  {formatPrice(offer.retailPriceRub * 2)}
+                </div>
+                <div className="mt-1 whitespace-nowrap text-[11px] text-muted-foreground">
+                  за пару · {formatPrice(offer.retailPriceRub)} за одну
+                </div>
+              </>
+            ) : (
+              <div className="text-sm font-medium text-brand">Цена по запросу</div>
+            )}
+          </div>
+          <button
+            type="button"
+            aria-pressed={selected}
+            aria-label={`${selected ? "Отменить выбор" : "Выбрать"}: ${product}`}
+            onClick={() =>
+              onChoose(
+                selected
+                  ? null
+                  : {
+                      keys,
+                      // A pick made here is not one of the three tiers unless
+                      // it happens to be; say which, so the salon's email
+                      // reads the same either way.
+                      tier: tier ?? "Выбрано из полного списка",
+                      supplier: offer.supplier,
+                      line: offer.line,
+                      coating: offer.coating,
+                      treatment: offer.treatment,
+                      priceRub: offer.retailPriceRub,
+                    },
+              )
+            }
+            style={{
+              transitionDuration: "var(--duration-snap)",
+              transitionTimingFunction: "var(--ease-editorial)",
+            }}
+            className={cn(
+              "inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded-full px-4",
+              "sm:min-h-0 sm:py-2",
+              "text-xs font-semibold transition-[background-color,color]",
+              selected
+                ? "bg-brand text-brand-foreground"
+                : "bg-foreground text-background hover:opacity-90",
+            )}
+          >
+            {selected ? (
+              <>
+                <Check className="h-3.5 w-3.5" strokeWidth={3} /> Выбрано
+              </>
+            ) : (
+              "Выбрать"
+            )}
+          </button>
+        </div>
+      </div>
+    </li>
+  );
+}
+
+/** The TIERS key behind a tier title, so a row and its card share an identity. */
+function tierKeyOf(title: string): string {
+  return TIERS.find((tier) => tier.title === title)?.key ?? "";
 }
