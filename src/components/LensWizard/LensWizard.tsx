@@ -2051,7 +2051,13 @@ function LensPriceCards({
                 "flex scroll-mb-32 flex-col rounded-xl border bg-background p-5",
                 "md:row-span-7 md:grid md:grid-rows-subgrid md:gap-0",
                 "transition-[border-color,background-color,box-shadow]",
-                selected ? "border-brand bg-brand/5 shadow-sm" : "border-border",
+                // Same hover as OptionCard on every earlier step. Without it the
+                // last step is the only one whose cards are inert under the
+                // cursor — and it is the step where there is actually a choice
+                // to make. Not while selected: brand red already owns that card.
+                selected
+                  ? "border-brand bg-brand/5 shadow-sm"
+                  : "border-border hover:border-foreground/30",
               )}
             >
               {/* 1 — header. Optional blocks below are rendered even when empty
@@ -2386,7 +2392,9 @@ function LensOfferRow({
         className={cn(
           "grid gap-3 rounded-xl border p-3 transition-[border-color,background-color]",
           "sm:grid-cols-[1fr_auto] sm:items-center sm:gap-4 sm:p-4",
-          selected ? "border-brand bg-brand/5" : "border-border",
+          // Matches the tier cards and OptionCard; over a few hundred rows it is
+          // also what tells you which one the cursor is on.
+          selected ? "border-brand bg-brand/5" : "border-border hover:border-foreground/30",
         )}
       >
         <div className="min-w-0">
