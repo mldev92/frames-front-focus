@@ -1008,6 +1008,33 @@ function StepLensType({
   sunVariant: SunVariantOption | null;
   setSunVariant: (v: SunVariantOption) => void;
 }) {
+  // Picking «Фотохромные» or «Солнечные очки» reveals a second, REQUIRED
+  // question below the three cards — and nothing moved when it appeared. On a
+  // 375 px screen only 78 px of that section sat inside the scroll window, so
+  // the whole visible change was a card highlighting and «Далее» going dead.
+  // That is the report: "the button doesn't work and I don't understand why".
+  const subChoiceRef = useRef<HTMLElement | null>(null);
+  const subChoicePending =
+    (lensType?.id === "photochromic" && !photochromicTech) ||
+    (lensType?.id === "sun" && !sunVariant);
+
+  useEffect(() => {
+    if (!subChoicePending) return;
+    subChoiceRef.current?.scrollIntoView({
+      // `start`, not `nearest`: the point is to put the blocking question at
+      // the top of the window, not to nudge its first pixel into view.
+      block: "start",
+      // Instant, for the same reason the step-change scroll above is instant —
+      // and because "smooth" is not dependable: it is silently dropped in some
+      // engines and contexts, which makes the scroll simply not happen. An
+      // instant scroll also needs no motion-reduce guard.
+      behavior: "auto",
+    });
+    // Keyed on the TYPE, so answering the sub-question does not scroll again,
+    // and coming back to the step with it already answered does not either.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lensType?.id]);
+
   return (
     <div>
       <StepHeader
@@ -1032,10 +1059,13 @@ function StepLensType({
       </div>
 
       {lensType?.id === "photochromic" && (
-        <section className="mt-7 rounded-xl border border-border p-5">
+        <section ref={subChoiceRef} className="mt-7 scroll-mt-4 rounded-xl border border-border p-5">
           <h2 className="font-serif text-xl">Технология фотохрома</h2>
+          {/* Says it is required, right where the choice is. The colour block
+              below says the opposite in the same voice, so the pair reads as
+              deliberate rather than as one of them nagging. */}
           <p className="mt-1 text-sm text-muted-foreground">
-            Выберите семейство светоадаптивных линз.
+            Выберите семейство светоадаптивных линз — это нужно, чтобы продолжить.
           </p>
           <div
             role="group"
@@ -1079,8 +1109,11 @@ function StepLensType({
       )}
 
       {lensType?.id === "sun" && (
-        <section className="mt-7 rounded-xl border border-border p-5">
+        <section ref={subChoiceRef} className="mt-7 scroll-mt-4 rounded-xl border border-border p-5">
           <h2 className="font-serif text-xl">Вариант затемнения</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Выберите, как линзы затемняются — это нужно, чтобы продолжить.
+          </p>
           <div
             role="group"
             aria-label={`Вариант затемнения: ${SUN_VARIANTS.length} ${pluralOptions(SUN_VARIANTS.length)}`}
