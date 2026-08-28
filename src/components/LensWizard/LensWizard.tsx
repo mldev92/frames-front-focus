@@ -2050,11 +2050,22 @@ function LensPriceCards({
               className={cn(
                 "flex scroll-mb-32 flex-col rounded-xl border bg-background p-5",
                 "md:row-span-7 md:grid md:grid-rows-subgrid md:gap-0",
-                "transition-[border-color,background-color,box-shadow]",
-                // Same hover as OptionCard on every earlier step. Without it the
-                // last step is the only one whose cards are inert under the
-                // cursor — and it is the step where there is actually a choice
-                // to make. Not while selected: brand red already owns that card.
+                // `translate`, not `transform`: Tailwind v4 compiles -translate-y-1
+                // to the standalone `translate` property, so a transition list
+                // naming `transform` animates nothing and the lift snaps.
+                "transition-[border-color,background-color,box-shadow,translate]",
+                // These carry a price and a CTA, so they answer the cursor the
+                // way the catalogue's ProductCard does — a lift and a shadow —
+                // not the way the earlier steps' OptionCard does. Those are a
+                // radio group, where a border tint is enough; here it read as
+                // nothing happening at all.
+                // `transform` has to be in the transition list above or the
+                // lift snaps. Translating a subgrid item is safe: transforms
+                // paint, they do not lay out, so the seven bands stay aligned.
+                "hover:-translate-y-1 hover:shadow-lg",
+                "motion-reduce:transition-none motion-reduce:hover:translate-y-0",
+                // Brand red already owns the chosen card, so only the border
+                // tint is conditional — the motion is not.
                 selected
                   ? "border-brand bg-brand/5 shadow-sm"
                   : "border-border hover:border-foreground/30",
@@ -2166,7 +2177,7 @@ function LensPriceCards({
                 }}
                 className={cn(
                   "mt-4 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold",
-                  "transition-[background-color,color,box-shadow,transform]",
+                  "transition-[background-color,color,box-shadow,translate]",
                   "hover:-translate-y-0.5 hover:shadow-md motion-reduce:transition-none motion-reduce:hover:translate-y-0",
                   selected
                     ? "bg-brand text-brand-foreground"
@@ -2392,9 +2403,12 @@ function LensOfferRow({
         className={cn(
           "grid gap-3 rounded-xl border p-3 transition-[border-color,background-color]",
           "sm:grid-cols-[1fr_auto] sm:items-center sm:gap-4 sm:p-4",
-          // Matches the tier cards and OptionCard; over a few hundred rows it is
-          // also what tells you which one the cursor is on.
-          selected ? "border-brand bg-brand/5" : "border-border hover:border-foreground/30",
+          // A tint, not the cards' lift: forty rows rising under the cursor is a
+          // different and worse thing. Over a few hundred rows this is also what
+          // tells you which one you are on.
+          selected
+            ? "border-brand bg-brand/5"
+            : "border-border hover:border-foreground/30 hover:bg-surface/40",
         )}
       >
         <div className="min-w-0">
