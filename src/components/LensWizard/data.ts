@@ -249,7 +249,14 @@ export const THICKNESSES: ThicknessOption[] = [
   },
 ];
 
-export type DesignId = "spherical" | "aspheric" | "progressive" | "office";
+/**
+ * "myopia_control" is not a customer-facing choice — DESIGNS below never
+ * includes it, so StepDesign's own .map() never renders it as a pickable
+ * card. It exists only so «Контроль миопии у ребёнка» has a real DesignId to
+ * auto-set (see MYOPIA_CONTROL_DESIGN) and the backend has a matching value
+ * to filter internally by — see o_lens_design_of() / o_lens_design_conflicts().
+ */
+export type DesignId = "spherical" | "aspheric" | "progressive" | "office" | "myopia_control";
 
 export interface DesignOption {
   id: DesignId;
@@ -285,6 +292,73 @@ export const DESIGNS: DesignOption[] = [
     warning: "Не подходят для вождения",
   },
 ];
+
+/**
+ * Auto-set the instant «Контроль миопии у ребёнка» is chosen as Назначение
+ * (never through StepDesign — deliberately excluded from DESIGNS above), so
+ * that step renders a DecidedCard instead of an option list and «Ваши
+ * параметры» has a real title to show. LensPriceCards must not forward this
+ * id to the backend query — the purpose itself already does the filtering.
+ */
+export const MYOPIA_CONTROL_DESIGN: DesignOption = {
+  id: "myopia_control",
+  title: "Определяется производителем",
+  description:
+    "Линзы ZEISS MyoCare рассчитаны на контроль близорукости у ребёнка — их дизайн не выбирается отдельно.",
+};
+
+/**
+ * Coating PURCHASE tier, not the coating itself — every offer still shows its
+ * real coating name; this only groups it. Wording follows the owner's own
+ * client-facing copy for HOYA and ZEISS (podbor_linz/-HOYA-покрытия- 2.xlsx,
+ * -ZEISS-покрытия-.xlsx); Essilor and Synchrony have no owner mapping yet, so
+ * this description stays brand-agnostic rather than naming a specific line.
+ */
+/**
+ * "myopia-managed" is not a customer-facing choice, same reasoning as
+ * DesignId's "myopia_control" above — see MYOPIA_COATING_TIER.
+ */
+export type CoatingTierId = "basic" | "comfort" | "premium" | "myopia-managed";
+
+export interface CoatingTierOption {
+  id: CoatingTierId;
+  title: string;
+  description: string;
+}
+
+export const COATING_TIERS: CoatingTierOption[] = [
+  {
+    id: "basic",
+    title: "Базовое",
+    description: "Антибликовое покрытие и защита от УФ — доступный вариант на каждый день",
+  },
+  {
+    id: "comfort",
+    title: "Комфорт",
+    description:
+      "Усиленная защита от УФ, легче в уходе — оптимальный выбор для большинства",
+  },
+  {
+    id: "premium",
+    title: "Премиум",
+    description:
+      "Максимальная прозрачность и стойкость к царапинам — топовые линейки покрытий",
+  },
+];
+
+/**
+ * Auto-set alongside MYOPIA_CONTROL_DESIGN — none of basic/comfort/premium
+ * correctly describes MyoCare's fixed DV Kids/Platinum/BlueProtect UV
+ * coatings (o_lens_coating_tier_of() deliberately returns 'unknown' for
+ * every MyoCare record, to avoid DV Platinum UV colliding with the ordinary
+ * ZEISS premium anchor of the same name). LensPriceCards must not forward
+ * this id to the backend query, same as MYOPIA_CONTROL_DESIGN.
+ */
+export const MYOPIA_COATING_TIER: CoatingTierOption = {
+  id: "myopia-managed",
+  title: "Подбирается по параметрам ребёнка",
+  description: "Не входит в общую линейку покрытий — только для линз ZEISS MyoCare.",
+};
 
 export type BrandId = "all" | "essilor" | "zeiss" | "hoya" | "synchrony";
 

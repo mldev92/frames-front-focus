@@ -16,15 +16,19 @@ import { formatPrice } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
 import {
   BRANDS,
+  COATING_TIERS,
   CONSULTATION,
   DESIGNS,
   LENS_TYPES,
+  MYOPIA_COATING_TIER,
+  MYOPIA_CONTROL_DESIGN,
   PHOTOCHROMIC_COLORS,
   PHOTOCHROMIC_TECHS,
   PURPOSES,
   SUN_VARIANTS,
   THICKNESSES,
   type BrandOption,
+  type CoatingTierOption,
   type DesignOption,
   type LensTypeOption,
   type PhotochromicColorId,
@@ -58,16 +62,17 @@ const emptyEye: Eye = { sph: "", cyl: "", axi: "", add: "" };
  * Step order mirrors the customer's reference wizard: Назначение → Рецепт →
  * Линзы → Толщина → Дизайн → Бренд → Результаты (handoff §1, 2026-08-22).
  */
-type StepId = 1 | 2 | 3 | 4 | 5 | 6 | 7;
-const LAST_STEP: StepId = 7;
+type StepId = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
+const LAST_STEP: StepId = 8;
 const STEPS: { id: StepId; label: string }[] = [
   { id: 1, label: "Назначение" },
   { id: 2, label: "Рецепт" },
   { id: 3, label: "Линзы" },
   { id: 4, label: "Толщина" },
   { id: 5, label: "Дизайн" },
-  { id: 6, label: "Бренд" },
-  { id: 7, label: "Результаты" },
+  { id: 6, label: "Покрытие" },
+  { id: 7, label: "Бренд" },
+  { id: 8, label: "Результаты" },
 ];
 
 type RxMode = "has" | "none" | null;
@@ -133,6 +138,7 @@ export function LensWizard({
   // recommendation from the prescription may keep (re)selecting the card.
   const [thicknessTouched, setThicknessTouched] = useState(false);
   const [design, setDesign] = useState<DesignOption | null>(null);
+  const [coatingTier, setCoatingTier] = useState<CoatingTierOption | null>(null);
   const [brand, setBrand] = useState<BrandOption | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -194,6 +200,7 @@ export function LensWizard({
     setThickness(null);
     setThicknessTouched(false);
     setDesign(null);
+    setCoatingTier(null);
     setBrand(null);
   };
 
@@ -237,8 +244,10 @@ export function LensWizard({
       case 5:
         return !!design;
       case 6:
-        return !!brand;
+        return !!coatingTier;
       case 7:
+        return !!brand;
+      case 8:
         return true;
       default:
         return false;
@@ -266,6 +275,8 @@ export function LensWizard({
       case 5:
         return "Выберите дизайн линз";
       case 6:
+        return "Выберите покрытие";
+      case 7:
         return "Выберите бренд";
       default:
         return null;
@@ -419,8 +430,21 @@ export function LensWizard({
                   setSunVariant(null);
                   setThickness(null);
                   setThicknessTouched(false);
-                  setDesign(null);
-                  setBrand(null);
+                  // MyoCare is one fixed ZEISS product line, so Дизайн,
+                  // Покрытие and Бренд have nothing to actually ask on this
+                  // path — auto-set them to real values now, so «Ваши
+                  // параметры» and the salon request already have something
+                  // to show the moment the three steps render their
+                  // DecidedCard pass-through instead of an option list.
+                  if (v.id === "myopia-control") {
+                    setDesign(MYOPIA_CONTROL_DESIGN);
+                    setCoatingTier(MYOPIA_COATING_TIER);
+                    setBrand(BRANDS.find((b) => b.id === "zeiss") ?? null);
+                  } else {
+                    setDesign(null);
+                    setCoatingTier(null);
+                    setBrand(null);
+                  }
                 }}
               />
             )}
@@ -471,9 +495,31 @@ export function LensWizard({
                 recommendedThickness={recommendedThickness}
               />
             )}
-            {step === 5 && <StepDesign value={design} onChange={setDesign} purpose={purpose} />}
-            {step === 6 && <StepBrand value={brand} onChange={setBrand} />}
-            {step === 7 && (
+            {step === 5 &&
+              (purpose?.id === "myopia-control" ? (
+                <MyopiaDecidedStep stepTitle="Дизайн линз" option={MYOPIA_CONTROL_DESIGN} />
+              ) : (
+                <StepDesign value={design} onChange={setDesign} purpose={purpose} />
+              ))}
+            {step === 6 &&
+              (purpose?.id === "myopia-control" ? (
+                <MyopiaDecidedStep stepTitle="Покрытие линз" option={MYOPIA_COATING_TIER} />
+              ) : (
+                <StepCoating value={coatingTier} onChange={setCoatingTier} />
+              ))}
+            {step === 7 &&
+              (purpose?.id === "myopia-control" ? (
+                <MyopiaDecidedStep
+                  stepTitle="Бренд"
+                  option={{
+                    title: "ZEISS",
+                    description: "MyoCare выпускает только ZEISS.",
+                  }}
+                />
+              ) : (
+                <StepBrand value={brand} onChange={setBrand} />
+              ))}
+            {step === 8 && (
               <StepResults
                 onEditStep={setStep}
                 frame={frame}
@@ -492,6 +538,7 @@ export function LensWizard({
                 thickness={thickness}
                 recommendedThickness={recommendedThickness}
                 design={design}
+                coatingTier={coatingTier}
                 brand={brand}
                 indexRecommendation={indexRecommendation}
               />
@@ -1186,6 +1233,35 @@ function DecidedCard({
   );
 }
 
+/**
+ * What Дизайн, Покрытие and Бренд render instead of their normal option list
+ * when «Контроль миопии у ребёнка» is the chosen Назначение — ZEISS MyoCare
+ * is one fixed product line, so there is nothing to actually pick on any of
+ * these three steps. Not a literal skip of the step (StepId/LAST_STEP are
+ * unchanged, «Далее» still needs a click, back-navigation still works): the
+ * state these three steps hold is auto-set to a real value the instant the
+ * purpose is chosen (see StepPurpose's onChange below), so `canProceed` for
+ * each is already satisfied and this is purely what gets shown.
+ */
+function MyopiaDecidedStep({
+  stepTitle,
+  option,
+}: {
+  stepTitle: string;
+  option: { title: string; description: string };
+}) {
+  return (
+    <div>
+      <StepHeader title={stepTitle} />
+      <DecidedCard
+        eyebrow="Задано производителем"
+        title={option.title}
+        description={option.description}
+      />
+    </div>
+  );
+}
+
 function StepThickness({
   value,
   onChange,
@@ -1343,6 +1419,42 @@ function StepDesign({
   );
 }
 
+function StepCoating({
+  value,
+  onChange,
+}: {
+  value: CoatingTierOption | null;
+  onChange: (v: CoatingTierOption) => void;
+}) {
+  return (
+    <div>
+      <StepHeader
+        title="Покрытие линз"
+        count={COATING_TIERS.length}
+        subtitle="Каждое покрытие защищает от бликов и УФ; более высокий пакет добавляет прочность и уход."
+      />
+      <div
+        role="group"
+        aria-label={`Покрытие линз: ${COATING_TIERS.length} ${pluralOptions(COATING_TIERS.length)}`}
+        className="space-y-3"
+      >
+        {COATING_TIERS.map((option) => (
+          <OptionCard
+            key={option.id}
+            active={value?.id === option.id}
+            title={option.title}
+            description={option.description}
+            onClick={() => onChange(option)}
+          />
+        ))}
+      </div>
+      <div className="mt-6">
+        <ConsultationCard />
+      </div>
+    </div>
+  );
+}
+
 function StepBrand({
   value,
   onChange,
@@ -1397,6 +1509,7 @@ function StepResults({
   thickness,
   recommendedThickness,
   design,
+  coatingTier,
   brand,
   indexRecommendation,
 }: {
@@ -1418,6 +1531,7 @@ function StepResults({
   thickness: ThicknessOption | null;
   recommendedThickness: ThicknessOption | null;
   design: DesignOption | null;
+  coatingTier: CoatingTierOption | null;
   brand: BrandOption | null;
   indexRecommendation: LensIndexRecommendation | null;
 }) {
@@ -1458,6 +1572,10 @@ function StepResults({
       thickness: thickness?.title ?? "",
       thicknessIsRecommended,
       design: design?.title ?? "",
+      // The backend's own field name is `coating`, predating this step (it
+      // used to have nothing to populate it with) -- reuse it rather than
+      // add a second, redundant one.
+      coating: coatingTier?.title ?? "",
       brand: brand?.title ?? "",
       chosenOffer: chosenOffer ? formatChosenOffer(chosenOffer) : undefined,
     },
@@ -1466,7 +1584,10 @@ function StepResults({
         ? {
             od: {
               sph: od.sph,
-              cyl: od.cyl,
+              // Same default as calculateSphericalEquivalent(): a blank CYL
+              // means no cylinder, not a blank field — otherwise the salon
+              // email shows an empty CYL next to a real, computed SE.
+              cyl: od.cyl || "0",
               axis: od.axi,
               add: od.add,
               sphericalEquivalent: formatSphericalEquivalent(
@@ -1475,7 +1596,7 @@ function StepResults({
             },
             os: {
               sph: os.sph,
-              cyl: os.cyl,
+              cyl: os.cyl || "0",
               axis: os.axi,
               add: os.add,
               sphericalEquivalent: formatSphericalEquivalent(
@@ -1508,6 +1629,7 @@ function StepResults({
         : null,
     ],
     ["Дизайн", design?.title],
+    ["Покрытие", coatingTier?.title],
     ["Бренд", brand?.title],
     ["Выбранный вариант", chosenOffer ? formatChosenOffer(chosenOffer) : null],
   ];
@@ -1543,6 +1665,7 @@ function StepResults({
         onEditStep={onEditStep}
         rxMode={rxMode}
         design={design}
+        coatingTier={coatingTier}
         purpose={purpose}
         od={od}
         os={os}
@@ -1773,6 +1896,9 @@ const DESIGN_LABELS: Record<LensRecommendCard["design"], string> = {
   progressive: "прогрессивные",
   office: "офисные",
   bifocal: "бифокальные",
+  // Reachable only through «Контроль миопии у ребёнка» — that path already
+  // says what these are via the purpose itself, so no row label is needed.
+  myopia_control: "",
   unknown: "",
 };
 
@@ -1884,6 +2010,7 @@ function LensPriceCards({
   onEditStep,
   rxMode,
   design,
+  coatingTier,
   purpose,
   od,
   os,
@@ -1898,6 +2025,7 @@ function LensPriceCards({
   onEditStep: (step: StepId) => void;
   rxMode: RxMode;
   design: DesignOption | null;
+  coatingTier: CoatingTierOption | null;
   purpose: PurposeOption | null;
   od: Eye;
   os: Eye;
@@ -1958,7 +2086,20 @@ function LensPriceCards({
       lensType: lensType?.id,
       tint: tintKeyword(lensType, photochromicTech, sunVariant),
       brand: brand && brand.id !== "all" ? brand.id : undefined,
-      design: design?.id,
+      // «Контроль миопии у ребёнка» narrows to MyoCare through `purpose`
+      // alone (see the backend's positive filter). design/coatingTier are
+      // auto-set to pseudo objects on that path purely so the wizard has a
+      // title to display — sending their ids as real filter params would be
+      // wrong (neither is a value the endpoint's design/coatingTier enums
+      // accept from outside this one internal path).
+      design:
+        purpose?.id === "myopia-control"
+          ? undefined
+          : (design?.id as LensRecommendQuery["design"]),
+      coatingTier:
+        purpose?.id === "myopia-control"
+          ? undefined
+          : (coatingTier?.id as LensRecommendQuery["coatingTier"]),
       purpose: purpose?.id,
     };
   }
@@ -2101,7 +2242,8 @@ function LensPriceCards({
       <ResultNotice
         title="Под эти параметры готовых позиций в прайсе нет"
         actions={[
-          { label: "Изменить бренд", onClick: () => onEditStep(6) },
+          { label: "Изменить бренд", onClick: () => onEditStep(7) },
+          { label: "Изменить покрытие", onClick: () => onEditStep(6) },
           { label: "Изменить дизайн", onClick: () => onEditStep(5) },
           { label: "Изменить толщину", onClick: () => onEditStep(4) },
           { label: "Изменить тип линз", onClick: () => onEditStep(3) },

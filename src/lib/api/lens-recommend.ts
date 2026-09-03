@@ -38,6 +38,12 @@ export interface LensRecommendQuery {
    */
   design?: "spherical" | "aspheric" | "progressive" | "office";
   /**
+   * The «Покрытие» step — a closed positive filter, unlike `design` above: an
+   * offer whose coating tier is unreadable is excluded, not passed through,
+   * because this is a purchase choice, not a search narrowing.
+   */
+  coatingTier?: "basic" | "comfort" | "premium";
+  /**
    * The «Назначение» step (ТЗ section 3's allowed-design-category table).
    * Same negative-filter shape as `design`, and stacked with it.
    */
@@ -78,11 +84,12 @@ export interface LensRecommendCard {
   coating: string;
   treatment: string;
   /**
-   * progressive | office | bifocal | single | unknown, read out of the product
-   * name. 'unknown' for the ~24 % of the catalogue that is a bare material
-   * name — show nothing there rather than guessing.
+   * progressive | office | bifocal | single | myopia_control | unknown, read
+   * out of the product name (myopia_control by supplier group instead — see
+   * o_lens_design_of()). 'unknown' for the ~24 % of the catalogue that is a
+   * bare material name — show nothing there rather than guessing.
    */
-  design: "progressive" | "office" | "bifocal" | "single" | "unknown";
+  design: "progressive" | "office" | "bifocal" | "single" | "myopia_control" | "unknown";
   availability: string;
   retailPriceRub: number | null;
   priceRub: number | null;
@@ -142,6 +149,7 @@ export async function fetchLensRecommendation(
   if (query.tint) params.set("tint", query.tint);
   if (query.brand) params.set("brand", query.brand);
   if (query.design) params.set("design", query.design);
+  if (query.coatingTier) params.set("coatingTier", query.coatingTier);
   if (query.purpose) params.set("purpose", query.purpose);
   if (query.list) {
     params.set("list", "1");
