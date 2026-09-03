@@ -38,6 +38,19 @@ export interface LensRecommendQuery {
    */
   design?: "spherical" | "aspheric" | "progressive" | "office";
   /**
+   * The «Назначение» step (ТЗ section 3's allowed-design-category table).
+   * Same negative-filter shape as `design`, and stacked with it.
+   */
+  purpose?:
+    | "distance"
+    | "near"
+    | "multifocal"
+    | "driving"
+    | "computer"
+    | "image"
+    | "sun-protection"
+    | "myopia-control";
+  /**
    * Ask for one page of the whole match list — what «Посмотреть все варианты»
    * opens — alongside the three cards. Off by default: the endpoint's response
    * is unchanged without it.
@@ -129,6 +142,7 @@ export async function fetchLensRecommendation(
   if (query.tint) params.set("tint", query.tint);
   if (query.brand) params.set("brand", query.brand);
   if (query.design) params.set("design", query.design);
+  if (query.purpose) params.set("purpose", query.purpose);
   if (query.list) {
     params.set("list", "1");
     if (query.offset) params.set("offset", String(query.offset));

@@ -19,7 +19,11 @@ function parsePrescriptionValue(value: string): number | null {
 
 export function calculateSphericalEquivalent(eye: PrescriptionEyeInput): number | null {
   const sph = parsePrescriptionValue(eye.sph);
-  const cyl = parsePrescriptionValue(eye.cyl);
+  // A blank CYL means "no cylinder" (TZ §2.1 already allows 0.00 here), not
+  // "unknown" — owner report, 2026-09-01: customers left it blank because they
+  // did not think to type 0, and got stuck unable to proceed. A CYL the
+  // customer did type but that is not a number still blocks the calculation.
+  const cyl = eye.cyl.trim() === "" ? 0 : parsePrescriptionValue(eye.cyl);
 
   if (sph === null || cyl === null) return null;
   return sph + cyl / 2;

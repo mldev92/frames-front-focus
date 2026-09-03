@@ -43,6 +43,13 @@ import {
 } from "@/lib/api/lens-recommend";
 import { LensRequestForm } from "./LensRequestForm";
 import { ScrollHorizon } from "./ScrollHorizon";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 type Eye = { sph: string; cyl: string; axi: string; add: string };
 const emptyEye: Eye = { sph: "", cyl: "", axi: "", add: "" };
@@ -208,8 +215,12 @@ export function LensWizard({
         if (rxMode === "none") return true;
         if (rxMode !== "has") return false;
         const eyeIsComplete = (eye: Eye) => {
+          // CYL is not required — a customer with no astigmatism should not
+          // have to guess that leaving it blank means the same as typing 0
+          // (owner report, 2026-09-01). AXIS is only needed once a nonzero
+          // CYL is actually entered.
           const cylinderNeedsAxis = eye.cyl !== "" && Number(eye.cyl) !== 0;
-          return eye.sph !== "" && eye.cyl !== "" && (!cylinderNeedsAxis || eye.axi !== "");
+          return eye.sph !== "" && (!cylinderNeedsAxis || eye.axi !== "");
         };
         const pdIsComplete = twoPd ? pd !== "" && pdNear !== "" : pd !== "";
         const addIsComplete = !purpose?.requiresAdd || (od.add !== "" && os.add !== "");
@@ -900,7 +911,7 @@ function StepRx({
                   </div>
                 </label>
                 <label className="text-xs text-muted-foreground">
-                  Цилиндр (CYL) *
+                  Цилиндр (CYL)
                   <div className="mt-1">
                     <RxSelect
                       ariaLabel={`${label}: цилиндр`}
@@ -1193,9 +1204,6 @@ function StepThickness({
 
   const featured = value ?? recommendedThickness;
   const isRecommended = !!featured && featured.id === recommendedThickness?.id;
-  const se = recommendation
-    ? recommendation.governingAbsSphericalEquivalent.toFixed(2).replace(".", ",")
-    : null;
 
   // Порядок показа: сначала лестница индексов, затем особые материалы.
   // data.ts НЕ трогаем — разбиение только на отрисовке.
@@ -1232,11 +1240,6 @@ function StepThickness({
               reason={
                 isRecommended && recommendation
                   ? RECOMMENDATION_REASON[recommendation.index]
-                  : undefined
-              }
-              note={
-                isRecommended && se
-                  ? `Сфероэквивалент ${se} — считаем по глазу с большей нагрузкой.`
                   : undefined
               }
             />
@@ -1497,12 +1500,6 @@ function StepResults({
     ],
     ["Назначение", purpose?.title],
     ["Рецепт", rxMode === "has" ? "Введён" : "Нет — предварительный подбор"],
-    [
-      "Сфероэквивалент",
-      indexRecommendation
-        ? `OD ${formatSphericalEquivalent(indexRecommendation.odSphericalEquivalent)} · OS ${formatSphericalEquivalent(indexRecommendation.osSphericalEquivalent)}`
-        : null,
-    ],
     ["Линзы", lensTypeSummary || null],
     [
       "Толщина",
@@ -1546,6 +1543,7 @@ function StepResults({
         onEditStep={onEditStep}
         rxMode={rxMode}
         design={design}
+        purpose={purpose}
         od={od}
         os={os}
         lensType={lensType}
@@ -1794,12 +1792,99 @@ function availabilityBadge(availability: string): { label: string; good: boolean
   }
 }
 
+/**
+ * `offer.supplier` is what the customer should be told the brand is — see
+ * o_lens_offer_brand_of() in _lens_recommend.php. Essilor Group's own
+ * consumer brands (Kodak, Mekk, Elements) are real slugs here, not just the
+ * four wizard-level brand groups.
+ */
+const BRAND_DISPLAY_LABELS: Record<string, string> = {
+  essilor: "Essilor",
+  zeiss: "ZEISS",
+  hoya: "HOYA",
+  synchrony: "Synchrony",
+  kodak: "Kodak",
+  mekk: "Mekk",
+  elements: "Elements",
+};
+
+function brandDisplayLabel(supplier: string): string {
+  return BRAND_DISPLAY_LABELS[supplier] ?? (supplier ? supplier[0].toUpperCase() + supplier.slice(1) : "");
+}
+
+/**
+ * Full detail for one offer, opened from the «i» next to a card or list row
+ * (owner report, 2026-09-01: "можно ли сделать так чтобы когда кликаешь на
+ * карточку линзы появлялась информация о линзе?"). Deliberately not the
+ * card's own click target — that stays the explicit «Выбрать» CTA, so this
+ * detail view is a separate, additive affordance next to it.
+ */
+function LensDetailDialog({
+  offer,
+  onOpenChange,
+}: {
+  offer: LensRecommendCard | null;
+  onOpenChange: (open: boolean) => void;
+}) {
+  if (!offer) return null;
+  const product = offerProductName(offer.supplier, offer.line);
+  const stock = availabilityBadge(offer.availability);
+  const designLabel = DESIGN_LABELS[offer.design];
+  const rows: [string, string][] = [
+    ["Бренд", brandDisplayLabel(offer.supplier)],
+    ...(offer.index !== null ? ([["Индекс", String(offer.index)]] as [string, string][]) : []),
+    ...(offerSpecs(offer.coating, offer.treatment)
+      ? ([["Покрытие", offerSpecs(offer.coating, offer.treatment)]] as [string, string][])
+      : []),
+    ...(designLabel ? ([["Дизайн", designLabel]] as [string, string][]) : []),
+    ["Наличие", stock.label],
+  ];
+  return (
+    <Dialog open onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="pr-6 font-serif text-xl leading-snug">{product}</DialogTitle>
+          <DialogDescription>Подробности выбранной позиции.</DialogDescription>
+        </DialogHeader>
+        <dl className="space-y-2.5 text-sm">
+          {rows.map(([label, value]) => (
+            <div key={label} className="grid grid-cols-[110px_1fr] gap-3">
+              <dt className="text-muted-foreground">{label}</dt>
+              <dd className="font-medium">{value}</dd>
+            </div>
+          ))}
+        </dl>
+        <div className="rounded-lg border border-border bg-surface/50 p-3">
+          {offer.retailPriceRub !== null ? (
+            <>
+              <div className="font-serif text-xl leading-none">
+                {formatPrice(offer.retailPriceRub * 2)}
+              </div>
+              <div className="mt-1 text-xs text-muted-foreground">
+                за пару линз · {formatPrice(offer.retailPriceRub)} за одну
+              </div>
+            </>
+          ) : (
+            <div className="text-sm font-medium text-brand">Цена по запросу</div>
+          )}
+        </div>
+        {offer.needsManagerCheck && (
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Совместимость с вашим рецептом подтвердит специалист.
+          </p>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function LensPriceCards({
   chosen,
   onChoose,
   onEditStep,
   rxMode,
   design,
+  purpose,
   od,
   os,
   lensType,
@@ -1813,6 +1898,7 @@ function LensPriceCards({
   onEditStep: (step: StepId) => void;
   rxMode: RxMode;
   design: DesignOption | null;
+  purpose: PurposeOption | null;
   od: Eye;
   os: Eye;
   lensType: LensTypeOption | null;
@@ -1825,6 +1911,10 @@ function LensPriceCards({
     | { kind: "idle" | "loading" | "error" }
     | { kind: "loaded"; data: LensRecommendResponse }
   >({ kind: "idle" });
+
+  // Which offer's detail dialog is open, if any — shared by the three tier
+  // cards and every row of the full list.
+  const [detailOffer, setDetailOffer] = useState<LensRecommendCard | null>(null);
 
   // «Посмотреть все варианты»: the rows accumulate page by page, so scrolling
   // back up after «Показать ещё» does not lose what was already fetched.
@@ -1842,8 +1932,10 @@ function LensPriceCards({
   // «Линзы», «Толщина», «Дизайн», «Бренд» and the tint — five real filters that
   // price perfectly well. What a prescription adds is the manufacturable-range
   // check, so its absence costs a caveat, not the whole result.
-  const hasRx =
-    rxMode === "has" && od.sph !== "" && od.cyl !== "" && os.sph !== "" && os.cyl !== "";
+  // CYL is optional (owner report, 2026-09-01) — a blank CYL means no
+  // cylinder, same as SPH's own "0" would, so it is not a reason to withhold
+  // the prescription.
+  const hasRx = rxMode === "has" && od.sph !== "" && os.sph !== "";
   // The index is the one thing the endpoint cannot do without: with no
   // prescription to compute it from, it is all there is to filter on.
   const canQuery = index !== null;
@@ -1855,13 +1947,19 @@ function LensPriceCards({
   if (queryRef.current === null) {
     queryRef.current = {
       ...(hasRx
-        ? { odSph: od.sph, odCyl: od.cyl, osSph: os.sph, osCyl: os.cyl }
+        ? {
+            odSph: od.sph,
+            odCyl: od.cyl || "0",
+            osSph: os.sph,
+            osCyl: os.cyl || "0",
+          }
         : {}),
       index: index ?? undefined,
       lensType: lensType?.id,
       tint: tintKeyword(lensType, photochromicTech, sunVariant),
       brand: brand && brand.id !== "all" ? brand.id : undefined,
       design: design?.id,
+      purpose: purpose?.id,
     };
   }
 
@@ -2127,8 +2225,16 @@ function LensPriceCards({
 
               {/* 2 — the product */}
               <div className="mt-4">
-                <div className="text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
                   Линза
+                  <button
+                    type="button"
+                    aria-label={`Подробнее: ${product}`}
+                    onClick={() => setDetailOffer(card)}
+                    className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full normal-case tracking-normal text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+                  >
+                    <Info className="h-3 w-3" />
+                  </button>
                 </div>
                 <div className="mt-1 text-sm font-medium leading-snug">{product}</div>
               </div>
@@ -2235,6 +2341,7 @@ function LensPriceCards({
           cards={data.cards}
           chosen={chosen}
           onChoose={onChoose}
+          onShowDetail={setDetailOffer}
           onToggle={() => setList((prev) => ({ ...prev, open: !prev.open }))}
           onSort={(sort) => loadPage(0, sort, true)}
           onMore={() => loadPage(list.rows.length, list.sort, false)}
@@ -2244,6 +2351,10 @@ function LensPriceCards({
       <p className="mt-4 text-xs text-muted-foreground">
         Цены ориентировочные; итоговую стоимость пары подтвердит специалист.
       </p>
+      <LensDetailDialog
+        offer={detailOffer}
+        onOpenChange={(open) => !open && setDetailOffer(null)}
+      />
     </div>
   );
 }
@@ -2266,6 +2377,7 @@ function LensAllOffers({
   cards,
   chosen,
   onChoose,
+  onShowDetail,
   onToggle,
   onSort,
   onMore,
@@ -2281,6 +2393,7 @@ function LensAllOffers({
   cards: LensRecommendResponse["cards"];
   chosen: ChosenOffer | null;
   onChoose: (offer: ChosenOffer | null) => void;
+  onShowDetail: (offer: LensRecommendCard) => void;
   onToggle: () => void;
   onSort: (sort: LensListSort) => void;
   onMore: () => void;
@@ -2363,6 +2476,7 @@ function LensAllOffers({
                 tier={tierOfOffer.get(offer.id)}
                 chosen={chosen}
                 onChoose={onChoose}
+                onShowDetail={onShowDetail}
               />
             ))}
           </ul>
@@ -2413,11 +2527,13 @@ function LensOfferRow({
   tier,
   chosen,
   onChoose,
+  onShowDetail,
 }: {
   offer: LensRecommendCard;
   tier?: string;
   chosen: ChosenOffer | null;
   onChoose: (offer: ChosenOffer | null) => void;
+  onShowDetail: (offer: LensRecommendCard) => void;
 }) {
   const keys = tier ? [`offer:${offer.id}`, `tier:${tierKeyOf(tier)}`] : [`offer:${offer.id}`];
   const selected = offerIsChosen(chosen, keys);
@@ -2453,6 +2569,14 @@ function LensOfferRow({
             <span className="line-clamp-2 text-sm font-medium leading-snug" title={product}>
               {product}
             </span>
+            <button
+              type="button"
+              aria-label={`Подробнее: ${product}`}
+              onClick={() => onShowDetail(offer)}
+              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+            >
+              <Info className="h-3.5 w-3.5" />
+            </button>
             {tier && (
               <span className="rounded-full bg-surface px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 {tier}

@@ -1,4 +1,5 @@
 import {
+  Baby,
   BookOpen,
   Car,
   Eye,
@@ -23,7 +24,8 @@ export type PurposeId =
   | "driving"
   | "computer"
   | "image"
-  | "sun-protection";
+  | "sun-protection"
+  | "myopia-control";
 
 export interface PurposeOption {
   id: PurposeId;
@@ -76,6 +78,15 @@ export const PURPOSES: PurposeOption[] = [
     title: "Для защиты от солнца",
     subtitle: "Фотохромные или тонированные, с защитой от УФ-лучей",
     icon: Sun,
+  },
+  // ТЗ §3 lists this as its own step-1 task; the reference wizard does not
+  // show it, but the owner asked for it directly (2026-09-01): "Нет варианта
+  // линз для контроля миопии детей".
+  {
+    id: "myopia-control",
+    title: "Контроль миопии у ребёнка",
+    subtitle: "Замедляют прогрессирование близорукости — ZEISS MyoCare",
+    icon: Baby,
   },
 ];
 

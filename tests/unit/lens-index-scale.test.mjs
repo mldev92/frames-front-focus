@@ -17,6 +17,15 @@ test("SE is SPH + CYL/2, computed per eye (ТЗ §2.1)", () => {
   assert.equal(calculateSphericalEquivalent(eye("abc", "0")), null);
 });
 
+test("a blank CYL means no cylinder, not an incomplete prescription (owner report, 2026-09-01)", () => {
+  assert.equal(calculateSphericalEquivalent(eye(-2.0, "")), -2.0);
+  assert.equal(calculateSphericalEquivalent({ sph: "-2.0", cyl: "  " }), -2.0);
+  // SPH is still required — CYL cannot stand in for it.
+  assert.equal(calculateSphericalEquivalent(eye("", "")), null);
+  // A CYL the customer actually typed, but that is not a number, still blocks.
+  assert.equal(calculateSphericalEquivalent(eye(-2.0, "abc")), null);
+});
+
 test("the governing value is the larger |SE| of the two eyes", () => {
   const r = getRecommendedLensIndex(eye("+8.00", 0), eye("+1.00", 0));
   assert.equal(r.governingAbsSphericalEquivalent, 8);
@@ -70,5 +79,13 @@ test("7.51–7.99, left undefined by the ТЗ, is settled by the 1.67 cap", () =
 
 test("incomplete prescriptions yield no recommendation", () => {
   assert.equal(getRecommendedLensIndex(eye("", ""), eye("-2", "0")), null);
-  assert.equal(getRecommendedLensIndex(eye("-2", "0"), eye("-2", "")), null);
+  // A blank SPH still blocks — only CYL is optional.
+  assert.equal(getRecommendedLensIndex(eye("-2", "0"), eye("", "0")), null);
+});
+
+test("a blank CYL on either eye still yields a recommendation", () => {
+  const r = getRecommendedLensIndex(eye("-2", "0"), eye("-2", ""));
+  assert.notEqual(r, null);
+  assert.equal(r.osSphericalEquivalent, -2);
+  assert.equal(r.index, "1.60");
 });
