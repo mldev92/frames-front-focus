@@ -40,6 +40,7 @@ import {
 import { getRecommendedLensIndex, type LensIndexRecommendation } from "./logic";
 import {
   fetchLensRecommendation,
+  type LensAdvantage,
   type LensListSort,
   type LensRecommendCard,
   type LensRecommendQuery,
@@ -1695,6 +1696,8 @@ function thicknessToIndex(thickness: ThicknessOption | null): string | null {
   switch (thickness?.id) {
     case "1.50":
       return "1.50";
+    case "1.56":
+      return "1.56";
     case "poly-159":
       return "1.59";
     case "1.60":
@@ -1756,6 +1759,14 @@ type ChosenOffer = {
   line: string;
   coating?: string;
   treatment?: string;
+  /**
+   * Where the lens comes from, carried through to the salon's email. The whole
+   * point of the 2026-09 rework is that the selector answers from the stock
+   * catalogue first; a manager reading «Оптимальный — AS Stylis BCT · Crizal
+   * Easy Pro, 15 600 ₽» cannot act on that without knowing it is in Moscow.
+   */
+  availability?: string;
+  channel?: string | null;
   priceRub: number | null;
 };
 
@@ -1788,7 +1799,10 @@ function formatChosenOffer(offer: ChosenOffer) {
   // list, so a pick made there is ambiguous in the salon's email without it.
   const specs = offerSpecs(offer.coating, offer.treatment);
   const product = offerProductName(offer.supplier, offer.line);
-  return `${offer.tier} — ${product}${specs ? ` · ${specs}` : ""}, ${price}`;
+  const stock = offer.availability
+    ? `, ${availabilityBadge(offer.availability, offer.channel).label.toLowerCase()}`
+    : "";
+  return `${offer.tier} — ${product}${specs ? ` · ${specs}` : ""}, ${price}${stock}`;
 }
 
 /**
@@ -1809,23 +1823,50 @@ const TIERS: {
 }[] = [
   {
     key: "best_price",
-    title: "Базовый вариант",
-    note: "Минимальная цена среди совместимых позиций",
+    title: "Самый доступный",
+    // Not «по всем выбранным параметрам»: «Покрытие» is a preference now, not
+    // a filter, so the cheapest fitting lens routinely carries a coating from
+    // a different class than the one picked — which is the point, it is how
+    // the stock catalogue stopped being thrown away.
+    note: "Самая доступная из подходящих позиций",
     accent: "oklch(0.52 0.12 255)",
   },
   {
     key: "optimal",
-    title: "Улучшенный вариант",
-    note: "Средняя по цене совместимая позиция",
+    title: "Оптимальный",
+    note: "Дороже базового — и есть за что",
     accent: "oklch(0.52 0.13 150)",
   },
   {
     key: "premium",
-    title: "Премиум вариант",
-    note: "Верхние линейки и индивидуальные дизайны",
+    title: "Премиальный",
+    note: "Лучшее из подходящего по выбранным параметрам",
     accent: "oklch(0.52 0.12 70)",
   },
 ];
+
+/**
+ * What a card gives over the cheaper card below it.
+ *
+ * The server no longer picks the middle and top cards by price alone: a card
+ * above the base exists only if the engine can NAME an improvement over it
+ * (see o_lens_advantages_over()). These are those names. If the list is empty
+ * the card is not shown at all, so «дороже, но лучше» never appears without
+ * saying how.
+ */
+const ADVANTAGE_LABELS: Record<LensAdvantage, string> = {
+  coating_tier: "покрытие более высокого класса",
+  chosen_tier: "покрытие выбранного класса",
+  feature_blue: "защита от синего света",
+  feature_driving: "фильтр для вождения",
+  surface: "асферический дизайн — тоньше и легче",
+  stock: "есть на складе — очки будут готовы быстрее",
+};
+
+/** «покрытие выбранного класса, защита от синего света» */
+function advantageText(items: LensAdvantage[]): string {
+  return items.map((item) => ADVANTAGE_LABELS[item]).filter(Boolean).join(", ");
+}
 
 /** How many rows one «Показать ещё» adds. The endpoint caps a page at 100. */
 const LIST_PAGE_SIZE = 40;
@@ -1903,18 +1944,33 @@ const DESIGN_LABELS: Record<LensRecommendCard["design"], string> = {
 };
 
 /**
- * `availability` is salon|warehouse|order (see _lens.php). The reference shows
- * a manufacturing time here («Изготовление 3 дня»); we have no day counts in
- * the price lists, so state the stock position instead of inventing numbers.
+ * `availability` is salon|warehouse|order (see _lens.php) and `channel` is
+ * which catalogue the offer came from, sklad|rx.
+ *
+ * Both are needed, which is the point. Reading `availability` alone captioned
+ * 105 of the 208 stock rows «Под заказ — рецептурная» — including cards in the
+ * owner's own screenshots — because half the stock rows say 'order': the
+ * supplier leaves the warehouse cell blank on a product's continuation rows,
+ * or fills it with «Италия» / «Европа», which means a stock item sitting in a
+ * warehouse abroad, not a lens made to order.
+ *
+ * The reference shows a manufacturing time here («Изготовление 3 дня»); the
+ * price lists carry no per-product day counts, so this states the stock
+ * position instead of inventing numbers.
  */
-function availabilityBadge(availability: string): { label: string; good: boolean } {
+function availabilityBadge(
+  availability: string,
+  channel?: string | null,
+): { label: string; good: boolean } {
   switch (availability) {
     case "salon":
       return { label: "Есть в салоне", good: true };
     case "warehouse":
-      return { label: "На складе поставщика", good: true };
+      return { label: "На складе в Москве", good: true };
     default:
-      return { label: "Под заказ — рецептурная", good: false };
+      return channel === "sklad"
+        ? { label: "Складская позиция — со склада поставщика", good: true }
+        : { label: "Рецептурная — изготовление под заказ", good: false };
   }
 }
 
@@ -1954,7 +2010,7 @@ function LensDetailDialog({
 }) {
   if (!offer) return null;
   const product = offerProductName(offer.supplier, offer.line);
-  const stock = availabilityBadge(offer.availability);
+  const stock = availabilityBadge(offer.availability, offer.channel);
   const designLabel = DESIGN_LABELS[offer.design];
   const rows: [string, string][] = [
     ["Бренд", brandDisplayLabel(offer.supplier)],
@@ -2064,9 +2120,14 @@ function LensPriceCards({
   // cylinder, same as SPH's own "0" would, so it is not a reason to withhold
   // the prescription.
   const hasRx = rxMode === "has" && od.sph !== "" && os.sph !== "";
-  // The index is the one thing the endpoint cannot do without: with no
-  // prescription to compute it from, it is all there is to filter on.
-  const canQuery = index !== null;
+  // «Минеральные линзы» is a material, not an index: ZEISS prices its glass
+  // from 1.5 to 1.9 against the same index field as its plastic, so the query
+  // sends material=mineral INSTEAD of an index. This used to be the wizard's
+  // one dead end, with a notice claiming the online price list holds no glass
+  // — it holds 76 such positions, four of them stock.
+  const isMineral = thickness?.id === "mineral";
+  // The endpoint needs at least one of: a prescription, an index, a material.
+  const canQuery = index !== null || isMineral;
 
   // The wizard state is frozen on the results step, so the query is captured
   // once. Every later page then pages through exactly the criteria the three
@@ -2083,6 +2144,7 @@ function LensPriceCards({
           }
         : {}),
       index: index ?? undefined,
+      material: isMineral ? "mineral" : undefined,
       lensType: lensType?.id,
       tint: tintKeyword(lensType, photochromicTech, sunVariant),
       brand: brand && brand.id !== "all" ? brand.id : undefined,
@@ -2173,27 +2235,6 @@ function LensPriceCards({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // The only genuine dead end left: минеральные линзы are not in the imported
-  // price lists at all, so there is no number to show. Say that, and offer the
-  // step that would change it instead of only pointing at the form.
-  if (index === null) {
-    return (
-      <ResultNotice
-        title="Минеральные линзы мы считаем вручную"
-        actions={[{ label: "Выбрать другую толщину", onClick: () => onEditStep(4) }]}
-      >
-        <p>
-          Минеральных (стеклянных) линз нет в онлайн-прайсе, поэтому цену здесь показать не
-          получится — её называет специалист.
-        </p>
-        <p>
-          Отправьте заявку ниже: мы посчитаем стоимость и свяжемся с вами. Либо вернитесь к шагу
-          «Толщина» — для пластиковых линз цены видны сразу.
-        </p>
-      </ResultNotice>
-    );
-  }
-
   if (state.kind === "loading" || state.kind === "idle") {
     return (
       <div className="mt-6 grid gap-3 md:grid-cols-3">
@@ -2236,6 +2277,47 @@ function LensPriceCards({
     accent,
     card: data.cards[key],
   })).filter((entry): entry is typeof entry & { card: LensRecommendCard } => !!entry.card);
+
+  // Zero cards no longer implies zero offers. The server will not headline a
+  // lens it cannot show to be the surface the customer picked, or one it holds
+  // off the cards on purpose (an individual design, an uncoated blank), so a
+  // query can now match plenty of priced positions and still produce no card
+  // — «Толщина 1.74» plus «Сферические» is one real example, 65 offers and no
+  // card, because the catalogue has no 1.74 lens anyone calls spherical.
+  // Returning the "nothing matched" notice there would hide offers the
+  // customer has already been fetched.
+  if (shown.length === 0 && list.total > 0) {
+    return (
+      <div className="mt-8">
+        <h2 className="font-serif text-xl">Готовых карточек по этим параметрам нет</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Под ваши параметры подходит {list.total} {pluralOptions(list.total)}, но ни один из них
+          нельзя показать как «базовый» или «премиальный» — по этим линзам поставщик не указывает
+          дизайн поверхности так, чтобы мы могли обещать именно то, что вы выбрали. Посмотрите
+          список целиком или измените шаг «Дизайн».
+        </p>
+        <div className="mt-4">
+          <LensAllOffers
+            list={{ ...list, open: true }}
+            cards={data.cards}
+            chosen={chosen}
+            onChoose={onChoose}
+            onShowDetail={setDetailOffer}
+            onToggle={() => setList((prev) => ({ ...prev, open: !prev.open }))}
+            onSort={(sort) => loadPage(0, sort, true)}
+            onMore={() => loadPage(list.rows.length, list.sort, false)}
+          />
+        </div>
+        <p className="mt-4 text-xs text-muted-foreground">
+          Цены ориентировочные; итоговую стоимость пары подтвердит специалист.
+        </p>
+        <LensDetailDialog
+          offer={detailOffer}
+          onOpenChange={(open) => !open && setDetailOffer(null)}
+        />
+      </div>
+    );
+  }
 
   if (shown.length === 0) {
     return (
@@ -2304,14 +2386,21 @@ function LensPriceCards({
         // The note row is 1fr, so the slack collects there and the CTAs sit on
         // one line. Mobile keeps the plain flex column: nothing to align when
         // the cards are stacked.
-        className="mt-4 grid gap-4 md:grid-cols-3 md:grid-rows-[auto_auto_auto_auto_auto_1fr_auto]"
+        // Two cards, or one, is now a normal outcome rather than a shortfall:
+        // the engine shows a dearer card only when it can say what the extra
+        // money buys. So the column count follows the cards instead of leaving
+        // a hole where a third one used to be assumed.
+        className={cn(
+          "mt-4 grid gap-4 md:grid-rows-[auto_auto_auto_auto_auto_1fr_auto]",
+          shown.length >= 3 ? "md:grid-cols-3" : shown.length === 2 ? "md:grid-cols-2" : "md:grid-cols-1",
+        )}
       >
         {shown.map(({ key, title, note, accent, card }) => {
           // Both identifiers, so picking this lens down in the full list lights
           // its tier card up too — they are the same offer, shown twice.
           const keys = [`tier:${key}`, `offer:${card.id}`];
           const selected = offerIsChosen(chosen, keys);
-          const stock = availabilityBadge(card.availability);
+          const stock = availabilityBadge(card.availability, card.channel);
           const product = offerProductName(card.supplier, card.line);
           return (
             <article
@@ -2429,8 +2518,16 @@ function LensPriceCards({
                 )}
               </div>
 
-              {/* 6 — what the tier means. 1fr row: the slack collects here. */}
-              <p className="mt-3 text-xs text-muted-foreground">{note}</p>
+              {/* 6 — why this card, and on the dearer ones what the extra
+                  money buys. The server cannot produce a card above the base
+                  without at least one nameable advantage, so this is never the
+                  empty «просто лучше» the owner objected to. 1fr row: the slack
+                  collects here. */}
+              <p className="mt-3 text-xs text-muted-foreground">
+                {card.advantagesOver.length > 0
+                  ? `Что даёт доплата: ${advantageText(card.advantagesOver)}.`
+                  : note}
+              </p>
 
               {/* 7 — an explicit CTA, like the reference's «добавить эти линзы» —
                   a whole-card click target left the action ambiguous. */}
@@ -2448,6 +2545,8 @@ function LensPriceCards({
                           line: card.line,
                           coating: card.coating,
                           treatment: card.treatment,
+                          availability: card.availability,
+                          channel: card.channel,
                           priceRub: card.retailPriceRub,
                         },
                   )
@@ -2507,8 +2606,10 @@ function LensPriceCards({
  * «Посмотреть все варианты (N)» and what it opens.
  *
  * The reference site (masterglasses.ru) puts this under its three offers, and
- * it answers the obvious question the three cards raise: the customer has been
- * shown the cheapest, the median and the dearest, and nothing in between.
+ * it answers the obvious question the cards raise: the customer has been shown
+ * the cheapest fitting lens and one or two rungs above it that are genuinely
+ * different, and nothing in between — nor anything the engine could not
+ * classify well enough to headline.
  *
  * Rows are deliberately denser than the tier cards — the same information, no
  * tier name, no colour block — so that scanning a few hundred of them stays
@@ -2679,7 +2780,7 @@ function LensOfferRow({
 }) {
   const keys = tier ? [`offer:${offer.id}`, `tier:${tierKeyOf(tier)}`] : [`offer:${offer.id}`];
   const selected = offerIsChosen(chosen, keys);
-  const stock = availabilityBadge(offer.availability);
+  const stock = availabilityBadge(offer.availability, offer.channel);
   const specs = offerSpecs(offer.coating, offer.treatment);
   const designLabel = DESIGN_LABELS[offer.design] ?? "";
   const product = offerProductName(offer.supplier, offer.line);
@@ -2780,6 +2881,8 @@ function LensOfferRow({
                       line: offer.line,
                       coating: offer.coating,
                       treatment: offer.treatment,
+                      availability: offer.availability,
+                      channel: offer.channel,
                       priceRub: offer.retailPriceRub,
                     },
               )

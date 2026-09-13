@@ -38,11 +38,18 @@ export interface LensRecommendQuery {
    */
   design?: "spherical" | "aspheric" | "progressive" | "office";
   /**
-   * The «Покрытие» step — a closed positive filter, unlike `design` above: an
-   * offer whose coating tier is unreadable is excluded, not passed through,
-   * because this is a purchase choice, not a search narrowing.
+   * The «Покрытие» step. Since the 2026-09 rework a PREFERENCE, not a filter:
+   * the engine ranks offers by distance to this class and never drops one for
+   * having a different (or unclassified) coating — the owner's own ruling.
    */
   coatingTier?: "basic" | "comfort" | "premium";
+  /**
+   * «Минеральные линзы» on the «Толщина» step. A material, not an index —
+   * ZEISS prices its glass from 1.5 to 1.9 against the same index field as
+   * its plastic — so it REPLACES `index`, and the endpoint accepts it as the
+   * sole narrowing filter in the «рецепта нет» branch.
+   */
+  material?: "mineral";
   /**
    * The «Назначение» step (ТЗ section 3's allowed-design-category table).
    * Same negative-filter shape as `design`, and stacked with it.
@@ -90,13 +97,46 @@ export interface LensRecommendCard {
    * bare material name — show nothing there rather than guessing.
    */
   design: "progressive" | "office" | "bifocal" | "single" | "myopia_control" | "unknown";
+  /**
+   * spherical | aspheric | freeform | unknown. 'freeform' is an individually
+   * computed single-vision design — ZEISS ClearView, HOYA iDentity, Essilor
+   * f-360 — which is neither of the two words the «Дизайн» step offers, so the
+   * server never puts one on a card for a customer who picked a surface.
+   */
+  surface: "spherical" | "aspheric" | "freeform" | "unknown";
+  /**
+   * Which catalogue the offer comes from: 'sklad' (stock) or 'rx'
+   * (prescription), null for MyoCare, which is neither. Distinct from
+   * `availability`, which is where the stock physically sits — half the stock
+   * rows say 'order' because the supplier left the warehouse cell blank, and
+   * captioning those «рецептурная» was wrong on 105 of 208 rows.
+   */
+  channel: "sklad" | "rx" | null;
   availability: string;
+  /** basic | comfort | premium | unknown — the coating's purchase class. */
+  coatingTier: string;
   retailPriceRub: number | null;
   priceRub: number | null;
   priceIsWholesale: boolean;
   rxFit: "yes" | "no" | "unknown";
   needsManagerCheck: boolean;
+  /**
+   * What this card gives over the cheaper card below it, as tags the wizard
+   * renders into Russian. Empty on the base card. A card above the base cannot
+   * exist without at least one — that is what stopped «Премиум» from meaning
+   * "the most expensive row that survived the filters".
+   */
+  advantagesOver: LensAdvantage[];
 }
+
+/** @see o_lens_advantages_over() in _lens_recommend.php */
+export type LensAdvantage =
+  | "coating_tier"
+  | "chosen_tier"
+  | "feature_blue"
+  | "feature_driving"
+  | "surface"
+  | "stock";
 
 export interface LensRecommendResponse {
   /** null when the query carried no prescription — nothing was computed. */
@@ -145,6 +185,7 @@ export async function fetchLensRecommendation(
     params.set("osCyl", query.osCyl);
   }
   if (query.index) params.set("index", query.index);
+  if (query.material) params.set("material", query.material);
   if (query.lensType) params.set("lensType", query.lensType);
   if (query.tint) params.set("tint", query.tint);
   if (query.brand) params.set("brand", query.brand);

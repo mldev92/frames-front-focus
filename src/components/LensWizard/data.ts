@@ -197,14 +197,14 @@ export const PHOTOCHROMIC_COLORS: { id: PhotochromicColorId; title: string; swat
   { id: "green", title: "Зелёный", swatch: "#526b58" },
 ];
 
-export type ThicknessId = "1.50" | "poly-159" | "1.60" | "1.67" | "1.74" | "mineral";
+export type ThicknessId = "1.50" | "1.56" | "poly-159" | "1.60" | "1.67" | "1.74" | "mineral";
 
 export interface ThicknessOption {
   id: ThicknessId;
   title: string;
   description: string;
   /** The recommendation scale value this card corresponds to, if any. */
-  index?: "1.50" | "1.60" | "1.67";
+  index?: "1.50" | "1.56" | "1.60" | "1.67";
 }
 
 export const THICKNESSES: ThicknessOption[] = [
@@ -214,6 +214,17 @@ export const THICKNESSES: ThicknessOption[] = [
     description:
       "Стандартные полимерные линзы для слабой степени аметропии. Оптимальное сочетание цены и качества",
     index: "1.50",
+  },
+  {
+    // Added on the owner's answer to question 13 (2026-09-13): the price
+    // lists hold real 1.56 stock (Essilor Organic Middle, FSV, Eyezen lite;
+    // Synchrony AS 1.56) that no selectable thickness could reach, and her
+    // frame rules already speak of 1.56 as a thickness that exists.
+    id: "1.56",
+    title: "1.56 — Утончённый бюджетный",
+    description:
+      "Заметно тоньше базового 1.5 при небольшой доплате. Складские позиции для слабой и средней степени аметропии",
+    index: "1.56",
   },
   {
     id: "poly-159",
