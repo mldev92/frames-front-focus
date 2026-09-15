@@ -2026,7 +2026,9 @@ function LensDetailDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="pr-6 font-serif text-xl leading-snug">{product}</DialogTitle>
-          <DialogDescription>Подробности выбранной позиции.</DialogDescription>
+          <DialogDescription>
+            {offer.lineDescription || "Подробности выбранной позиции."}
+          </DialogDescription>
         </DialogHeader>
         <dl className="space-y-2.5 text-sm">
           {rows.map(([label, value]) => (
@@ -2036,6 +2038,11 @@ function LensDetailDialog({
             </div>
           ))}
         </dl>
+        {/* The owner's «Что писать клиенту» for this coating, when she has
+            written one — otherwise the coating row above stands on its own. */}
+        {offer.customerText && (
+          <p className="text-sm leading-relaxed text-muted-foreground">{offer.customerText}</p>
+        )}
         <div className="rounded-lg border border-border bg-surface/50 p-3">
           {offer.retailPriceRub !== null ? (
             <>
@@ -2468,6 +2475,14 @@ function LensPriceCards({
                   </button>
                 </div>
                 <div className="mt-1 text-sm font-medium leading-snug">{product}</div>
+                {/* The owner's «Описание для клиента», when she has written one.
+                    Stays inside this block so all three cards keep contributing
+                    exactly seven rows to the subgrid. */}
+                {card.lineDescription && (
+                  <div className="mt-1 text-xs leading-snug text-muted-foreground">
+                    {card.lineDescription}
+                  </div>
+                )}
               </div>
 
               {/* 3 — coating and treatment */}

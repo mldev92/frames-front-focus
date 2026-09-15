@@ -127,6 +127,15 @@ export interface LensRecommendCard {
    * "the most expensive row that survived the filters".
    */
   advantagesOver: LensAdvantage[];
+  /**
+   * The owner's own copy from «Правила подборщика», shown verbatim — empty
+   * string until she fills the row (see o_lens_coating_text_of /
+   * o_lens_line_description_of). `customerText` describes the coating
+   * («Что писать клиенту»), `lineDescription` the lens line («Описание для
+   * клиента»). Render nothing when empty; never a placeholder.
+   */
+  customerText: string;
+  lineDescription: string;
 }
 
 /** @see o_lens_advantages_over() in _lens_recommend.php */
