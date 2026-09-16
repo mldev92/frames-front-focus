@@ -2043,6 +2043,18 @@ function LensDetailDialog({
         {offer.customerText && (
           <p className="text-sm leading-relaxed text-muted-foreground">{offer.customerText}</p>
         )}
+        {/* Her per-treatment copy (photochromic / tint / polarised). */}
+        {offer.treatmentText && (
+          <p className="text-sm leading-relaxed text-muted-foreground">{offer.treatmentText}</p>
+        )}
+        {/* Her per-line «За что доплата» — a value statement for the lens
+            itself, distinct from the card's comparative "что даёт доплата". */}
+        {offer.lineAdvantage && (
+          <p className="text-sm leading-relaxed">
+            <span className="font-medium">За что доплата: </span>
+            <span className="text-muted-foreground">{offer.lineAdvantage}</span>
+          </p>
+        )}
         <div className="rounded-lg border border-border bg-surface/50 p-3">
           {offer.retailPriceRub !== null ? (
             <>

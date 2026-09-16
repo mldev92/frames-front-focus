@@ -136,6 +136,13 @@ export interface LensRecommendCard {
    */
   customerText: string;
   lineDescription: string;
+  /**
+   * The owner's per-line «За что доплата» and per-treatment «Что писать
+   * клиенту» from «Правила подборщика» — verbatim, '' until she fills the row.
+   * Shown in the detail dialog; the card keeps its comparative advantage tags.
+   */
+  lineAdvantage: string;
+  treatmentText: string;
 }
 
 /** @see o_lens_advantages_over() in _lens_recommend.php */
