@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { CheckCircle2, LoaderCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,6 +7,11 @@ import {
   type LensSelectionRequestDraft,
 } from "@/lib/api/lens-selection";
 
+// Prescription upload (Ошибки 2.3, п.7): JPG/PNG/PDF up to 8 MB. Kept in sync
+// with the server's own limits in lens_selection_request.php.
+const RX_MAX_BYTES = 8 * 1024 * 1024;
+const RX_ACCEPT = "image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf";
+
 export function LensRequestForm({ draft }: { draft: LensSelectionRequestDraft }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -14,9 +19,43 @@ export function LensRequestForm({ draft }: { draft: LensSelectionRequestDraft })
   const [comment, setComment] = useState("");
   const [consent, setConsent] = useState(false);
   const [website, setWebsite] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState("");
+  const [rxLater, setRxLater] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState("");
   const [requestId, setRequestId] = useState("");
+
+  function clearFile() {
+    setFile(null);
+    setFileError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  function handleFile(event: React.ChangeEvent<HTMLInputElement>) {
+    const picked = event.target.files?.[0] ?? null;
+    setFileError("");
+    if (!picked) {
+      setFile(null);
+      return;
+    }
+    const typeOk =
+      ["image/jpeg", "image/png", "application/pdf"].includes(picked.type) ||
+      /\.(jpe?g|png|pdf)$/i.test(picked.name);
+    if (!typeOk) {
+      clearFile();
+      setFileError("Допустимы только JPG, PNG или PDF.");
+      return;
+    }
+    if (picked.size > RX_MAX_BYTES) {
+      clearFile();
+      setFileError("Файл больше 8 МБ. Сфотографируйте с меньшим разрешением или сожмите.");
+      return;
+    }
+    setFile(picked);
+    setRxLater(false);
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -24,14 +63,18 @@ export function LensRequestForm({ draft }: { draft: LensSelectionRequestDraft })
     setError("");
 
     try {
-      const result = await submitLensSelectionRequest(draft, {
-        name,
-        phone,
-        email: email || undefined,
-        comment: comment || undefined,
-        consent,
-        website: website || undefined,
-      });
+      const result = await submitLensSelectionRequest(
+        draft,
+        {
+          name,
+          phone,
+          email: email || undefined,
+          comment: comment || undefined,
+          consent,
+          website: website || undefined,
+        },
+        { file, prescriptionLater: rxLater },
+      );
       setRequestId(result.requestId);
       setStatus("sent");
     } catch (submissionError) {
@@ -121,6 +164,50 @@ export function LensRequestForm({ draft }: { draft: LensSelectionRequestDraft })
             className="w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
             placeholder="Например, удобное время для звонка"
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="lens-request-rx">Фото или скан рецепта</Label>
+          <p className="text-xs text-muted-foreground">
+            Необязательно. JPG, PNG или PDF до 8 МБ — приложите сейчас или передайте позже.
+          </p>
+          {!rxLater && (
+            <>
+              <input
+                ref={fileInputRef}
+                id="lens-request-rx"
+                type="file"
+                accept={RX_ACCEPT}
+                onChange={handleFile}
+                className="block w-full cursor-pointer text-sm text-muted-foreground file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-brand/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand hover:file:bg-brand/15"
+              />
+              {file && (
+                <div className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-sm">
+                  <span className="truncate">{file.name}</span>
+                  <button
+                    type="button"
+                    onClick={clearFile}
+                    className="shrink-0 font-medium text-brand hover:underline"
+                  >
+                    Убрать
+                  </button>
+                </div>
+              )}
+              {fileError && <p className="text-sm text-destructive">{fileError}</p>}
+            </>
+          )}
+          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={rxLater}
+              onChange={(event) => {
+                setRxLater(event.target.checked);
+                if (event.target.checked) clearFile();
+              }}
+              className="h-4 w-4 shrink-0"
+            />
+            Загружу рецепт позже
+          </label>
         </div>
 
         <div className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden" aria-hidden="true">

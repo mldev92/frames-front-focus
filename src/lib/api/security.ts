@@ -87,3 +87,28 @@ export async function securePost<T>(
   }
   return data;
 }
+
+/**
+ * Same CSRF-protected POST as securePost, but for multipart/form-data (a file
+ * upload). The Content-Type header is deliberately left unset so the browser
+ * adds the multipart boundary; the CSRF token rides in the header, which the
+ * server reads before the body (o_require_csrf).
+ */
+export async function securePostForm<T>(path: string, form: FormData): Promise<T> {
+  const csrfToken = await getCsrfToken();
+  const response = await apiFetch(apiUrl(path), {
+    method: "POST",
+    credentials: "include",
+    headers: { "X-CSRF-Token": csrfToken },
+    body: form,
+  });
+  const data = (await response.json().catch(() => ({}))) as T & {
+    error?: string;
+    message?: string;
+  };
+  if (!response.ok) {
+    if (response.status === 403) void getCsrfToken(true);
+    throw new Error(data.error ?? data.message ?? `HTTP ${response.status}`);
+  }
+  return data;
+}

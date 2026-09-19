@@ -1,4 +1,4 @@
-import { securePost } from "@/lib/api/security";
+import { securePost, securePostForm } from "@/lib/api/security";
 
 export interface LensSelectionRequestDraft {
   frame: {
@@ -54,13 +54,31 @@ interface LensSelectionRequestResponse {
   requestId: string;
 }
 
+export interface LensSelectionRequestOptions {
+  /** An optional prescription photo/PDF to attach (JPG/PNG/PDF, ≤8 MB). */
+  file?: File | null;
+  /** The customer chose «Загружу рецепт позже» rather than attaching now. */
+  prescriptionLater?: boolean;
+}
+
 export function submitLensSelectionRequest(
   draft: LensSelectionRequestDraft,
   customer: LensSelectionCustomer,
+  options: LensSelectionRequestOptions = {},
 ): Promise<LensSelectionRequestResponse> {
-  return securePost<LensSelectionRequestResponse>("lens_selection_request.php", {
+  const payload = {
     ...draft,
     customer,
+    prescriptionLater: options.prescriptionLater ?? false,
     sourceUrl: typeof window === "undefined" ? "" : window.location.href,
-  });
+  };
+  // With a file the request goes multipart (payload JSON + the file); without
+  // one it stays the plain JSON POST it has always been.
+  if (options.file) {
+    const form = new FormData();
+    form.append("payload", JSON.stringify(payload));
+    form.append("prescriptionFile", options.file);
+    return securePostForm<LensSelectionRequestResponse>("lens_selection_request.php", form);
+  }
+  return securePost<LensSelectionRequestResponse>("lens_selection_request.php", payload);
 }
