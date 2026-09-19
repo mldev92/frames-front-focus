@@ -1750,11 +1750,16 @@ function thicknessToIndex(thickness: ThicknessOption | null): string | null {
   }
 }
 
-/** Treatment keyword for the chosen photochromic tech / sun variant. */
+/**
+ * The `tint` keyword for the chosen photochromic technology. The «Солнцезащитные»
+ * sub-variant (тонированные/зеркальные/поляризованные) no longer rides on this
+ * keyword — it goes through `sunVariant`, which the server classifies across
+ * treatment+line+coating so every brand competes (the tinted/mirrored HOYA-only
+ * fix, Ошибки 2.3 п.12).
+ */
 function tintKeyword(
   lensType: LensTypeOption | null,
   tech: PhotochromicTechOption | null,
-  sun: SunVariantOption | null,
 ): string | undefined {
   if (lensType?.id === "photochromic" && tech) {
     switch (tech.id) {
@@ -1770,16 +1775,6 @@ function tintKeyword(
         return "PhotoFusion";
       case "photofusion-x":
         return "PhotoFusion X";
-    }
-  }
-  if (lensType?.id === "sun" && sun) {
-    switch (sun.id) {
-      case "tinted":
-        return "Окрашен|тониров|Tint";
-      case "mirrored":
-        return "Mirror|зеркал";
-      case "polarized":
-        return "Pola|Xperio|поляриз";
     }
   }
   return undefined;
@@ -2204,7 +2199,8 @@ function LensPriceCards({
       index: index ?? undefined,
       material: isMineral ? "mineral" : undefined,
       lensType: lensType?.id,
-      tint: tintKeyword(lensType, photochromicTech, sunVariant),
+      tint: tintKeyword(lensType, photochromicTech),
+      sunVariant: lensType?.id === "sun" ? sunVariant?.id : undefined,
       brand: brand && brand.id !== "all" ? brand.id : undefined,
       // «Контроль миопии у ребёнка» narrows to MyoCare through `purpose`
       // alone (see the backend's positive filter). design/coatingTier are

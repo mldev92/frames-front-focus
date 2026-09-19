@@ -29,6 +29,12 @@ export interface LensRecommendQuery {
   lensType?: "clear" | "photochromic" | "sun";
   /** Treatment keyword filter; accepts "|"-alternation (e.g. "Pola|Xperio"). */
   tint?: string;
+  /**
+   * The «Солнцезащитные» sub-variant. Unlike `tint`, the server classifies it
+   * across treatment+line+coating, so all four brands compete (the tinted /
+   * mirrored HOYA-only bug). Sent only for `lensType: "sun"`.
+   */
+  sunVariant?: "tinted" | "mirrored" | "polarized";
   /** Supplier slug: essilor / zeiss / hoya / synchrony. Omit for all. */
   brand?: string;
   /**
@@ -204,6 +210,7 @@ export async function fetchLensRecommendation(
   if (query.material) params.set("material", query.material);
   if (query.lensType) params.set("lensType", query.lensType);
   if (query.tint) params.set("tint", query.tint);
+  if (query.sunVariant) params.set("sunVariant", query.sunVariant);
   if (query.brand) params.set("brand", query.brand);
   if (query.design) params.set("design", query.design);
   if (query.coatingTier) params.set("coatingTier", query.coatingTier);
