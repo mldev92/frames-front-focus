@@ -960,13 +960,40 @@ function StepRx({
         title="Ваш рецепт"
         subtitle="Заполните ваш рецепт от врача-офтальмолога. Все параметры должны точно совпадать с рецептом."
       />
-      <button
-        type="button"
-        onClick={() => setMode(null)}
-        className="mb-5 text-sm font-medium text-brand hover:underline"
-      >
-        Изменить вариант
-      </button>
+      <div className="mb-5 flex flex-wrap items-center gap-x-5 gap-y-2">
+        <button
+          type="button"
+          onClick={() => setMode(null)}
+          className="text-sm font-medium text-brand hover:underline"
+        >
+          Изменить вариант
+        </button>
+        {/* Ошибки 2.3, п.1/18 и SS «прогрессивный дизайн»: a direct escape to
+            the «рецепта нет» branch, so a multifocal/progressive customer who
+            has no ADD is never stuck in a required form. */}
+        <button
+          type="button"
+          onClick={() => setMode("none")}
+          className="text-sm font-medium text-brand hover:underline"
+        >
+          Продолжить без рецепта
+        </button>
+      </div>
+
+      {showAdd && (
+        <p className="mb-5 rounded-lg bg-surface p-3 text-sm text-muted-foreground">
+          Для мультифокальных линз нужна аддидация (ADD) из рецепта. Если рецепта
+          нет —{" "}
+          <button
+            type="button"
+            onClick={() => setMode("none")}
+            className="font-medium text-brand hover:underline"
+          >
+            продолжите без рецепта
+          </button>
+          : покажем предварительный вариант, а точные параметры подберёт специалист.
+        </p>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         {(["right", "left"] as const).map((side) => {
