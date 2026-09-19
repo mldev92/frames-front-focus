@@ -24,6 +24,7 @@ import {
   MYOPIA_CONTROL_DESIGN,
   PHOTOCHROMIC_COLORS,
   PHOTOCHROMIC_TECHS,
+  PURPOSE_RULES,
   PURPOSES,
   SUN_VARIANTS,
   THICKNESSES,
@@ -494,6 +495,7 @@ export function LensWizard({
                 }}
                 recommendation={indexRecommendation}
                 recommendedThickness={recommendedThickness}
+                purpose={purpose}
               />
             )}
             {step === 5 &&
@@ -774,6 +776,7 @@ function RxSelect({
   placeholder = "Нет",
   disabled,
   ariaLabel,
+  zeroAnchor,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -781,7 +784,18 @@ function RxSelect({
   placeholder?: string;
   disabled?: boolean;
   ariaLabel?: string;
+  /**
+   * Signed scales (SPH/CYL) run −12…+12, so «Нет» pinned at the very top made
+   * the native dropdown open at −12, far from the value almost everyone needs
+   * (Ошибки 2.3, SS «разместите нет рядом с 0, чтобы шкала открывалась рядом с
+   * 0»). With this on, «Нет» is placed right before 0.00 — since it stays the
+   * default selected value, the browser opens the list scrolled to zero.
+   */
+  zeroAnchor?: boolean;
 }) {
+  const zeroIndex = zeroAnchor ? options.indexOf("0.00") : -1;
+  const before = zeroIndex >= 0 ? options.slice(0, zeroIndex) : options;
+  const after = zeroIndex >= 0 ? options.slice(zeroIndex) : [];
   return (
     <select
       value={value}
@@ -793,8 +807,14 @@ function RxSelect({
         disabled && "cursor-not-allowed bg-surface text-muted-foreground",
       )}
     >
-      <option value="">{placeholder}</option>
-      {options.map((o) => (
+      {zeroIndex < 0 && <option value="">{placeholder}</option>}
+      {before.map((o) => (
+        <option key={o} value={o}>
+          {o}
+        </option>
+      ))}
+      {zeroIndex >= 0 && <option value="">{placeholder}</option>}
+      {after.map((o) => (
         <option key={o} value={o}>
           {o}
         </option>
@@ -955,6 +975,7 @@ function StepRx({
                       value={eye.sph}
                       onChange={(v) => set({ ...eye, sph: v })}
                       options={sphValues}
+                      zeroAnchor
                     />
                   </div>
                 </label>
@@ -968,6 +989,7 @@ function StepRx({
                         set({ ...eye, cyl: v, axi: v !== "" && Number(v) !== 0 ? eye.axi : "" })
                       }
                       options={cylValues}
+                      zeroAnchor
                     />
                   </div>
                 </label>
@@ -1268,11 +1290,13 @@ function StepThickness({
   onChange,
   recommendation,
   recommendedThickness,
+  purpose,
 }: {
   value: ThicknessOption | null;
   onChange: (v: ThicknessOption) => void;
   recommendation: LensIndexRecommendation | null;
   recommendedThickness: ThicknessOption | null;
+  purpose: PurposeOption | null;
 }) {
   // Mount state, never reactive state: the list must never collapse under the
   // customer's finger. goNext() preselects recommendedThickness, so `value` is
@@ -1282,10 +1306,16 @@ function StepThickness({
   const featured = value ?? recommendedThickness;
   const isRecommended = !!featured && featured.id === recommendedThickness?.id;
 
+  // Скрываем толщины, недоступные для выбранного назначения (Ошибки 2.3,
+  // п.2/16/17): мультифокальным не нужен 1.56, контролю миопии — 1.56/1.74/
+  // минеральные. Единый источник правил — PURPOSE_RULES в data.ts.
+  const hidden = new Set(purpose ? PURPOSE_RULES[purpose.id].hideThicknesses ?? [] : []);
+  const visible = THICKNESSES.filter((o) => !hidden.has(o.id));
+
   // Порядок показа: сначала лестница индексов, затем особые материалы.
   // data.ts НЕ трогаем — разбиение только на отрисовке.
-  const ladder = THICKNESSES.filter((o) => !MATERIAL_IDS.has(o.id));
-  const materials = THICKNESSES.filter((o) => MATERIAL_IDS.has(o.id));
+  const ladder = visible.filter((o) => !MATERIAL_IDS.has(o.id));
+  const materials = visible.filter((o) => MATERIAL_IDS.has(o.id));
 
   const groupHeading =
     "mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground";
@@ -1328,7 +1358,7 @@ function StepThickness({
               className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-4 py-3 text-[13px] font-medium text-foreground/70 transition-colors hover:border-foreground/30 hover:text-foreground"
               style={{ transitionDuration: "var(--duration-snap)" }}
             >
-              Другие варианты · {THICKNESSES.length - 1}
+              Другие варианты · {visible.length - 1}
               <ChevronDown className="h-4 w-4" />
             </button>
           </div>
@@ -1336,7 +1366,7 @@ function StepThickness({
       ) : (
         <StepHeader
           title="Толщина и материал линз"
-          count={THICKNESSES.length}
+          count={visible.length}
           subtitle="Чем выше индекс, тем тоньше и легче линза при том же рецепте."
         />
       )}
@@ -1359,12 +1389,20 @@ function StepThickness({
         <div
           id="thickness-options"
           role="group"
-          aria-label={`Толщина и материал линз: ${THICKNESSES.length} ${pluralOptions(THICKNESSES.length)}`}
+          aria-label={`Толщина и материал линз: ${visible.length} ${pluralOptions(visible.length)}`}
         >
-          <div className={groupHeading}>По индексу</div>
-          <div className="space-y-3">{ladder.map(renderCard)}</div>
-          <div className={cn(groupHeading, "mt-6")}>Особые материалы</div>
-          <div className="space-y-3">{materials.map(renderCard)}</div>
+          {ladder.length > 0 && (
+            <>
+              <div className={groupHeading}>По индексу</div>
+              <div className="space-y-3">{ladder.map(renderCard)}</div>
+            </>
+          )}
+          {materials.length > 0 && (
+            <>
+              <div className={cn(groupHeading, ladder.length > 0 && "mt-6")}>Особые материалы</div>
+              <div className="space-y-3">{materials.map(renderCard)}</div>
+            </>
+          )}
         </div>
       </div>
 
@@ -1385,30 +1423,31 @@ function StepDesign({
   purpose: PurposeOption | null;
 }) {
   const multifocal = purpose?.id === "multifocal";
+  // Показываем только дизайны, допустимые для назначения (Ошибки 2.3, п.2/3/5/17).
+  // Движок и так отбрасывает несовместимые пары, поэтому здесь просто не
+  // предлагаем тупиковые варианты. Единый источник — PURPOSE_RULES в data.ts.
+  const rule = purpose ? PURPOSE_RULES[purpose.id] : null;
+  const designs = rule?.designs ? DESIGNS.filter((d) => rule.designs!.includes(d.id)) : DESIGNS;
   return (
     <div>
       <StepHeader
         title="Дизайн линз"
-        count={DESIGNS.length}
+        count={designs.length}
         subtitle="Дизайн определяет, как распределены зоны чёткого зрения по поверхности линзы."
       />
       <div
         role="group"
-        aria-label={`Дизайн линз: ${DESIGNS.length} ${pluralOptions(DESIGNS.length)}`}
+        aria-label={`Дизайн линз: ${designs.length} ${pluralOptions(designs.length)}`}
         className="space-y-3"
       >
-        {DESIGNS.map((option) => (
+        {designs.map((option) => (
           <OptionCard
             key={option.id}
             active={value?.id === option.id}
             title={option.title}
             description={option.description}
             warning={option.warning}
-            badge={
-              multifocal && (option.id === "progressive" || option.id === "office")
-                ? "Для дали и близи"
-                : undefined
-            }
+            badge={multifocal && option.id === "progressive" ? "Для дали и близи" : undefined}
             onClick={() => onChange(option)}
           />
         ))}

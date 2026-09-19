@@ -85,7 +85,10 @@ export const PURPOSES: PurposeOption[] = [
   {
     id: "myopia-control",
     title: "Контроль миопии у ребёнка",
-    subtitle: "Замедляют прогрессирование близорукости — ZEISS MyoCare",
+    // Neutral customer-facing wording — no manufacturer line named on the
+    // «Назначение» step (Ошибки 2.3, п.13). The concrete lens (MyoCare /
+    // Stellest / MiYOSMART) is decided later, in the results.
+    subtitle: "Замедляют прогрессирование близорукости у ребёнка",
     icon: Baby,
   },
 ];
@@ -299,10 +302,49 @@ export const DESIGNS: DesignOption[] = [
     id: "office",
     title: "Офисные",
     description:
-      "Для ближнего и среднего расстояния — чтение и работа за компьютером до 1,5 метров",
+      "Для близи и средних дистанций — чтение и работа за компьютером (60 см – 4 метра)",
     warning: "Не подходят для вождения",
   },
 ];
+
+/**
+ * Which «Дизайн» and «Толщина» options each purpose is allowed to show.
+ *
+ * This MIRRORS the engine's own allowed-set table (the `purpose` block in
+ * public_html/api/store/_lens_rules_data.php, functions o_lens_purpose_conflicts
+ * / o_lens_design_conflicts). The server already drops the excluded
+ * combinations, so offering them here only ever produces a dead-end empty
+ * result — exactly the customer's «не показывать варианты, после которых
+ * ничего не находится» (Ошибки 2.3, п.17, and п.2/3/5 for the specific cases).
+ *
+ * `designs` — the only design cards to render (undefined ⇒ all four).
+ *   The engine's single-vision bucket covers BOTH surfaces, so a purpose that
+ *   allows «single» lists spherical + aspheric here.
+ * `hideThicknesses` — «Толщина» ids to drop (undefined ⇒ none). The rx-based
+ *   recommendation only ever yields 1.50 / 1.60 / 1.67, so hiding 1.56 / 1.74 /
+ *   mineral never collides with a preselected card.
+ */
+export interface PurposeRule {
+  designs?: DesignId[];
+  hideThicknesses?: ThicknessId[];
+}
+
+export const PURPOSE_RULES: Record<PurposeId, PurposeRule> = {
+  // single-vision only
+  distance: { designs: ["spherical", "aspheric"] },
+  // single-vision + office, никаких прогрессивных (Ошибки 2.3, п.3; SS «для близи»)
+  near: { designs: ["spherical", "aspheric", "office"] },
+  // прогрессивные/офисные/бифокальные; ни сферических/асферических, ни 1.56 (п.2)
+  multifocal: { designs: ["progressive", "office"], hideThicknesses: ["1.56"] },
+  // single-vision + прогрессивные, без офисных (п.5)
+  driving: { designs: ["spherical", "aspheric", "progressive"] },
+  computer: { designs: ["spherical", "aspheric", "office"] },
+  image: {},
+  "sun-protection": {},
+  // MyoCare/Stellest/MiYOSMART не выпускаются в 1.56/1.74/минерале (п.16).
+  // Приоритет поликарбоната (п.15) — отдельная задача (Block 6, таблица приоритетов).
+  "myopia-control": { hideThicknesses: ["1.56", "1.74", "mineral"] },
+};
 
 /**
  * Auto-set the instant «Контроль миопии у ребёнка» is chosen as Назначение
@@ -388,17 +430,17 @@ export const BRANDS: BrandOption[] = [
   {
     id: "essilor",
     title: "Essilor",
-    description: "Varilux, Eyezen, Stellest, Transitions и доступные покрытия Crizal",
+    description: "Varilux, Eyezen, Stellest, Transitions, KODAK, ELEMENTS и MEKK",
   },
   {
     id: "zeiss",
     title: "ZEISS",
-    description: "SmartLife, DriveSafe, MyoCare, PhotoFusion и покрытия DuraVision",
+    description: "SmartLife, MyoCare, PhotoFusion",
   },
   {
     id: "hoya",
     title: "HOYA",
-    description: "HOYA и MAXXEE, включая MiYOSMART и доступные покрытия SKU",
+    description: "HOYA и MAXXEE, включая MiYOSMART",
   },
   {
     id: "synchrony",
