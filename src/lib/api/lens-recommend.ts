@@ -35,6 +35,12 @@ export interface LensRecommendQuery {
    * mirrored HOYA-only bug). Sent only for `lensType: "sun"`.
    */
   sunVariant?: "tinted" | "mirrored" | "polarized";
+  /**
+   * «С поддержкой аккомодации» — the computer branch's positive filter for
+   * accommodative-support lines (Eyezen, KODAK Power Up, HOYA SYNC III …).
+   * Sent only for `purpose: "computer"`.
+   */
+  accommodative?: boolean;
   /** Supplier slug: essilor / zeiss / hoya / synchrony. Omit for all. */
   brand?: string;
   /**
@@ -211,6 +217,7 @@ export async function fetchLensRecommendation(
   if (query.lensType) params.set("lensType", query.lensType);
   if (query.tint) params.set("tint", query.tint);
   if (query.sunVariant) params.set("sunVariant", query.sunVariant);
+  if (query.accommodative) params.set("accommodative", "1");
   if (query.brand) params.set("brand", query.brand);
   if (query.design) params.set("design", query.design);
   if (query.coatingTier) params.set("coatingTier", query.coatingTier);

@@ -135,6 +135,8 @@ export function LensWizard({
   const [photochromicTech, setPhotochromicTech] = useState<PhotochromicTechOption | null>(null);
   const [photochromicColor, setPhotochromicColor] = useState<PhotochromicColorId | null>(null);
   const [sunVariant, setSunVariant] = useState<SunVariantOption | null>(null);
+  // «С поддержкой аккомодации» — computer branch only (Ошибки 2.3, п.9).
+  const [accommodative, setAccommodative] = useState(false);
   const [thickness, setThickness] = useState<ThicknessOption | null>(null);
   // Whether the customer picked the thickness themselves. While false, the
   // recommendation from the prescription may keep (re)selecting the card.
@@ -430,6 +432,7 @@ export function LensWizard({
                   setPhotochromicTech(null);
                   setPhotochromicColor(null);
                   setSunVariant(null);
+                  setAccommodative(false);
                   setThickness(null);
                   setThicknessTouched(false);
                   // MyoCare is one fixed ZEISS product line, so Дизайн,
@@ -502,7 +505,13 @@ export function LensWizard({
               (purpose?.id === "myopia-control" ? (
                 <MyopiaDecidedStep stepTitle="Дизайн линз" option={MYOPIA_CONTROL_DESIGN} />
               ) : (
-                <StepDesign value={design} onChange={setDesign} purpose={purpose} />
+                <StepDesign
+                  value={design}
+                  onChange={setDesign}
+                  purpose={purpose}
+                  accommodative={accommodative}
+                  onAccommodativeChange={setAccommodative}
+                />
               ))}
             {step === 6 &&
               (purpose?.id === "myopia-control" ? (
@@ -538,6 +547,7 @@ export function LensWizard({
                 photochromicTech={photochromicTech}
                 photochromicColor={photochromicColor}
                 sunVariant={sunVariant}
+                accommodative={accommodative}
                 thickness={thickness}
                 recommendedThickness={recommendedThickness}
                 design={design}
@@ -1417,12 +1427,17 @@ function StepDesign({
   value,
   onChange,
   purpose,
+  accommodative,
+  onAccommodativeChange,
 }: {
   value: DesignOption | null;
   onChange: (v: DesignOption) => void;
   purpose: PurposeOption | null;
+  accommodative: boolean;
+  onAccommodativeChange: (v: boolean) => void;
 }) {
   const multifocal = purpose?.id === "multifocal";
+  const computer = purpose?.id === "computer";
   // Показываем только дизайны, допустимые для назначения (Ошибки 2.3, п.2/3/5/17).
   // Движок и так отбрасывает несовместимые пары, поэтому здесь просто не
   // предлагаем тупиковые варианты. Единый источник — PURPOSE_RULES в data.ts.
@@ -1452,6 +1467,25 @@ function StepDesign({
           />
         ))}
       </div>
+      {computer && (
+        <section className="mt-6 rounded-xl border border-border p-4 lg:p-5">
+          <label className="flex cursor-pointer items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              checked={accommodative}
+              onChange={(e) => onAccommodativeChange(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              <span className="font-medium">С поддержкой аккомодации</span>
+              <span className="mt-1 block text-muted-foreground">
+                Линзы с разгрузкой при работе за экраном — Eyezen, HOYA SYNC III,
+                KODAK Power Up и другие. Выключено — показываем все компьютерные линзы.
+              </span>
+            </span>
+          </label>
+        </section>
+      )}
       <div className="mt-6">
         <ConsultationCard />
       </div>
@@ -1546,6 +1580,7 @@ function StepResults({
   photochromicTech,
   photochromicColor,
   sunVariant,
+  accommodative,
   thickness,
   recommendedThickness,
   design,
@@ -1568,6 +1603,7 @@ function StepResults({
   photochromicTech: PhotochromicTechOption | null;
   photochromicColor: PhotochromicColorId | null;
   sunVariant: SunVariantOption | null;
+  accommodative: boolean;
   thickness: ThicknessOption | null;
   recommendedThickness: ThicknessOption | null;
   design: DesignOption | null;
@@ -1712,6 +1748,7 @@ function StepResults({
         lensType={lensType}
         photochromicTech={photochromicTech}
         sunVariant={sunVariant}
+        accommodative={accommodative}
         thickness={thickness}
         brand={brand}
       />
@@ -2126,6 +2163,7 @@ function LensPriceCards({
   lensType,
   photochromicTech,
   sunVariant,
+  accommodative,
   thickness,
   brand,
 }: {
@@ -2141,6 +2179,7 @@ function LensPriceCards({
   lensType: LensTypeOption | null;
   photochromicTech: PhotochromicTechOption | null;
   sunVariant: SunVariantOption | null;
+  accommodative: boolean;
   thickness: ThicknessOption | null;
   brand: BrandOption | null;
 }) {
@@ -2201,6 +2240,7 @@ function LensPriceCards({
       lensType: lensType?.id,
       tint: tintKeyword(lensType, photochromicTech),
       sunVariant: lensType?.id === "sun" ? sunVariant?.id : undefined,
+      accommodative: purpose?.id === "computer" && accommodative ? true : undefined,
       brand: brand && brand.id !== "all" ? brand.id : undefined,
       // «Контроль миопии у ребёнка» narrows to MyoCare through `purpose`
       // alone (see the backend's positive filter). design/coatingTier are
