@@ -444,7 +444,11 @@ export function LensWizard({
                   if (v.id === "myopia-control") {
                     setDesign(MYOPIA_CONTROL_DESIGN);
                     setCoatingTier(MYOPIA_COATING_TIER);
-                    setBrand(BRANDS.find((b) => b.id === "zeiss") ?? null);
+                    // Cross-brand now (ZEISS MyoCare + HOYA MiYOSMART + Essilor
+                    // Stellest): leave brand unset so the query does not pin it
+                    // to ZEISS (Ошибки 2.3, п.14). The purpose alone filters to
+                    // the myopia-control lenses.
+                    setBrand(null);
                   } else {
                     setDesign(null);
                     setCoatingTier(null);
@@ -524,8 +528,9 @@ export function LensWizard({
                 <MyopiaDecidedStep
                   stepTitle="Бренд"
                   option={{
-                    title: "ZEISS",
-                    description: "MyoCare выпускает только ZEISS.",
+                    title: "Все бренды контроля миопии",
+                    description:
+                      "Сравним ZEISS MyoCare, Essilor Stellest и HOYA MiYOSMART — подходящую линзу подберёт специалист.",
                   }}
                 />
               ) : (
@@ -1733,7 +1738,7 @@ function StepResults({
     ],
     ["Дизайн", design?.title],
     ["Покрытие", coatingTier?.title],
-    ["Бренд", brand?.title],
+    ["Бренд", brand?.title ?? (purpose?.id === "myopia-control" ? "Все бренды контроля миопии" : undefined)],
     ["Выбранный вариант", chosenOffer ? formatChosenOffer(chosenOffer) : null],
   ];
 
