@@ -250,7 +250,9 @@ export function LensWizard({
       case 6:
         return !!coatingTier;
       case 7:
-        return !!brand;
+        // The myopia path deliberately keeps brand unset (cross-brand query,
+        // Ошибки 2.3 п.14) and renders a DecidedCard — nothing to pick.
+        return !!brand || purpose?.id === "myopia-control";
       case 8:
         return true;
       default:
@@ -1356,8 +1358,17 @@ function StepThickness({
 
   // Порядок показа: сначала лестница индексов, затем особые материалы.
   // data.ts НЕ трогаем — разбиение только на отрисовке.
-  const ladder = visible.filter((o) => !MATERIAL_IDS.has(o.id));
-  const materials = visible.filter((o) => MATERIAL_IDS.has(o.id));
+  let ladder = visible.filter((o) => !MATERIAL_IDS.has(o.id));
+  let materials = visible.filter((o) => MATERIAL_IDS.has(o.id));
+
+  // «Контроль миопии»: поликарбонат первым (Ошибки 2.3, п.15) — детские
+  // линзы в первую очередь ударопрочные, и движок ранжирует 1.59 выше. Для
+  // этого назначения поликарбонат покидает «особые материалы» и открывает
+  // список.
+  if (purpose?.id === "myopia-control") {
+    ladder = [...visible.filter((o) => o.id === "poly-159"), ...ladder];
+    materials = materials.filter((o) => o.id !== "poly-159");
+  }
 
   const groupHeading =
     "mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground";
@@ -1663,6 +1674,14 @@ function StepResults({
   const thicknessIsRecommended =
     !!thickness && !!recommendedThickness && thickness.id === recommendedThickness.id;
 
+  // «С поддержкой аккомодации» — часть выбора дизайна для компьютерных очков
+  // (Ошибки 2.3, п.9). Без этой приписки ни менеджер в заявке, ни клиент в
+  // «Ваших параметрах» не видят, что подбирались именно разгрузочные линзы.
+  const designSummary = design
+    ? design.title +
+      (purpose?.id === "computer" && accommodative ? " · с поддержкой аккомодации" : "")
+    : "";
+
   const requestDraft = {
     frame: {
       id: frame.id,
@@ -1679,7 +1698,7 @@ function StepResults({
       photochromicColor: colorTitle,
       thickness: thickness?.title ?? "",
       thicknessIsRecommended,
-      design: design?.title ?? "",
+      design: designSummary,
       // The backend's own field name is `coating`, predating this step (it
       // used to have nothing to populate it with) -- reuse it rather than
       // add a second, redundant one.
@@ -1736,7 +1755,7 @@ function StepResults({
         ? thickness.title + (thicknessIsRecommended ? " — рекомендовано по рецепту" : "")
         : null,
     ],
-    ["Дизайн", design?.title],
+    ["Дизайн", designSummary || null],
     ["Покрытие", coatingTier?.title],
     ["Бренд", brand?.title ?? (purpose?.id === "myopia-control" ? "Все бренды контроля миопии" : undefined)],
     ["Выбранный вариант", chosenOffer ? formatChosenOffer(chosenOffer) : null],

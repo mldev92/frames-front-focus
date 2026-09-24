@@ -48,7 +48,7 @@ export interface LensRecommendQuery {
    * this — the price lists carry no design column, so a quarter of the
    * catalogue is unclassifiable and must not be filtered away.
    */
-  design?: "spherical" | "aspheric" | "progressive" | "office";
+  design?: "spherical" | "aspheric" | "progressive" | "office" | "bifocal";
   /**
    * The «Покрытие» step. Since the 2026-09 rework a PREFERENCE, not a filter:
    * the engine ranks offers by distance to this class and never drops one for

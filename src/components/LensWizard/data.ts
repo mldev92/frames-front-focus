@@ -270,7 +270,13 @@ export const THICKNESSES: ThicknessOption[] = [
  * auto-set (see MYOPIA_CONTROL_DESIGN) and the backend has a matching value
  * to filter internally by — see o_lens_design_of() / o_lens_design_conflicts().
  */
-export type DesignId = "spherical" | "aspheric" | "progressive" | "office" | "myopia_control";
+export type DesignId =
+  | "spherical"
+  | "aspheric"
+  | "progressive"
+  | "office"
+  | "bifocal"
+  | "myopia_control";
 
 export interface DesignOption {
   id: DesignId;
@@ -305,6 +311,15 @@ export const DESIGNS: DesignOption[] = [
       "Для близи и средних дистанций — чтение и работа за компьютером (60 см – 4 метра)",
     warning: "Не подходят для вождения",
   },
+  // Rendered only where a PURPOSE_RULES designs list names it (сейчас —
+  // мультифокальные, Ошибки 2.3 п.2: «при наличии в ассортименте,
+  // бифокальные»). Backed by the unified base's 46 bifocal positions.
+  {
+    id: "bifocal",
+    title: "Бифокальные",
+    description:
+      "Два поля зрения с видимой границей: верх для дали, сегмент для близи. Классическая альтернатива прогрессивным",
+  },
 ];
 
 /**
@@ -335,10 +350,12 @@ export const PURPOSE_RULES: Record<PurposeId, PurposeRule> = {
   // single-vision + office, никаких прогрессивных (Ошибки 2.3, п.3; SS «для близи»)
   near: { designs: ["spherical", "aspheric", "office"] },
   // прогрессивные/офисные/бифокальные; ни сферических/асферических, ни 1.56 (п.2)
-  multifocal: { designs: ["progressive", "office"], hideThicknesses: ["1.56"] },
+  multifocal: { designs: ["progressive", "office", "bifocal"], hideThicknesses: ["1.56"] },
   // single-vision + прогрессивные, без офисных (п.5)
   driving: { designs: ["spherical", "aspheric", "progressive"] },
   computer: { designs: ["spherical", "aspheric", "office"] },
+  // undefined ⇒ все пять дизайнов, включая бифокальные — в единой базе они
+  // назначены и на «Имиджевые» (19 поз.), и на «Защиту от солнца» (27 поз.).
   image: {},
   "sun-protection": {},
   // MyoCare/Stellest/MiYOSMART не выпускаются в 1.56/1.74/минерале (п.16).
@@ -357,7 +374,7 @@ export const MYOPIA_CONTROL_DESIGN: DesignOption = {
   id: "myopia_control",
   title: "Определяется производителем",
   description:
-    "Линзы ZEISS MyoCare рассчитаны на контроль близорукости у ребёнка — их дизайн не выбирается отдельно.",
+    "Линзы для контроля близорукости (Essilor Stellest, ZEISS MyoCare, HOYA MiYOSMART) имеют специальный дизайн — он не выбирается отдельно.",
 };
 
 /**
@@ -410,7 +427,8 @@ export const COATING_TIERS: CoatingTierOption[] = [
 export const MYOPIA_COATING_TIER: CoatingTierOption = {
   id: "myopia-managed",
   title: "Подбирается по параметрам ребёнка",
-  description: "Не входит в общую линейку покрытий — только для линз ZEISS MyoCare.",
+  description:
+    "Детские линзы контроля миопии идут со своими фирменными покрытиями — они не входят в общую линейку.",
 };
 
 export type BrandId = "all" | "essilor" | "zeiss" | "hoya" | "synchrony";
