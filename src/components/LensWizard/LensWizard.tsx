@@ -2623,9 +2623,23 @@ function LensPriceCards({
                 )}
               </div>
 
-              {/* 3 — coating and treatment */}
+              {/* 3 — coating, NAMED as a coating and explained in plain words.
+                  Her request, twice: «покрытие нужно разместить под названием
+                  линзы и написать что это покрытие, не понятно обывателю что
+                  это такое». The explanation is her own «Что писать клиенту»
+                  (customerText) — it already reached the API, but until now
+                  only the «подробнее» dialog showed it, so the card printed a
+                  bare «DuraVision DriveSafe UV» and said nothing. */}
               <div className="mt-1 text-xs text-muted-foreground">
-                {[card.coating, card.treatment.replace(/\s+/g, " ")].filter(Boolean).join(" · ")}
+                <div>
+                  Покрытие:{" "}
+                  {[card.coating || "без покрытия", card.treatment.replace(/\s+/g, " ")]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </div>
+                {card.customerText && (
+                  <div className="mt-0.5 leading-snug">{card.customerText}</div>
+                )}
               </div>
 
               {/* 4 — price */}
