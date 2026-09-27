@@ -30,6 +30,13 @@ export interface LensRecommendQuery {
   /** Treatment keyword filter; accepts "|"-alternation (e.g. "Pola|Xperio"). */
   tint?: string;
   /**
+   * «Категория затемнения» — the owner's split of every photochrome into
+   * ordinary and for-driving. Replaced `tint` for the photochromic step: a
+   * keyword could only match the brands that had a tile, so HOYA Sensity was
+   * unreachable. Sent only for `lensType: "photochromic"`.
+   */
+  tintCategory?: "regular_photochromic" | "driving_photochromic";
+  /**
    * The «Солнцезащитные» sub-variant. Unlike `tint`, the server classifies it
    * across treatment+line+coating, so all four brands compete (the tinted /
    * mirrored HOYA-only bug). Sent only for `lensType: "sun"`.
@@ -216,6 +223,7 @@ export async function fetchLensRecommendation(
   if (query.material) params.set("material", query.material);
   if (query.lensType) params.set("lensType", query.lensType);
   if (query.tint) params.set("tint", query.tint);
+  if (query.tintCategory) params.set("tintCategory", query.tintCategory);
   if (query.sunVariant) params.set("sunVariant", query.sunVariant);
   if (query.accommodative) params.set("accommodative", "1");
   if (query.brand) params.set("brand", query.brand);

@@ -125,44 +125,39 @@ export const LENS_TYPES: LensTypeOption[] = [
   },
 ];
 
-export type PhotochromicTechId =
-  | "transitions-gen-s"
-  | "transitions-xtractive-ng"
-  | "xtractive-polarized"
-  | "photofusion"
-  | "photofusion-x";
+/**
+ * «Категория затемнения» — the owner's own split, from her rules document
+ * «Правило_фотохром_и_поляризация» (27.09), where every photochrome of every
+ * brand is filed as either ordinary or for driving.
+ *
+ * This replaces the old list of brand TECHNOLOGY names (Transitions Gen S,
+ * PhotoFusion X …). Two reasons, both hers: a customer does not know what a
+ * technology name means (Ошибки 2.3, п.10), and the tiles reached only the
+ * brands that happened to be listed — all 451 HOYA Sensity photochromes, plus
+ * Essilor SunActives/EvoSun, could not be found from any tile at all («Выдача
+ * карточек 2», случай 15). The technology is now shown on the result card
+ * instead, which is where she asked for it.
+ */
+export type PhotochromicCategoryId = "regular_photochromic" | "driving_photochromic";
 
-export interface PhotochromicTechOption {
-  id: PhotochromicTechId;
+export interface PhotochromicCategoryOption {
+  id: PhotochromicCategoryId;
   title: string;
   description: string;
 }
 
-export const PHOTOCHROMIC_TECHS: PhotochromicTechOption[] = [
+export const PHOTOCHROMIC_CATEGORIES: PhotochromicCategoryOption[] = [
   {
-    id: "transitions-gen-s",
-    title: "Transitions Gen S",
-    description: "Новое поколение Transitions: быстрое затемнение и осветление",
+    id: "regular_photochromic",
+    title: "Обычные фотохромные",
+    description:
+      "Темнеют на улице и светлеют в помещении. Подходящую технологию подберём сами",
   },
   {
-    id: "transitions-xtractive-ng",
-    title: "Transitions XTRActive NG",
-    description: "Максимальное затемнение, срабатывают и за рулём",
-  },
-  {
-    id: "xtractive-polarized",
-    title: "Transitions XTRActive Polarized",
-    description: "Фотохром с поляризацией в затемнённом состоянии",
-  },
-  {
-    id: "photofusion",
-    title: "PhotoFusion",
-    description: "Светоадаптивные линзы от ZEISS",
-  },
-  {
-    id: "photofusion-x",
-    title: "PhotoFusion X",
-    description: "Флагманский фотохром ZEISS: быстрее темнеет и светлеет",
+    id: "driving_photochromic",
+    title: "Фотохромные для вождения",
+    description:
+      "Срабатывают и за рулём, через лобовое стекло. Сильнее затемняются на ярком солнце",
   },
 ];
 
@@ -192,13 +187,11 @@ export const SUN_VARIANTS: SunVariantOption[] = [
   },
 ];
 
-export type PhotochromicColorId = "gray" | "brown" | "green";
-
-export const PHOTOCHROMIC_COLORS: { id: PhotochromicColorId; title: string; swatch: string }[] = [
-  { id: "gray", title: "Серый", swatch: "#6b7280" },
-  { id: "brown", title: "Коричневый", swatch: "#795548" },
-  { id: "green", title: "Зелёный", swatch: "#526b58" },
-];
+// Три цвета фотохрома убраны 2026-09-27 (Ошибки 2.3, п.11: «убрать
+// обязательную выдачу трёх цветов, цвет показывать только доступный для
+// конкретной линзы»). Ни один прайс не указывает цвет по позиции — колонка
+// «Доступные цвета» в единой базе пуста на всех 5 287 строках, — поэтому
+// выбор мог только обещать то, что мы не в состоянии проверить.
 
 export type ThicknessId =
   | "1.50"

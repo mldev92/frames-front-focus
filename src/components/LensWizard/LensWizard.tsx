@@ -22,8 +22,7 @@ import {
   LENS_TYPES,
   MYOPIA_COATING_TIER,
   MYOPIA_CONTROL_DESIGN,
-  PHOTOCHROMIC_COLORS,
-  PHOTOCHROMIC_TECHS,
+  PHOTOCHROMIC_CATEGORIES,
   PURPOSE_RULES,
   PURPOSES,
   SUN_VARIANTS,
@@ -32,8 +31,8 @@ import {
   type CoatingTierOption,
   type DesignOption,
   type LensTypeOption,
-  type PhotochromicColorId,
-  type PhotochromicTechOption,
+  type PhotochromicCategoryId,
+  type PhotochromicCategoryOption,
   type PurposeOption,
   type SunVariantOption,
   type ThicknessOption,
@@ -132,8 +131,7 @@ export function LensWizard({
   const [twoPd, setTwoPd] = useState(false);
   const [rxMode, setRxMode] = useState<RxMode>(null);
   const [lensType, setLensType] = useState<LensTypeOption | null>(null);
-  const [photochromicTech, setPhotochromicTech] = useState<PhotochromicTechOption | null>(null);
-  const [photochromicColor, setPhotochromicColor] = useState<PhotochromicColorId | null>(null);
+  const [photochromicCategory, setPhotochromicCategory] = useState<PhotochromicCategoryOption | null>(null);
   const [sunVariant, setSunVariant] = useState<SunVariantOption | null>(null);
   // «С поддержкой аккомодации» — computer branch only (Ошибки 2.3, п.9).
   const [accommodative, setAccommodative] = useState(false);
@@ -198,8 +196,7 @@ export function LensWizard({
     setTwoPd(false);
     setRxMode(null);
     setLensType(null);
-    setPhotochromicTech(null);
-    setPhotochromicColor(null);
+    setPhotochromicCategory(null);
     setSunVariant(null);
     setThickness(null);
     setThicknessTouched(false);
@@ -240,7 +237,7 @@ export function LensWizard({
       case 3:
         return (
           !!lensType &&
-          (lensType.id !== "photochromic" || !!photochromicTech) &&
+          (lensType.id !== "photochromic" || !!photochromicCategory) &&
           (lensType.id !== "sun" || !!sunVariant)
         );
       case 4:
@@ -431,8 +428,7 @@ export function LensWizard({
                   setPd("");
                   setPdNear("");
                   setLensType(null);
-                  setPhotochromicTech(null);
-                  setPhotochromicColor(null);
+                  setPhotochromicCategory(null);
                   setSunVariant(null);
                   setAccommodative(false);
                   setThickness(null);
@@ -482,15 +478,12 @@ export function LensWizard({
                 setLensType={(option) => {
                   setLensType(option);
                   if (option.id !== "photochromic") {
-                    setPhotochromicTech(null);
-                    setPhotochromicColor(null);
+                    setPhotochromicCategory(null);
                   }
                   if (option.id !== "sun") setSunVariant(null);
                 }}
-                photochromicTech={photochromicTech}
-                setPhotochromicTech={setPhotochromicTech}
-                photochromicColor={photochromicColor}
-                setPhotochromicColor={setPhotochromicColor}
+                photochromicCategory={photochromicCategory}
+                setPhotochromicCategory={setPhotochromicCategory}
                 sunVariant={sunVariant}
                 setSunVariant={setSunVariant}
               />
@@ -551,8 +544,7 @@ export function LensWizard({
                 pdNear={pdNear}
                 twoPd={twoPd}
                 lensType={lensType}
-                photochromicTech={photochromicTech}
-                photochromicColor={photochromicColor}
+                photochromicCategory={photochromicCategory}
                 sunVariant={sunVariant}
                 accommodative={accommodative}
                 thickness={thickness}
@@ -1117,19 +1109,15 @@ function StepRx({
 function StepLensType({
   lensType,
   setLensType,
-  photochromicTech,
-  setPhotochromicTech,
-  photochromicColor,
-  setPhotochromicColor,
+  photochromicCategory,
+  setPhotochromicCategory,
   sunVariant,
   setSunVariant,
 }: {
   lensType: LensTypeOption | null;
   setLensType: (v: LensTypeOption) => void;
-  photochromicTech: PhotochromicTechOption | null;
-  setPhotochromicTech: (v: PhotochromicTechOption) => void;
-  photochromicColor: PhotochromicColorId | null;
-  setPhotochromicColor: (v: PhotochromicColorId) => void;
+  photochromicCategory: PhotochromicCategoryOption | null;
+  setPhotochromicCategory: (v: PhotochromicCategoryOption) => void;
   sunVariant: SunVariantOption | null;
   setSunVariant: (v: SunVariantOption) => void;
 }) {
@@ -1140,7 +1128,7 @@ function StepLensType({
   // That is the report: "the button doesn't work and I don't understand why".
   const subChoiceRef = useRef<HTMLElement | null>(null);
   const subChoicePending =
-    (lensType?.id === "photochromic" && !photochromicTech) ||
+    (lensType?.id === "photochromic" && !photochromicCategory) ||
     (lensType?.id === "sun" && !sunVariant);
 
   useEffect(() => {
@@ -1185,49 +1173,30 @@ function StepLensType({
 
       {lensType?.id === "photochromic" && (
         <section ref={subChoiceRef} className="mt-7 scroll-mt-4 rounded-xl border border-border p-5">
-          <h2 className="font-serif text-xl">Технология фотохрома</h2>
-          {/* Says it is required, right where the choice is. The colour block
-              below says the opposite in the same voice, so the pair reads as
-              deliberate rather than as one of them nagging. */}
+          {/* Her wording, not the manufacturers': «Показывать понятный выбор —
+              „Обычные фотохромные“ и „Фотохромные для вождения“. После выбора
+              система должна самостоятельно подбирать подходящую технологию»
+              (Ошибки 2.3, п.10). The technology name now appears on the result
+              card instead. The three colour swatches that used to sit here are
+              gone with п.11: no price list states a colour per position, so
+              the block could only ever promise something we cannot check. */}
+          <h2 className="font-serif text-xl">Когда линзы должны темнеть</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Выберите семейство светоадаптивных линз — это нужно, чтобы продолжить.
+            Выберите, как вы будете носить очки — подходящую технологию подберём сами.
           </p>
           <div
             role="group"
-            aria-label={`Технология фотохрома: ${PHOTOCHROMIC_TECHS.length} ${pluralOptions(PHOTOCHROMIC_TECHS.length)}`}
+            aria-label={`Тип фотохрома: ${PHOTOCHROMIC_CATEGORIES.length} ${pluralOptions(PHOTOCHROMIC_CATEGORIES.length)}`}
             className="mt-4 space-y-3"
           >
-            {PHOTOCHROMIC_TECHS.map((tech) => (
+            {PHOTOCHROMIC_CATEGORIES.map((category) => (
               <OptionCard
-                key={tech.id}
-                active={photochromicTech?.id === tech.id}
-                title={tech.title}
-                description={tech.description}
-                onClick={() => setPhotochromicTech(tech)}
+                key={category.id}
+                active={photochromicCategory?.id === category.id}
+                title={category.title}
+                description={category.description}
+                onClick={() => setPhotochromicCategory(category)}
               />
-            ))}
-          </div>
-          <h3 className="mt-6 font-medium">Цвет затемнения</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Необязательно — доступность цвета проверит специалист.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-3">
-            {PHOTOCHROMIC_COLORS.map((color) => (
-              <button
-                key={color.id}
-                type="button"
-                aria-pressed={photochromicColor === color.id}
-                onClick={() => setPhotochromicColor(color.id)}
-                className={cn(
-                  "inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm",
-                  photochromicColor === color.id
-                    ? "border-brand bg-brand/5"
-                    : "border-border hover:border-foreground/30",
-                )}
-              >
-                <span className="h-4 w-4 rounded-full" style={{ backgroundColor: color.swatch }} />
-                {color.title}
-              </button>
             ))}
           </div>
         </section>
@@ -1620,8 +1589,7 @@ function StepResults({
   pdNear,
   twoPd,
   lensType,
-  photochromicTech,
-  photochromicColor,
+  photochromicCategory,
   sunVariant,
   accommodative,
   thickness,
@@ -1643,8 +1611,7 @@ function StepResults({
   pdNear: string;
   twoPd: boolean;
   lensType: LensTypeOption | null;
-  photochromicTech: PhotochromicTechOption | null;
-  photochromicColor: PhotochromicColorId | null;
+  photochromicCategory: PhotochromicCategoryOption | null;
   sunVariant: SunVariantOption | null;
   accommodative: boolean;
   thickness: ThicknessOption | null;
@@ -1657,15 +1624,13 @@ function StepResults({
   // The picked price card lives here, not in LensPriceCards, because it has to
   // reach requestDraft — the customer choosing «Премиум» is part of the request.
   const [chosenOffer, setChosenOffer] = useState<ChosenOffer | null>(null);
-  const colorTitle = PHOTOCHROMIC_COLORS.find((color) => color.id === photochromicColor)?.title;
   const formatSphericalEquivalent = (value: number) =>
     `${value >= 0 ? "+" : ""}${value.toFixed(2)}`;
 
   const lensTypeSummary = lensType
     ? [
         lensType.title,
-        lensType.id === "photochromic" ? photochromicTech?.title : undefined,
-        lensType.id === "photochromic" ? colorTitle : undefined,
+        lensType.id === "photochromic" ? photochromicCategory?.title : undefined,
         lensType.id === "sun" ? sunVariant?.title : undefined,
       ]
         .filter(Boolean)
@@ -1695,7 +1660,6 @@ function StepResults({
       purpose: purpose?.title ?? "",
       rxMode: rxMode === "has" ? ("has" as const) : ("none" as const),
       finish: lensTypeSummary,
-      photochromicColor: colorTitle,
       thickness: thickness?.title ?? "",
       thicknessIsRecommended,
       design: designSummary,
@@ -1797,7 +1761,7 @@ function StepResults({
         od={od}
         os={os}
         lensType={lensType}
-        photochromicTech={photochromicTech}
+        photochromicCategory={photochromicCategory}
         sunVariant={sunVariant}
         accommodative={accommodative}
         thickness={thickness}
@@ -1841,32 +1805,21 @@ function thicknessToIndex(thickness: ThicknessOption | null): string | null {
 }
 
 /**
- * The `tint` keyword for the chosen photochromic technology. The «Солнцезащитные»
- * sub-variant (тонированные/зеркальные/поляризованные) no longer rides on this
- * keyword — it goes through `sunVariant`, which the server classifies across
- * treatment+line+coating so every brand competes (the tinted/mirrored HOYA-only
- * fix, Ошибки 2.3 п.12).
+ * The `tintCategory` the endpoint filters on, from the owner's own «Категория
+ * затемнения». It replaced the `tint` KEYWORD, which matched a brand
+ * technology name against the product name and so could only ever find the
+ * brands that happened to have a tile — all 451 HOYA Sensity photochromes were
+ * unreachable («Выдача карточек 2», случай 15).
+ *
+ * The «Солнцезащитные» sub-variant (тонированные/зеркальные/поляризованные)
+ * goes through `sunVariant`, which the server classifies across
+ * treatment+line+coating so every brand competes (Ошибки 2.3, п.12).
  */
-function tintKeyword(
+function tintCategoryParam(
   lensType: LensTypeOption | null,
-  tech: PhotochromicTechOption | null,
-): string | undefined {
-  if (lensType?.id === "photochromic" && tech) {
-    switch (tech.id) {
-      case "transitions-gen-s":
-        return "Gen S";
-      case "transitions-xtractive-ng":
-        return "XTRActive";
-      // The supplier sheets spell it both "XTRActive" and "XRTActive", so match
-      // on the Polarized half.
-      case "xtractive-polarized":
-        return "Pola";
-      case "photofusion":
-        return "PhotoFusion";
-      case "photofusion-x":
-        return "PhotoFusion X";
-    }
-  }
+  category: PhotochromicCategoryOption | null,
+): PhotochromicCategoryId | undefined {
+  if (lensType?.id === "photochromic" && category) return category.id;
   return undefined;
 }
 
@@ -2214,7 +2167,7 @@ function LensPriceCards({
   od,
   os,
   lensType,
-  photochromicTech,
+  photochromicCategory,
   sunVariant,
   accommodative,
   thickness,
@@ -2230,7 +2183,7 @@ function LensPriceCards({
   od: Eye;
   os: Eye;
   lensType: LensTypeOption | null;
-  photochromicTech: PhotochromicTechOption | null;
+  photochromicCategory: PhotochromicCategoryOption | null;
   sunVariant: SunVariantOption | null;
   accommodative: boolean;
   thickness: ThicknessOption | null;
@@ -2291,7 +2244,7 @@ function LensPriceCards({
       index: index ?? undefined,
       material: isMineral ? "mineral" : undefined,
       lensType: lensType?.id,
-      tint: tintKeyword(lensType, photochromicTech),
+      tintCategory: tintCategoryParam(lensType, photochromicCategory),
       sunVariant: lensType?.id === "sun" ? sunVariant?.id : undefined,
       accommodative: purpose?.id === "computer" && accommodative ? true : undefined,
       brand: brand && brand.id !== "all" ? brand.id : undefined,
