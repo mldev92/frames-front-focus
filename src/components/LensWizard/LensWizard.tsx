@@ -35,13 +35,16 @@ import {
   type PhotochromicCategoryOption,
   type PurposeOption,
   type SunVariantOption,
+  type ThicknessId,
   type ThicknessOption,
 } from "./data";
 import { getRecommendedLensIndex, type LensIndexRecommendation } from "./logic";
 import {
+  fetchLensOptions,
   fetchLensRecommendation,
   type LensAdvantage,
   type LensListSort,
+  type LensOptions,
   type LensRecommendCard,
   type LensRecommendQuery,
   type LensRecommendResponse,
@@ -142,6 +145,52 @@ export function LensWizard({
   const [design, setDesign] = useState<DesignOption | null>(null);
   const [coatingTier, setCoatingTier] = useState<CoatingTierOption | null>(null);
   const [brand, setBrand] = useState<BrandOption | null>(null);
+
+  // What is still answerable at each remaining step, counted by the server
+  // against the real catalogue under everything already chosen. Her «Выдача
+  // карточек 2» is half made of dead ends she had to walk into to find (ZEISS
+  // has no 1.56, 1.74 has no spherical, 1.59 is Essilor-only for adults); this
+  // is the general answer to all of them — «не показывать варианты, после
+  // которых система не находит линзы» (Ошибки 2.3, п.17).
+  //
+  // `null` means "not known yet": every tile stays visible, so a slow or
+  // failed request can never hide a real choice.
+  const [options, setOptions] = useState<LensOptions | null>(null);
+  useEffect(() => {
+    if (!purpose) return;
+    const controller = new AbortController();
+    fetchLensOptions(
+      {
+        purpose: purpose.id,
+        lensType: lensType?.id,
+        tintCategory: tintCategoryParam(lensType, photochromicCategory),
+        sunVariant: sunVariant?.id,
+        accommodative: purpose.id === "computer" && accommodative ? true : undefined,
+        index: thicknessToIndex(thickness) ?? undefined,
+        material: thickness?.id === "mineral" ? "mineral" : undefined,
+        design: design && design.id !== "myopia_control" ? design.id : undefined,
+        coatingTier:
+          coatingTier && coatingTier.id !== "myopia-managed" ? coatingTier.id : undefined,
+        brand: brand && brand.id !== "all" ? brand.id : undefined,
+      },
+      controller.signal,
+    )
+      .then(setOptions)
+      .catch(() => {
+        /* keep the previous answer; never hide a tile because a request failed */
+      });
+    return () => controller.abort();
+  }, [
+    purpose,
+    lensType,
+    photochromicCategory,
+    sunVariant,
+    accommodative,
+    thickness,
+    design,
+    coatingTier,
+    brand,
+  ]);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const indexRecommendation = useMemo(
@@ -486,6 +535,7 @@ export function LensWizard({
                 setPhotochromicCategory={setPhotochromicCategory}
                 sunVariant={sunVariant}
                 setSunVariant={setSunVariant}
+                options={options}
               />
             )}
             {step === 4 && (
@@ -498,6 +548,7 @@ export function LensWizard({
                 recommendation={indexRecommendation}
                 recommendedThickness={recommendedThickness}
                 purpose={purpose}
+                options={options}
               />
             )}
             {step === 5 &&
@@ -510,13 +561,14 @@ export function LensWizard({
                   purpose={purpose}
                   accommodative={accommodative}
                   onAccommodativeChange={setAccommodative}
+                  options={options}
                 />
               ))}
             {step === 6 &&
               (purpose?.id === "myopia-control" ? (
                 <MyopiaDecidedStep stepTitle="Покрытие линз" option={MYOPIA_COATING_TIER} />
               ) : (
-                <StepCoating value={coatingTier} onChange={setCoatingTier} />
+                <StepCoating value={coatingTier} onChange={setCoatingTier} options={options} />
               ))}
             {step === 7 &&
               (purpose?.id === "myopia-control" ? (
@@ -529,7 +581,7 @@ export function LensWizard({
                   }}
                 />
               ) : (
-                <StepBrand value={brand} onChange={setBrand} />
+                <StepBrand value={brand} onChange={setBrand} options={options} />
               ))}
             {step === 8 && (
               <StepResults
@@ -1113,6 +1165,7 @@ function StepLensType({
   setPhotochromicCategory,
   sunVariant,
   setSunVariant,
+  options,
 }: {
   lensType: LensTypeOption | null;
   setLensType: (v: LensTypeOption) => void;
@@ -1120,12 +1173,22 @@ function StepLensType({
   setPhotochromicCategory: (v: PhotochromicCategoryOption) => void;
   sunVariant: SunVariantOption | null;
   setSunVariant: (v: SunVariantOption) => void;
+  options: LensOptions | null;
 }) {
   // Picking «Фотохромные» or «Солнечные очки» reveals a second, REQUIRED
   // question below the three cards — and nothing moved when it appeared. On a
   // 375 px screen only 78 px of that section sat inside the scroll window, so
   // the whole visible change was a card highlighting and «Далее» going dead.
   // That is the report: "the button doesn't work and I don't understand why".
+  // Only the lens types and photochrome categories the catalogue can still
+  // answer (Ошибки 2.3, п.17).
+  const lensTypes = options
+    ? LENS_TYPES.filter((o) => (options.lensType[o.id] ?? 0) > 0)
+    : LENS_TYPES;
+  const photochromicCategories = options
+    ? PHOTOCHROMIC_CATEGORIES.filter((o) => (options.tintCategory[o.id] ?? 0) > 0)
+    : PHOTOCHROMIC_CATEGORIES;
+
   const subChoiceRef = useRef<HTMLElement | null>(null);
   const subChoicePending =
     (lensType?.id === "photochromic" && !photochromicCategory) ||
@@ -1152,15 +1215,15 @@ function StepLensType({
     <div>
       <StepHeader
         title="Какие линзы вам нужны?"
-        count={LENS_TYPES.length}
+        count={lensTypes.length}
         subtitle="Прозрачные, фотохромные или солнцезащитные. Доступность проверяется по конкретной позиции прайса."
       />
       <div
         role="group"
-        aria-label={`Тип линз: ${LENS_TYPES.length} ${pluralOptions(LENS_TYPES.length)}`}
+        aria-label={`Тип линз: ${lensTypes.length} ${pluralOptions(lensTypes.length)}`}
         className="space-y-3"
       >
-        {LENS_TYPES.map((option) => (
+        {lensTypes.map((option) => (
           <OptionCard
             key={option.id}
             active={lensType?.id === option.id}
@@ -1186,10 +1249,10 @@ function StepLensType({
           </p>
           <div
             role="group"
-            aria-label={`Тип фотохрома: ${PHOTOCHROMIC_CATEGORIES.length} ${pluralOptions(PHOTOCHROMIC_CATEGORIES.length)}`}
+            aria-label={`Тип фотохрома: ${photochromicCategories.length} ${pluralOptions(photochromicCategories.length)}`}
             className="mt-4 space-y-3"
           >
-            {PHOTOCHROMIC_CATEGORIES.map((category) => (
+            {photochromicCategories.map((category) => (
               <OptionCard
                 key={category.id}
                 active={photochromicCategory?.id === category.id}
@@ -1304,12 +1367,14 @@ function StepThickness({
   recommendation,
   recommendedThickness,
   purpose,
+  options,
 }: {
   value: ThicknessOption | null;
   onChange: (v: ThicknessOption) => void;
   recommendation: LensIndexRecommendation | null;
   recommendedThickness: ThicknessOption | null;
   purpose: PurposeOption | null;
+  options: LensOptions | null;
 }) {
   // Mount state, never reactive state: the list must never collapse under the
   // customer's finger. goNext() preselects recommendedThickness, so `value` is
@@ -1323,7 +1388,18 @@ function StepThickness({
   // п.2/16/17): мультифокальным не нужен 1.56, контролю миопии — 1.56/1.74/
   // минеральные. Единый источник правил — PURPOSE_RULES в data.ts.
   const hidden = new Set(purpose ? PURPOSE_RULES[purpose.id].hideThicknesses ?? [] : []);
-  const visible = THICKNESSES.filter((o) => !hidden.has(o.id));
+  // …and on top of that, the ones the catalogue cannot answer under what the
+  // customer has already chosen: ZEISS has no 1.56, 1.74 has no spherical
+  // design, 1.59 is Estilor-only for adults («Выдача карточек 2», случаи
+  // 8/12/13). Counted by the server, never hard-coded — the same 1.59 is a
+  // real MiYOSMART/MyoCare thickness on the myopia path.
+  const visible = THICKNESSES.filter((o) => {
+    if (hidden.has(o.id)) return false;
+    if (!options) return true; // not known yet — never hide a real choice
+    if (o.id === "mineral") return (options.material.mineral ?? 0) > 0;
+    const index = THICKNESS_INDEX_PARAM[o.id];
+    return index ? (options.index[index] ?? 0) > 0 : true;
+  });
 
   // Порядок показа: сначала лестница индексов, затем особые материалы.
   // data.ts НЕ трогаем — разбиение только на отрисовке.
@@ -1441,12 +1517,14 @@ function StepDesign({
   purpose,
   accommodative,
   onAccommodativeChange,
+  options,
 }: {
   value: DesignOption | null;
   onChange: (v: DesignOption) => void;
   purpose: PurposeOption | null;
   accommodative: boolean;
   onAccommodativeChange: (v: boolean) => void;
+  options: LensOptions | null;
 }) {
   const multifocal = purpose?.id === "multifocal";
   const computer = purpose?.id === "computer";
@@ -1454,7 +1532,13 @@ function StepDesign({
   // Движок и так отбрасывает несовместимые пары, поэтому здесь просто не
   // предлагаем тупиковые варианты. Единый источник — PURPOSE_RULES в data.ts.
   const rule = purpose ? PURPOSE_RULES[purpose.id] : null;
-  const designs = rule?.designs ? DESIGNS.filter((d) => rule.designs!.includes(d.id)) : DESIGNS;
+  const allowed = rule?.designs ? DESIGNS.filter((d) => rule.designs!.includes(d.id)) : DESIGNS;
+  // …and drop the ones the catalogue cannot answer right now: at 1.74 there is
+  // no spherical lens at all, so offering it is a guaranteed empty result
+  // («Выдача карточек 2», случай 12).
+  const designs = options
+    ? allowed.filter((d) => (options.design[d.id] ?? 0) > 0)
+    : allowed;
   return (
     <div>
       <StepHeader
@@ -1508,23 +1592,30 @@ function StepDesign({
 function StepCoating({
   value,
   onChange,
+  options,
 }: {
   value: CoatingTierOption | null;
   onChange: (v: CoatingTierOption) => void;
+  options: LensOptions | null;
 }) {
+  // A class is offered when the catalogue holds a coating at or above it under
+  // everything already chosen — the same entry-level rule the card ladder uses.
+  const tiers = options
+    ? COATING_TIERS.filter((o) => (options.coatingTier[o.id] ?? 0) > 0)
+    : COATING_TIERS;
   return (
     <div>
       <StepHeader
         title="Покрытие линз"
-        count={COATING_TIERS.length}
+        count={tiers.length}
         subtitle="Каждое покрытие защищает от бликов и УФ; более высокий пакет добавляет прочность и уход."
       />
       <div
         role="group"
-        aria-label={`Покрытие линз: ${COATING_TIERS.length} ${pluralOptions(COATING_TIERS.length)}`}
+        aria-label={`Покрытие линз: ${tiers.length} ${pluralOptions(tiers.length)}`}
         className="space-y-3"
       >
-        {COATING_TIERS.map((option) => (
+        {tiers.map((option) => (
           <OptionCard
             key={option.id}
             active={value?.id === option.id}
@@ -1544,23 +1635,40 @@ function StepCoating({
 function StepBrand({
   value,
   onChange,
+  options,
 }: {
   value: BrandOption | null;
   onChange: (v: BrandOption) => void;
+  options: LensOptions | null;
 }) {
+  // «Все бренды» always stays; a named brand only while it can still answer.
+  // Hers: «если выбран индекс 1,56, то производителя Zeiss не должно быть в
+  // выборе» («Выдача карточек 2», случай 8). Counted, not hard-coded — the
+  // sub-brands (Kodak, Mekk, Elements, MAXXEE) ride their supplier's tile.
+  const GROUP: Record<string, string[]> = {
+    essilor: ["essilor", "kodak", "mekk", "elements"],
+    hoya: ["hoya", "maxxee"],
+    zeiss: ["zeiss"],
+    synchrony: ["synchrony"],
+  };
+  const brands = options
+    ? BRANDS.filter(
+        (o) => o.id === "all" || (GROUP[o.id] ?? [o.id]).some((b) => (options.brand[b] ?? 0) > 0),
+      )
+    : BRANDS;
   return (
     <div>
       <StepHeader
         title="Выберите бренд"
-        count={BRANDS.length}
+        count={brands.length}
         subtitle="Бренд применяется после проверки назначения, рецепта и выбранных условий."
       />
       <div
         role="group"
-        aria-label={`Бренд: ${BRANDS.length} ${pluralOptions(BRANDS.length)}`}
+        aria-label={`Бренд: ${brands.length} ${pluralOptions(brands.length)}`}
         className="space-y-3"
       >
-        {BRANDS.map((o) => (
+        {brands.map((o) => (
           <OptionCard
             key={o.id}
             active={value?.id === o.id}
@@ -1781,6 +1889,17 @@ function StepResults({
 }
 
 /* ----------------------------- Price cards ----------------------------- */
+
+/** The «Толщина» card as the endpoint's index value, for reading availability. */
+const THICKNESS_INDEX_PARAM: Partial<Record<ThicknessId, string>> = {
+  "1.50": "1.50",
+  "1.56": "1.56",
+  "trivex-153": "1.53",
+  "poly-159": "1.59",
+  "1.60": "1.60",
+  "1.67": "1.67",
+  "1.74": "1.74",
+};
 
 /** The «Толщина» card as the endpoint's index filter; null = cannot filter. */
 function thicknessToIndex(thickness: ThicknessOption | null): string | null {

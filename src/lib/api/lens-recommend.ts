@@ -207,6 +207,53 @@ export interface LensRecommendResponse {
   listSort?: LensListSort;
 }
 
+/**
+ * What the customer could still pick at each remaining step, counted against
+ * the real catalogue under everything already chosen. The wizard hides values
+ * that would answer with nothing, so a dead end is never offered (Ошибки 2.3,
+ * п.17; «Выдача карточек 2», случаи 8/12/13/14).
+ *
+ * Keys are the endpoint's own vocabulary: `index` "1.50"…"1.74", `design`
+ * spherical|aspheric|progressive|office|bifocal, `brand` the brand SHOWN
+ * (essilor|kodak|mekk|elements|hoya|maxxee|zeiss|synchrony), `coatingTier`
+ * basic|comfort|premium, `lensType`, `tintCategory`, and `material` which
+ * carries only `mineral`. Each value maps to how many positions it leaves.
+ */
+export interface LensOptions {
+  index: Record<string, number>;
+  design: Record<string, number>;
+  brand: Record<string, number>;
+  coatingTier: Record<string, number>;
+  lensType: Record<string, number>;
+  tintCategory: Record<string, number>;
+  material: Record<string, number>;
+}
+
+export async function fetchLensOptions(
+  query: LensRecommendQuery,
+  signal?: AbortSignal,
+): Promise<LensOptions> {
+  const params = new URLSearchParams();
+  params.set("options", "1");
+  if (query.index) params.set("index", query.index);
+  if (query.material) params.set("material", query.material);
+  if (query.lensType) params.set("lensType", query.lensType);
+  if (query.tintCategory) params.set("tintCategory", query.tintCategory);
+  if (query.sunVariant) params.set("sunVariant", query.sunVariant);
+  if (query.accommodative) params.set("accommodative", "1");
+  if (query.brand) params.set("brand", query.brand);
+  if (query.design) params.set("design", query.design);
+  if (query.coatingTier) params.set("coatingTier", query.coatingTier);
+  if (query.purpose) params.set("purpose", query.purpose);
+
+  const res = await apiFetch(getStoreApiUrl(`lens_recommend.php?${params.toString()}`), {
+    signal,
+  });
+  if (!res.ok) throw new Error(`lens_recommend options ${res.status}`);
+  const body = (await res.json()) as { options: LensOptions };
+  return body.options;
+}
+
 export async function fetchLensRecommendation(
   query: LensRecommendQuery,
   signal?: AbortSignal,
