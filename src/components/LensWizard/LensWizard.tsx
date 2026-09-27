@@ -108,7 +108,7 @@ const RECOMMENDATION_REASON: Record<string, string> = {
  * «Лестница индексов» против «особых материалов». Считается по id, а НЕ по
  * полю `index`: у 1.74 его нет, но это всё равно индексная линза.
  */
-const MATERIAL_IDS = new Set(["poly-159", "mineral"]);
+const MATERIAL_IDS = new Set(["trivex-153", "poly-159", "mineral"]);
 
 export function LensWizard({
   open,
@@ -1825,6 +1825,8 @@ function thicknessToIndex(thickness: ThicknessOption | null): string | null {
       return "1.50";
     case "1.56":
       return "1.56";
+    case "trivex-153":
+      return "1.53";
     case "poly-159":
       return "1.59";
     case "1.60":
@@ -2631,11 +2633,22 @@ function LensPriceCards({
                   only the «подробнее» dialog showed it, so the card printed a
                   bare «DuraVision DriveSafe UV» and said nothing. */}
               <div className="mt-1 text-xs text-muted-foreground">
+                {/* Her 2026-09-27 note: «Нужно выделить покрытие и прозрачность
+                    жирным» — the label stays quiet, the two values the customer
+                    is actually comparing are bold. */}
                 <div>
                   Покрытие:{" "}
-                  {[card.coating || "без покрытия", card.treatment.replace(/\s+/g, " ")]
-                    .filter(Boolean)
-                    .join(" · ")}
+                  <span className="font-medium text-foreground">
+                    {card.coating || "без покрытия"}
+                  </span>
+                  {card.treatment.replace(/\s+/g, " ") && (
+                    <>
+                      {" · "}
+                      <span className="font-medium text-foreground">
+                        {card.treatment.replace(/\s+/g, " ")}
+                      </span>
+                    </>
+                  )}
                 </div>
                 {card.customerText && (
                   <div className="mt-0.5 leading-snug">{card.customerText}</div>

@@ -200,7 +200,15 @@ export const PHOTOCHROMIC_COLORS: { id: PhotochromicColorId; title: string; swat
   { id: "green", title: "Зелёный", swatch: "#526b58" },
 ];
 
-export type ThicknessId = "1.50" | "1.56" | "poly-159" | "1.60" | "1.67" | "1.74" | "mineral";
+export type ThicknessId =
+  | "1.50"
+  | "1.56"
+  | "trivex-153"
+  | "poly-159"
+  | "1.60"
+  | "1.67"
+  | "1.74"
+  | "mineral";
 
 export interface ThicknessOption {
   id: ThicknessId;
@@ -229,9 +237,21 @@ export const THICKNESSES: ThicknessOption[] = [
       "Заметно тоньше базового 1.5 при небольшой доплате. Складские позиции для слабой и средней степени аметропии",
     index: "1.56",
   },
+  // Поликарбонат и Trivex — ДВА разных материала с разными индексами, и до
+  // 2026-09-27 они стояли одной плиткой «Поликарбонат или Trivex (1.59)».
+  // Владелица: «Поликарбонат 1,59, Trivex 1,53 — это 2 разных материала,
+  // Essilor использует 1,59, Zeiss и Hoya — 1,53». Индекс 1.53 не был
+  // выбираемым вообще, из-за чего 395 позиций (HOYA 220, ZEISS 127,
+  // Synchrony 48) не мог найти ни один клиент.
+  {
+    id: "trivex-153",
+    title: "Trivex (1.53)",
+    description:
+      "Ударопрочный лёгкий материал. Прочнее обычного пластика, хорошо держит сверление — подходит для безободковых оправ",
+  },
   {
     id: "poly-159",
-    title: "Поликарбонат или Trivex (1.59)",
+    title: "Поликарбонат (1.59)",
     description:
       "Ударопрочные защитные линзы. Тоньше стандартного пластика до 22%, идеальны для активного образа жизни",
   },
@@ -358,9 +378,10 @@ export const PURPOSE_RULES: Record<PurposeId, PurposeRule> = {
   // назначены и на «Имиджевые» (19 поз.), и на «Защиту от солнца» (27 поз.).
   image: {},
   "sun-protection": {},
-  // MyoCare/Stellest/MiYOSMART не выпускаются в 1.56/1.74/минерале (п.16).
-  // Приоритет поликарбоната (п.15) — отдельная задача (Block 6, таблица приоритетов).
-  "myopia-control": { hideThicknesses: ["1.56", "1.74", "mineral"] },
+  // MyoCare/Stellest/MiYOSMART не выпускаются в 1.56/1.74/минерале (п.16) и в
+  // Trivex 1.53 (в базе 0 позиций контроля миопии с этим индексом). Приоритет
+  // поликарбоната 1.59 — в StepThickness и в лестнице карточек.
+  "myopia-control": { hideThicknesses: ["1.56", "1.74", "mineral", "trivex-153"] },
 };
 
 /**
