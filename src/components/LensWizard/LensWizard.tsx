@@ -156,31 +156,53 @@ export function LensWizard({
   // `null` means "not known yet": every tile stays visible, so a slow or
   // failed request can never hide a real choice.
   const [options, setOptions] = useState<LensOptions | null>(null);
+  // Какому шагу отвечает `options`: критерии зависят от шага (см. ниже), и
+  // принимать РАЗРУШАЮЩЕЕ решение — снять уже сделанный выбор — по ответу,
+  // посчитанному для другого шага, нельзя.
+  const [optionsStep, setOptionsStep] = useState<StepId | null>(null);
   useEffect(() => {
     if (!purpose) return;
     const controller = new AbortController();
-    fetchLensOptions(
-      {
-        purpose: purpose.id,
-        lensType: lensType?.id,
-        tintCategory: tintCategoryParam(lensType, photochromicCategory),
-        sunVariant: sunVariant?.id,
-        accommodative: purpose.id === "computer" && accommodative ? true : undefined,
-        index: thicknessToIndex(thickness) ?? undefined,
-        material: thickness?.id === "mineral" ? "mineral" : undefined,
-        design: design && design.id !== "myopia_control" ? design.id : undefined,
-        coatingTier:
-          coatingTier && coatingTier.id !== "myopia-managed" ? coatingTier.id : undefined,
-        brand: brand && brand.id !== "all" ? brand.id : undefined,
-      },
-      controller.signal,
-    )
-      .then(setOptions)
+    // Каждый шаг гейтится только тем, что выбрано ДО него. Раньше запрос нёс
+    // все текущие выборы, и возврат назад прятал реальные варианты: клиент с
+    // предвыбранной по рецепту толщиной 1.56 возвращался на «Линзы» и видел
+    // один «Обычный фотохром» — водительских линз в 1.56 нет, но толщину-то
+    // он ещё не выбирал («фотохром для дали», 2026-09-28). Смена раннего
+    // выбора сбрасывает более поздние (onChange ниже), поэтому фильтровать
+    // шаг по ним не только лишне, но и вредно.
+    const criteria: LensRecommendQuery = { purpose: purpose.id };
+    if (step >= 4) {
+      criteria.lensType = lensType?.id;
+      criteria.tintCategory = tintCategoryParam(lensType, photochromicCategory);
+      criteria.sunVariant = sunVariant?.id;
+    }
+    if (step >= 5) {
+      criteria.index = thicknessToIndex(thickness) ?? undefined;
+      criteria.material = thickness?.id === "mineral" ? "mineral" : undefined;
+      // Тумблер живёт на самом шаге «Дизайн», поэтому входит в критерии с
+      // него же: с ним включённым офисные плитки честно гаснут.
+      criteria.accommodative = purpose.id === "computer" && accommodative ? true : undefined;
+    }
+    if (step >= 6) {
+      criteria.design = design && design.id !== "myopia_control" ? design.id : undefined;
+    }
+    if (step >= 7) {
+      criteria.coatingTier =
+        coatingTier && coatingTier.id !== "myopia-managed" ? coatingTier.id : undefined;
+    }
+    // `brand` — последний шаг с выбором: после него опции никто не читает,
+    // поэтому в критерии он не входит вовсе.
+    fetchLensOptions(criteria, controller.signal)
+      .then((next) => {
+        setOptions(next);
+        setOptionsStep(step);
+      })
       .catch(() => {
         /* keep the previous answer; never hide a tile because a request failed */
       });
     return () => controller.abort();
   }, [
+    step,
     purpose,
     lensType,
     photochromicCategory,
@@ -189,21 +211,48 @@ export function LensWizard({
     thickness,
     design,
     coatingTier,
-    brand,
   ]);
+  // Предвыбор толщины (goNext, по рецепту) делается вслепую, а под уже
+  // сделанными выборами этого индекса может не быть: рецепт на 1.56 плюс
+  // водительский фотохром — и в результатах мёртвый индекс при спрятанной
+  // плитке. Снимаем недоступный выбор; по ответу сервера — только когда он
+  // посчитан именно для этого шага, чтобы устаревший ответ не стёр живой.
+  useEffect(() => {
+    if (step !== 4 || !thickness) return;
+    const hiddenByPurpose = purpose ? PURPOSE_RULES[purpose.id].hideThicknesses ?? [] : [];
+    let available = !hiddenByPurpose.includes(thickness.id);
+    if (available && optionsStep === 4 && options) {
+      if (thickness.id === "mineral") {
+        available = (options.material.mineral ?? 0) > 0;
+      } else {
+        const index = THICKNESS_INDEX_PARAM[thickness.id];
+        available = !index || (options.index[index] ?? 0) > 0;
+      }
+    }
+    if (!available) {
+      setThickness(null);
+      setThicknessTouched(false);
+    }
+  }, [step, optionsStep, options, thickness, purpose]);
+
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const indexRecommendation = useMemo(
     () => (rxMode === "has" ? getRecommendedLensIndex(od, os) : null),
     [rxMode, od, os],
   );
-  const recommendedThickness = useMemo(
-    () =>
-      indexRecommendation
-        ? THICKNESSES.find((option) => option.index === indexRecommendation.index) ?? null
-        : null,
-    [indexRecommendation],
-  );
+  const recommendedThickness = useMemo(() => {
+    // Её правило (28.09): для контроля миопии предлагать поликарбонат 1.59
+    // НЕЗАВИСИМО от диоптрий — MiYOSMART/Stellest/MyoCare выпускаются в нём,
+    // а детская линза в первую очередь ударопрочная. Рецепт (и его отсутствие)
+    // рекомендацию не меняет.
+    if (purpose?.id === "myopia-control") {
+      return THICKNESSES.find((option) => option.id === "poly-159") ?? null;
+    }
+    return indexRecommendation
+      ? THICKNESSES.find((option) => option.index === indexRecommendation.index) ?? null
+      : null;
+  }, [purpose, indexRecommendation]);
 
   useEffect(() => {
     if (open) {
@@ -525,6 +574,22 @@ export function LensWizard({
               <StepLensType
                 lensType={lensType}
                 setLensType={(option) => {
+                  // Выборы следующих шагов считались под ПРЕЖНИМ типом линз —
+                  // под новым они могут быть невозможны (1.56 не бывает
+                  // водительским фотохромом). Обратная сторона пошагового
+                  // гейтинга опций: раз шаг не прячется по поздним выборам,
+                  // смена раннего обязана их сбросить. На пути контроля
+                  // миопии Дизайн/Покрытие назначены самим назначением — их
+                  // не трогаем.
+                  if (option.id !== lensType?.id) {
+                    setThickness(null);
+                    setThicknessTouched(false);
+                    if (purpose?.id !== "myopia-control") {
+                      setDesign(null);
+                      setCoatingTier(null);
+                      setBrand(null);
+                    }
+                  }
                   setLensType(option);
                   if (option.id !== "photochromic") {
                     setPhotochromicCategory(null);
@@ -532,9 +597,31 @@ export function LensWizard({
                   if (option.id !== "sun") setSunVariant(null);
                 }}
                 photochromicCategory={photochromicCategory}
-                setPhotochromicCategory={setPhotochromicCategory}
+                setPhotochromicCategory={(option) => {
+                  if (option.id !== photochromicCategory?.id) {
+                    setThickness(null);
+                    setThicknessTouched(false);
+                    if (purpose?.id !== "myopia-control") {
+                      setDesign(null);
+                      setCoatingTier(null);
+                      setBrand(null);
+                    }
+                  }
+                  setPhotochromicCategory(option);
+                }}
                 sunVariant={sunVariant}
-                setSunVariant={setSunVariant}
+                setSunVariant={(option) => {
+                  if (option.id !== sunVariant?.id) {
+                    setThickness(null);
+                    setThicknessTouched(false);
+                    if (purpose?.id !== "myopia-control") {
+                      setDesign(null);
+                      setCoatingTier(null);
+                      setBrand(null);
+                    }
+                  }
+                  setSunVariant(option);
+                }}
                 options={options}
               />
             )}
@@ -542,6 +629,13 @@ export function LensWizard({
               <StepThickness
                 value={thickness}
                 onChange={(option) => {
+                  // Та же логика, что при смене типа линз: дизайн/покрытие/
+                  // бренд выбирались под другой толщиной.
+                  if (option.id !== thickness?.id && purpose?.id !== "myopia-control") {
+                    setDesign(null);
+                    setCoatingTier(null);
+                    setBrand(null);
+                  }
                   setThickness(option);
                   setThicknessTouched(true);
                 }}
@@ -557,10 +651,25 @@ export function LensWizard({
               ) : (
                 <StepDesign
                   value={design}
-                  onChange={setDesign}
+                  onChange={(option) => {
+                    if (option.id !== design?.id) {
+                      setCoatingTier(null);
+                      setBrand(null);
+                    }
+                    setDesign(option);
+                  }}
                   purpose={purpose}
                   accommodative={accommodative}
-                  onAccommodativeChange={setAccommodative}
+                  onAccommodativeChange={(value) => {
+                    // Тумблер меняет пул так же сильно, как сам дизайн:
+                    // выбранный дизайн и всё после него пересматриваются.
+                    if (value !== accommodative) {
+                      setDesign(null);
+                      setCoatingTier(null);
+                      setBrand(null);
+                    }
+                    setAccommodative(value);
+                  }}
                   options={options}
                 />
               ))}
@@ -568,7 +677,14 @@ export function LensWizard({
               (purpose?.id === "myopia-control" ? (
                 <MyopiaDecidedStep stepTitle="Покрытие линз" option={MYOPIA_COATING_TIER} />
               ) : (
-                <StepCoating value={coatingTier} onChange={setCoatingTier} options={options} />
+                <StepCoating
+                  value={coatingTier}
+                  onChange={(option) => {
+                    if (option.id !== coatingTier?.id) setBrand(null);
+                    setCoatingTier(option);
+                  }}
+                  options={options}
+                />
               ))}
             {step === 7 &&
               (purpose?.id === "myopia-control" ? (
@@ -1381,9 +1497,6 @@ function StepThickness({
   // normally already set when we arrive.
   const [showAll, setShowAll] = useState(!recommendedThickness);
 
-  const featured = value ?? recommendedThickness;
-  const isRecommended = !!featured && featured.id === recommendedThickness?.id;
-
   // Скрываем толщины, недоступные для выбранного назначения (Ошибки 2.3,
   // п.2/16/17): мультифокальным не нужен 1.56, контролю миопии — 1.56/1.74/
   // минеральные. Единый источник правил — PURPOSE_RULES в data.ts.
@@ -1400,6 +1513,19 @@ function StepThickness({
     const index = THICKNESS_INDEX_PARAM[o.id];
     return index ? (options.index[index] ?? 0) > 0 : true;
   });
+
+  // Рекомендация, которой нет среди плиток, — не рекомендация: показывать её
+  // «решённой карточкой» значило бы предлагать индекс, которого под этими
+  // выборами не существует.
+  const recommendedVisible =
+    recommendedThickness && visible.some((o) => o.id === recommendedThickness.id)
+      ? recommendedThickness
+      : null;
+  const featured = value ?? recommendedVisible;
+  const isRecommended = !!featured && featured.id === recommendedThickness?.id;
+  // Для контроля миопии рекомендация не выводится из рецепта (поликарбонат
+  // 1.59 при любых диоптриях) — формулировки «по вашему рецепту» врали бы.
+  const myopia = purpose?.id === "myopia-control";
 
   // Порядок показа: сначала лестница индексов, затем особые материалы.
   // data.ts НЕ трогаем — разбиение только на отрисовке.
@@ -1424,7 +1550,13 @@ function StepThickness({
       active={value?.id === option.id}
       title={option.title}
       description={option.description}
-      badge={recommendedThickness?.id === option.id ? "По вашему рецепту" : undefined}
+      badge={
+        recommendedThickness?.id === option.id
+          ? myopia
+            ? "Рекомендуем для ребёнка"
+            : "По вашему рецепту"
+          : undefined
+      }
       onClick={() => onChange(option)}
     />
   );
@@ -1441,11 +1573,19 @@ function StepThickness({
             <DecidedCard
               title={featured!.title}
               description={featured!.description}
-              eyebrow={isRecommended ? "Подобрано по вашему рецепту" : "Ваш выбор"}
+              eyebrow={
+                isRecommended
+                  ? myopia
+                    ? "Наша рекомендация"
+                    : "Подобрано по вашему рецепту"
+                  : "Ваш выбор"
+              }
               reason={
-                isRecommended && recommendation
-                  ? RECOMMENDATION_REASON[recommendation.index]
-                  : undefined
+                isRecommended && myopia
+                  ? "Ударопрочный поликарбонат — стандарт детских линз, подходит при любых диоптриях."
+                  : isRecommended && recommendation
+                    ? RECOMMENDATION_REASON[recommendation.index]
+                    : undefined
               }
             />
             <button
@@ -1744,8 +1884,13 @@ function StepResults({
         .filter(Boolean)
         .join(" · ")
     : "";
+  // Бэкенд печатает этот флаг как «(рекомендовано по рецепту)» — для контроля
+  // миопии рекомендация от рецепта не зависит, и приписка была бы неправдой.
   const thicknessIsRecommended =
-    !!thickness && !!recommendedThickness && thickness.id === recommendedThickness.id;
+    purpose?.id !== "myopia-control" &&
+    !!thickness &&
+    !!recommendedThickness &&
+    thickness.id === recommendedThickness.id;
 
   // «С поддержкой аккомодации» — часть выбора дизайна для компьютерных очков
   // (Ошибки 2.3, п.9). Без этой приписки ни менеджер в заявке, ни клиент в
