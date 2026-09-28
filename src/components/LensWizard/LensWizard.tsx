@@ -2201,6 +2201,7 @@ const ADVANTAGE_LABELS: Record<LensAdvantage, string> = {
   feature_blue: "защита от синего света",
   feature_driving: "фильтр для вождения",
   surface: "асферический дизайн — тоньше и легче",
+  individual_design: "индивидуальный дизайн — изготовление по вашим параметрам",
   stock: "есть на складе — очки будут готовы быстрее",
 };
 

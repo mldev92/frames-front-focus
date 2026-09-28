@@ -171,6 +171,9 @@ export type LensAdvantage =
   | "feature_blue"
   | "feature_driving"
   | "surface"
+  // Индивидуальная (freeform) линза заменила складскую премиальную карточку,
+  // потому что дизайн выше, а цена не больше — её решение 28.09 (случай 11).
+  | "individual_design"
   | "stock";
 
 export interface LensRecommendResponse {
