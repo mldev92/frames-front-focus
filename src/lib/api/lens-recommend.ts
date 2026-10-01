@@ -293,3 +293,38 @@ export async function fetchLensRecommendation(
   if (!res.ok) throw new Error(`lens_recommend ${res.status}`);
   return (await res.json()) as LensRecommendResponse;
 }
+
+/**
+ * GET /api/store/lens_search.php — name search over the WHOLE catalogue
+ * («поиск по названию»), no wizard filters involved. Rows are the same offer
+ * shape the wizard's list renders; `priceRub` is per lens, `rxFit` is always
+ * "unknown" because no prescription is involved.
+ */
+export interface LensSearchResponse {
+  query: string;
+  tokens: string[];
+  total: number;
+  offset: number;
+  limit: number;
+  sort: LensListSort;
+  matches: LensRecommendCard[];
+  catalogueSize: number;
+  disclaimer: string;
+}
+
+export async function fetchLensSearch(
+  q: string,
+  opts: { offset?: number; limit?: number; sort?: LensListSort } = {},
+  signal?: AbortSignal,
+): Promise<LensSearchResponse> {
+  const params = new URLSearchParams({ q });
+  if (opts.offset) params.set("offset", String(opts.offset));
+  if (opts.limit) params.set("limit", String(opts.limit));
+  if (opts.sort) params.set("sort", opts.sort);
+
+  const res = await apiFetch(getStoreApiUrl(`lens_search.php?${params.toString()}`), {
+    signal,
+  });
+  if (!res.ok) throw new Error(`lens_search ${res.status}`);
+  return (await res.json()) as LensSearchResponse;
+}

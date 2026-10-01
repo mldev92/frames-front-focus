@@ -7,6 +7,7 @@ import {
   ContactLensCatalogGuide,
   ContactLensCatalogNavigation,
 } from "@/components/ContactLensCatalogSeo";
+import { LensSearch } from "@/components/LensSearch";
 import { categoryForCatalogPath, catalogSectionTitle } from "@/data/categories";
 import { catalogConfig } from "@/routes/catalog_s.$category";
 import { searchToFilters, type CatalogSearch, type LoaderResult } from "@/lib/catalog-route";
@@ -89,6 +90,10 @@ export function CatalogRouteView({
   const config = catalogConfig[category];
   const normalizedSectionPath = sectionPath.replace(/^\/+|\/+$/g, "");
   const isContactLensRoot = city === "spb" && normalizedSectionPath === "kontaktnye_linzy_";
+  // «Поиск по базе линз» (owner ask, 2026-10-01): the hand-made lens cards
+  // below cover a fraction of the assortment, so the lens section gets a name
+  // search over the selector's full base between the title and the listing.
+  const isLensRoot = normalizedSectionPath === "linzy_dlya_ochkov";
   const supportsFacetFiltering = Object.keys(result.data.facets ?? {}).length > 0;
   const appliedFilters = supportsFacetFiltering ? searchToFilters(search) : {};
 
@@ -98,6 +103,7 @@ export function CatalogRouteView({
         title={isContactLensRoot ? "Контактные линзы в Санкт-Петербурге" : catalogSectionTitle(sectionPath, config.title)}
         subtitle={isContactLensRoot ? undefined : config.subtitle}
         headerBeforeTitle={isContactLensRoot ? <ContactLensCatalogNavigation /> : undefined}
+        headerAfterTitle={isLensRoot ? <LensSearch /> : undefined}
         catalogId={isContactLensRoot ? "catalog-products" : undefined}
         data={result.data}
         facets={config.facets ?? []}

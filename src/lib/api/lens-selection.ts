@@ -1,7 +1,11 @@
 import { securePost, securePostForm } from "@/lib/api/security";
 
 export interface LensSelectionRequestDraft {
-  frame: {
+  /**
+   * Absent on the standalone «Подбор линз» page — the endpoint prints
+   * «Модель: не указана» in the salon email for a frameless request.
+   */
+  frame?: {
     id?: number;
     slug: string;
     name: string;

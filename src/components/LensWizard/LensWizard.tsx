@@ -121,7 +121,12 @@ export function LensWizard({
 }: {
   open: boolean;
   onClose: () => void;
-  frame: Product;
+  /**
+   * The frame the lenses are picked for. Absent on the standalone
+   * «Подбор линз» page (owner ask, 2026-10-01): the wizard runs identically,
+   * the request just goes out without frame context.
+   */
+  frame?: Product | null;
   previewImage?: string;
   selectedColor?: string;
 }) {
@@ -466,23 +471,36 @@ export function LensWizard({
               className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
-              Назад к оправе
+              {frame ? "Назад к оправе" : "Назад в каталог"}
             </button>
             <div className="rounded-2xl bg-surface p-6">
-              <div className="aspect-[4/3] w-full overflow-hidden">
-                <img
-                  src={previewImage ?? frame.images[0]}
-                  alt={frame.name}
-                  className="h-full w-full object-contain mix-blend-multiply"
-                />
-              </div>
-              <h2 className="mt-4 font-serif text-xl">
-                {frame.brand} {frame.name}
-              </h2>
-              {selectedColor && (
-                <p className="mt-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                  Цвет оправы: {selectedColor}
-                </p>
+              {frame ? (
+                <>
+                  <div className="aspect-[4/3] w-full overflow-hidden">
+                    <img
+                      src={previewImage ?? frame.images[0]}
+                      alt={frame.name}
+                      className="h-full w-full object-contain mix-blend-multiply"
+                    />
+                  </div>
+                  <h2 className="mt-4 font-serif text-xl">
+                    {frame.brand} {frame.name}
+                  </h2>
+                  {selectedColor && (
+                    <p className="mt-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                      Цвет оправы: {selectedColor}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <>
+                  <h2 className="font-serif text-xl">Подбор очковых линз</h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Линзы можно подобрать и без оправы: ответьте на вопросы, и мы
+                    подготовим варианты с ценами. Оправу — вашу или новую —
+                    обсудите со специалистом при заказе.
+                  </p>
+                </>
               )}
               <p className="mt-2 text-sm text-muted-foreground">
                 В подборе представлены Essilor, ZEISS, HOYA с линейками MAXXEE и Synchrony.
@@ -743,21 +761,34 @@ export function LensWizard({
         )}
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 px-4 py-3 lg:px-8 lg:py-4">
           <div className="flex min-w-0 items-center gap-3">
-            <img
-              src={previewImage ?? frame.images[0]}
-              alt=""
-              aria-hidden
-              className="h-10 w-12 shrink-0 object-contain mix-blend-multiply lg:hidden"
-            />
+            {frame && (
+              <img
+                src={previewImage ?? frame.images[0]}
+                alt=""
+                aria-hidden
+                className="h-10 w-12 shrink-0 object-contain mix-blend-multiply lg:hidden"
+              />
+            )}
             <div className="min-w-0 text-sm">
-              <div className="truncate text-xs text-muted-foreground">
-                {frame.brand} {frame.name}
-                {selectedColor ? ` · ${selectedColor}` : ""}
-              </div>
-              <strong className="font-serif text-lg sm:text-xl">{formatPrice(frame.price)}</strong>
-              <div className="hidden text-xs text-muted-foreground sm:block">
-                Стоимость линз — после проверки подбора
-              </div>
+              {frame ? (
+                <>
+                  <div className="truncate text-xs text-muted-foreground">
+                    {frame.brand} {frame.name}
+                    {selectedColor ? ` · ${selectedColor}` : ""}
+                  </div>
+                  <strong className="font-serif text-lg sm:text-xl">{formatPrice(frame.price)}</strong>
+                  <div className="hidden text-xs text-muted-foreground sm:block">
+                    Стоимость линз — после проверки подбора
+                  </div>
+                </>
+              ) : (
+                <>
+                  <strong className="font-serif text-lg sm:text-xl">Подбор линз</strong>
+                  <div className="hidden text-xs text-muted-foreground sm:block">
+                    Без оправы · стоимость — после проверки подбора
+                  </div>
+                </>
+              )}
             </div>
           </div>
           {step < LAST_STEP ? (
@@ -1849,7 +1880,7 @@ function StepResults({
 }: {
   /** Jump back to a step, so a dead end can offer a way out of itself. */
   onEditStep: (step: StepId) => void;
-  frame: Product;
+  frame?: Product | null;
   selectedColor?: string;
   purpose: PurposeOption | null;
   rxMode: RxMode;
@@ -1901,14 +1932,18 @@ function StepResults({
     : "";
 
   const requestDraft = {
-    frame: {
-      id: frame.id,
-      slug: frame.slug,
-      name: frame.name,
-      brand: frame.brand,
-      color: selectedColor,
-      price: frame.price,
-    },
+    // The endpoint prints «Модель: не указана» for a frameless draft — the
+    // standalone page's requests arrive marked that way on purpose.
+    frame: frame
+      ? {
+          id: frame.id,
+          slug: frame.slug,
+          name: frame.name,
+          brand: frame.brand,
+          color: selectedColor,
+          price: frame.price,
+        }
+      : undefined,
     selection: {
       purpose: purpose?.title ?? "",
       rxMode: rxMode === "has" ? ("has" as const) : ("none" as const),
@@ -1961,7 +1996,9 @@ function StepResults({
     // on the step where the customer reviews what they are about to request.
     [
       "Оправа",
-      `${frame.brand} ${frame.name}${selectedColor ? ` · ${selectedColor}` : ""}`,
+      frame
+        ? `${frame.brand} ${frame.name}${selectedColor ? ` · ${selectedColor}` : ""}`
+        : "Без оправы — подбираются только линзы",
     ],
     ["Назначение", purpose?.title],
     ["Рецепт", rxMode === "has" ? "Введён" : "Нет — предварительный подбор"],
@@ -2117,7 +2154,7 @@ function offerIsChosen(chosen: ChosenOffer | null, keys: string[]): boolean {
 }
 
 /** «ESSILOR» + «AS Stylis», without printing the brand twice. */
-function offerProductName(supplier: string, line: string) {
+export function offerProductName(supplier: string, line: string) {
   // `supplier` is a slug ("zeiss") and `line` usually already opens with the
   // brand ("ZEISS Single Vision…") — printing both gives "zeiss ZEISS …".
   const brand = supplier.toUpperCase();
@@ -2125,7 +2162,7 @@ function offerProductName(supplier: string, line: string) {
 }
 
 /** Coating and treatment as one line; the sheets wrap treatments over newlines. */
-function offerSpecs(coating?: string, treatment?: string) {
+export function offerSpecs(coating?: string, treatment?: string) {
   return [coating, treatment?.replace(/\s+/g, " ")].filter(Boolean).join(" · ");
 }
 
@@ -2300,7 +2337,7 @@ const DESIGN_LABELS: Record<LensRecommendCard["design"], string> = {
  * price lists carry no per-product day counts, so this states the stock
  * position instead of inventing numbers.
  */
-function availabilityBadge(
+export function availabilityBadge(
   availability: string,
   channel?: string | null,
 ): { label: string; good: boolean } {
@@ -2332,7 +2369,7 @@ const BRAND_DISPLAY_LABELS: Record<string, string> = {
   elements: "Elements",
 };
 
-function brandDisplayLabel(supplier: string): string {
+export function brandDisplayLabel(supplier: string): string {
   return BRAND_DISPLAY_LABELS[supplier] ?? (supplier ? supplier[0].toUpperCase() + supplier.slice(1) : "");
 }
 

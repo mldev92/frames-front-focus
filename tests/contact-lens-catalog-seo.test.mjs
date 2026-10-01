@@ -35,7 +35,10 @@ test("contact-lens category is product-first while retaining navigation, image, 
   assert.ok(!content.includes('href="#catalog-products"'));
   assert.ok(view.includes('catalogId={isContactLensRoot ? "catalog-products"'));
   assert.ok(listing.includes('id={catalogId}'));
-  assert.ok(!view.includes("headerAfterTitle="));
+  // The lens-base search mounts after the title ONLY on linzy_dlya_ochkov —
+  // the contact-lens root stays product-first with nothing injected there.
+  assert.ok(view.includes("headerAfterTitle={isLensRoot ? <LensSearch /> : undefined}"));
+  assert.ok(view.includes('normalizedSectionPath === "linzy_dlya_ochkov"'));
   assert.ok(view.indexOf("<CatalogListing") < view.indexOf("<ContactLensCatalogGuide"));
   assert.ok(content.includes('src="/podbor_linz.webp"'));
   assert.ok(content.includes('alt="Контактная линза крупным планом — Оптика 100%"'));

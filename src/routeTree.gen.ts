@@ -19,6 +19,7 @@ import { Route as RequisitesRouteImport } from './routes/requisites'
 import { Route as RemontOchkovRouteImport } from './routes/remont-ochkov'
 import { Route as PolitikaKonfidentsialnostiRouteImport } from './routes/politika-konfidentsialnosti'
 import { Route as PodborOchkovRouteImport } from './routes/podbor-ochkov'
+import { Route as PodborLinzRouteImport } from './routes/podbor-linz'
 import { Route as PersonalRouteImport } from './routes/personal'
 import { Route as PaymentRouteImport } from './routes/payment'
 import { Route as OptikaSpbRouteImport } from './routes/optika-spb'
@@ -105,6 +106,11 @@ const PolitikaKonfidentsialnostiRoute =
 const PodborOchkovRoute = PodborOchkovRouteImport.update({
   id: '/podbor-ochkov',
   path: '/podbor-ochkov',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PodborLinzRoute = PodborLinzRouteImport.update({
+  id: '/podbor-linz',
+  path: '/podbor-linz',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PersonalRoute = PersonalRouteImport.update({
@@ -304,6 +310,7 @@ export interface FileRoutesByFullPath {
   '/optika-spb': typeof OptikaSpbRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
+  '/podbor-linz': typeof PodborLinzRoute
   '/podbor-ochkov': typeof PodborOchkovRoute
   '/politika-konfidentsialnosti': typeof PolitikaKonfidentsialnostiRoute
   '/remont-ochkov': typeof RemontOchkovRoute
@@ -350,6 +357,7 @@ export interface FileRoutesByTo {
   '/optika-spb': typeof OptikaSpbRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
+  '/podbor-linz': typeof PodborLinzRoute
   '/podbor-ochkov': typeof PodborOchkovRoute
   '/politika-konfidentsialnosti': typeof PolitikaKonfidentsialnostiRoute
   '/remont-ochkov': typeof RemontOchkovRoute
@@ -395,6 +403,7 @@ export interface FileRoutesById {
   '/optika-spb': typeof OptikaSpbRoute
   '/payment': typeof PaymentRoute
   '/personal': typeof PersonalRoute
+  '/podbor-linz': typeof PodborLinzRoute
   '/podbor-ochkov': typeof PodborOchkovRoute
   '/politika-konfidentsialnosti': typeof PolitikaKonfidentsialnostiRoute
   '/remont-ochkov': typeof RemontOchkovRoute
@@ -444,6 +453,7 @@ export interface FileRouteTypes {
     | '/optika-spb'
     | '/payment'
     | '/personal'
+    | '/podbor-linz'
     | '/podbor-ochkov'
     | '/politika-konfidentsialnosti'
     | '/remont-ochkov'
@@ -490,6 +500,7 @@ export interface FileRouteTypes {
     | '/optika-spb'
     | '/payment'
     | '/personal'
+    | '/podbor-linz'
     | '/podbor-ochkov'
     | '/politika-konfidentsialnosti'
     | '/remont-ochkov'
@@ -534,6 +545,7 @@ export interface FileRouteTypes {
     | '/optika-spb'
     | '/payment'
     | '/personal'
+    | '/podbor-linz'
     | '/podbor-ochkov'
     | '/politika-konfidentsialnosti'
     | '/remont-ochkov'
@@ -582,6 +594,7 @@ export interface RootRouteChildren {
   OptikaSpbRoute: typeof OptikaSpbRoute
   PaymentRoute: typeof PaymentRoute
   PersonalRoute: typeof PersonalRoute
+  PodborLinzRoute: typeof PodborLinzRoute
   PodborOchkovRoute: typeof PodborOchkovRoute
   PolitikaKonfidentsialnostiRoute: typeof PolitikaKonfidentsialnostiRoute
   RemontOchkovRoute: typeof RemontOchkovRoute
@@ -673,6 +686,13 @@ declare module '@tanstack/react-router' {
       path: '/podbor-ochkov'
       fullPath: '/podbor-ochkov'
       preLoaderRoute: typeof PodborOchkovRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/podbor-linz': {
+      id: '/podbor-linz'
+      path: '/podbor-linz'
+      fullPath: '/podbor-linz'
+      preLoaderRoute: typeof PodborLinzRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/personal': {
@@ -1006,6 +1026,7 @@ const rootRouteChildren: RootRouteChildren = {
   OptikaSpbRoute: OptikaSpbRoute,
   PaymentRoute: PaymentRoute,
   PersonalRoute: PersonalRoute,
+  PodborLinzRoute: PodborLinzRoute,
   PodborOchkovRoute: PodborOchkovRoute,
   PolitikaKonfidentsialnostiRoute: PolitikaKonfidentsialnostiRoute,
   RemontOchkovRoute: RemontOchkovRoute,
