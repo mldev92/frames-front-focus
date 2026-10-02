@@ -317,6 +317,42 @@ export interface LensSearchResponse {
   disclaimer: string;
 }
 
+/**
+ * GET /api/store/lens_lines.php — the curated lens cards for the «Очковые
+ * линзы» page («один источник», владелец 01–02.10.2026): one card per row she
+ * ticked in the перечень, prices from the base with the site discount. The
+ * listing omits `offers`; fetchLensLine(id) returns one card with them.
+ */
+export interface LensLineCard {
+  id: string;
+  title: string;
+  supplier: string;
+  order: number;
+  fromPriceRub: number | null;
+  fromPriceBeforeDiscountRub: number | null;
+  indexes: number[];
+  treatments: string[];
+  designs: string[];
+  availability: "warehouse" | "order";
+  offerCount: number;
+  offers?: LensRecommendCard[];
+}
+
+export async function fetchLensLines(signal?: AbortSignal): Promise<LensLineCard[]> {
+  const res = await apiFetch(getStoreApiUrl("lens_lines.php"), { signal });
+  if (!res.ok) throw new Error(`lens_lines ${res.status}`);
+  const body = (await res.json()) as { cards: LensLineCard[] };
+  return body.cards;
+}
+
+export async function fetchLensLine(id: string, signal?: AbortSignal): Promise<LensLineCard> {
+  const res = await apiFetch(getStoreApiUrl(`lens_lines.php?id=${encodeURIComponent(id)}`), {
+    signal,
+  });
+  if (!res.ok) throw new Error(`lens_lines ${res.status}`);
+  return (await res.json()) as LensLineCard;
+}
+
 export async function fetchLensSearch(
   q: string,
   opts: { offset?: number; limit?: number; sort?: LensListSort } = {},

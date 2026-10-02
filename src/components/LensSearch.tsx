@@ -159,7 +159,7 @@ export function LensSearch() {
   );
 }
 
-function LensSearchRow({ offer }: { offer: LensRecommendCard }) {
+export function LensSearchRow({ offer }: { offer: LensRecommendCard }) {
   const badge = availabilityBadge(offer.availability, offer.channel);
   const specs = offerSpecs(offer.coating, offer.treatment);
   return (

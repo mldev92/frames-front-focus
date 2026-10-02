@@ -35,9 +35,11 @@ test("contact-lens category is product-first while retaining navigation, image, 
   assert.ok(!content.includes('href="#catalog-products"'));
   assert.ok(view.includes('catalogId={isContactLensRoot ? "catalog-products"'));
   assert.ok(listing.includes('id={catalogId}'));
-  // The lens-base search mounts after the title ONLY on linzy_dlya_ochkov —
-  // the contact-lens root stays product-first with nothing injected there.
-  assert.ok(view.includes("headerAfterTitle={isLensRoot ? <LensSearch /> : undefined}"));
+  // The lens section renders its own base-driven view (search + curated
+  // cards) in an early return scoped to linzy_dlya_ochkov; the contact-lens
+  // root stays product-first with nothing injected into ITS listing.
+  assert.ok(!view.includes("headerAfterTitle="));
+  assert.ok(view.includes("if (isLensRoot)"));
   assert.ok(view.includes('normalizedSectionPath === "linzy_dlya_ochkov"'));
   assert.ok(view.indexOf("<CatalogListing") < view.indexOf("<ContactLensCatalogGuide"));
   assert.ok(content.includes('src="/podbor_linz.webp"'));

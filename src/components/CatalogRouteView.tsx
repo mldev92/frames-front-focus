@@ -7,6 +7,7 @@ import {
   ContactLensCatalogGuide,
   ContactLensCatalogNavigation,
 } from "@/components/ContactLensCatalogSeo";
+import { LensLinesCatalog } from "@/components/LensLinesCatalog";
 import { LensSearch } from "@/components/LensSearch";
 import { categoryForCatalogPath, catalogSectionTitle } from "@/data/categories";
 import { catalogConfig } from "@/routes/catalog_s.$category";
@@ -97,13 +98,31 @@ export function CatalogRouteView({
   const supportsFacetFiltering = Object.keys(result.data.facets ?? {}).length > 0;
   const appliedFilters = supportsFacetFiltering ? searchToFilters(search) : {};
 
+  // «Один источник» (владелец, 01–02.10.2026): the lens section's grid comes
+  // from the selector base — her ticked перечень — not from the hand-made
+  // Bitrix cards, so the server-driven listing does not render here at all.
+  if (isLensRoot) {
+    return (
+      <>
+        <div className="w-full py-10" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
+          <div className="mb-8">
+            <h1 className="font-serif text-4xl lg:text-5xl">{catalogSectionTitle(sectionPath, config.title)}</h1>
+            {config.subtitle && <p className="mt-3 text-muted-foreground max-w-2xl">{config.subtitle}</p>}
+          </div>
+          <LensSearch />
+          <LensLinesCatalog />
+        </div>
+        {city === "spb" && <CatalogSeoContent sectionPath={sectionPath} />}
+      </>
+    );
+  }
+
   return (
     <>
       <CatalogListing
         title={isContactLensRoot ? "Контактные линзы в Санкт-Петербурге" : catalogSectionTitle(sectionPath, config.title)}
         subtitle={isContactLensRoot ? undefined : config.subtitle}
         headerBeforeTitle={isContactLensRoot ? <ContactLensCatalogNavigation /> : undefined}
-        headerAfterTitle={isLensRoot ? <LensSearch /> : undefined}
         catalogId={isContactLensRoot ? "catalog-products" : undefined}
         data={result.data}
         facets={config.facets ?? []}
