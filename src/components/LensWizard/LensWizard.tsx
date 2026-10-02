@@ -2437,7 +2437,18 @@ function LensDetailDialog({
         <div className="rounded-lg border border-border bg-surface/50 p-3">
           {offer.retailPriceRub !== null ? (
             <>
-              <div className="font-serif text-xl leading-none">
+              {/* Её 02.10: старую цену перечёркивать, скидочную — ярче. */}
+              {offer.priceBeforeDiscountRub !== null && (
+                <div className="text-xs text-muted-foreground line-through">
+                  {formatPrice(offer.priceBeforeDiscountRub * 2)}
+                </div>
+              )}
+              <div
+                className={cn(
+                  "font-serif text-xl leading-none",
+                  offer.priceBeforeDiscountRub !== null && "mt-0.5 text-brand",
+                )}
+              >
                 {formatPrice(offer.retailPriceRub * 2)}
               </div>
               <div className="mt-1 text-xs text-muted-foreground">
@@ -2915,8 +2926,19 @@ function LensPriceCards({
                 {card.retailPriceRub !== null ? (
                   <>
                     {/* The reference leads with the price of the PAIR — which is
-                        what the customer actually pays. Per-lens stays, smaller. */}
-                    <div className="font-serif text-[28px] leading-none">
+                        what the customer actually pays. Per-lens stays, smaller.
+                        Её 02.10: старую цену перечёркивать, скидочную — ярче. */}
+                    {card.priceBeforeDiscountRub !== null && (
+                      <div className="text-sm text-muted-foreground line-through">
+                        {formatPrice(card.priceBeforeDiscountRub * 2)}
+                      </div>
+                    )}
+                    <div
+                      className={cn(
+                        "font-serif text-[28px] leading-none",
+                        card.priceBeforeDiscountRub !== null && "mt-1 text-brand",
+                      )}
+                    >
                       {formatPrice(card.retailPriceRub * 2)}
                     </div>
                     <div className="mt-1 text-xs text-muted-foreground">
@@ -3287,7 +3309,18 @@ function LensOfferRow({
           <div className="sm:text-right">
             {offer.retailPriceRub !== null ? (
               <>
-                <div className="font-serif text-lg leading-none">
+                {/* Её 02.10: старую цену перечёркивать, скидочную — ярче. */}
+                {offer.priceBeforeDiscountRub !== null && (
+                  <div className="text-[11px] text-muted-foreground line-through">
+                    {formatPrice(offer.priceBeforeDiscountRub * 2)}
+                  </div>
+                )}
+                <div
+                  className={cn(
+                    "font-serif text-lg leading-none",
+                    offer.priceBeforeDiscountRub !== null && "mt-0.5 text-brand",
+                  )}
+                >
                   {formatPrice(offer.retailPriceRub * 2)}
                 </div>
                 <div className="mt-1 whitespace-nowrap text-[11px] text-muted-foreground">

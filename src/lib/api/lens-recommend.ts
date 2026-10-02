@@ -135,6 +135,11 @@ export interface LensRecommendCard {
   /** basic | comfort | premium | unknown — the coating's purchase class. */
   coatingTier: string;
   retailPriceRub: number | null;
+  /**
+   * The figure before the owner's site discount (НАЦЕНКИ 2026-10-02) — struck
+   * through next to the discounted price. null when no discount applies.
+   */
+  priceBeforeDiscountRub: number | null;
   priceRub: number | null;
   priceIsWholesale: boolean;
   rxFit: "yes" | "no" | "unknown";

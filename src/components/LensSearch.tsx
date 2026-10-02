@@ -185,7 +185,20 @@ function LensSearchRow({ offer }: { offer: LensRecommendCard }) {
       <div className="shrink-0 sm:text-right">
         {offer.priceRub !== null ? (
           <>
-            <div className="font-serif text-lg">{formatPrice(offer.priceRub * 2)}</div>
+            {/* Её 02.10: старую цену перечёркивать, скидочную — ярче. */}
+            {offer.priceBeforeDiscountRub !== null && (
+              <div className="text-[11px] text-muted-foreground line-through">
+                {formatPrice(offer.priceBeforeDiscountRub * 2)}
+              </div>
+            )}
+            <div
+              className={cn(
+                "font-serif text-lg",
+                offer.priceBeforeDiscountRub !== null && "text-brand",
+              )}
+            >
+              {formatPrice(offer.priceRub * 2)}
+            </div>
             <div className="text-[11px] text-muted-foreground">
               за пару · {formatPrice(offer.priceRub)} за линзу
             </div>
