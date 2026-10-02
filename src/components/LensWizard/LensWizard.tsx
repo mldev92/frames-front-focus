@@ -21,6 +21,7 @@ import {
   DESIGNS,
   LENS_TYPES,
   MYOPIA_COATING_TIER,
+  NATIVE_COATING_TIER,
   MYOPIA_CONTROL_DESIGN,
   PHOTOCHROMIC_CATEGORIES,
   PURPOSE_RULES,
@@ -193,7 +194,9 @@ export function LensWizard({
     }
     if (step >= 7) {
       criteria.coatingTier =
-        coatingTier && coatingTier.id !== "myopia-managed" ? coatingTier.id : undefined;
+        coatingTier && coatingTier.id !== "myopia-managed" && coatingTier.id !== "native"
+          ? coatingTier.id
+          : undefined;
     }
     // `brand` — последний шаг с выбором: после него опции никто не читает,
     // поэтому в критерии он не входит вовсе.
@@ -1771,9 +1774,14 @@ function StepCoating({
 }) {
   // A class is offered when the catalogue holds a coating at or above it under
   // everything already chosen — the same entry-level rule the card ladder uses.
-  const tiers = options
+  // When NO class is classified (тонированные/зеркальные: их финиш — Sun,
+  // Flash, Mirror — вне общей лестницы) the step offers the pass-through tile
+  // instead of dead-ending on «0 вариантов» при реально существующих линзах
+  // (её 02.10: «имиджевые, тонированные, 1,5 … ничего не находит»).
+  const classified = options
     ? COATING_TIERS.filter((o) => (options.coatingTier[o.id] ?? 0) > 0)
     : COATING_TIERS;
+  const tiers = options && classified.length === 0 ? [NATIVE_COATING_TIER] : classified;
   return (
     <div>
       <StepHeader
@@ -2572,7 +2580,7 @@ function LensPriceCards({
           ? undefined
           : (design?.id as LensRecommendQuery["design"]),
       coatingTier:
-        purpose?.id === "myopia-control"
+        purpose?.id === "myopia-control" || coatingTier?.id === "native"
           ? undefined
           : (coatingTier?.id as LensRecommendQuery["coatingTier"]),
       purpose: purpose?.id,

@@ -400,9 +400,11 @@ export const MYOPIA_CONTROL_DESIGN: DesignOption = {
  */
 /**
  * "myopia-managed" is not a customer-facing choice, same reasoning as
- * DesignId's "myopia_control" above — see MYOPIA_COATING_TIER.
+ * DesignId's "myopia_control" above — see MYOPIA_COATING_TIER. "native" is
+ * the pass-through for lenses whose finish is fixed (тонированные,
+ * зеркальные, часть солнцезащитных) — see NATIVE_COATING_TIER.
  */
-export type CoatingTierId = "basic" | "comfort" | "premium" | "myopia-managed";
+export type CoatingTierId = "basic" | "comfort" | "premium" | "myopia-managed" | "native";
 
 export interface CoatingTierOption {
   id: CoatingTierId;
@@ -443,6 +445,21 @@ export const MYOPIA_COATING_TIER: CoatingTierOption = {
   title: "Подбирается по параметрам ребёнка",
   description:
     "Детские линзы контроля миопии идут со своими фирменными покрытиями — они не входят в общую линейку.",
+};
+
+/**
+ * Offered when, under everything already chosen, NO record carries a
+ * basic/comfort/premium coating — тонированные и зеркальные солнцезащитные
+ * идут со своим фиксированным финишем (Sun, Flash, Mirror…), которого нет в
+ * общей лестнице. Её 02.10: «имиджевые, тонированные, 1,5 … ничего не
+ * находит» — шаг упирался в «0 вариантов» при 13 реальных линзах. Not
+ * forwarded to the backend query, same as MYOPIA_COATING_TIER.
+ */
+export const NATIVE_COATING_TIER: CoatingTierOption = {
+  id: "native",
+  title: "Фирменное покрытие линзы",
+  description:
+    "У выбранных линз своё фиксированное покрытие (тонировка, зеркальный или солнцезащитный финиш) — отдельный пакет не выбирается, покажем варианты как есть.",
 };
 
 export type BrandId = "all" | "essilor" | "zeiss" | "hoya" | "synchrony";
