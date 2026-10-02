@@ -2380,7 +2380,7 @@ export function brandDisplayLabel(supplier: string): string {
  * card's own click target — that stays the explicit «Выбрать» CTA, so this
  * detail view is a separate, additive affordance next to it.
  */
-function LensDetailDialog({
+export function LensDetailDialog({
   offer,
   onOpenChange,
 }: {

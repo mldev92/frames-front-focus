@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { LoaderCircle, Search } from "lucide-react";
+import { Info, LoaderCircle, Search } from "lucide-react";
 import {
   fetchLensSearch,
   type LensRecommendCard,
@@ -9,6 +9,7 @@ import {
 import {
   availabilityBadge,
   brandDisplayLabel,
+  LensDetailDialog,
   offerProductName,
   offerSpecs,
 } from "@/components/LensWizard/LensWizard";
@@ -31,6 +32,7 @@ export function LensSearch() {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<LensSearchResponse | null>(null);
   const [rows, setRows] = useState<LensRecommendCard[]>([]);
+  const [detailOffer, setDetailOffer] = useState<LensRecommendCard | null>(null);
   const [loading, setLoading] = useState(false);
   const [more, setMore] = useState(false);
   const [error, setError] = useState(false);
@@ -132,7 +134,7 @@ export function LensSearch() {
         <>
           <ul className="mt-4 divide-y divide-border rounded-xl border border-border bg-background">
             {rows.map((offer) => (
-              <LensSearchRow key={offer.id} offer={offer} />
+              <LensSearchRow key={offer.id} offer={offer} onShowDetail={setDetailOffer} />
             ))}
           </ul>
           <div className="mt-3 flex items-center justify-between gap-4">
@@ -155,13 +157,26 @@ export function LensSearch() {
           </p>
         </>
       )}
+
+      <LensDetailDialog
+        offer={detailOffer}
+        onOpenChange={(open) => !open && setDetailOffer(null)}
+      />
     </section>
   );
 }
 
-export function LensSearchRow({ offer }: { offer: LensRecommendCard }) {
+export function LensSearchRow({
+  offer,
+  onShowDetail,
+}: {
+  offer: LensRecommendCard;
+  /** Открыть карточку-справку о линзе («в поиске нет информации», её 02.10). */
+  onShowDetail?: (offer: LensRecommendCard) => void;
+}) {
   const badge = availabilityBadge(offer.availability, offer.channel);
   const specs = offerSpecs(offer.coating, offer.treatment);
+  const product = offerProductName(offer.supplier, offer.line);
   return (
     <li className="flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
       <div className="min-w-0">
@@ -169,8 +184,18 @@ export function LensSearchRow({ offer }: { offer: LensRecommendCard }) {
           {brandDisplayLabel(offer.supplier)}
           {offer.index !== null && <> · индекс {offer.index}</>}
         </div>
-        <div className="mt-0.5 font-serif text-base leading-snug">
-          {offerProductName(offer.supplier, offer.line)}
+        <div className="mt-0.5 flex items-center gap-1.5 font-serif text-base leading-snug">
+          {product}
+          {onShowDetail && (
+            <button
+              type="button"
+              aria-label={`Подробнее: ${product}`}
+              onClick={() => onShowDetail(offer)}
+              className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
+            >
+              <Info className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
         {specs && <div className="mt-0.5 text-xs text-muted-foreground">{specs}</div>}
         <div

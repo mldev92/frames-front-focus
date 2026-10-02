@@ -7,7 +7,7 @@ import {
   type LensLineCard,
   type LensRecommendCard,
 } from "@/lib/api/lens-recommend";
-import { brandDisplayLabel } from "@/components/LensWizard/LensWizard";
+import { brandDisplayLabel, LensDetailDialog } from "@/components/LensWizard/LensWizard";
 import { LensSearchRow } from "@/components/LensSearch";
 import { formatPrice } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
@@ -138,6 +138,7 @@ function LensLineCardView({ card }: { card: LensLineCard }) {
   const [open, setOpen] = useState(false);
   const [offers, setOffers] = useState<LensRecommendCard[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [detailOffer, setDetailOffer] = useState<LensRecommendCard | null>(null);
 
   const toggle = () => {
     const next = !open;
@@ -244,7 +245,7 @@ function LensLineCardView({ card }: { card: LensLineCard }) {
           {offers && offers.length > 0 && (
             <ul className="divide-y divide-border rounded-xl border border-border bg-background">
               {offers.map((offer) => (
-                <LensSearchRow key={offer.id} offer={offer} />
+                <LensSearchRow key={offer.id} offer={offer} onShowDetail={setDetailOffer} />
               ))}
             </ul>
           )}
@@ -261,6 +262,11 @@ function LensLineCardView({ card }: { card: LensLineCard }) {
           </div>
         </div>
       )}
+
+      <LensDetailDialog
+        offer={detailOffer}
+        onOpenChange={(open) => !open && setDetailOffer(null)}
+      />
     </article>
   );
 }
