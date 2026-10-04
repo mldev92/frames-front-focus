@@ -448,18 +448,15 @@ export const MYOPIA_COATING_TIER: CoatingTierOption = {
 };
 
 /**
- * Offered when, under everything already chosen, NO record carries a
- * basic/comfort/premium coating — тонированные и зеркальные солнцезащитные
- * идут со своим фиксированным финишем (Sun, Flash, Mirror…), которого нет в
- * общей лестнице. Её 02.10: «имиджевые, тонированные, 1,5 … ничего не
- * находит» — шаг упирался в «0 вариантов» при 13 реальных линзах. Not
- * forwarded to the backend query, same as MYOPIA_COATING_TIER.
+ * Проход без фильтра, когда есть финиши вне лестницы (Sun, HVSP, Mirror).
+ * Доступен и рядом с обычными классами: иначе добавление HOYA прячет
+ * Synchrony. Не отправляется в API как coatingTier; показывает все варианты.
  */
 export const NATIVE_COATING_TIER: CoatingTierOption = {
   id: "native",
-  title: "Фирменное покрытие линзы",
+  title: "Без ограничения по покрытию",
   description:
-    "У выбранных линз своё фиксированное покрытие (тонировка, зеркальный или солнцезащитный финиш) — отдельный пакет не выбирается, покажем варианты как есть.",
+    "Покажем все подходящие линзы, включая варианты с фиксированным солнцезащитным или зеркальным финишем. Покрытие указано в карточке каждой линзы.",
 };
 
 export type BrandId = "all" | "essilor" | "zeiss" | "hoya" | "synchrony";

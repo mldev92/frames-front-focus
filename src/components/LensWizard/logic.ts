@@ -1,3 +1,14 @@
+export function availableCoatingIds(counts: Record<string, number> | null) {
+  const ids: ("basic" | "comfort" | "premium" | "native")[] = [];
+  for (const id of ["basic", "comfort", "premium"] as const) {
+    if (counts === null || (counts[id] ?? 0) > 0) ids.push(id);
+  }
+  // Без ограничения доступны и фиксированные финиши, и обычные покрытия.
+  // Пустой ответ не означает наличие линз с фирменным покрытием.
+  if (counts && (counts.native ?? 0) > 0) ids.push("native");
+  return ids;
+}
+
 export interface PrescriptionEyeInput {
   sph: string;
   cyl: string;

@@ -39,7 +39,7 @@ import {
   type ThicknessId,
   type ThicknessOption,
 } from "./data";
-import { getRecommendedLensIndex, type LensIndexRecommendation } from "./logic";
+import { availableCoatingIds, getRecommendedLensIndex, type LensIndexRecommendation } from "./logic";
 import {
   fetchLensOptions,
   fetchLensRecommendation,
@@ -1772,22 +1772,17 @@ function StepCoating({
   onChange: (v: CoatingTierOption) => void;
   options: LensOptions | null;
 }) {
-  // A class is offered when the catalogue holds a coating at or above it under
-  // everything already chosen — the same entry-level rule the card ladder uses.
-  // When NO class is classified (тонированные/зеркальные: их финиш — Sun,
-  // Flash, Mirror — вне общей лестницы) the step offers the pass-through tile
-  // instead of dead-ending on «0 вариантов» при реально существующих линзах
-  // (её 02.10: «имиджевые, тонированные, 1,5 … ничего не находит»).
-  const classified = options
-    ? COATING_TIERS.filter((o) => (options.coatingTier[o.id] ?? 0) > 0)
-    : COATING_TIERS;
-  const tiers = options && classified.length === 0 ? [NATIVE_COATING_TIER] : classified;
+  // Фиксированные финиши доступны и при смешанной выдаче с обычными классами.
+  const available = availableCoatingIds(options?.coatingTier ?? null);
+  const tiers = [...COATING_TIERS, NATIVE_COATING_TIER].filter((o) =>
+    available.some((id) => id === o.id),
+  );
   return (
     <div>
       <StepHeader
         title="Покрытие линз"
         count={tiers.length}
-        subtitle="Каждое покрытие защищает от бликов и УФ; более высокий пакет добавляет прочность и уход."
+        subtitle="Выберите класс покрытия или посмотрите все доступные варианты. Свойства зависят от конкретной линзы."
       />
       <div
         role="group"
