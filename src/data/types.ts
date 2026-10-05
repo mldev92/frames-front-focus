@@ -86,7 +86,7 @@ export interface Service {
   title: string;
   short: string;
   description: string;
-  price: string;
+  price?: string;
   duration: string;
   image: string;
   includes: string[];

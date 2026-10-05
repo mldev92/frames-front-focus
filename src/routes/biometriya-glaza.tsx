@@ -3,6 +3,8 @@ import { Activity, Clock, Eye, Ruler } from "lucide-react";
 import { SeoLandingPage, type SeoFaqItem } from "@/components/pages/SeoLandingPage";
 import { breadcrumbSchema, faqSchema } from "@/lib/seo-schema";
 import { CONTACT, PRIMARY_SALON } from "@/data/contact";
+import { spbBiometryPrice } from "@/data/doctor-prices";
+import { formatRub } from "@/lib/format-rub";
 
 const canonical = "https://optika100.com/biometriya-glaza/";
 const title = "Биометрия глаза в Санкт-Петербурге — цена, как проходит | Оптика 100%";
@@ -29,7 +31,7 @@ const faq: SeoFaqItem[] = [
   },
   {
     q: "Сколько стоит биометрия глаза?",
-    a: "Стоимость зависит от выбранного протокола исследования. Актуальную цену подтвердят при записи по телефону или через форму на сайте.",
+    a: `Биометрия на Lenstar LS 900 в Санкт-Петербурге стоит ${formatRub(spbBiometryPrice)}.`,
   },
   {
     q: "Чем биометрия отличается от обычной проверки зрения?",
@@ -165,9 +167,9 @@ function BiometryPage() {
         поверхностью глаза нет. После исследования результаты проверяются и сохраняются для сравнения.
       </p>
       <p>
-        Точная продолжительность и стоимость зависят от выбранного протокола. Актуальную цену
-        подтвердят при записи по телефону <a href={CONTACT.phone.href}>{CONTACT.phone.label}</a> или
-        через форму записи на сайте.
+        Точную продолжительность уточните при записи. Биометрия на Lenstar LS 900 стоит{" "}
+        {formatRub(spbBiometryPrice)}. Записаться можно по телефону{" "}
+        <a href={CONTACT.phone.href}>{CONTACT.phone.label}</a> или через форму на сайте.
       </p>
 
       <h2>Расшифровка результатов</h2>
