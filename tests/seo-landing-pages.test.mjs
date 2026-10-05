@@ -74,7 +74,7 @@ test("SEO landing FAQs cover the approved intents and feed the visible copy into
   }
 });
 
-test("commercial FAQ answers remain conditional and lenses expose an explicit purchase CTA", async () => {
+test("commercial FAQ answers preserve current pricing rules and lenses expose an explicit purchase CTA", async () => {
   const lenses = await read("../src/routes/linzy-spb.tsx");
   const optics = await read("../src/routes/optika-spb.tsx");
   const biometry = await read("../src/routes/biometriya-glaza.tsx");
@@ -84,7 +84,7 @@ test("commercial FAQ answers remain conditional and lenses expose an explicit pu
   assert.ok(optics.includes("Стоимость проверки зависит"));
   assert.ok(optics.includes("условия рассрочки зависят"));
   assert.ok(biometry.includes("Ориентировочное время лучше уточнить"));
-  assert.ok(biometry.includes("Актуальную цену подтвердят при записи"));
+  assert.ok(biometry.includes("стоит ${formatRub(spbBiometryPrice)}"));
   for (const source of [lenses, optics, biometry]) {
     assert.ok(!source.includes("гарантирован"));
     assert.ok(!source.includes("всегда в наличии"));
