@@ -10,7 +10,8 @@ test("contact-lens root category has approved metadata, H1, canonical, and scope
   const view = await read("../src/components/CatalogRouteView.tsx");
 
   const title = "Контактные линзы купить в СПб — подбор с офтальмологом | Оптика 100%";
-  const description = "Контактные линзы Acuvue, Air Optix, Biofinity и Dailies в Санкт-Петербурге. Актуальные цены и наличие, подбор параметров, доставка и самовывоз на Кирочной, 17.";
+  const description =
+    "Контактные линзы Acuvue, Air Optix, Biofinity и Dailies в Санкт-Петербурге. Актуальные цены и наличие, подбор параметров, доставка и самовывоз на Кирочной, 17.";
   assert.equal(title.length, 68);
   assert.equal(description.length, 159);
   assert.ok(metadata.includes(title));
@@ -29,17 +30,26 @@ test("contact-lens category is product-first while retaining navigation, image, 
   const content = await read("../src/components/ContactLensCatalogSeo.tsx");
   const view = await read("../src/components/CatalogRouteView.tsx");
   const listing = await read("../src/components/CatalogListing.tsx");
-  for (const slug of ["prozrachnye", "tsvetnye", "toricheskie", "multifokalnye", "dlya_kontrolya_miopii"]) {
+  for (const slug of [
+    "prozrachnye",
+    "tsvetnye",
+    "toricheskie",
+    "multifokalnye",
+    "dlya_kontrolya_miopii",
+  ]) {
     assert.ok(metadata.includes(`/catalog_s/kontaktnye_linzy_/${slug}/`));
   }
   assert.ok(!content.includes('href="#catalog-products"'));
   assert.ok(view.includes('catalogId={isContactLensRoot ? "catalog-products"'));
-  assert.ok(listing.includes('id={catalogId}'));
-  // The lens section renders its own base-driven view (search + curated
-  // cards) in an early return scoped to linzy_dlya_ochkov; the contact-lens
-  // root stays product-first with nothing injected into ITS listing.
+  assert.ok(listing.includes("id={catalogId}"));
+  // The spectacle-lens section keeps its separate base-driven view, but its
+  // curated catalogue now receives the URL filter/sort/price/page contract.
+  // The contact-lens root stays product-first in CatalogListing.
   assert.ok(!view.includes("headerAfterTitle="));
   assert.ok(view.includes("if (isLensRoot)"));
+  assert.ok(view.includes("initialFilters={appliedFilters}"));
+  assert.ok(view.includes("appliedPriceMin={search.priceMin}"));
+  assert.ok(view.includes("onStateChange={onStateChange}"));
   assert.ok(view.includes('normalizedSectionPath === "linzy_dlya_ochkov"'));
   assert.ok(view.indexOf("<CatalogListing") < view.indexOf("<ContactLensCatalogGuide"));
   assert.ok(content.includes('src="/podbor_linz.webp"'));
@@ -66,7 +76,7 @@ test("contact-lens category is product-first while retaining navigation, image, 
 test("contact-lens header filters land directly on the product grid", async () => {
   const menu = await read("../src/components/layout/HeaderMegaMenu.tsx");
   assert.ok(menu.includes('category === "kontaktnye-linzy" && query ? "#catalog-products" : ""'));
-  assert.ok(menu.includes('`${href}?${query}${catalogTarget}`'));
+  assert.ok(menu.includes("`${href}?${query}${catalogTarget}`"));
   assert.ok(!menu.includes("Загрузить рецепт"));
 });
 
@@ -111,10 +121,24 @@ test("visible FAQ and FAQPage schema share the approved five-question source", a
 
 test("catalog structured data covers breadcrumbs, POS, and current-page products", async () => {
   const metadata = await read("../src/data/contact-lens-catalog-seo.ts");
-  for (const type of ["BreadcrumbList", "Organization", "Optician", "ItemList", "Product", "Offer", "Brand"]) {
+  for (const type of [
+    "BreadcrumbList",
+    "Organization",
+    "Optician",
+    "ItemList",
+    "Product",
+    "Offer",
+    "Brand",
+  ]) {
     assert.ok(metadata.includes(`\"@type\": \"${type}\"`));
   }
-  for (const field of ["hasPOS", "priceCurrency", "availability", "canonicalPath", "product.images[0]"]) {
+  for (const field of [
+    "hasPOS",
+    "priceCurrency",
+    "availability",
+    "canonicalPath",
+    "product.images[0]",
+  ]) {
     assert.ok(metadata.includes(field));
   }
   assert.ok(metadata.includes("CONTACT.phone.label"));

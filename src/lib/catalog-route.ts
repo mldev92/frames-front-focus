@@ -17,17 +17,62 @@ const numOrStr = z
   .optional();
 
 export const FACET_PARAMS = [
-  "gender", "color", "shape", "size", "brand", "material", "construction",
-  "wearMode", "lensType", "design", "technology", "purpose", "coating",
-  "index", "thickness", "lightTransmission", "photochromicColor", "astigmatic", "prism", "pd", "sunLens",
-  "sphere", "cylinder", "axis", "addition", "bc", "availability",
+  "gender",
+  "color",
+  "shape",
+  "size",
+  "brand",
+  "material",
+  "construction",
+  "wearMode",
+  "lensType",
+  "design",
+  "technology",
+  "purpose",
+  "coating",
+  "index",
+  "thickness",
+  "lightTransmission",
+  "photochromicColor",
+  "astigmatic",
+  "prism",
+  "pd",
+  "sunLens",
+  "sphere",
+  "cylinder",
+  "axis",
+  "addition",
+  "bc",
+  "availability",
 ] as const satisfies readonly FacetKey[];
 
 export const EXPANDABLE_FACET_PARAMS = [
-  "gender", "color", "shape", "size", "brand", "material", "construction",
-  "wearMode", "lensType", "design", "technology", "purpose", "coating",
-  "index", "thickness", "lightTransmission", "photochromicColor", "astigmatic", "prism", "pd", "sunLens",
-  "sphere", "cylinder", "axis", "addition", "bc",
+  "gender",
+  "color",
+  "shape",
+  "size",
+  "brand",
+  "material",
+  "construction",
+  "wearMode",
+  "lensType",
+  "design",
+  "technology",
+  "purpose",
+  "coating",
+  "index",
+  "thickness",
+  "lightTransmission",
+  "photochromicColor",
+  "astigmatic",
+  "prism",
+  "pd",
+  "sunLens",
+  "sphere",
+  "cylinder",
+  "axis",
+  "addition",
+  "bc",
 ] as const;
 
 export const catalogSearchSchema = z.object({
@@ -87,7 +132,10 @@ export function searchToFilters(search: CatalogSearch): Partial<Record<FacetKey,
   for (const key of FACET_PARAMS) {
     const value = search[key];
     if (typeof value !== "string" || value.trim() === "") continue;
-    let parts = value.split(",").map((part) => part.trim()).filter(Boolean);
+    let parts = value
+      .split(",")
+      .map((part) => part.trim())
+      .filter(Boolean);
     // Compatibility for the short-lived header link shipped in release
     // 20260723_183528. "Выбор оси" means toric lenses, not a literal axis
     // value; normalize cached tabs/bookmarks to the canonical design facet.
@@ -102,6 +150,7 @@ export function searchToFilters(search: CatalogSearch): Partial<Record<FacetKey,
 
 export type LoaderResult =
   | { state: "ok"; data: CatalogPageData }
+  | { state: "lens_lines" }
   | { state: "index_not_ready" }
   | { state: "error"; message: string };
 
@@ -111,6 +160,11 @@ export async function loadCatalogPage(
   city: CityCode,
   signal?: AbortSignal,
 ): Promise<LoaderResult> {
+  // Корневая страница очковых линз берёт весь список из lens_lines.php.
+  // Не загружаем параллельно старые Bitrix-карточки, которые не рисуются.
+  if (section.replace(/^\/+|\/+$/g, "") === "linzy_dlya_ochkov") {
+    return { state: "lens_lines" };
+  }
   const query: CatalogQuery = {
     page: search.page ?? 1,
     limit: 24,
@@ -186,10 +240,7 @@ export async function resolveCatalogRoute(
   };
 }
 
-export function applyCatalogState(
-  current: CatalogSearch,
-  next: CatalogStateChange,
-): CatalogSearch {
+export function applyCatalogState(current: CatalogSearch, next: CatalogStateChange): CatalogSearch {
   const output: Record<string, unknown> = { ...current };
   if (next.filters !== undefined) {
     for (const key of FACET_PARAMS) delete output[key];

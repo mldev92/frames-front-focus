@@ -1,5 +1,6 @@
 import { getStoreApiUrl } from "@/lib/api/bitrix";
 import { apiFetch } from "@/lib/api/security";
+import type { LensLineFilterData } from "@/lib/lens-lines-filter";
 
 /**
  * GET /api/store/lens_recommend.php — the three result cards for the wizard's
@@ -335,6 +336,7 @@ export interface LensLineCard {
   designs: string[];
   availability: "warehouse" | "order";
   offerCount: number;
+  filterData: LensLineFilterData;
   offers?: LensRecommendCard[];
 }
 
