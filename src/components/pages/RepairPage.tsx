@@ -19,6 +19,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
 import { CONTACT, NK_SALONS, SPB_SALONS } from "@/data/contact";
+import { REPAIR_PRICES_DATE, repairPriceColumns } from "@/data/repair-prices";
 import { useCityStore } from "@/lib/store/city";
 
 type IconItem = {
@@ -73,39 +74,6 @@ const serviceCards = [
   },
 ];
 
-const priceColumns = [
-  [
-    ["Выправка оправы безободковой", "500 ₽"],
-    ["Выправка оправы на леске", "400 ₽"],
-    ["Выправка оправы ободковой", "300 ₽"],
-    ["Замена заушника (шт.)", "300 ₽"],
-    ["Замена лески (шт.)", "300 ₽"],
-    ["Замена наконечника (шт.)", "50 ₽"],
-    ["Замена носоупора SILHOUETTE (шт.)", "400 ₽"],
-    ["Замена силиконового носоупора (шт.)", "150 ₽"],
-    ["Замена носоупора (шт.)", "100 ₽"],
-    ["Нарезка резьбы (шт.)", "100 ₽"],
-    ["Ремонт крепления заушника (шт.)", "1 000 ₽"],
-    ["Снятие тонировки (одни очки)", "200 ₽"],
-    ["Срочная работа вне очереди (одни очки)", "400 ₽"],
-  ],
-  [
-    ["Тонировка линз градиент с UV защитой (одни очки)", "950 ₽"],
-    ["Тонировка линз однотонная с UV защитой (одни очки)", "800 ₽"],
-    ["Уплотнение и фиксация линзы в оправе (шт.)", "200 ₽"],
-    ["Установка (замена) винта или гайки (шт.)", "100 ₽"],
-    ["Установка (замена) втулки (шт.)", "250 ₽"],
-    ["Установка колпачка на винт (шт.)", "50 ₽"],
-    ["Установка линз в оправу безободковую", "1 100 ₽"],
-    ["Установка линз в оправу на леске", "900 ₽"],
-    ["Установка линз в оправу ободковую", "700 ₽"],
-    ["Установка страз (шт.)", "50 ₽"],
-    ["Фиксация крепежного элемента (шт.)", "50 ₽"],
-    ["Чистка оправы в УЗ-ванне (одни очки)", "300 ₽"],
-    ["Экстракция винта (шт.)", "300 ₽"],
-  ],
-] as const;
-
 const ctaBadges: IconItem[] = [
   {
     title: "Гарантия качества",
@@ -132,6 +100,7 @@ export function RepairPage() {
   const city = useCityStore((state) => state.city);
   const localSalon = city === "nvk" ? NK_SALONS[0] : SPB_SALONS[0];
   const cityInPrepositional = city === "nvk" ? "Новокузнецке" : "Санкт-Петербурге";
+  const priceColumns = repairPriceColumns(city);
 
   return (
     <div className="bg-background">
@@ -220,7 +189,7 @@ export function RepairPage() {
                 <span>Услуга</span>
                 <span>Стоимость</span>
               </div>
-              {column.map(([name, price]) => (
+              {column.map(({ name, price }) => (
                 <div
                   key={name}
                   className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-4 border-b border-border py-3 transition-colors hover:bg-surface lg:hover:px-2"
@@ -237,7 +206,10 @@ export function RepairPage() {
 
         <div className="mt-6 flex items-start gap-2 text-[13px] leading-relaxed text-muted-foreground">
           <Info className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.75} />
-          <span>Точная стоимость определяется мастером после осмотра очков.</span>
+          <span>
+            Цены действуют в&nbsp;{cityInPrepositional} на&nbsp;{REPAIR_PRICES_DATE}. Точная
+            стоимость определяется мастером после осмотра очков.
+          </span>
         </div>
       </section>
 

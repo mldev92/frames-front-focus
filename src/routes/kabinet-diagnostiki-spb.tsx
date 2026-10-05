@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { serviceHref, services } from "@/data/services";
 import { AppointmentModal } from "@/components/AppointmentModal";
+import { DoctorPriceTable } from "@/components/DoctorPriceTable";
 import { useCityStore } from "@/lib/store/city";
 
 const others = services.filter((s) => s.slug !== "diagnostika");
@@ -308,6 +309,8 @@ function KabinetDiagnostikiPage() {
           <BrandBtn onClick={openApt}>Записаться на диагностику</BrandBtn>
         </div>
       </section>
+
+      <DoctorPriceTable city="spb" />
 
       {/* OTHER SERVICES */}
       <section className="mx-auto max-w-7xl px-4 lg:px-8 py-16">

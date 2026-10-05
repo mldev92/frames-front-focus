@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { serviceHref, services } from "@/data/services";
 import { AppointmentModal } from "@/components/AppointmentModal";
+import { DoctorPriceTable } from "@/components/DoctorPriceTable";
 import { useCityStore } from "@/lib/store/city";
 
 const others = services.filter((service) => service.slug !== "diagnostika");
@@ -199,6 +200,8 @@ function DiagnosticsNkPage() {
           </div>
         </div>
       </section>
+
+      <DoctorPriceTable city="nvk" />
 
       <section className="mx-auto max-w-7xl px-4 py-16 lg:px-8">
         <h2 className="mb-8 font-serif text-2xl">Другие услуги</h2>

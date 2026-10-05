@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
-import { services, serviceHref } from "@/data/services";
+import { getServicePrice, services, serviceHref } from "@/data/services";
 import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/uslugi")({
@@ -62,7 +62,7 @@ function ServicesHub() {
                 <h2 className="font-serif text-2xl">{s.title}</h2>
                 <p className="mt-2 text-muted-foreground">{s.short}</p>
                 <div className="mt-4 flex items-center gap-4 text-sm">
-                  <span>{s.price}</span>
+                  <span>{getServicePrice(s, city)}</span>
                   <span className="text-muted-foreground">· {s.duration}</span>
                   <span className="ml-auto inline-flex items-center gap-1 group-hover:text-brand">
                     Подробнее <ArrowRight className="h-3 w-3" />

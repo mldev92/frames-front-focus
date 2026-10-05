@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Check, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
-import { services, serviceHref } from "@/data/services";
+import { DoctorPriceTable } from "@/components/DoctorPriceTable";
+import { getServicePrice, services, serviceHref } from "@/data/services";
 import type { Service } from "@/data/types";
 import { submitCallback } from "@/lib/api/bitrix";
 import { useCityStore } from "@/lib/store/city";
@@ -28,7 +29,7 @@ export function ServiceDetail({ service }: { service: Service }) {
             <div className="mt-6 flex gap-6 text-sm">
               <div>
                 <div className="text-muted-foreground">Цена</div>
-                <div className="font-medium">{service.price}</div>
+                <div className="font-medium">{getServicePrice(service, city)}</div>
               </div>
               <div>
                 <div className="text-muted-foreground">Длительность</div>
@@ -128,6 +129,8 @@ export function ServiceDetail({ service }: { service: Service }) {
           </form>
         </aside>
       </section>
+
+      {service.slug === "priem-vracha" && <DoctorPriceTable city={city} />}
 
       <section className="bg-surface">
         <div className="mx-auto max-w-7xl px-4 lg:px-8 py-16">

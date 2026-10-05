@@ -1,5 +1,7 @@
 import type { Service } from "./types";
 import type { CityCode } from "@/lib/store/city";
+import { doctorServicePrice } from "./doctor-prices";
+import { formatRub } from "@/lib/format-rub";
 
 export const services: Service[] = [
   {
@@ -8,7 +10,6 @@ export const services: Service[] = [
     short: "Консультация офтальмолога с подбором коррекции",
     description:
       "Запишитесь на приём к врачу-офтальмологу нашей клиники. Полный осмотр, проверка остроты зрения, подбор очков или контактных линз.",
-    price: "от 1 500 ₽",
     duration: "30–45 минут",
     image: "/services1_online_appointment_doctor.webp",
     includes: [
@@ -30,7 +31,6 @@ export const services: Service[] = [
     short: "Полное обследование на современном оборудовании",
     description:
       "Комплексная диагностика зрения с использованием авторефрактометра, тонометра и щелевой лампы.",
-    price: "2 300 ₽",
     duration: "60 минут",
     image: "/services3_selection_of_glasses.webp",
     includes: [
@@ -92,6 +92,13 @@ export const services: Service[] = [
 ];
 
 export const getService = (slug: string) => services.find((s) => s.slug === slug);
+
+export const getServicePrice = (service: Service, city: CityCode): string => {
+  const doctorPrice = doctorServicePrice(service.slug, city);
+  if (doctorPrice !== undefined) return formatRub(doctorPrice);
+  if (service.price !== undefined) return service.price;
+  throw new Error(`Не указана цена услуги: ${service.slug}`);
+};
 
 // Live optika100.com service pages live at the top level (not under /uslugi/).
 // Services without a live counterpart fall back to /uslugi/{slug} (new pages).

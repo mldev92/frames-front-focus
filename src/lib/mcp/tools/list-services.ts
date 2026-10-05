@@ -1,5 +1,5 @@
 import { defineTool } from "@lovable.dev/mcp-js";
-import { services, serviceHref } from "@/data/services";
+import { getServicePrice, services, serviceHref } from "@/data/services";
 
 export default defineTool({
   name: "list_services",
@@ -12,10 +12,18 @@ export default defineTool({
       slug: s.slug,
       title: s.title,
       short: s.short,
-      price: s.price,
+      price: getServicePrice(s, "spb"),
+      pricesByCity: {
+        spb: getServicePrice(s, "spb"),
+        nvk: getServicePrice(s, "nvk"),
+      },
       duration: s.duration,
       includes: s.includes,
-      url: serviceHref(s.slug),
+      url: serviceHref(s.slug, "spb"),
+      urlsByCity: {
+        spb: serviceHref(s.slug, "spb"),
+        nvk: serviceHref(s.slug, "nvk"),
+      },
     }));
     return {
       content: [{ type: "text", text: JSON.stringify(results, null, 2) }],
