@@ -10,6 +10,8 @@ import { useCityStore, type CityCode, CITY_LABELS } from "@/lib/store/city";
 import { regionalLocationHref, regionalSiteHref } from "@/lib/city-routing";
 import { getCatalogFacetSummary, type CatalogFacetSummary } from "@/lib/api/bitrix";
 import { catalogSegmentFromHref } from "@/lib/header-menu-facets";
+import { fetchLensLines } from "@/lib/api/lens-recommend";
+import { lensLineFacetSummary } from "@/lib/lens-lines-filter";
 
 const CITIES: { code: CityCode; label: string }[] = [
   { code: "spb", label: "Санкт-Петербург" },
@@ -116,7 +118,12 @@ export function Header() {
     setFacetStates((current) => ({ ...current, [key]: { status: "loading" } }));
     let request = facetSummaryCache.get(key);
     if (!request) {
-      request = getCatalogFacetSummary(segment, cityCode);
+      // Корень очковых линз больше не использует старые Bitrix-фасеты:
+      // меню проверяет те же 74 карточки, которые затем фильтрует страница.
+      request =
+        segment === "linzy_dlya_ochkov"
+          ? fetchLensLines().then(lensLineFacetSummary)
+          : getCatalogFacetSummary(segment, cityCode);
       facetSummaryCache.set(key, request);
     }
     void request.then(

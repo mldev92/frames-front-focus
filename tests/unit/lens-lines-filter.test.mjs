@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  canonicalLensLineFacetValue,
   filterLensLines,
   lensLineFacetCount,
   lensLineFacetOptions,
+  lensLineFacetSummary,
   sortLensLines,
 } from "../../src/lib/lens-lines-filter.ts";
 
@@ -71,6 +73,12 @@ test("legacy URL values remain compatible", () => {
   assert.equal(filterLensLines(cards, { thickness: ["1,5 базовая"] }).length, 1);
   assert.equal(filterLensLines(cards, { design: ["Сферические"] }).length, 2);
   assert.equal(filterLensLines(cards, { availability: ["warehouse"] }).length, 1);
+  assert.equal(filterLensLines(cards, { brand: ["ZEISS (Германия)"] }).length, 1);
+  assert.equal(filterLensLines(cards, { lensType: ["Монофокальный"] }).length, 2);
+  assert.equal(
+    canonicalLensLineFacetValue("purpose", "Для гаджетов"),
+    "Для компьютера и гаджетов",
+  );
 });
 
 test("prescription filters use imported manufacturable ranges", () => {
@@ -104,4 +112,12 @@ test("options, pair-price filtering, and sorting cover the complete 74-card resp
     sortLensLines(cards, "name").map((item) => item.id),
     ["base", "photo"],
   );
+});
+
+test("header summary uses the same canonical facets as the lens-line grid", () => {
+  const summary = lensLineFacetSummary(cards);
+  assert.equal(summary.total, 2);
+  assert.deepEqual(summary.facets.brand, { ESSILOR: 1, ZEISS: 1 });
+  assert.equal(summary.facets.lensType?.["Однофокальные"], 2);
+  assert.equal(summary.facets.lightTransmission?.["Фотохромная"], 1);
 });

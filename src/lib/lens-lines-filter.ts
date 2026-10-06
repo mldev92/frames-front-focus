@@ -221,6 +221,12 @@ function numeric(value: string): number | null {
 }
 
 const FACET_ALIASES: Partial<Record<LensLineFacet, Record<string, string>>> = {
+  brand: {
+    "zeiss (германия)": "ZEISS",
+    "ессилор (франция)": "ESSILOR",
+    "есилор (франция)": "ESSILOR",
+    "hoya (япония)": "HOYA",
+  },
   availability: {
     warehouse: "В наличии",
     salon: "В наличии",
@@ -238,8 +244,15 @@ const FACET_ALIASES: Partial<Record<LensLineFacet, Record<string, string>>> = {
     бифокальные: "Бифокальный",
     индивидуальные: "Индивидуальный",
   },
+  lensType: {
+    монофокальный: "Однофокальные",
+    прогрессивный: "Прогрессивные",
+    "поддержка аккомодации": "Контроль миопии",
+    perifocal: "Контроль миопии",
+  },
   purpose: {
     "детские линзы": "Контроль миопии у детей",
+    "для гаджетов": "Для компьютера и гаджетов",
     "для работы с гаджетами": "Для компьютера и гаджетов",
     "для чтения и работы на среднем расстоянии (компьютер)": "Для компьютера и гаджетов",
   },
@@ -347,6 +360,23 @@ export function lensLineFacetCount(
     return withoutOwn.filter((card) => matchesNumericFacet(card, facet, [value])).length;
   }
   return withoutOwn.filter((card) => facetValues(card, facet).includes(value)).length;
+}
+
+/** Фасеты шапки из того же набора, который рисует каталог 74 линеек. */
+export function lensLineFacetSummary(cards: FilterableLensLine[]): {
+  total: number;
+  facets: Partial<Record<LensLineFacet, Record<string, number>>>;
+} {
+  const facets: Partial<Record<LensLineFacet, Record<string, number>>> = {};
+  for (const facet of LENS_LINE_FACET_ORDER) {
+    const counts: Record<string, number> = {};
+    for (const value of lensLineFacetOptions(cards, facet)) {
+      const count = lensLineFacetCount(cards, {}, facet, value);
+      if (count > 0) counts[value] = count;
+    }
+    if (Object.keys(counts).length) facets[facet] = counts;
+  }
+  return { total: cards.length, facets };
 }
 
 export function sortLensLines<T extends FilterableLensLine>(

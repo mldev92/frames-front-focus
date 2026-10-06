@@ -127,15 +127,22 @@ test("header menu uses canonical catalog values for repaired shortcuts", async (
     new URL("../src/components/layout/HeaderMegaMenu.tsx", import.meta.url),
     "utf8",
   );
+  const header = await readFile(
+    new URL("../src/components/layout/Header.tsx", import.meta.url),
+    "utf8",
+  );
   for (const expected of [
     'brand: "Johnson & Johnson"',
     'brand: "Cooper Vision"',
     'brand: "Bausch & Lomb"',
-    'lensType: "Монофокальный"',
-    'lensType: "Прогрессивный"',
-    'lensType: "Поддержка аккомодации"',
-    'purpose: "Для гаджетов"',
-    'gender: "Детские"',
+    'lensType: "Однофокальные"',
+    'lensType: "Прогрессивные"',
+    'lensType: "Контроль миопии"',
+    'purpose: "Для компьютера и гаджетов"',
+    'purpose: "Контроль миопии у детей"',
+    'brand: "ZEISS"',
+    'brand: "ESSILOR"',
+    'brand: "HOYA"',
     'ctaHref: "/stellest-katalog-s-linzami/"',
   ])
     assert.ok(source.includes(expected), `missing ${expected}`);
@@ -144,14 +151,19 @@ test("header menu uses canonical catalog values for repaired shortcuts", async (
     'brand: "Acuvue"',
     'brand: "CooperVision"',
     'brand: "Bausch+Lomb"',
-    'lensType: "Однофокальные"',
+    'lensType: "Монофокальный"',
+    'lensType: "Поддержка аккомодации"',
     'lensType: "Perifocal"',
+    'purpose: "Для гаджетов"',
     'purpose: "Для работы с гаджетами"',
     'technology: "STELLEST"',
     'addition: "Low,Med,High"',
     'tag: "Новинки"',
   ])
     assert.ok(!source.includes(stale), `stale mapping remains: ${stale}`);
+
+  assert.ok(header.includes('segment === "linzy_dlya_ochkov"'));
+  assert.ok(header.includes("fetchLensLines().then(lensLineFacetSummary)"));
 });
 
 test("desktop header keeps the approved compact navigation labels", async () => {
