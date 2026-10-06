@@ -2333,8 +2333,8 @@ const DESIGN_LABELS: Record<LensRecommendCard["design"], string> = {
  * 105 of the 208 stock rows «Под заказ — рецептурная» — including cards in the
  * owner's own screenshots — because half the stock rows say 'order': the
  * supplier leaves the warehouse cell blank on a product's continuation rows,
- * or fills it with «Италия» / «Европа», which means a stock item sitting in a
- * warehouse abroad, not a lens made to order.
+ * or fills it with «Италия» / «Европа». Для покупателя обе складские ветки
+ * объединены в один статус «В наличии в России».
  *
  * The reference shows a manufacturing time here («Изготовление 3 дня»); the
  * price lists carry no per-product day counts, so this states the stock
@@ -2348,10 +2348,10 @@ export function availabilityBadge(
     case "salon":
       return { label: "Есть в салоне", good: true };
     case "warehouse":
-      return { label: "На складе в Москве", good: true };
+      return { label: "В наличии в России", good: true };
     default:
       return channel === "sklad"
-        ? { label: "Складская позиция — со склада поставщика", good: true }
+        ? { label: "В наличии в России", good: true }
         : { label: "Рецептурная — изготовление под заказ", good: false };
   }
 }
