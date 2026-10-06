@@ -354,6 +354,7 @@ export const DESIGNS: DesignOption[] = [
  */
 export interface PurposeRule {
   allowedLensTypes?: LensTypeId[];
+  autoPhotochromicCategory?: PhotochromicCategoryId;
   designs?: DesignId[];
   hideThicknesses?: ThicknessId[];
 }
@@ -361,8 +362,14 @@ export interface PurposeRule {
 export const PURPOSE_RULES: Record<PurposeId, PurposeRule> = {
   // single-vision only
   distance: { designs: ["spherical", "aspheric"] },
-  // single-vision + office, никаких прогрессивных (Ошибки 2.3, п.3; SS «для близи»)
-  near: { designs: ["spherical", "aspheric", "office"] },
+  // Для чтения нужны прозрачные либо обычные фотохромные линзы. Водительский
+  // фотохром и солнцезащитные варианты здесь не показываем; единственную
+  // категорию фотохрома назначаем автоматически, без лишнего вопроса клиенту.
+  near: {
+    allowedLensTypes: ["clear", "photochromic"],
+    autoPhotochromicCategory: "regular_photochromic",
+    designs: ["spherical", "aspheric", "office"],
+  },
   // прогрессивные/офисные/бифокальные; ни сферических/асферических, ни 1.56 (п.2)
   multifocal: { designs: ["progressive", "office", "bifocal"], hideThicknesses: ["1.56"] },
   // single-vision + прогрессивные, без офисных (п.5)

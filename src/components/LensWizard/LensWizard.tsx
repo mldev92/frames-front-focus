@@ -613,7 +613,16 @@ export function LensWizard({
                     }
                   }
                   setLensType(option);
-                  if (option.id !== "photochromic") {
+                  const automaticPhotochromicCategory = purpose
+                    ? PURPOSE_RULES[purpose.id].autoPhotochromicCategory
+                    : undefined;
+                  if (option.id === "photochromic" && automaticPhotochromicCategory) {
+                    setPhotochromicCategory(
+                      PHOTOCHROMIC_CATEGORIES.find(
+                        (category) => category.id === automaticPhotochromicCategory,
+                      ) ?? null,
+                    );
+                  } else if (option.id !== "photochromic") {
                     setPhotochromicCategory(null);
                   }
                   if (option.id !== "sun") setSunVariant(null);
@@ -1345,10 +1354,13 @@ function StepLensType({
   const photochromicCategories = options
     ? PHOTOCHROMIC_CATEGORIES.filter((o) => (options.tintCategory[o.id] ?? 0) > 0)
     : PHOTOCHROMIC_CATEGORIES;
+  const automaticPhotochromicCategory = purpose
+    ? PURPOSE_RULES[purpose.id].autoPhotochromicCategory
+    : undefined;
 
   const subChoiceRef = useRef<HTMLElement | null>(null);
   const subChoicePending =
-    (lensType?.id === "photochromic" && !photochromicCategory) ||
+    (lensType?.id === "photochromic" && !automaticPhotochromicCategory && !photochromicCategory) ||
     (lensType?.id === "sun" && !sunVariant);
 
   useEffect(() => {
@@ -1376,6 +1388,8 @@ function StepLensType({
         subtitle={
           purpose?.id === "sun-protection"
             ? "Фотохромные или солнцезащитные. Доступность проверяется по конкретной позиции прайса."
+            : purpose?.id === "near"
+              ? "Прозрачные или обычные фотохромные. Доступность проверяется по конкретной позиции прайса."
             : "Прозрачные, фотохромные или солнцезащитные. Доступность проверяется по конкретной позиции прайса."
         }
       />
@@ -1395,8 +1409,11 @@ function StepLensType({
         ))}
       </div>
 
-      {lensType?.id === "photochromic" && (
-        <section ref={subChoiceRef} className="mt-7 scroll-mt-4 rounded-xl border border-border p-5">
+      {lensType?.id === "photochromic" && !automaticPhotochromicCategory && (
+        <section
+          ref={subChoiceRef}
+          className="mt-7 scroll-mt-4 rounded-xl border border-border p-5"
+        >
           {/* Her wording, not the manufacturers': «Показывать понятный выбор —
               „Обычные фотохромные“ и „Фотохромные для вождения“. После выбора
               система должна самостоятельно подбирать подходящую технологию»
