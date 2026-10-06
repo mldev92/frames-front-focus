@@ -353,6 +353,7 @@ export const DESIGNS: DesignOption[] = [
  *   mineral never collides with a preselected card.
  */
 export interface PurposeRule {
+  allowedLensTypes?: LensTypeId[];
   designs?: DesignId[];
   hideThicknesses?: ThicknessId[];
 }
@@ -370,7 +371,10 @@ export const PURPOSE_RULES: Record<PurposeId, PurposeRule> = {
   // undefined ⇒ все пять дизайнов, включая бифокальные — в единой базе они
   // назначены и на «Имиджевые» (19 поз.), и на «Защиту от солнца» (27 поз.).
   image: {},
-  "sun-protection": {},
+  // На первом шаге назначение обещает фотохромные или тонированные линзы.
+  // Прозрачные этому обещанию противоречат и от яркого солнца не защищают,
+  // поэтому не показываем их даже пока доступность из каталога ещё грузится.
+  "sun-protection": { allowedLensTypes: ["photochromic", "sun"] },
   // MyoCare/Stellest/MiYOSMART не выпускаются в 1.56/1.74/минерале (п.16) и в
   // Trivex 1.53 (в базе 0 позиций контроля миопии с этим индексом). Приоритет
   // поликарбоната 1.59 — в StepThickness и в лестнице карточек.

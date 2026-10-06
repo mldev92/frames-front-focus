@@ -593,6 +593,7 @@ export function LensWizard({
             )}
             {step === 3 && (
               <StepLensType
+                purpose={purpose}
                 lensType={lensType}
                 setLensType={(option) => {
                   // Выборы следующих шагов считались под ПРЕЖНИМ типом линз —
@@ -1309,6 +1310,7 @@ function StepRx({
 }
 
 function StepLensType({
+  purpose,
   lensType,
   setLensType,
   photochromicCategory,
@@ -1317,6 +1319,7 @@ function StepLensType({
   setSunVariant,
   options,
 }: {
+  purpose: PurposeOption | null;
   lensType: LensTypeOption | null;
   setLensType: (v: LensTypeOption) => void;
   photochromicCategory: PhotochromicCategoryOption | null;
@@ -1332,9 +1335,13 @@ function StepLensType({
   // That is the report: "the button doesn't work and I don't understand why".
   // Only the lens types and photochrome categories the catalogue can still
   // answer (Ошибки 2.3, п.17).
-  const lensTypes = options
-    ? LENS_TYPES.filter((o) => (options.lensType[o.id] ?? 0) > 0)
+  const purposeLensTypes = purpose ? PURPOSE_RULES[purpose.id].allowedLensTypes : undefined;
+  const allowedLensTypes = purposeLensTypes
+    ? LENS_TYPES.filter((o) => purposeLensTypes.includes(o.id))
     : LENS_TYPES;
+  const lensTypes = options
+    ? allowedLensTypes.filter((o) => (options.lensType[o.id] ?? 0) > 0)
+    : allowedLensTypes;
   const photochromicCategories = options
     ? PHOTOCHROMIC_CATEGORIES.filter((o) => (options.tintCategory[o.id] ?? 0) > 0)
     : PHOTOCHROMIC_CATEGORIES;
@@ -1366,7 +1373,11 @@ function StepLensType({
       <StepHeader
         title="Какие линзы вам нужны?"
         count={lensTypes.length}
-        subtitle="Прозрачные, фотохромные или солнцезащитные. Доступность проверяется по конкретной позиции прайса."
+        subtitle={
+          purpose?.id === "sun-protection"
+            ? "Фотохромные или солнцезащитные. Доступность проверяется по конкретной позиции прайса."
+            : "Прозрачные, фотохромные или солнцезащитные. Доступность проверяется по конкретной позиции прайса."
+        }
       />
       <div
         role="group"
