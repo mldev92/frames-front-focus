@@ -529,6 +529,7 @@ function LensLineCardView({ card }: { card: LensLineCardWithImage }) {
           alt={card.title}
           loading="lazy"
           decoding="async"
+          referrerPolicy="no-referrer"
           className="aspect-[4/3] w-full object-contain p-4"
           onError={(event) => {
             event.currentTarget.onerror = null;

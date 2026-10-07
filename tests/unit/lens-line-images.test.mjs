@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import {
@@ -65,4 +66,12 @@ test("attaches an image to every curated card", () => {
   );
   assert.equal(cards[0].image, "https://optika100.com/upload/hoya.png");
   assert.equal(cards[1].image, LENS_LINE_FALLBACK_IMAGE);
+});
+
+test("product images suppress the beta referrer rejected by the production host", async () => {
+  const source = await readFile(
+    new URL("../../src/components/LensLinesCatalog.tsx", import.meta.url),
+    "utf8",
+  );
+  assert.ok(source.includes('referrerPolicy="no-referrer"'));
 });
