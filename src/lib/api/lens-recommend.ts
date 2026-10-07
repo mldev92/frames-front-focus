@@ -1,6 +1,7 @@
 import { getStoreApiUrl } from "@/lib/api/bitrix";
 import { apiFetch } from "@/lib/api/security";
 import type { LensLineFilterData } from "@/lib/lens-lines-filter";
+import type { LensLineImageSource } from "@/lib/lens-line-images";
 
 /**
  * GET /api/store/lens_recommend.php — the three result cards for the wizard's
@@ -338,6 +339,29 @@ export interface LensLineCard {
   offerCount: number;
   filterData: LensLineFilterData;
   offers?: LensRecommendCard[];
+}
+
+function productionAssetUrl(value: string, apiOrigin: string): string {
+  try {
+    const source = new URL(value, apiOrigin);
+    if (source.pathname.startsWith("/upload/")) return `${apiOrigin}${source.pathname}${source.search}`;
+    return source.toString();
+  } catch {
+    return value;
+  }
+}
+
+/** Старые карточки Bitrix остаются источником ранее загруженных фотографий. */
+export async function fetchLensLineImageSources(signal?: AbortSignal): Promise<LensLineImageSource[]> {
+  const endpoint = getStoreApiUrl("products.php?category=linzy_dlya_ochkov&v2=1&limit=96");
+  const res = await apiFetch(endpoint, { signal });
+  if (!res.ok) throw new Error(`lens line images ${res.status}`);
+  const body = (await res.json()) as { products?: LensLineImageSource[] };
+  const apiOrigin = new URL(endpoint).origin;
+  return (body.products ?? []).map((product) => ({
+    ...product,
+    images: (product.images ?? []).map((image) => productionAssetUrl(image, apiOrigin)),
+  }));
 }
 
 export async function fetchLensLines(signal?: AbortSignal): Promise<LensLineCard[]> {

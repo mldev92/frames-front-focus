@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import {
   fetchLensLine,
+  fetchLensLineImageSources,
   fetchLensLines,
   type LensLineCard,
   type LensRecommendCard,
@@ -32,6 +33,10 @@ import {
   sortLensLines,
   type LensLineFacet,
 } from "@/lib/lens-lines-filter";
+import {
+  attachLensLineImages,
+  LENS_LINE_FALLBACK_IMAGE,
+} from "@/lib/lens-line-images";
 
 /**
  * «Очковые линзы» as curated base cards («один источник», владелец
@@ -50,6 +55,7 @@ const DESIGN_RU: Record<string, string> = {
 };
 const DESIGN_ORDER = ["single", "progressive", "office", "bifocal", "myopia_control"];
 const PAGE_SIZE = 24;
+type LensLineCardWithImage = LensLineCard & { image: string };
 
 function indexLabel(indexes: number[]): string {
   if (indexes.length === 0) return "—";
@@ -106,7 +112,7 @@ export function LensLinesCatalog({
   page,
   onStateChange,
 }: LensLinesCatalogProps) {
-  const [cards, setCards] = useState<LensLineCard[] | null>(null);
+  const [cards, setCards] = useState<LensLineCardWithImage[] | null>(null);
   const [error, setError] = useState(false);
   const [reload, setReload] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -117,7 +123,18 @@ export function LensLinesCatalog({
     const ctl = new AbortController();
     setError(false);
     fetchLensLines(ctl.signal)
-      .then(setCards)
+      .then((loaded) => {
+        setCards(attachLensLineImages(loaded, []));
+        return fetchLensLineImageSources(ctl.signal)
+          .then((sources) => {
+            if (!ctl.signal.aborted) setCards(attachLensLineImages(loaded, sources));
+          })
+          .catch((imageError: unknown) => {
+            if ((imageError as Error).name !== "AbortError") {
+              console.error("[lens-lines] images unavailable:", imageError);
+            }
+          });
+      })
       .catch((e: unknown) => {
         if ((e as Error).name !== "AbortError") setError(true);
       });
@@ -166,7 +183,7 @@ export function LensLinesCatalog({
     filters,
     appliedPriceMin,
     appliedPriceMax,
-  ) as LensLineCard[];
+  ) as LensLineCardWithImage[];
   const sorted = sortLensLines(filtered, appliedSort);
   const pages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const safePage = Math.min(Math.max(page, 1), pages);
@@ -480,7 +497,7 @@ export function LensLinesCatalog({
   );
 }
 
-function LensLineCardView({ card }: { card: LensLineCard }) {
+function LensLineCardView({ card }: { card: LensLineCardWithImage }) {
   const [open, setOpen] = useState(false);
   const [offers, setOffers] = useState<LensRecommendCard[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -506,6 +523,19 @@ function LensLineCardView({ card }: { card: LensLineCard }) {
 
   return (
     <article className="flex flex-col rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-[0_6px_24px_-12px_rgb(0_0_0/0.12)]">
+      <div className="-mx-5 -mt-5 mb-5 overflow-hidden rounded-t-2xl border-b border-border/60 bg-white">
+        <img
+          src={card.image}
+          alt={card.title}
+          loading="lazy"
+          decoding="async"
+          className="aspect-[4/3] w-full object-contain p-4"
+          onError={(event) => {
+            event.currentTarget.onerror = null;
+            event.currentTarget.src = LENS_LINE_FALLBACK_IMAGE;
+          }}
+        />
+      </div>
       <div className="flex items-center justify-between gap-3">
         <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           {brandDisplayLabel(card.supplier)}
