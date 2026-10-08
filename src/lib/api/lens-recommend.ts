@@ -45,9 +45,9 @@ export interface LensRecommendQuery {
    */
   sunVariant?: "tinted" | "mirrored" | "polarized";
   /**
-   * «С поддержкой аккомодации» — the computer branch's positive filter for
-   * accommodative-support lines (Eyezen, KODAK Power Up, HOYA SYNC III …).
-   * Sent only for `purpose: "computer"`.
+   * Совместимость со старыми клиентами. Новый подборщик отправляет
+   * `design: "accommodative"`: поддержка аккомодации стала отдельным
+   * взаимоисключающим дизайном.
    */
   accommodative?: boolean;
   /** Supplier slug: essilor / zeiss / hoya / synchrony. Omit for all. */
@@ -57,7 +57,13 @@ export interface LensRecommendQuery {
    * this — the price lists carry no design column, so a quarter of the
    * catalogue is unclassifiable and must not be filtered away.
    */
-  design?: "spherical" | "aspheric" | "progressive" | "office" | "bifocal";
+  design?:
+    | "spherical"
+    | "aspheric"
+    | "progressive"
+    | "office"
+    | "accommodative"
+    | "bifocal";
   /**
    * The «Покрытие» step. Since the 2026-09 rework a PREFERENCE, not a filter:
    * the engine ranks offers by distance to this class and never drops one for

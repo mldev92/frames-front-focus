@@ -288,6 +288,7 @@ export type DesignId =
   | "aspheric"
   | "progressive"
   | "office"
+  | "accommodative"
   | "bifocal"
   | "myopia_control";
 
@@ -323,6 +324,12 @@ export const DESIGNS: DesignOption[] = [
     description:
       "Для близи и средних дистанций — чтение и работа за компьютером (60 см – 4 метра)",
     warning: "Не подходят для вождения",
+  },
+  {
+    id: "accommodative",
+    title: "С поддержкой аккомодации",
+    description:
+      "Линзы с разгрузкой зрения при работе за экраном и другими объектами вблизи",
   },
   // Rendered only where a PURPOSE_RULES designs list names it (сейчас —
   // мультифокальные, Ошибки 2.3 п.2: «при наличии в ассортименте,
@@ -374,7 +381,7 @@ export const PURPOSE_RULES: Record<PurposeId, PurposeRule> = {
   multifocal: { designs: ["progressive", "office", "bifocal"], hideThicknesses: ["1.56"] },
   // single-vision + прогрессивные, без офисных (п.5)
   driving: { designs: ["spherical", "aspheric", "progressive"] },
-  computer: { designs: ["spherical", "aspheric", "office"] },
+  computer: { designs: ["spherical", "aspheric", "office", "accommodative"] },
   // undefined ⇒ все пять дизайнов, включая бифокальные — в единой базе они
   // назначены и на «Имиджевые» (19 поз.), и на «Защиту от солнца» (27 поз.).
   image: {},
