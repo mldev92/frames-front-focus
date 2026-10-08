@@ -364,6 +364,7 @@ export interface PurposeRule {
   autoPhotochromicCategory?: PhotochromicCategoryId;
   designs?: DesignId[];
   hideThicknesses?: ThicknessId[];
+  onlyWithoutPrescription?: boolean;
 }
 
 export const PURPOSE_RULES: Record<PurposeId, PurposeRule> = {
@@ -382,9 +383,21 @@ export const PURPOSE_RULES: Record<PurposeId, PurposeRule> = {
   // single-vision + прогрессивные, без офисных (п.5)
   driving: { designs: ["spherical", "aspheric", "progressive"] },
   computer: { designs: ["spherical", "aspheric", "office", "accommodative"] },
-  // undefined ⇒ все пять дизайнов, включая бифокальные — в единой базе они
-  // назначены и на «Имиджевые» (19 поз.), и на «Защиту от солнца» (27 поз.).
-  image: {},
+  // Имиджевые очки — аксессуар без коррекции: без рецепта, только базовый
+  // пластик 1.50 и сферический дизайн (решение владельца 08.10.2026).
+  image: {
+    onlyWithoutPrescription: true,
+    designs: ["spherical"],
+    hideThicknesses: [
+      "1.56",
+      "trivex-153",
+      "poly-159",
+      "1.60",
+      "1.67",
+      "1.74",
+      "mineral",
+    ],
+  },
   // На первом шаге назначение обещает фотохромные или тонированные линзы.
   // Прозрачные этому обещанию противоречат и от яркого солнца не защищают,
   // поэтому не показываем их даже пока доступность из каталога ещё грузится.

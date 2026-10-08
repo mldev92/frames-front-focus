@@ -320,6 +320,7 @@ export function LensWizard({
       case 1:
         return !!purpose;
       case 2: {
+        if (purpose && PURPOSE_RULES[purpose.id].onlyWithoutPrescription) return true;
         if (rxMode === "none") return true;
         if (rxMode !== "has") return false;
         const eyeIsComplete = (eye: Eye) => {
@@ -535,7 +536,7 @@ export function LensWizard({
                 value={purpose}
                 onChange={(v) => {
                   setPurpose(v);
-                  setRxMode(null);
+                  setRxMode(PURPOSE_RULES[v.id].onlyWithoutPrescription ? "none" : null);
                   setOd(emptyEye);
                   setOs(emptyEye);
                   setPd("");
@@ -1089,6 +1090,22 @@ function StepRx({
 
   const hasCyl = (eye: Eye) => eye.cyl !== "" && Number(eye.cyl) !== 0;
   const showAdd = !!purpose?.requiresAdd;
+
+  if (purpose && PURPOSE_RULES[purpose.id].onlyWithoutPrescription) {
+    return (
+      <div>
+        <StepHeader title="Рецепт" />
+        <DecidedCard
+          eyebrow="Задано назначением"
+          title="Без рецепта"
+          reason="Имиджевые линзы используются без коррекции зрения, поэтому рецепт не требуется."
+        />
+        <div className="mt-8">
+          <ConsultationCard />
+        </div>
+      </div>
+    );
+  }
 
   if (mode === null) {
     return (
