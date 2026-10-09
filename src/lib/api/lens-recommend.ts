@@ -340,6 +340,7 @@ export interface LensLineCard {
   fromPriceBeforeDiscountRub: number | null;
   indexes: number[];
   treatments: string[];
+  variantLabels: string[];
   designs: string[];
   availability: "warehouse" | "order";
   offerCount: number;

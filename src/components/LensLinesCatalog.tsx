@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import {
   fetchLensLine,
-  fetchLensLineImageSources,
   fetchLensLines,
   type LensLineCard,
   type LensRecommendCard,
@@ -33,10 +32,6 @@ import {
   sortLensLines,
   type LensLineFacet,
 } from "@/lib/lens-lines-filter";
-import {
-  attachLensLineImages,
-  LENS_LINE_FALLBACK_IMAGE,
-} from "@/lib/lens-line-images";
 
 /**
  * «Очковые линзы» as curated base cards («один источник», владелец
@@ -55,21 +50,17 @@ const DESIGN_RU: Record<string, string> = {
 };
 const DESIGN_ORDER = ["single", "progressive", "office", "bifocal", "myopia_control"];
 const PAGE_SIZE = 24;
-type LensLineCardWithImage = LensLineCard & { image: string };
+const LENS_BRAND_MARKS: Record<string, string> = {
+  essilor: "/lens-brands/essilor.png",
+  hoya: "/lens-brands/hoya.svg",
+  zeiss: "/lens-brands/zeiss.svg",
+  synchrony: "/lens-brands/synchrony.png",
+};
 
 function indexLabel(indexes: number[]): string {
   if (indexes.length === 0) return "—";
   if (indexes.length === 1) return String(indexes[0]);
   return `${Math.min(...indexes)}–${Math.max(...indexes)}`;
-}
-
-function treatmentsLabel(treatments: string[]): string {
-  const isClear = (t: string) => t === "Прозрачные" || t === "Бесцветные";
-  const clear = treatments.filter(isClear);
-  const rest = treatments.filter((t) => !isClear(t));
-  const parts = [...(clear.length ? ["Прозрачные"] : []), ...rest];
-  if (parts.length <= 3) return parts.join(", ");
-  return `${parts.slice(0, 3).join(", ")} и ещё ${parts.length - 3}`;
 }
 
 interface LensLinesCatalogProps {
@@ -112,7 +103,7 @@ export function LensLinesCatalog({
   page,
   onStateChange,
 }: LensLinesCatalogProps) {
-  const [cards, setCards] = useState<LensLineCardWithImage[] | null>(null);
+  const [cards, setCards] = useState<LensLineCard[] | null>(null);
   const [error, setError] = useState(false);
   const [reload, setReload] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -123,18 +114,7 @@ export function LensLinesCatalog({
     const ctl = new AbortController();
     setError(false);
     fetchLensLines(ctl.signal)
-      .then((loaded) => {
-        setCards(attachLensLineImages(loaded, []));
-        return fetchLensLineImageSources(ctl.signal)
-          .then((sources) => {
-            if (!ctl.signal.aborted) setCards(attachLensLineImages(loaded, sources));
-          })
-          .catch((imageError: unknown) => {
-            if ((imageError as Error).name !== "AbortError") {
-              console.error("[lens-lines] images unavailable:", imageError);
-            }
-          });
-      })
+      .then((loaded) => setCards(loaded))
       .catch((e: unknown) => {
         if ((e as Error).name !== "AbortError") setError(true);
       });
@@ -183,7 +163,7 @@ export function LensLinesCatalog({
     filters,
     appliedPriceMin,
     appliedPriceMax,
-  ) as LensLineCardWithImage[];
+  ) as LensLineCard[];
   const sorted = sortLensLines(filtered, appliedSort);
   const pages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
   const safePage = Math.min(Math.max(page, 1), pages);
@@ -497,7 +477,7 @@ export function LensLinesCatalog({
   );
 }
 
-function LensLineCardView({ card }: { card: LensLineCardWithImage }) {
+function LensLineCardView({ card }: { card: LensLineCard }) {
   const [open, setOpen] = useState(false);
   const [offers, setOffers] = useState<LensRecommendCard[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -523,18 +503,14 @@ function LensLineCardView({ card }: { card: LensLineCardWithImage }) {
 
   return (
     <article className="flex flex-col rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-[0_6px_24px_-12px_rgb(0_0_0/0.12)]">
-      <div className="-mx-5 -mt-5 mb-5 overflow-hidden rounded-t-2xl border-b border-border/60 bg-white">
+      <div className="mb-5 flex h-20 items-center justify-start bg-white">
         <img
-          src={card.image}
-          alt={card.title}
+          src={LENS_BRAND_MARKS[card.supplier]}
+          alt={brandDisplayLabel(card.supplier)}
           loading="lazy"
           decoding="async"
           referrerPolicy="no-referrer"
-          className="aspect-[4/3] w-full object-contain p-4"
-          onError={(event) => {
-            event.currentTarget.onerror = null;
-            event.currentTarget.src = LENS_LINE_FALLBACK_IMAGE;
-          }}
+          className="max-h-16 max-w-40 object-contain object-left"
         />
       </div>
       <div className="flex items-center justify-between gap-3">
@@ -569,8 +545,8 @@ function LensLineCardView({ card }: { card: LensLineCardWithImage }) {
 
       <dl className="mt-4 border-t border-border pt-1 text-[13px]">
         <div className="flex justify-between gap-4 border-b border-border/55 py-2">
-          <dt className="shrink-0 text-muted-foreground">Исполнения</dt>
-          <dd className="text-right font-medium">{treatmentsLabel(card.treatments)}</dd>
+          <dt className="shrink-0 text-muted-foreground">Варианты</dt>
+          <dd className="text-right font-medium">{card.variantLabels.join(", ")}</dd>
         </div>
         <div className="flex justify-between gap-4 py-2">
           <dt className="text-muted-foreground">Вариантов</dt>
