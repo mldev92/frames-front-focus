@@ -1,4 +1,4 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
@@ -7,6 +7,8 @@ const SOURCE = new URL("../src/data/articles-content.json", import.meta.url);
 const PUBLIC_DIR = new URL("../public/", import.meta.url);
 const PUBLIC_PATH = fileURLToPath(PUBLIC_DIR);
 const MIRRORED_ROOTS = ["images", "upload", "varilux", "eyezen", "essilor"];
+const FETCH_TIMEOUT_MS = 20_000;
+const FETCH_ATTEMPTS = 3;
 
 const content = JSON.parse(await readFile(SOURCE, "utf8"));
 const queue = [];
@@ -83,15 +85,49 @@ function discoverCssAssets(cssText, baseUrl) {
   }
 }
 
-async function mirrorAsset(url) {
-  const response = await fetch(url, {
-    headers: { "User-Agent": "Optika100 blog asset localizer" },
-  });
-  if (!response.ok) {
-    throw new Error(`${url} returned ${response.status}`);
+const delay = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+
+async function fetchProductionAsset(url) {
+  let lastError;
+
+  for (let attempt = 1; attempt <= FETCH_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        headers: { "User-Agent": "Optika100 blog asset localizer" },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      });
+      if (!response.ok) {
+        throw new Error(`${url} returned ${response.status}`);
+      }
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (attempt < FETCH_ATTEMPTS) await delay(attempt * 750);
+    }
   }
 
+  throw new Error(`${url} failed after ${FETCH_ATTEMPTS} attempts`, { cause: lastError });
+}
+
+async function mirrorAsset(url) {
   const filePath = toDiskPath(url);
+  let response;
+
+  try {
+    response = await fetchProductionAsset(url);
+  } catch (error) {
+    try {
+      await access(filePath);
+      if (url.pathname.endsWith(".css")) {
+        discoverCssAssets(await readFile(filePath, "utf8"), url);
+      }
+      console.warn(`Keeping tracked mirror for ${url}: ${error.message}`);
+      return;
+    } catch {
+      throw error;
+    }
+  }
+
   await mkdir(path.dirname(filePath), { recursive: true });
 
   const contentType = response.headers.get("content-type") || "";
@@ -109,13 +145,6 @@ async function mirrorAsset(url) {
 
 for (const [slug, html] of Object.entries(content)) {
   content[slug] = rewriteHtml(html);
-}
-
-for (const root of MIRRORED_ROOTS) {
-  await rm(new URL(`../public/${root}/`, import.meta.url), {
-    recursive: true,
-    force: true,
-  });
 }
 
 while (queue.length > 0) {
