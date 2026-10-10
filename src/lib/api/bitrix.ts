@@ -326,10 +326,11 @@ export interface CatalogQuery {
 
 export type FacetKey =
   | "gender" | "shape" | "material" | "construction" | "size" | "brand" | "color"
-  | "wearMode" | "lensType" | "design"
+  | "wearMode" | "wearingMode" | "lensType" | "design"
   | "technology" | "purpose" | "coating" | "index" | "thickness"
   | "lightTransmission" | "photochromicColor" | "astigmatic" | "prism" | "pd" | "sunLens"
   | "sphere" | "cylinder" | "axis" | "addition" | "bc"
+  | "discount" | "templeLength" | "bridgeWidth" | "rimWidth"
   | "availability";
 
 export interface CatalogPage {

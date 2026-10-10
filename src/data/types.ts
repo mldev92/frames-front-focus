@@ -65,6 +65,7 @@ export interface Product {
   vtoSku?: string;
   // contact lens specific
   wearMode?: string;
+  wearingMode?: string;
   lensType?: string;
   design?: string;
   technology?: string[];
@@ -79,6 +80,10 @@ export interface Product {
   refractionIndex?: string;
   coatings?: string[];
   purpose?: string | string[];
+  discountPercent?: number;
+  templeLength?: number;
+  bridgeWidth?: number;
+  rimWidth?: number;
 }
 
 export interface Service {

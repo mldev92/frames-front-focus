@@ -4,7 +4,8 @@ import { CatalogBanner } from "./CatalogBanner";
 import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
 import { getCatalogBanners } from "@/data/catalog-banners";
-import { catalogPrefix } from "@/data/categories";
+import { contactLensSubcategories } from "@/data/contact-lens-catalog-seo";
+import { catalogPrefix, regionalCatalogHref } from "@/data/categories";
 import { CONTACT } from "@/data/contact";
 import type { Category, Product } from "@/data/types";
 import type { CatalogPage, CatalogQuery, FacetKey as ServerFacetKey } from "@/lib/api/bitrix";
@@ -19,6 +20,7 @@ type FacetKey =
   | "size"
   | "brand"
   | "wearMode"
+  | "wearingMode"
   | "lensType"
   | "purpose"
   | "design"
@@ -29,9 +31,16 @@ type FacetKey =
   | "sphere"
   | "astigmatic"
   | "cylinder"
+  | "axis"
+  | "addition"
+  | "bc"
   | "prism"
   | "pd"
-  | "sunLens";
+  | "sunLens"
+  | "discount"
+  | "templeLength"
+  | "bridgeWidth"
+  | "rimWidth";
 
 /** State delta emitted to the route; the route serialises it into the URL. */
 export interface CatalogStateChange {
@@ -488,25 +497,6 @@ const LENS_ASTIGMATIC_DEFS: { key: string; matches: string[] }[] = [
 const LENS_SUN_DEFS: { key: string; matches: string[] }[] = [
   { key: "Да", matches: ["Да"] },
 ];
-
-// Prescription chip groups — values mirror the contact-lens header dropdown.
-// These are presentation-only for now (no Bitrix data backs the per-value
-// filter), so no per-chip count is shown. URL deep-links seed `active[k]` and
-// the matching chip lights up; clicking a chip updates the URL.
-const LENS_SPHERE_DEFS   = ["−6.00", "−4.00", "−2.00", "−1.00", "0", "+1.00", "+3.00"];
-const LENS_CYLINDER_DEFS = ["−0.75", "−1.25", "−1.75", "−2.25"];
-const LENS_ADDITION_DEFS = ["Low", "Med", "High"];
-const LENS_BC_DEFS       = ["8.4", "8.6", "8.7", "9.0"];
-
-// Loose equality for chip-group lookups. Header dropdown labels use the
-// typographic minus U+2212 ("−"); URL bars and manual input use ASCII "-".
-// Comparing strictly would fail half the lookups. Lowercase too so brand /
-// addition chips match either case.
-function eqLoose(a: string | undefined, b: string | undefined): boolean {
-  const norm = (s: string | undefined) =>
-    (s ?? "").toLowerCase().replace(/−/g, "-").trim();
-  return norm(a) === norm(b);
-}
 
 const FRAME_GENDER_DEFS = [
   { key: "Мужские", label: "Мужские", matches: ["Мужские"] },
@@ -1215,6 +1205,67 @@ export function CatalogListing({
   const hasFacet = (k: FacetKey) => facets.includes(k);
   const shouldExpandFacet = (facetKey: string) =>
     expandedFacet === facetKey || Boolean(active[facetKey]?.size);
+  const renderServerFacetBlock = (
+    facet: ServerFacetKey,
+    title: string,
+    labelFor: (value: string) => string = (value) => value,
+    initialCount = 10,
+  ) => {
+    const entries = Object.entries(facetCounts[facet] ?? {}).sort(([a], [b]) => {
+      const an = Number(String(a).replace(",", "."));
+      const bn = Number(String(b).replace(",", "."));
+      if (Number.isFinite(an) && Number.isFinite(bn)) return an - bn;
+      return a.localeCompare(b, "ru");
+    });
+    if (!entries.length) return null;
+    return (
+      <FilterSection key={facet} title={title}>
+        <CollapsibleList
+          initialCount={initialCount}
+          defaultExpanded={shouldExpandFacet(facet)}
+          className="space-y-2"
+        >
+          {entries.map(([value, count]) => {
+            const checked = active[facet]?.has(value) ?? false;
+            return (
+              <button
+                key={value}
+                type="button"
+                role="checkbox"
+                aria-checked={checked}
+                onClick={(event) => {
+                  event.preventDefault();
+                  toggle(facet, value);
+                }}
+                onMouseDown={(event) => event.preventDefault()}
+                className="w-full flex items-center gap-2.5 cursor-pointer group py-0.5 hover:bg-surface/50 transition-colors text-left"
+                style={{
+                  borderRadius: "4px",
+                  padding: "2px 4px",
+                  margin: "0 -4px",
+                  background: "none",
+                  border: "none",
+                }}
+              >
+                <span
+                  className={cn(
+                    "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors",
+                    checked
+                      ? "border-ink bg-ink text-primary-foreground"
+                      : "border-border bg-card group-hover:border-foreground/40",
+                  )}
+                >
+                  {checked && <Check className="h-3 w-3" strokeWidth={3} />}
+                </span>
+                <span className="flex-1 text-sm">{labelFor(value)}</span>
+                <span className="text-xs text-muted-foreground">({count})</span>
+              </button>
+            );
+          })}
+        </CollapsibleList>
+      </FilterSection>
+    );
+  };
   const handlePreorderSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const body = [
@@ -1341,6 +1392,44 @@ export function CatalogListing({
         </FilterSection>
       )}
 
+      {categoryKey === "kontaktnye-linzy" && (
+        <FilterSection key="contact-lens-sections" title="Разделы линз">
+          <div className="space-y-2">
+            {[
+              {
+                label: "Все контактные линзы",
+                href: `${catalogPrefix(city)}/kontaktnye_linzy_/`,
+              },
+              ...contactLensSubcategories.map((item) => ({
+                label: item.label,
+                href: regionalCatalogHref(item.href, city),
+              })),
+            ].map((item) => {
+              const isCurrent = normalizeCatalogPath(item.href) === currentCatalogPath;
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isCurrent ? "page" : undefined}
+                  className={cn(
+                    "flex items-center justify-between rounded-lg border px-3 py-2.5 text-sm transition-all",
+                    isCurrent
+                      ? "border-ink bg-ink text-primary-foreground"
+                      : "border-border bg-card hover:border-foreground/40 hover:bg-surface",
+                  )}
+                  style={{ transitionDuration: "var(--duration-snap)" }}
+                >
+                  <span>{item.label}</span>
+                  <span className={isCurrent ? "text-primary-foreground/80" : "text-muted-foreground"}>
+                    →
+                  </span>
+                </a>
+              );
+            })}
+          </div>
+        </FilterSection>
+      )}
+
       {/* Frame shape — tile grid */}
       {vis.shape && hasFacet("shape") && (
         <FilterSection key="shape" title="Форма">
@@ -1428,6 +1517,8 @@ export function CatalogListing({
           className="mx-2 [&_[role=slider]]:border-ink [&_[role=slider]]:bg-background [&>span:first-child]:bg-ink/10 [&_[data-slot=slider-range]]:bg-ink"
         />
       </FilterSection>
+
+      {renderServerFacetBlock("discount", "Скидка, %")}
 
       {/* Color — compact swatch grid */}
       {vis.color && colorEntries.length > 0 && (
@@ -1928,6 +2019,10 @@ export function CatalogListing({
         );
       })}
 
+      {isFramesCategory && renderServerFacetBlock("templeLength", "Длина заушника", (value) => `${value} мм`)}
+      {isFramesCategory && renderServerFacetBlock("bridgeWidth", "Ширина переносицы", (value) => `${value} мм`)}
+      {isFramesCategory && renderServerFacetBlock("rimWidth", "Ширина ободка", (value) => `${value} мм`)}
+
       {/* Lens-category facet checkboxes (wired into `active`, not extraChecks,
           so URL ?design=Торические seeds the checkbox AND filters the grid,
           mirroring the Конструкция pattern). */}
@@ -1936,8 +2031,35 @@ export function CatalogListing({
         const lensBlocks: { facet: string; title: string; defs: LensFacetDef[]; initialCount?: number }[] = [];
         const isContacts     = categoryKey === "kontaktnye-linzy";
         const isGlassesLens  = categoryKey === "linzy-dlya-ochkov";
+        const numericEntries = (facet: string) => Object.keys(facetCounts[facet] ?? {});
+        const numeric = (value: string) => {
+          const n = Number(String(value).replace(",", "."));
+          return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
+        };
+        const numericDefs = (
+          facet: string,
+          labelFor: (value: string) => string,
+          matchesFor: (value: string) => string[] = (value) => [value],
+        ): LensFacetDef[] =>
+          numericEntries(facet)
+            .sort((a, b) => numeric(a) - numeric(b))
+            .map((value) => ({ key: value, label: labelFor(value), matches: matchesFor(value) }));
+        const rawDefs = (facet: string): LensFacetDef[] =>
+          Object.keys(facetCounts[facet] ?? {}).map((value) => ({ key: value, matches: [value] }));
+        const fixed = (value: string, digits: number) => {
+          const n = Number(String(value).replace(",", "."));
+          return Number.isFinite(n) ? n.toFixed(digits) : value;
+        };
+        const signedFixed = (value: string) => {
+          const n = Number(String(value).replace(",", "."));
+          if (!Number.isFinite(n)) return value;
+          return `${n > 0 ? "+" : ""}${n.toFixed(2)}`;
+        };
+        const pdLabel = (value: string) => (/мм\s*$/i.test(value.trim()) ? value : `${fixed(value, 0)} мм`);
+
         if (isContacts)                  lensBlocks.push({ facet: "design", title: "Дизайн", defs: LENS_DESIGN_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "design", title: "Дизайн линзы", defs: GLASSES_LENS_DESIGN_DEFS });
+        if (isContacts)                  lensBlocks.push({ facet: "wearingMode", title: "Режим ношения", defs: rawDefs("wearingMode") });
         if (isContacts)                  lensBlocks.push({ facet: "wearMode", title: "Срок замены", defs: LENS_WEAR_MODE_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "lensType", title: "Тип линзы", defs: LENS_TYPE_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "technology", title: "Тип", defs: LENS_TECHNOLOGY_DEFS });
@@ -1945,26 +2067,39 @@ export function CatalogListing({
         if (isGlassesLens)               lensBlocks.push({ facet: "thickness", title: "Толщина линзы", defs: LENS_THICKNESS_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "lightTransmission", title: "Светопропускание", defs: LENS_LIGHT_TRANSMISSION_DEFS });
         if (isGlassesLens)               lensBlocks.push({ facet: "photochromicColor", title: "Цвет фотохрома", defs: LENS_PHOTOCHROMIC_COLOR_DEFS });
+        if (isContacts) {
+          lensBlocks.push({
+            facet: "sphere",
+            title: "Оптическая сила (сфера)",
+            defs: numericDefs("sphere", signedFixed, (value) => [value, signedFixed(value)]),
+            initialCount: 10,
+          });
+          lensBlocks.push({
+            facet: "cylinder",
+            title: "Оптическая сила цилиндра",
+            defs: numericDefs("cylinder", signedFixed, (value) => [value, signedFixed(value)]),
+            initialCount: 10,
+          });
+          lensBlocks.push({
+            facet: "axis",
+            title: "Ось",
+            defs: numericDefs("axis", (value) => fixed(value, 0)),
+            initialCount: 10,
+          });
+          lensBlocks.push({
+            facet: "addition",
+            title: "Аддидация",
+            defs: rawDefs("addition"),
+            initialCount: 10,
+          });
+          lensBlocks.push({
+            facet: "bc",
+            title: "Радиус кривизны",
+            defs: numericDefs("bc", (value) => fixed(value, 1)),
+            initialCount: 10,
+          });
+        }
         if (isGlassesLens) {
-          const numericEntries = (facet: string) => Object.keys(facetCounts[facet] ?? {});
-          const numeric = (value: string) => {
-            const n = Number(String(value).replace(",", "."));
-            return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
-          };
-          const numericDefs = (
-            facet: string,
-            labelFor: (value: string) => string,
-            matchesFor: (value: string) => string[] = (value) => [value],
-          ): LensFacetDef[] =>
-            numericEntries(facet)
-              .sort((a, b) => numeric(a) - numeric(b))
-              .map((value) => ({ key: value, label: labelFor(value), matches: matchesFor(value) }));
-          const fixed = (value: string, digits: number) => {
-            const n = Number(String(value).replace(",", "."));
-            return Number.isFinite(n) ? n.toFixed(digits) : value;
-          };
-          const pdLabel = (value: string) => (/мм\s*$/i.test(value.trim()) ? value : `${fixed(value, 0)} мм`);
-
           lensBlocks.push({
             facet: "sphere",
             title: "Оптическая сила (сфера)",
@@ -2046,75 +2181,6 @@ export function CatalogListing({
           );
         });
       })()}
-
-      {/* Prescription chip-groups (contact lenses only). Single discrete
-          value per facet — chips light up when the URL deep-links them. */}
-      {categoryKey === "kontaktnye-linzy" && (() => {
-        const rxBlocks: { facet: string; title: string; defs: readonly string[] }[] = [
-          { facet: "sphere",   title: "Сфера",                defs: LENS_SPHERE_DEFS },
-          { facet: "cylinder", title: "Цилиндр",              defs: LENS_CYLINDER_DEFS },
-          { facet: "addition", title: "Аддидация",            defs: LENS_ADDITION_DEFS },
-          { facet: "bc",       title: "Радиус кривизны (BC)", defs: LENS_BC_DEFS },
-        ];
-        return rxBlocks.map(({ facet, title, defs }) => (
-          <FilterSection key={facet} title={title}>
-            <div className="flex flex-wrap gap-2">
-              {defs.map((value) => {
-                const checked =
-                  [...(active[facet] ?? [])].some((picked) => eqLoose(picked, value));
-                return (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => toggle(facet, value)}
-                    className={cn(
-                      "inline-flex items-center rounded-full border px-3 py-1.5 text-xs transition-all",
-                      checked
-                        ? "border-ink bg-ink text-primary-foreground"
-                        : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
-                    )}
-                    style={{
-                      transitionDuration: "var(--duration-snap)",
-                      transitionTimingFunction: "var(--ease-editorial)",
-                    }}
-                  >
-                    {value}
-                  </button>
-                );
-              })}
-            </div>
-          </FilterSection>
-        ));
-      })()}
-
-      {/* Ось — free numeric input, committed to the URL/API on blur or Enter.
-          The header routes "Выбор оси" through the toric design facet first. */}
-      {categoryKey === "kontaktnye-linzy" && (
-        <FilterSection key="axis" title="Ось">
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="например 90°"
-            value={[...(active.axis ?? [])][0] ?? ""}
-            onChange={(e) => {
-              const v = e.target.value.replace(/[^\d]/g, "").trim();
-              setActive((prev) => {
-                const next = { ...prev };
-                if (v) next.axis = new Set([v]); else delete next.axis;
-                return next;
-              });
-            }}
-            onBlur={() => {
-              const next = { ...active };
-              const v = [...(next.axis ?? [])][0];
-              if (v) next.axis = new Set([v]); else delete next.axis;
-              emitFilters(next);
-            }}
-            onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
-            className="w-full bg-background border border-border rounded-full px-3 py-2 text-sm outline-none focus:border-ink/50 transition-all"
-          />
-        </FilterSection>
-      )}
 
       {/* Bottom spacer so the last section is never clipped by sticky Apply on mobile */}
       <div aria-hidden className="h-20 lg:h-4" />

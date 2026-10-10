@@ -244,7 +244,7 @@ const CAT_CELLS = [
     title: "Женские оправы",
     subtitle: "Более 1500 моделей",
     image: "/new_categories_1.webp",
-    href: catalogHref("opravy"),
+    href: "/catalog_s/opravy/zhenskie/",
     titlePos: "bottom" as const,
   },
   {
@@ -260,7 +260,7 @@ const CAT_CELLS = [
     title: "Мужские оправы",
     subtitle: "Более 1200 моделей",
     image: "/new_categories_4.webp",
-    href: catalogHref("opravy"),
+    href: "/catalog_s/opravy/muzhskie/",
     titlePos: "bottom" as const,
   },
   {
@@ -268,7 +268,7 @@ const CAT_CELLS = [
     title: "Детские оправы",
     subtitle: "Для заботы о будущем",
     image: "/new_categories_3.webp",
-    href: catalogHref("opravy"),
+    href: "/catalog_s/opravy/detskie/",
     titlePos: "bottom" as const,
   },
 ];

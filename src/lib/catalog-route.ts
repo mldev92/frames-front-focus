@@ -25,6 +25,7 @@ export const FACET_PARAMS = [
   "material",
   "construction",
   "wearMode",
+  "wearingMode",
   "lensType",
   "design",
   "technology",
@@ -43,6 +44,10 @@ export const FACET_PARAMS = [
   "axis",
   "addition",
   "bc",
+  "discount",
+  "templeLength",
+  "bridgeWidth",
+  "rimWidth",
   "availability",
 ] as const satisfies readonly FacetKey[];
 
@@ -55,6 +60,7 @@ export const EXPANDABLE_FACET_PARAMS = [
   "material",
   "construction",
   "wearMode",
+  "wearingMode",
   "lensType",
   "design",
   "technology",
@@ -73,6 +79,10 @@ export const EXPANDABLE_FACET_PARAMS = [
   "axis",
   "addition",
   "bc",
+  "discount",
+  "templeLength",
+  "bridgeWidth",
+  "rimWidth",
 ] as const;
 
 export const catalogSearchSchema = z.object({
@@ -93,6 +103,7 @@ export const catalogSearchSchema = z.object({
   material: z.string().optional(),
   construction: z.string().optional(),
   wearMode: z.string().optional(),
+  wearingMode: z.string().optional(),
   lensType: z.string().optional(),
   design: z.string().optional(),
   technology: z.string().optional(),
@@ -111,6 +122,10 @@ export const catalogSearchSchema = z.object({
   axis: numOrStr,
   addition: numOrStr,
   bc: numOrStr,
+  discount: numOrStr,
+  templeLength: numOrStr,
+  bridgeWidth: numOrStr,
+  rimWidth: numOrStr,
   availability: z.string().optional(),
 });
 

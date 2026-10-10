@@ -9,6 +9,7 @@ type FacetKey =
   | "size"
   | "brand"
   | "wearMode"
+  | "wearingMode"
   | "lensType"
   | "purpose"
   | "technology"
@@ -19,9 +20,16 @@ type FacetKey =
   | "sphere"
   | "astigmatic"
   | "cylinder"
+  | "axis"
+  | "addition"
+  | "bc"
   | "prism"
   | "pd"
-  | "sunLens";
+  | "sunLens"
+  | "discount"
+  | "templeLength"
+  | "bridgeWidth"
+  | "rimWidth";
 
 interface CatalogConfig {
   title: string;
@@ -36,7 +44,17 @@ export const catalogConfig: Record<Category, CatalogConfig> = {
     title: "Оправы",
     subtitle:
       "Современные оправы из ацетата, титана и металла. Подбираем под форму лица и образ жизни.",
-    facets: ["shape", "material", "gender", "size", "brand"],
+    facets: [
+      "shape",
+      "material",
+      "gender",
+      "size",
+      "brand",
+      "discount",
+      "templeLength",
+      "bridgeWidth",
+      "rimWidth",
+    ],
     metaTitle: "Оправы — каталог · ОПТИКА 100%",
     metaDescription:
       "Купить оправы для очков в Санкт-Петербурге: ацетат, титан, металл. Мужские, женские, детские модели.",
@@ -44,7 +62,17 @@ export const catalogConfig: Record<Category, CatalogConfig> = {
   solntsezashchitnye: {
     title: "Солнцезащитные очки",
     subtitle: "100% UV-защита, поляризация, зеркальные и градиентные линзы.",
-    facets: ["shape", "material", "gender", "size", "brand"],
+    facets: [
+      "shape",
+      "material",
+      "gender",
+      "size",
+      "brand",
+      "discount",
+      "templeLength",
+      "bridgeWidth",
+      "rimWidth",
+    ],
     metaTitle: "Солнцезащитные очки — каталог · ОПТИКА 100%",
     metaDescription:
       "Солнцезащитные очки с UV-защитой, поляризацией и градиентными линзами. Ray-Ban, Persol, OPTIKA Studio.",
@@ -53,7 +81,18 @@ export const catalogConfig: Record<Category, CatalogConfig> = {
     title: "Контактные линзы",
     subtitle:
       "Однодневные, двухнедельные, месячные. Сферические, торические, для контроля миопии.",
-    facets: ["brand", "wearMode", "lensType", "material"],
+    facets: [
+      "brand",
+      "discount",
+      "design",
+      "wearingMode",
+      "wearMode",
+      "sphere",
+      "cylinder",
+      "axis",
+      "addition",
+      "bc",
+    ],
     metaTitle: "Контактные линзы — каталог · ОПТИКА 100%",
     metaDescription:
       "Контактные линзы Acuvue, CooperVision, Bausch+Lomb, Alcon. Однодневные, месячные, торические, для контроля миопии.",
