@@ -268,7 +268,10 @@ const CAT_CELLS = [
     title: "Детские оправы",
     subtitle: "Для заботы о будущем",
     image: "/new_categories_3.webp",
-    href: "/catalog_s/opravy/detskie/",
+    href: `${catalogHref("opravy")}?${new URLSearchParams({
+      gender: "Детские",
+      expand: "gender",
+    }).toString()}`,
     titlePos: "bottom" as const,
   },
 ];

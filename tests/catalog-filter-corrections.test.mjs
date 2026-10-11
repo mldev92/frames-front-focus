@@ -30,7 +30,7 @@ test("contact-lens filters expose sections and every production parameter group"
   assert.ok(!listing.includes('placeholder="например 90°"'));
 });
 
-test("frame filters and homepage cards use the approved live sections", async () => {
+test("frame filters and homepage cards use the approved catalog targets", async () => {
   const listing = await read("../src/components/CatalogListing.tsx");
   const homepage = await read("../src/routes/index.tsx");
 
@@ -38,9 +38,16 @@ test("frame filters and homepage cards use the approved live sections", async ()
     assert.ok(listing.includes(`renderServerFacetBlock("${facet}"`), `missing frame facet: ${facet}`);
   }
 
-  for (const section of ["zhenskie", "muzhskie", "detskie"]) {
+  for (const section of ["zhenskie", "muzhskie"]) {
     assert.ok(homepage.includes(`/catalog_s/opravy/${section}/`), `homepage section link missing: ${section}`);
   }
+
+  assert.match(
+    homepage,
+    /gender: "Детские",\s+expand: "gender"/,
+    "the kids tile must use the full-catalog gender facet rather than the undersized legacy section",
+  );
+  assert.ok(!homepage.includes('/catalog_s/opravy/detskie/'));
 });
 
 test("catalog backend indexes each newly visible filter from Bitrix data", async () => {
