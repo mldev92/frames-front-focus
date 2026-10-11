@@ -99,7 +99,10 @@ async function fetchProductionAsset(url) {
       if (!response.ok) {
         throw new Error(`${url} returned ${response.status}`);
       }
-      return response;
+      return {
+        bytes: new Uint8Array(await response.arrayBuffer()),
+        contentType: response.headers.get("content-type") || "",
+      };
     } catch (error) {
       lastError = error;
       if (attempt < FETCH_ATTEMPTS) await delay(attempt * 750);
@@ -111,10 +114,10 @@ async function fetchProductionAsset(url) {
 
 async function mirrorAsset(url) {
   const filePath = toDiskPath(url);
-  let response;
+  let asset;
 
   try {
-    response = await fetchProductionAsset(url);
+    asset = await fetchProductionAsset(url);
   } catch (error) {
     try {
       await access(filePath);
@@ -130,17 +133,15 @@ async function mirrorAsset(url) {
 
   await mkdir(path.dirname(filePath), { recursive: true });
 
-  const contentType = response.headers.get("content-type") || "";
-  if (contentType.includes("text/css") || url.pathname.endsWith(".css")) {
-    let css = await response.text();
+  if (asset.contentType.includes("text/css") || url.pathname.endsWith(".css")) {
+    let css = new TextDecoder().decode(asset.bytes);
     css = css.replaceAll(`${ORIGIN}/`, "/");
     discoverCssAssets(css, url);
     await writeFile(filePath, css);
     return;
   }
 
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  await writeFile(filePath, bytes);
+  await writeFile(filePath, asset.bytes);
 }
 
 for (const [slug, html] of Object.entries(content)) {
