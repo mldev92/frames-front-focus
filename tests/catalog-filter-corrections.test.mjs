@@ -38,16 +38,25 @@ test("frame filters and homepage cards use the approved catalog targets", async 
     assert.ok(listing.includes(`renderServerFacetBlock("${facet}"`), `missing frame facet: ${facet}`);
   }
 
-  for (const section of ["zhenskie", "muzhskie"]) {
-    assert.ok(homepage.includes(`/catalog_s/opravy/${section}/`), `homepage section link missing: ${section}`);
-  }
-
   assert.match(
     homepage,
-    /gender: "Детские",\s+expand: "gender"/,
-    "the kids tile must use the full-catalog gender facet rather than the undersized legacy section",
+    /const frameGenderHref = .*?gender,\s+expand: "gender"/s,
+    "frame tiles must expand and select the gender facet",
   );
-  assert.ok(!homepage.includes('/catalog_s/opravy/detskie/'));
+
+  for (const gender of ["Женские", "Мужские", "Детские"]) {
+    assert.ok(
+      homepage.includes(`href: frameGenderHref("${gender}")`),
+      `homepage gender-filter link missing: ${gender}`,
+    );
+  }
+
+  for (const section of ["zhenskie", "muzhskie", "detskie"]) {
+    assert.ok(
+      !homepage.includes(`/catalog_s/opravy/${section}/`),
+      `legacy homepage section link must not be used: ${section}`,
+    );
+  }
 });
 
 test("catalog backend indexes each newly visible filter from Bitrix data", async () => {

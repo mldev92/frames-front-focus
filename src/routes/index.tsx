@@ -238,13 +238,19 @@ function formatPromoEyebrow(endsAt: string | null): string {
 //   │            │  оправы   │  очки     │
 //   └────────────┴───────────┴───────────┘
 // `titlePos: "top" | "bottom"` controls text placement inside the tile.
+const frameGenderHref = (gender: "Женские" | "Мужские" | "Детские") =>
+  `${catalogHref("opravy")}?${new URLSearchParams({
+    gender,
+    expand: "gender",
+  }).toString()}`;
+
 const CAT_CELLS = [
   {
     slug: "opravy-zhenskie",
     title: "Женские оправы",
     subtitle: "Более 1500 моделей",
     image: "/new_categories_1.webp",
-    href: "/catalog_s/opravy/zhenskie/",
+    href: frameGenderHref("Женские"),
     titlePos: "bottom" as const,
   },
   {
@@ -260,7 +266,7 @@ const CAT_CELLS = [
     title: "Мужские оправы",
     subtitle: "Более 1200 моделей",
     image: "/new_categories_4.webp",
-    href: "/catalog_s/opravy/muzhskie/",
+    href: frameGenderHref("Мужские"),
     titlePos: "bottom" as const,
   },
   {
@@ -268,10 +274,7 @@ const CAT_CELLS = [
     title: "Детские оправы",
     subtitle: "Для заботы о будущем",
     image: "/new_categories_3.webp",
-    href: `${catalogHref("opravy")}?${new URLSearchParams({
-      gender: "Детские",
-      expand: "gender",
-    }).toString()}`,
+    href: frameGenderHref("Детские"),
     titlePos: "bottom" as const,
   },
 ];
