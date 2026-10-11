@@ -150,9 +150,9 @@ type GlassesMegaMenu = {
     href: string;
     title: string;
   };
-  rxHelper: {
+  selectionHelper: {
     ctaHref: string;
-    fields: Array<{ label: string; value: string }>;
+    description: string;
     title: string;
   };
   summary: string;
@@ -1024,15 +1024,11 @@ const GLASSES_MENU: GlassesMegaMenu = {
     href: "/#promotions",
     title: "Все Акции",
   },
-  rxHelper: {
-    title: "Введите свой рецепт",
-    ctaHref: "/podbor-ochkov/",
-    fields: [
-      { label: "Sph R", value: "−2.50" },
-      { label: "Sph L", value: "−2.75" },
-      { label: "Cyl R", value: "−0.75" },
-      { label: "Cyl L", value: "—" },
-    ],
+  selectionHelper: {
+    title: "Поможем подобрать очковые линзы",
+    description:
+      "Начните подбор без рецепта или запишитесь к специалисту. Можно также заказать консультацию по телефону.",
+    ctaHref: "/podbor-linz/",
   },
   utilities: [
     {
@@ -1479,16 +1475,9 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
             </a>
           </div>
 
-          <nav
-            aria-label="Категории контактных линз"
-            className="mb-6 flex flex-wrap gap-2"
-          >
+          <nav aria-label="Категории контактных линз" className="mb-6 flex flex-wrap gap-2">
             {menu.sections.map((item) => (
-              <a
-                key={item.label}
-                href={regionalMenuHref(item.href, city)}
-                className={chipClass}
-              >
+              <a key={item.label} href={regionalMenuHref(item.href, city)} className={chipClass}>
                 {item.label}
               </a>
             ))}
@@ -1693,7 +1682,13 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
   );
 }
 
-function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
+function GlassesMegaPanel({
+  menu,
+  onBookAppointment,
+}: {
+  menu: GlassesMegaMenu;
+  onBookAppointment: () => void;
+}) {
   const city = useCityStore((state) => state.city);
 
   return (
@@ -1874,33 +1869,37 @@ function GlassesMegaPanel({ menu }: { menu: GlassesMegaMenu }) {
 
               <div className={cn(surfaceCardClass, "mt-5 p-4")}>
                 <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-brand">
-                  Подбор по рецепту
+                  Без рецепта
                 </span>
                 <h3 className="mt-2 font-serif text-[17px] leading-tight text-foreground">
-                  {menu.rxHelper.title}
+                  {menu.selectionHelper.title}
                 </h3>
-                <div className="mt-3 grid grid-cols-2 gap-2">
-                  {menu.rxHelper.fields.map((field) => (
-                    <div
-                      key={field.label}
-                      className="rounded-[12px] border border-[#ece7df] bg-[#fbfaf7] px-3 py-2"
-                    >
-                      <span className="block font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
-                        {field.label}
-                      </span>
-                      <span className="mt-1 block text-[13px] font-medium text-foreground">
-                        {field.value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <p className="mt-2 text-[12.5px] leading-5 text-muted-foreground">
+                  {menu.selectionHelper.description}
+                </p>
                 <a
-                  href={regionalMenuHref(menu.rxHelper.ctaHref, city)}
+                  href={regionalMenuHref(menu.selectionHelper.ctaHref, city)}
                   className="mt-4 inline-flex w-full items-center justify-between rounded-full bg-brand px-4 py-3 text-[12.5px] font-semibold text-brand-foreground transition-opacity hover:opacity-90"
                 >
                   Подобрать линзы
                   <ArrowRight className="h-4 w-4" />
                 </a>
+                <button
+                  type="button"
+                  onClick={onBookAppointment}
+                  className="mt-2 inline-flex w-full items-center justify-between rounded-full border border-brand px-4 py-3 text-left text-[12.5px] font-semibold text-brand transition-colors hover:bg-brand-50"
+                >
+                  Записаться к врачу
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => document.dispatchEvent(new CustomEvent("open-callback"))}
+                  className="mt-2 inline-flex w-full items-center justify-between rounded-full border border-[#e4dbcf] px-4 py-3 text-left text-[12.5px] font-semibold text-foreground transition-colors hover:border-brand hover:text-brand"
+                >
+                  Консультация по телефону
+                  <ArrowRight className="h-4 w-4" />
+                </button>
               </div>
             </section>
 
@@ -2165,10 +2164,12 @@ export function HeaderMegaPanel({
   menu,
   facetSummary,
   facetStatus,
+  onBookAppointment,
 }: {
   menu: HeaderMegaMenu;
   facetSummary?: CatalogFacetSummary;
   facetStatus: "loading" | "ready" | "error";
+  onBookAppointment: () => void;
 }) {
   const filteredMenu = filterMegaMenu(menu, facetSummary);
   const panel =
@@ -2179,7 +2180,7 @@ export function HeaderMegaPanel({
     ) : filteredMenu.kind === "accessories" ? (
       <AccessoriesMegaPanel menu={filteredMenu} />
     ) : (
-      <GlassesMegaPanel menu={filteredMenu} />
+      <GlassesMegaPanel menu={filteredMenu} onBookAppointment={onBookAppointment} />
     );
 
   return (

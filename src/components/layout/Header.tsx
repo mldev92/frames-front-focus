@@ -12,6 +12,7 @@ import { getCatalogFacetSummary, type CatalogFacetSummary } from "@/lib/api/bitr
 import { catalogSegmentFromHref } from "@/lib/header-menu-facets";
 import { fetchLensLines } from "@/lib/api/lens-recommend";
 import { lensLineFacetSummary } from "@/lib/lens-lines-filter";
+import { AppointmentModal } from "@/components/AppointmentModal";
 
 const CITIES: { code: CityCode; label: string }[] = [
   { code: "spb", label: "Санкт-Петербург" },
@@ -46,6 +47,7 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [openMegaHref, setOpenMegaHref] = useState<string | null>(null);
+  const [appointmentOpen, setAppointmentOpen] = useState(false);
   const [facetStates, setFacetStates] = useState<Record<string, FacetLoadState>>({});
 
   const { city: cityCode, hydrated: cityHydrated, setCity: setCityCode } = useCityStore();
@@ -405,6 +407,10 @@ export function Header() {
               >
                 <HeaderMegaPanel
                   menu={openMegaItem.mega!}
+                  onBookAppointment={() => {
+                    setOpenMegaHref(null);
+                    setAppointmentOpen(true);
+                  }}
                   facetSummary={
                     openMegaFacetState?.status === "ready" ? openMegaFacetState.summary : undefined
                   }
@@ -461,6 +467,7 @@ export function Header() {
           </div>
         </div>
       )}
+      <AppointmentModal open={appointmentOpen} onOpenChange={setAppointmentOpen} />
     </>
   );
 }
