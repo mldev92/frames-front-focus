@@ -21,6 +21,7 @@ import {
   Truck,
 } from "lucide-react";
 import { catalogHref } from "@/data/categories";
+import { contactLensSubcategories } from "@/data/contact-lens-catalog-seo";
 import { EXPANDABLE_FACET_PARAMS } from "@/lib/catalog-route";
 import { regionalSiteHref } from "@/lib/city-routing";
 import { cn } from "@/lib/utils";
@@ -103,6 +104,7 @@ type ContactMegaMenu = {
   allHref: string;
   allLabel: string;
   brands: CardLink[];
+  sections: CountChip[];
   contactModes: CardLink[];
   cylinder: CountChip[];
   helper: {
@@ -782,6 +784,7 @@ const CONTACT_MENU: ContactMegaMenu = {
   titleEmphasis: "Контактные линзы.",
   title: "По режиму ношения, дизайну и силе",
   summary: "",
+  sections: contactLensSubcategories.map(({ href, label }) => ({ href, label })),
   contactModes: [
     {
       label: "Однодневные",
@@ -1475,6 +1478,21 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
               <ArrowRight className="h-3.5 w-3.5" />
             </a>
           </div>
+
+          <nav
+            aria-label="Категории контактных линз"
+            className="mb-6 flex flex-wrap gap-2"
+          >
+            {menu.sections.map((item) => (
+              <a
+                key={item.label}
+                href={regionalMenuHref(item.href, city)}
+                className={chipClass}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
 
           <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-[1.16fr_1.04fr_1fr_0.9fr]">
             <section>

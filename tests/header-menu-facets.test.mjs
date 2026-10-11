@@ -185,3 +185,15 @@ test("desktop header keeps the approved compact navigation labels", async () => 
   assert.ok(header.includes('px-1 text-sm'));
   assert.ok(header.includes('2xl:px-3 2xl:text-[15px]'));
 });
+
+test("contact-lens header dropdown exposes section links without a section title", async () => {
+  const menu = await readFile(
+    new URL("../src/components/layout/HeaderMegaMenu.tsx", import.meta.url),
+    "utf8",
+  );
+
+  assert.ok(menu.includes("contactLensSubcategories.map"));
+  assert.ok(menu.includes('aria-label="Категории контактных линз"'));
+  assert.ok(menu.includes("menu.sections.map"));
+  assert.ok(!menu.includes("Разделы линз"));
+});
