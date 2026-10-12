@@ -1026,8 +1026,7 @@ const GLASSES_MENU: GlassesMegaMenu = {
   },
   selectionHelper: {
     title: "Поможем подобрать очковые линзы",
-    description:
-      "Начните подбор без рецепта или запишитесь к специалисту. Можно также заказать консультацию по телефону.",
+    description: "Подберите линзы онлайн, запишитесь к врачу или закажите звонок специалиста.",
     ctaHref: "/podbor-linz/",
   },
   utilities: [
@@ -1879,7 +1878,7 @@ function GlassesMegaPanel({
                 </p>
                 <a
                   href={regionalMenuHref(menu.selectionHelper.ctaHref, city)}
-                  className="mt-4 inline-flex w-full items-center justify-between rounded-full bg-brand px-4 py-3 text-[12.5px] font-semibold text-brand-foreground transition-opacity hover:opacity-90"
+                  className="mt-3 inline-flex w-full items-center justify-between rounded-full bg-brand px-4 py-2.5 text-[12.5px] font-semibold text-brand-foreground transition-opacity hover:opacity-90"
                 >
                   Подобрать линзы
                   <ArrowRight className="h-4 w-4" />
@@ -1887,7 +1886,7 @@ function GlassesMegaPanel({
                 <button
                   type="button"
                   onClick={onBookAppointment}
-                  className="mt-2 inline-flex w-full items-center justify-between rounded-full border border-brand px-4 py-3 text-left text-[12.5px] font-semibold text-brand transition-colors hover:bg-brand-50"
+                  className="mt-2 inline-flex w-full items-center justify-between rounded-full border border-brand px-4 py-2.5 text-left text-[12.5px] font-semibold text-brand transition-colors hover:bg-brand-50"
                 >
                   Записаться к врачу
                   <ArrowRight className="h-4 w-4" />
@@ -1895,7 +1894,7 @@ function GlassesMegaPanel({
                 <button
                   type="button"
                   onClick={() => document.dispatchEvent(new CustomEvent("open-callback"))}
-                  className="mt-2 inline-flex w-full items-center justify-between rounded-full border border-[#e4dbcf] px-4 py-3 text-left text-[12.5px] font-semibold text-foreground transition-colors hover:border-brand hover:text-brand"
+                  className="mt-2 inline-flex w-full items-center justify-between rounded-full border border-[#e4dbcf] px-4 py-2.5 text-left text-[12.5px] font-semibold text-foreground transition-colors hover:border-brand hover:text-brand"
                 >
                   Консультация по телефону
                   <ArrowRight className="h-4 w-4" />
