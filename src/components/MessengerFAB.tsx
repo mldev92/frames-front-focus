@@ -33,10 +33,15 @@ const CHANNELS = [
 export function MessengerFAB() {
   const [open, setOpen] = useState(false);
   const [callbackOpen, setCallbackOpen] = useState(false);
+  const [callbackSubject, setCallbackSubject] = useState<string | undefined>();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
 
   useEffect(() => {
-    const handler = () => setCallbackOpen(true);
+    const handler = (event: Event) => {
+      const subject = event instanceof CustomEvent ? event.detail?.subject : undefined;
+      setCallbackSubject(typeof subject === "string" ? subject : undefined);
+      setCallbackOpen(true);
+    };
     document.addEventListener("open-callback", handler);
     return () => document.removeEventListener("open-callback", handler);
   }, []);
@@ -139,6 +144,7 @@ export function MessengerFAB() {
               <button
                 onClick={() => {
                   setOpen(false);
+                  setCallbackSubject(undefined);
                   setCallbackOpen(true);
                 }}
                 className="mt-3 text-brand hover:underline cursor-pointer bg-transparent border-0 p-0 text-[11.5px]"
@@ -162,7 +168,7 @@ export function MessengerFAB() {
         </button>
       </div>
 
-      <CallbackModal open={callbackOpen} onOpenChange={setCallbackOpen} />
+      <CallbackModal open={callbackOpen} onOpenChange={setCallbackOpen} subject={callbackSubject} />
     </>
   );
 }

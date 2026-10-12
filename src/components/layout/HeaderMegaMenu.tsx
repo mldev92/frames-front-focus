@@ -1893,7 +1893,13 @@ function GlassesMegaPanel({
                 </button>
                 <button
                   type="button"
-                  onClick={() => document.dispatchEvent(new CustomEvent("open-callback"))}
+                  onClick={() =>
+                    document.dispatchEvent(
+                      new CustomEvent("open-callback", {
+                        detail: { subject: "Консультация по подбору очковых линз" },
+                      }),
+                    )
+                  }
                   className="mt-2 inline-flex w-full items-center justify-between rounded-full border border-[#e4dbcf] px-4 py-2.5 text-left text-[12.5px] font-semibold text-foreground transition-colors hover:border-brand hover:text-brand"
                 >
                   Консультация по телефону

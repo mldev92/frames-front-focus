@@ -9,11 +9,12 @@ import { toast } from "sonner";
 interface CallbackModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  subject?: string;
 }
 
 const TIMES = ["Сейчас", "Через час", "Завтра 10:00"] as const;
 
-export function CallbackModal({ open, onOpenChange }: CallbackModalProps) {
+export function CallbackModal({ open, onOpenChange, subject }: CallbackModalProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [time, setTime] = useState<string>("Сейчас");
@@ -22,7 +23,10 @@ export function CallbackModal({ open, onOpenChange }: CallbackModalProps) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      await submitCallback({ name, phone, comment: time !== "Сейчас" ? `Удобное время: ${time}` : undefined });
+      const comment = [subject, time !== "Сейчас" ? `Удобное время: ${time}` : undefined]
+        .filter(Boolean)
+        .join(". ");
+      await submitCallback({ name, phone, comment: comment || undefined });
       setSent(true);
       setTimeout(() => {
         setSent(false);
@@ -42,6 +46,7 @@ export function CallbackModal({ open, onOpenChange }: CallbackModalProps) {
         <DialogTitle className="font-serif text-[22px] font-medium leading-tight mb-1">
           Заказать обратный звонок
         </DialogTitle>
+        {subject && <p className="text-sm font-medium text-foreground">{subject}</p>}
         <p className="text-[13px] text-muted-foreground mb-4">
           Перезвоним в течение 5 минут в рабочее время.
         </p>
