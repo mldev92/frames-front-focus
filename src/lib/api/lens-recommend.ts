@@ -149,6 +149,7 @@ export interface LensRecommendCard {
    * through next to the discounted price. null when no discount applies.
    */
   priceBeforeDiscountRub: number | null;
+  discountPercent: number | null;
   priceRub: number | null;
   priceIsWholesale: boolean;
   rxFit: "yes" | "no" | "unknown";
@@ -340,6 +341,7 @@ export interface LensLineCard {
   order: number;
   fromPriceRub: number | null;
   fromPriceBeforeDiscountRub: number | null;
+  fromDiscountPercent: number | null;
   indexes: number[];
   treatments: string[];
   variantLabels: string[];

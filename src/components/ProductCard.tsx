@@ -7,6 +7,7 @@ import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { cn } from "@/lib/utils";
 import { getProductGallery } from "@/lib/api/bitrix";
 import type { CityCode } from "@/lib/store/city";
+import { PriceSavings } from "@/components/PriceSavings";
 
 interface ProductCardProps {
   product: Product;
@@ -106,7 +107,9 @@ export function ProductCard({
                     : "bg-background text-foreground",
                 )}
               >
-                {b}
+                {b === "Скидка" && product.discountPercent
+                  ? `−${product.discountPercent}%`
+                  : b}
               </span>
             ))}
           </div>
@@ -232,6 +235,11 @@ export function ProductCard({
             </span>
           )}
         </div>
+        <PriceSavings
+          oldPrice={product.oldPrice}
+          price={product.price}
+          discountPercent={product.discountPercent}
+        />
       </div>
 
       {showTryOn && (

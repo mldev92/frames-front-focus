@@ -18,6 +18,7 @@ import {
 import { brandDisplayLabel, LensDetailDialog } from "@/components/LensWizard/LensWizard";
 import { LensSearchRow } from "@/components/LensSearch";
 import { formatPrice } from "@/lib/store/cart";
+import { PriceSavings } from "@/components/PriceSavings";
 import { useCityStore } from "@/lib/store/city";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
@@ -592,6 +593,13 @@ function LensLineCardView({ card }: { card: LensLineCard }) {
                 {formatPrice(card.fromPriceRub * 2)}{" "}
                 <span className="font-sans text-xs font-normal text-muted-foreground">за пару</span>
               </div>
+              <PriceSavings
+                oldPrice={card.fromPriceBeforeDiscountRub}
+                price={card.fromPriceRub}
+                discountPercent={card.fromDiscountPercent}
+                quantity={2}
+                className="mt-1"
+              />
             </>
           ) : (
             <div className="text-sm text-muted-foreground">цена по запросу</div>

@@ -6,6 +6,7 @@ import { catalogSectionTitle } from "@/data/categories";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { ProductCard } from "@/components/ProductCard";
+import { PriceSavings } from "@/components/PriceSavings";
 import { TryOnBadge, TryOnIcon } from "@/components/TryOnIcon";
 import { ProductInfoSections } from "@/components/ProductInfoSections";
 import { getProductDisplayBrand } from "@/lib/product";
@@ -339,6 +340,13 @@ export function ProductPage({
                 </span>
               )}
             </div>
+            <PriceSavings
+              oldPrice={product.oldPrice}
+              price={product.price}
+              discountPercent={product.discountPercent}
+              quantity={isLens ? lensQty : 1}
+              className="mt-2"
+            />
             {isLens && lensQty > 1 && (
               <div className="mt-1 text-xs text-muted-foreground">
                 {formatPrice(product.price)} × 2 упаковки
@@ -361,7 +369,9 @@ export function ProductPage({
                       b === "Скидка" ? "bg-brand text-brand-foreground" : "bg-surface",
                     )}
                   >
-                    {b}
+                      {b === "Скидка" && product.discountPercent
+                        ? `−${product.discountPercent}%`
+                        : b}
                   </span>
                 ))}
               </div>
@@ -466,6 +476,12 @@ export function ProductPage({
               {selectedColor ? `Цвет: ${selectedColor.name}` : displayBrand}
             </div>
             <div className="font-serif text-xl leading-tight">{formatPrice(product.price)}</div>
+            <PriceSavings
+              oldPrice={product.oldPrice}
+              price={product.price}
+              discountPercent={product.discountPercent}
+              className="text-[11px]"
+            />
             {isLens && lensQty > 1 && (
               <div className="text-[11px] text-muted-foreground">Итого: {formatPrice(lensTotal)}</div>
             )}

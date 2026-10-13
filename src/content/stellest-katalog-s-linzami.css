@@ -377,6 +377,7 @@
 .coat-price small { display: block; font-family: var(--font-sans); font-size: 11px; font-weight: 400; color: var(--muted-foreground); letter-spacing: 0.02em; }
 .coat-body .stellest-offer-condition { color: var(--brand); font-weight: 600; flex: 0 0 auto; }
 .coat-price .stellest-old-price { text-decoration: line-through; }
+.coat-price .stellest-price-savings { max-width: 150px; margin-top: 4px; white-space: normal; font-family: var(--font-sans); font-size: 11px; line-height: 1.35; color: var(--brand); }
 .coat-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #fff; background: var(--brand); border-radius: 100px; padding: 9px 16px; white-space: nowrap; transition: all var(--duration-snap) var(--ease-editorial); }
 .coat-btn:hover { opacity: 0.9; gap: 10px; }
 .coat-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }

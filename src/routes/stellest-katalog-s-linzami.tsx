@@ -4,6 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { fetchLensSearch, type LensRecommendCard } from "@/lib/api/lens-recommend";
 import { formatPrice } from "@/lib/store/cart";
+import { PriceSavings } from "@/components/PriceSavings";
 import { useCityStore } from "@/lib/store/city";
 
 import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
@@ -292,6 +293,12 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
                   {offer.priceBeforeDiscountRub !== null && (
                     <small className="stellest-old-price">{formatPrice(offer.priceBeforeDiscountRub)}</small>
                   )}
+                  <PriceSavings
+                    oldPrice={offer.priceBeforeDiscountRub}
+                    price={offer.priceRub}
+                    discountPercent={offer.discountPercent}
+                    className="stellest-price-savings"
+                  />
                 </span>
                 <button type="button" className="coat-btn" onClick={onBook}>Уточнить условия</button>
               </div>

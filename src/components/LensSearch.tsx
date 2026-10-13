@@ -14,6 +14,7 @@ import {
   offerSpecs,
 } from "@/components/LensWizard/LensWizard";
 import { formatPrice } from "@/lib/store/cart";
+import { PriceSavings } from "@/components/PriceSavings";
 import { useCityStore } from "@/lib/store/city";
 import { cn } from "@/lib/utils";
 
@@ -229,6 +230,13 @@ export function LensSearchRow({
             <div className="text-[11px] text-muted-foreground">
               за пару · {formatPrice(offer.priceRub)} за линзу
             </div>
+            <PriceSavings
+              oldPrice={offer.priceBeforeDiscountRub}
+              price={offer.priceRub}
+              discountPercent={offer.discountPercent}
+              quantity={2}
+              className="mt-1"
+            />
           </>
         ) : (
           <div className="text-sm text-muted-foreground">цена по запросу</div>

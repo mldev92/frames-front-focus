@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import type { Product } from "@/data/types";
 import { formatPrice } from "@/lib/store/cart";
+import { PriceSavings } from "@/components/PriceSavings";
 import { cn } from "@/lib/utils";
 import {
   BRANDS,
@@ -2450,6 +2451,13 @@ export function LensDetailDialog({
               <div className="mt-1 text-xs text-muted-foreground">
                 за пару линз · {formatPrice(offer.retailPriceRub)} за одну
               </div>
+              <PriceSavings
+                oldPrice={offer.priceBeforeDiscountRub}
+                price={offer.retailPriceRub}
+                discountPercent={offer.discountPercent}
+                quantity={2}
+                className="mt-1"
+              />
             </>
           ) : (
             <div className="text-sm font-medium text-brand">Цена по запросу</div>
@@ -2937,6 +2945,13 @@ function LensPriceCards({
                     <div className="mt-1 text-xs text-muted-foreground">
                       за пару линз · {formatPrice(card.retailPriceRub)} за одну
                     </div>
+                    <PriceSavings
+                      oldPrice={card.priceBeforeDiscountRub}
+                      price={card.retailPriceRub}
+                      discountPercent={card.discountPercent}
+                      quantity={2}
+                      className="mt-1"
+                    />
                   </>
                 ) : (
                   <div className="text-sm font-medium text-brand">Цена по запросу</div>
@@ -3319,6 +3334,13 @@ function LensOfferRow({
                 <div className="mt-1 whitespace-nowrap text-[11px] text-muted-foreground">
                   за пару · {formatPrice(offer.retailPriceRub)} за одну
                 </div>
+                <PriceSavings
+                  oldPrice={offer.priceBeforeDiscountRub}
+                  price={offer.retailPriceRub}
+                  discountPercent={offer.discountPercent}
+                  quantity={2}
+                  className="mt-1"
+                />
               </>
             ) : (
               <div className="text-sm font-medium text-brand">Цена по запросу</div>
