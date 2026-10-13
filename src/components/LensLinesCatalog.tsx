@@ -58,6 +58,20 @@ const LENS_BRAND_MARKS: Record<string, string> = {
   synchrony: "/lens-brands/synchrony.png",
 };
 
+const LENS_LINE_BRAND_MARKS = [
+  { matches: /stellest/i, src: "/lens-brands/stellest.png", alt: "Stellest" },
+  { matches: /elements/i, src: "/lens-brands/elements.png", alt: "Elements" },
+];
+
+function lensLineBrandMark(card: LensLineCard): { src: string; alt: string } {
+  return (
+    LENS_LINE_BRAND_MARKS.find(({ matches }) => matches.test(card.title)) ?? {
+      src: LENS_BRAND_MARKS[card.supplier],
+      alt: brandDisplayLabel(card.supplier),
+    }
+  );
+}
+
 function indexLabel(indexes: number[]): string {
   if (indexes.length === 0) return "—";
   if (indexes.length === 1) return String(indexes[0]);
@@ -502,13 +516,14 @@ function LensLineCardView({ card }: { card: LensLineCard }) {
     .sort((a, b) => DESIGN_ORDER.indexOf(a) - DESIGN_ORDER.indexOf(b))
     .map((d) => DESIGN_RU[d])
     .join(" / ");
+  const brandMark = lensLineBrandMark(card);
 
   return (
     <article className="flex flex-col rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-[0_6px_24px_-12px_rgb(0_0_0/0.12)]">
       <div className="mb-5 flex h-20 items-center justify-start bg-white">
         <img
-          src={LENS_BRAND_MARKS[card.supplier]}
-          alt={brandDisplayLabel(card.supplier)}
+          src={brandMark.src}
+          alt={brandMark.alt}
           loading="lazy"
           decoding="async"
           referrerPolicy="no-referrer"
