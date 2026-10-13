@@ -9,6 +9,8 @@ import { useCityStore } from "@/lib/store/city";
 import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
 import stellestHtml from "@/content/stellest-katalog-s-linzami.html?raw";
 
+const stellestInnerHtml = { __html: stellestHtml };
+
 export const Route = createFileRoute("/stellest-katalog-s-linzami")({
   head: () => ({
     meta: [
@@ -215,7 +217,7 @@ function StellestCatalogPage() {
       <div
         ref={rootRef}
         className="stellest-page"
-        dangerouslySetInnerHTML={{ __html: stellestHtml }}
+        dangerouslySetInnerHTML={stellestInnerHtml}
       />
       {catalogTarget && createPortal(
         <StellestLensCatalog onBook={() => setAptOpen(true)} />,
