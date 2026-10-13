@@ -45,6 +45,7 @@ const HIDDEN_CHARACTERISTIC_LABELS = new Set([
   "Отображать с товарами раздела",
   "Отображать с товарами со сроком ношения",
   "Жёсткий футляр и салфетка из микрофибры",
+  "Скидка, %",
 ]);
 
 interface ProductInfoSectionsProps {
