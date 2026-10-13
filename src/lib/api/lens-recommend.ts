@@ -1,5 +1,6 @@
 import { getStoreApiUrl } from "@/lib/api/bitrix";
 import { apiFetch } from "@/lib/api/security";
+import { useCityStore } from "@/lib/store/city";
 import type { LensLineFilterData } from "@/lib/lens-lines-filter";
 import type { LensLineImageSource } from "@/lib/lens-line-images";
 
@@ -275,6 +276,7 @@ export async function fetchLensRecommendation(
   signal?: AbortSignal,
 ): Promise<LensRecommendResponse> {
   const params = new URLSearchParams();
+  params.set("city", useCityStore.getState().city);
   // All four or none, matching what the endpoint accepts.
   if (query.odSph && query.odCyl && query.osSph && query.osCyl) {
     params.set("odSph", query.odSph);
@@ -372,14 +374,16 @@ export async function fetchLensLineImageSources(signal?: AbortSignal): Promise<L
 }
 
 export async function fetchLensLines(signal?: AbortSignal): Promise<LensLineCard[]> {
-  const res = await apiFetch(getStoreApiUrl("lens_lines.php"), { signal });
+  const city = useCityStore.getState().city;
+  const res = await apiFetch(getStoreApiUrl(`lens_lines.php?city=${city}`), { signal });
   if (!res.ok) throw new Error(`lens_lines ${res.status}`);
   const body = (await res.json()) as { cards: LensLineCard[] };
   return body.cards;
 }
 
 export async function fetchLensLine(id: string, signal?: AbortSignal): Promise<LensLineCard> {
-  const res = await apiFetch(getStoreApiUrl(`lens_lines.php?id=${encodeURIComponent(id)}`), {
+  const city = useCityStore.getState().city;
+  const res = await apiFetch(getStoreApiUrl(`lens_lines.php?id=${encodeURIComponent(id)}&city=${city}`), {
     signal,
   });
   if (!res.ok) throw new Error(`lens_lines ${res.status}`);
@@ -392,6 +396,7 @@ export async function fetchLensSearch(
   signal?: AbortSignal,
 ): Promise<LensSearchResponse> {
   const params = new URLSearchParams({ q });
+  params.set("city", useCityStore.getState().city);
   if (opts.offset) params.set("offset", String(opts.offset));
   if (opts.limit) params.set("limit", String(opts.limit));
   if (opts.sort) params.set("sort", opts.sort);

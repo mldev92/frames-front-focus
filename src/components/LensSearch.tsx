@@ -14,6 +14,7 @@ import {
   offerSpecs,
 } from "@/components/LensWizard/LensWizard";
 import { formatPrice } from "@/lib/store/cart";
+import { useCityStore } from "@/lib/store/city";
 import { cn } from "@/lib/utils";
 
 /**
@@ -39,6 +40,7 @@ export function LensSearch() {
   const abortRef = useRef<AbortController | null>(null);
 
   const q = query.trim();
+  const city = useCityStore((state) => state.city);
 
   useEffect(() => {
     abortRef.current?.abort();
@@ -69,7 +71,7 @@ export function LensSearch() {
       clearTimeout(t);
       ctl.abort();
     };
-  }, [q]);
+  }, [q, city]);
 
   const loadMore = () => {
     if (!result) return;

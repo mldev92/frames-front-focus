@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { startTransition, useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
-  Check,
   ChevronLeft,
   ChevronRight,
   Heart,
@@ -165,7 +164,7 @@ const SERVICE_STRIP_ITEMS = [
   {
     eyebrow: "05 — ЛИНЗЫ",
     title: "Контактные линзы",
-    text: "Подбор и подписка с доставкой",
+    text: "Подбор контактных линз с доставкой",
     icon: (
       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <ellipse
@@ -195,14 +194,6 @@ const SERVICE_STRIP_ITEMS = [
     ),
   },
 ];
-
-const SUBSCRIPTION_POINTS = [
-  "Оформите один раз — пополнение приходит автоматически",
-  "Подписка всегда дешевле обычной цены",
-  "Количество и интервал — под ваш ритм",
-  "Стоимость доставки рассчитывается при оформлении",
-  "Можно отменить или поставить на паузу в любой момент",
-] as const;
 
 const LENS_PROMO_PILL_BY_SLUG: Record<string, string> = {
   "acuvue-oasys-1day": "для сухих глаз",
@@ -976,11 +967,6 @@ function MainV2Page() {
           </div>
         </section>
       )}
-
-      {/* ─────────────────────────────────────────────────────────────
-          5. SUBSCRIPTION — Подписка на линзы и средства ухода
-         ───────────────────────────────────────────────────────────── */}
-      <MainV2SubscriptionBlock />
 
       {/* ─────────────────────────────────────────────────────────────
           6c. PAIRED BANNERS — child myopia + virtual try-on promo
@@ -2108,258 +2094,6 @@ function MainV2ContactLensCard({
   );
 }
 
-function MainV2SubscriptionBlock() {
-  const city = useCityStore((state) => state.city);
-
-  return (
-    <section
-      id="lens-subscription"
-      style={{ background: "var(--background)", padding: "clamp(56px, 7vw, 96px) 0" }}
-    >
-      <style>{`
-        .o100-sub-grid{
-          display:grid;
-          grid-template-columns:1fr;
-          gap:28px;
-          align-items:stretch;
-        }
-        @media (min-width:1024px){
-          .o100-sub-grid{
-            grid-template-columns:1.05fr 1fr;
-            gap:48px;
-          }
-        }
-        .o100-sub-grid > *{
-          display:flex;
-          min-height:0;
-        }
-        .o100-sub-grid > * > *{
-          flex:1 1 auto;
-          width:100%;
-        }
-        .o100-sub-photo{
-          position:relative;
-          overflow:hidden;
-          border-radius:20px;
-          min-height:460px;
-          background:var(--cream);
-        }
-        .o100-sub-photo img{
-          position:absolute;
-          inset:0;
-          width:100%;
-          height:100%;
-          object-fit:cover;
-          transition:transform 900ms cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        .o100-sub-photo:hover img{
-          transform:scale(1.03);
-        }
-        .o100-sub-copy{
-          display:flex;
-          flex-direction:column;
-          justify-content:center;
-          padding:12px 0;
-          font-family:var(--font-sans);
-        }
-        .o100-sub-btn{
-          display:inline-flex;
-          align-items:center;
-          justify-content:center;
-          gap:8px;
-          min-height:48px;
-          padding:0 26px;
-          border-radius:999px;
-          font-family:var(--font-sans);
-          font-size:14px;
-          font-weight:600;
-          transition:transform 200ms ease, opacity 200ms ease, background-color 200ms ease, color 200ms ease, border-color 200ms ease;
-          border:1px solid transparent;
-        }
-        .o100-sub-btn:hover{
-          transform:translateY(-1px);
-        }
-        .o100-sub-btn-primary{
-          background:var(--brand)!important;
-          color:#fff!important;
-        }
-        .o100-sub-btn-primary:hover{
-          opacity:0.9;
-        }
-        .o100-sub-btn-secondary{
-          background:transparent!important;
-          color:var(--foreground)!important;
-          border-color:var(--foreground)!important;
-        }
-        .o100-sub-btn-secondary:hover{
-          background:var(--foreground)!important;
-          color:var(--background)!important;
-        }
-        .o100-sub-saveline{
-          font-family:var(--font-serif);
-          font-size:22px;
-          line-height:1.2;
-          color:var(--brand);
-          font-style:italic;
-          font-weight:500;
-          margin-bottom:22px;
-        }
-        .o100-sub-savings{
-          transition:border-color 200ms ease, background-color 200ms ease;
-        }
-        .o100-sub-savings:hover{
-          border-color:var(--brand);
-        }
-      `}</style>
-      <div className="mx-auto max-w-7xl px-4 lg:px-8">
-        <div className="o100-sub-grid">
-          <Reveal>
-            <div className="o100-sub-photo">
-              <img src="/podpiska_na_linzy.png" alt="Подписка на контактные линзы" />
-              <div
-                aria-hidden
-                className="absolute inset-0"
-                style={{
-                  background: "linear-gradient(180deg, rgba(0,0,0,0.02) 24%, rgba(0,0,0,0.6) 100%)",
-                }}
-              />
-              <span
-                className="absolute left-6 top-6 inline-flex rounded-full px-4 py-2 text-[11px] font-bold uppercase"
-                style={{
-                  letterSpacing: "0.12em",
-                  background: "var(--brand)",
-                  color: "#fff",
-                }}
-              >
-                Подписка
-              </span>
-              <div
-                className="absolute bottom-8 left-8 right-8"
-                style={{ color: "#fff", maxWidth: 360 }}
-              >
-                <div
-                  style={{
-                    fontSize: 11,
-                    letterSpacing: "0.2em",
-                    textTransform: "uppercase",
-                    opacity: 0.78,
-                    marginBottom: 8,
-                  }}
-                >
-                  Автоматическое пополнение
-                </div>
-                <h3
-                  className="font-serif"
-                  style={{ fontSize: "clamp(24px, 2.4vw, 32px)", lineHeight: 1.15 }}
-                >
-                  Линзы приходят сами,
-                  <br />
-                  пока вы&nbsp;живёте
-                </h3>
-              </div>
-            </div>
-          </Reveal>
-
-          <Reveal delay={100}>
-            <div className="o100-sub-copy">
-              <div
-                className="text-[11px] uppercase tracking-[0.22em] mb-3"
-                style={{ color: "var(--brand)", fontFamily: "var(--font-sans)", fontWeight: 600 }}
-              >
-                Сервис
-              </div>
-              <h2
-                className="font-serif text-foreground"
-                style={{
-                  fontSize: "clamp(34px, 4vw, 52px)",
-                  lineHeight: 1.05,
-                  letterSpacing: "-0.02em",
-                  marginBottom: 14,
-                  fontWeight: 500,
-                }}
-              >
-                Подписка на&nbsp;линзы и&nbsp;средства ухода
-              </h2>
-              <div className="o100-sub-saveline">Доставка по&nbsp;всей России</div>
-
-              <ul
-                style={{
-                  listStyle: "none",
-                  margin: 0,
-                  padding: 0,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 14,
-                }}
-              >
-                {SUBSCRIPTION_POINTS.map((point) => (
-                  <li key={point} className="flex items-start gap-3">
-                    <span
-                      className="inline-flex items-center justify-center rounded-full"
-                      style={{
-                        width: 22,
-                        height: 22,
-                        marginTop: 2,
-                        flexShrink: 0,
-                        background: "color-mix(in oklab, var(--brand) 12%, transparent)",
-                        color: "var(--brand)",
-                      }}
-                    >
-                      <Check className="h-3.5 w-3.5" strokeWidth={2.3} />
-                    </span>
-                    <span
-                      className="text-foreground"
-                      style={{ fontSize: 15, lineHeight: 1.55, fontFamily: "var(--font-sans)" }}
-                    >
-                      {point}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="flex flex-wrap gap-3" style={{ marginTop: 28 }}>
-                <a
-                  href={catalogHref("kontaktnye-linzy", city)}
-                  className="o100-sub-btn o100-sub-btn-primary"
-                >
-                  Все товары по&nbsp;подписке
-                </a>
-                <a href="#lens-subscription" className="o100-sub-btn o100-sub-btn-secondary">
-                  Как это работает
-                </a>
-              </div>
-
-              <div
-                className="o100-sub-savings flex items-center gap-4"
-                style={{
-                  marginTop: 28,
-                  padding: "16px 18px",
-                  borderRadius: 14,
-                  border: "1px solid var(--border)",
-                  background: "var(--cream)",
-                }}
-              >
-                <div
-                  className="font-serif"
-                  style={{ fontSize: 36, lineHeight: 1, color: "var(--brand)", fontWeight: 600 }}
-                >
-                  −15%
-                </div>
-                <div className="text-muted-foreground" style={{ fontSize: 13, lineHeight: 1.5 }}>
-                  <strong style={{ color: "var(--foreground)" }}>Средняя экономия</strong>
-                  &nbsp;по подписке против разовых покупок за&nbsp;год.
-                  <br />
-                  Точная скидка зависит от&nbsp;бренда и&nbsp;режима ношения.
-                </div>
-              </div>
-            </div>
-          </Reveal>
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function CategoryTile({ cell }: { cell: (typeof CAT_CELLS)[number] }) {
   const city = useCityStore((state) => state.city);
   const isTop = cell.titlePos === "top";
@@ -2425,99 +2159,42 @@ function CategoryTile({ cell }: { cell: (typeof CAT_CELLS)[number] }) {
   );
 }
 
-/**
- * Promotions block on the main-v2 page.
- * One large brand-red feature card on the left, two compact cards stacked on the right.
- * Pulls copy from the existing `promotions` array.
- */
 function MainV2PromoBlock() {
-  const compact = promotions.slice(1, 3);
+  const city = useCityStore((state) => state.city);
+  if (city !== "spb") return null;
+
   return (
-    <div className="h-full flex flex-col" style={{ minHeight: 380 }}>
-      <div className="flex items-end justify-between gap-4 mb-5">
-        <div>
-          <div
-            className="text-[11px] uppercase tracking-[0.2em] mb-2"
-            style={{ color: "var(--brand)" }}
-          >
-            Акции и предложения
-          </div>
-          <h3
-            className="font-serif text-foreground"
-            style={{ fontSize: 26, lineHeight: 1.15, letterSpacing: "-0.01em" }}
-          >
-            Выгодные предложения
-          </h3>
+    <div className="h-full flex flex-col gap-3">
+      <div className="mb-2">
+        <div className="text-[11px] uppercase tracking-[0.2em] mb-2" style={{ color: "var(--brand)" }}>
+          Акции · Санкт-Петербург
         </div>
-        <Link
-          to="/uslugi"
-          className="hidden sm:inline-flex items-center gap-1.5 text-sm font-medium shrink-0 hover:opacity-70 transition-opacity"
-          style={{ color: "var(--brand)" }}
-        >
-          Смотреть все <ArrowRight className="h-4 w-4" />
-        </Link>
+        <h3 className="font-serif text-foreground" style={{ fontSize: 26, lineHeight: 1.15 }}>
+          Специальные предложения
+        </h3>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 flex-1">
-        {/* Feature card */}
+      {promotions.map((promo, index) => (
         <a
-          href="/uslugi"
-          className="sm:col-span-3 relative rounded-2xl overflow-hidden p-7 flex flex-col justify-between text-white hover:opacity-95 hover:-translate-y-1 transition-all duration-300"
+          key={promo.id}
+          href={promo.href}
+          className="block rounded-2xl p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
           style={{
-            background:
-              "linear-gradient(140deg, var(--brand) 0%, color-mix(in oklab, var(--brand) 78%, black) 100%)",
-            minHeight: 240,
+            background: index === 0 ? "var(--brand)" : "var(--cream)",
+            color: index === 0 ? "#fff" : "var(--foreground)",
           }}
         >
-          <div>
-            <h4
-              className="font-serif"
-              style={{ fontSize: 28, lineHeight: 1.15, letterSpacing: "-0.01em", marginBottom: 10 }}
-            >
-              Вторая пара очков
-              <br />
-              <span style={{ fontSize: 56, lineHeight: 1 }}>−50%</span>
-            </h4>
-            <p style={{ fontSize: 13, lineHeight: 1.5, opacity: 0.92 }}>
-              Подберите любые две пары очков и получите скидку 50% на вторую.
-            </p>
+          <div className="flex items-start justify-between gap-3">
+            <h4 className="font-serif" style={{ fontSize: 19, lineHeight: 1.2 }}>{promo.title}</h4>
+            {promo.pct && <span className="text-sm font-semibold shrink-0">{promo.pct}</span>}
           </div>
-          <span
-            className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold self-start hover:bg-white/30 transition-colors"
-            style={{ background: "rgba(255,255,255,0.18)", backdropFilter: "blur(6px)" }}
-          >
+          <p style={{ fontSize: 12.5, lineHeight: 1.5, marginTop: 8, opacity: 0.9 }}>
+            {promo.description}
+          </p>
+          <span className="inline-flex items-center gap-1 mt-3 text-xs font-semibold">
             Подробнее <ArrowRight className="h-3.5 w-3.5" />
           </span>
         </a>
-
-        {/* Stacked compact cards */}
-        <div className="sm:col-span-2 grid grid-rows-2 gap-3">
-          {compact.map((p) => (
-            <a
-              key={p.id}
-              href="/uslugi"
-              className="relative rounded-2xl overflow-hidden bg-cream p-4 pr-3 flex items-center gap-3 hover:-translate-y-1 hover:shadow-md transition-all duration-300"
-            >
-              <div className="flex-1 min-w-0">
-                <div
-                  className="font-serif"
-                  style={{ fontSize: 14.5, lineHeight: 1.2, color: "var(--foreground)" }}
-                >
-                  {p.title}
-                </div>
-                <span
-                  className="inline-flex items-center gap-1 mt-2 text-[11px] font-medium hover:opacity-70 transition-opacity"
-                  style={{ color: "var(--brand)" }}
-                >
-                  Подробнее <ArrowRight className="h-3 w-3" />
-                </span>
-              </div>
-              {p.image ? (
-                <img src={p.image} alt="" className="w-16 h-16 object-cover rounded-xl shrink-0" />
-              ) : null}
-            </a>
-          ))}
-        </div>
-      </div>
+      ))}
     </div>
   );
 }

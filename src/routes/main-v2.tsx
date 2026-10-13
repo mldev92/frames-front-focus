@@ -4,7 +4,6 @@ import { useState } from "react";
 import { ProductCarousel } from "@/components/ProductCarousel";
 import { EditorialTriptych } from "@/components/EditorialTriptych";
 import { BrandPromiseBand } from "@/components/BrandPromiseBand";
-import { PromoBanner } from "@/components/PromoBanner";
 import { PromoCards } from "@/components/PromoCards";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { Reveal } from "@/components/Reveal";
@@ -13,7 +12,7 @@ import { categories, catalogHref, productHref, regionalCatalogHref } from "@/dat
 import { bestsellers, newArrivals } from "@/data/products";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
-import { promoBanner, promotions } from "@/data/promotions";
+import { promotions } from "@/data/promotions";
 import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/main-v2")({
@@ -257,12 +256,11 @@ function HomePage() {
             <h2 className="font-serif text-3xl lg:text-4xl">Специальные предложения</h2>
           </div>
         </Reveal>
-        <Reveal delay={100}>
-          <PromoBanner data={promoBanner} />
-        </Reveal>
-        <Reveal delay={160}>
-          <PromoCards promotions={promotions} />
-        </Reveal>
+        {city === "spb" && (
+          <Reveal delay={100}>
+            <PromoCards promotions={promotions} />
+          </Reveal>
+        )}
       </section>
 
       {/* SERVICES — lighter, white cards */}

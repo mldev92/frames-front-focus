@@ -9,6 +9,7 @@ export interface Promotion {
   image?: string;
   title: string;
   description: string;
+  href: string;
   expiresAt?: Date;
   location?: string;
 }
@@ -22,49 +23,59 @@ export interface PromoBannerData {
   endsAt: Date;
 }
 
-export const promoBanner: PromoBannerData = {
-  tag: "Акция · до 31 мая",
-  title: "Вторая пара очков −50%",
-  description:
-    "При покупке очков с диоптриями — вторые в подарок: солнцезащитные, для чтения или вторая пара ежедневных. Скидка 50% на оправу второй пары.",
-  ctaLabel: "Забронировать",
-  ctaHref: "/uslugi",
-  endsAt: new Date("2025-05-31T23:59:59"),
-};
-
 export const promotions: Promotion[] = [
   {
-    id: "rayban-40",
-    badge: "Хит",
+    id: "progressive-spb",
+    badge: "Санкт-Петербург",
     badgeVariant: "brand",
     visual: "brand",
-    pct: "−40%",
-    image: "/promo_banner_1.webp",
-    title: "Скидка на солнцезащитные Ray-Ban",
+    pct: "−25%",
+    title: "До 25% на прогрессивные линзы",
     description:
-      "На всю коллекцию 2025 года — солнцезащитные, поляризационные, с диоптриями.",
-    expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      "25% на ESSILOR VARILUX COMFORT MAX, COMFORT MAX F-360 и LIBERTY 3.0 BCT. На остальные прогрессивные линзы: 15% при цене пары от 20 000 ₽, 10% при 15 000–19 999 ₽, 5% при цене до 14 999 ₽.",
+    href: "/catalog_s/linzy_dlya_ochkov/",
+    location: "spb",
   },
   {
-    id: "diagnostics-free",
-    badge: "Акция",
-    badgeVariant: "neutral",
+    id: "stellest-spb",
+    badge: "Санкт-Петербург",
+    badgeVariant: "brand",
     visual: "cream",
-    image: "/promo_banner_2.webp",
-    title: "Бесплатная диагностика зрения",
+    pct: "−50%",
+    title: "До 50% на линзы Stellest",
     description:
-      "Запишитесь к офтальмологу — полная проверка зрения и подбор линз бесплатно.",
-    expiresAt: new Date("2025-06-15T23:59:59"),
+      "50% на Stellest Airwear Tint и Stellest 2.0 Airwear Tint при покупке прозрачных линз Stellest. 20% на Stellest Airwear Crizal Rock; 50% на Stellest Airwear Plano Crizal Prevencia (Sph 0,0 / Cyl 0,0).",
+    href: "/stellest-katalog-s-linzami/",
+    location: "spb",
   },
   {
-    id: "student",
-    badge: "Для студентов",
+    id: "sunglasses-spb",
+    badge: "Санкт-Петербург",
     badgeVariant: "neutral",
     visual: "dark",
+    pct: "−30%",
+    title: "От 30% на солнцезащитные очки",
+    description: "Скидка от 30% на солнцезащитные очки в Санкт-Петербурге. На некоторые модели скидка выше.",
+    href: "/catalog_s/solntsezashchitnye_ochki/",
+    location: "spb",
+  },
+  {
+    id: "frames-spb",
+    badge: "Санкт-Петербург",
+    visual: "neutral",
     pct: "−15%",
-    image: "/promo_banner_3.webp",
-    title: "Студенческая скидка 15%",
-    description:
-      "Предъявите студенческий билет в салоне и получите скидку 15% на любые оправы.",
+    title: "До 15% на оправы",
+    description: "Актуальные скидки уже указаны в карточках оправ.",
+    href: "/catalog_s/opravy/",
+    location: "spb",
+  },
+  {
+    id: "misight-spb",
+    badge: "Санкт-Петербург",
+    visual: "cream",
+    title: "MiSight 1 Day 90 + 20 линз в подарок",
+    description: "При покупке двух упаковок MiSight 1 Day 90 — ещё 20 линз в подарок.",
+    href: "/catalog_s/kontaktnye_linzy_/",
+    location: "spb",
   },
 ];

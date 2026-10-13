@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppointmentModal } from "@/components/AppointmentModal";
+import { fetchLensSearch, type LensRecommendCard } from "@/lib/api/lens-recommend";
+import { formatPrice } from "@/lib/store/cart";
+import { useCityStore } from "@/lib/store/city";
 
 import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
 import stellestHtml from "@/content/stellest-katalog-s-linzami.html?raw";
@@ -23,11 +27,13 @@ export const Route = createFileRoute("/stellest-katalog-s-linzami")({
 
 function StellestCatalogPage() {
   const [aptOpen, setAptOpen] = useState(false);
+  const [catalogTarget, setCatalogTarget] = useState<HTMLElement | null>(null);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
+    setCatalogTarget(root.querySelector<HTMLElement>("#stellest-lens-catalog"));
 
     const cleanups: Array<() => void> = [];
 
@@ -211,7 +217,86 @@ function StellestCatalogPage() {
         className="stellest-page"
         dangerouslySetInnerHTML={{ __html: stellestHtml }}
       />
+      {catalogTarget && createPortal(
+        <StellestLensCatalog onBook={() => setAptOpen(true)} />,
+        catalogTarget,
+      )}
       <AppointmentModal open={aptOpen} onOpenChange={setAptOpen} />
     </>
+  );
+}
+
+function StellestLensCatalog({ onBook }: { onBook: () => void }) {
+  const city = useCityStore((state) => state.city);
+  const [offers, setOffers] = useState<LensRecommendCard[] | null>(null);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setOffers(null);
+    setError(false);
+    fetchLensSearch("Stellest", { limit: 100 }, controller.signal)
+      .then((result) => {
+        setOffers(result.matches
+          .filter((offer) => offer.line.toLowerCase().includes("stellest"))
+          .sort((a, b) => (a.priceRub ?? Infinity) - (b.priceRub ?? Infinity)
+            || a.line.localeCompare(b.line, "ru")));
+      })
+      .catch((reason: unknown) => {
+        if ((reason as Error).name !== "AbortError") setError(true);
+      });
+    return () => controller.abort();
+  }, [city]);
+
+  if (error) return <p className="text-center">Каталог временно недоступен. Уточните варианты в салоне.</p>;
+  if (!offers) return <p className="text-center">Загружаем варианты Stellest…</p>;
+  if (!offers.length) return <p className="text-center">Варианты Stellest уточняются. Свяжитесь с салоном.</p>;
+
+  return (
+    <div className="coat-grid reveal is-visible">
+      {offers.map((offer) => {
+        const plano = offer.line.toLowerCase().includes("plano");
+        const tint = offer.line.toLowerCase().includes("tint");
+        const rock = offer.line === "AS Stellest Airwear" && offer.coating === "Crizal Rock";
+        const title = plano
+          ? "ESSILOR AS Stellest Airwear Plano Crizal Prevencia"
+          : `ESSILOR ${offer.line} ${offer.coating}`;
+        const image = tint
+          ? "/stellest/stellest-crizal-sun-xprotect.webp"
+          : offer.line.includes("2.0")
+            ? "/stellest/stellest-2-girl.webp"
+            : offer.coating.toLowerCase().includes("prevencia")
+              ? "/stellest/stellest-crizal-prevencia.webp"
+              : "/stellest/stellest-crizal-rock.webp";
+        return (
+          <article className="coat-card" key={offer.id}>
+            <div className="coat-photo"><img src={image} alt="" loading="lazy" /></div>
+            <div className="coat-body">
+              <div className="coat-num">Essilor Stellest · {offer.index?.toFixed(2) ?? "1.59"}</div>
+              <h3>{title}</h3>
+              <p>{plano ? "Профилактика миопии · Sph 0,0 / Cyl 0,0" : tint
+                ? "Тонированные линзы Stellest" : "Очковые линзы для контроля миопии"}</p>
+              {city === "spb" && (plano || tint || rock) && (
+                <p className="stellest-offer-condition">
+                  {plano ? "Скидка 50%" : tint
+                    ? "Скидка 50% при покупке прозрачных линз Stellest"
+                    : "Скидка 20%"}
+                </p>
+              )}
+              <div className="coat-price-row">
+                <span className="coat-price">
+                  {offer.priceRub !== null ? formatPrice(offer.priceRub) : "Цена по запросу"}
+                  <small>за шт.</small>
+                  {offer.priceBeforeDiscountRub !== null && (
+                    <small className="stellest-old-price">{formatPrice(offer.priceBeforeDiscountRub)}</small>
+                  )}
+                </span>
+                <button type="button" className="coat-btn" onClick={onBook}>Уточнить условия</button>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
   );
 }

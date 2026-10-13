@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { CallbackModal } from "./CallbackModal";
 import type { Promotion } from "@/data/promotions";
 
 function useTimeLeft(expiresAt?: Date) {
@@ -31,10 +30,8 @@ const visualClasses: Record<string, string> = {
 
 function PromoCard({ promo, featured = false }: { promo: Promotion; featured?: boolean }) {
   const timeLeft = useTimeLeft(promo.expiresAt);
-  const [bookOpen, setBookOpen] = useState(false);
 
   return (
-    <>
       <article
         className={cn(
           "group bg-card border border-border rounded-2xl overflow-hidden grid grid-rows-[auto_1fr_auto] relative transition-all duration-300 hover:shadow-lg hover:-translate-y-1 h-full",
@@ -107,19 +104,14 @@ function PromoCard({ promo, featured = false }: { promo: Promotion; featured?: b
 
         {/* Footer */}
         <div className={cn("flex gap-2 pb-5 pt-3 mt-3 border-t border-border", featured ? "px-7 pb-6" : "px-5")}>
-          <button
-            onClick={() => setBookOpen(true)}
+          <a
+            href={promo.href}
             className="flex-1 bg-brand text-brand-foreground rounded-full py-3 text-[13.5px] font-medium cursor-pointer flex items-center justify-center gap-2 hover:-translate-y-px hover:shadow-[0_8px_24px_-8px_oklch(0.55_0.18_28/0.6)] transition-all duration-300"
           >
-            Забронировать
-          </button>
-          <button className="bg-transparent text-foreground border border-border rounded-full px-4 text-[13px] cursor-pointer hover:border-ink hover:bg-cream transition-colors">
-            Условия
-          </button>
+            Подробнее
+          </a>
         </div>
       </article>
-      <CallbackModal open={bookOpen} onOpenChange={setBookOpen} />
-    </>
   );
 }
 

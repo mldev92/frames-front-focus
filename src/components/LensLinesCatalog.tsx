@@ -18,6 +18,7 @@ import {
 import { brandDisplayLabel, LensDetailDialog } from "@/components/LensWizard/LensWizard";
 import { LensSearchRow } from "@/components/LensSearch";
 import { formatPrice } from "@/lib/store/cart";
+import { useCityStore } from "@/lib/store/city";
 import { cn } from "@/lib/utils";
 import { Slider } from "@/components/ui/slider";
 import type { CatalogStateChange } from "@/components/CatalogListing";
@@ -103,6 +104,7 @@ export function LensLinesCatalog({
   page,
   onStateChange,
 }: LensLinesCatalogProps) {
+  const city = useCityStore((state) => state.city);
   const [cards, setCards] = useState<LensLineCard[] | null>(null);
   const [error, setError] = useState(false);
   const [reload, setReload] = useState(0);
@@ -119,7 +121,7 @@ export function LensLinesCatalog({
         if ((e as Error).name !== "AbortError") setError(true);
       });
     return () => ctl.abort();
-  }, [reload]);
+  }, [reload, city]);
 
   const priceBounds = useMemo(() => {
     const prices = (cards ?? [])
