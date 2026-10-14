@@ -12,6 +12,8 @@ export interface LensCartSelection {
   coating: string;
   treatment: string;
   pricePerLens: number | null;
+  priceBeforeDiscountPerLens?: number | null;
+  discountPercent?: number | null;
   qty: number;
 }
 
@@ -168,6 +170,8 @@ export const useCart = create<CartState>()(
                 coating: offer.coating,
                 treatment: offer.treatment,
                 pricePerLens: offer.priceRub,
+                priceBeforeDiscountPerLens: offer.priceBeforeDiscountRub,
+                discountPercent: offer.discountPercent,
                 qty: 1,
               }],
           isOpen: true,
