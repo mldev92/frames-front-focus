@@ -13,7 +13,9 @@ import {
   offerProductName,
   offerSpecs,
 } from "@/components/LensWizard/LensWizard";
-import { formatPrice } from "@/lib/store/cart";
+import { formatPrice, useCart } from "@/lib/store/cart";
+import { CONTACT } from "@/data/contact";
+import { AppointmentModal } from "@/components/AppointmentModal";
 import { PriceSavings } from "@/components/PriceSavings";
 import { useCityStore } from "@/lib/store/city";
 import { cn } from "@/lib/utils";
@@ -38,6 +40,7 @@ export function LensSearch() {
   const [loading, setLoading] = useState(false);
   const [more, setMore] = useState(false);
   const [error, setError] = useState(false);
+  const [appointmentOpen, setAppointmentOpen] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
 
   const q = query.trim();
@@ -137,7 +140,7 @@ export function LensSearch() {
         <>
           <ul className="mt-4 divide-y divide-border rounded-xl border border-border bg-background">
             {rows.map((offer) => (
-              <LensSearchRow key={offer.id} offer={offer} onShowDetail={setDetailOffer} />
+              <LensSearchRow key={offer.id} offer={offer} onShowDetail={setDetailOffer} onBook={() => setAppointmentOpen(true)} />
             ))}
           </ul>
           <div className="mt-3 flex items-center justify-between gap-4">
@@ -165,6 +168,7 @@ export function LensSearch() {
         offer={detailOffer}
         onOpenChange={(open) => !open && setDetailOffer(null)}
       />
+      <AppointmentModal open={appointmentOpen} onOpenChange={setAppointmentOpen} />
     </section>
   );
 }
@@ -172,11 +176,14 @@ export function LensSearch() {
 export function LensSearchRow({
   offer,
   onShowDetail,
+  onBook,
 }: {
   offer: LensRecommendCard;
   /** Открыть карточку-справку о линзе («в поиске нет информации», её 02.10). */
   onShowDetail?: (offer: LensRecommendCard) => void;
+  onBook?: () => void;
 }) {
+  const addLens = useCart((state) => state.addLens);
   const badge = availabilityBadge(offer.availability, offer.channel);
   const specs = offerSpecs(offer.coating, offer.treatment);
   const product = offerProductName(offer.supplier, offer.line);
@@ -241,6 +248,11 @@ export function LensSearchRow({
         ) : (
           <div className="text-sm text-muted-foreground">цена по запросу</div>
         )}
+      </div>
+      <div className="flex flex-wrap gap-2 sm:w-[175px] sm:shrink-0">
+        <button type="button" onClick={() => addLens(offer)} className="rounded-full bg-brand px-3 py-2 text-xs font-medium text-white">В корзину</button>
+        <a href={CONTACT.phone.href} className="rounded-full border border-border px-3 py-2 text-xs">Позвонить</a>
+        {onBook && <button type="button" onClick={onBook} className="rounded-full border border-border px-3 py-2 text-xs">Записаться к врачу</button>}
       </div>
     </li>
   );

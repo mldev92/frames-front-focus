@@ -12,7 +12,7 @@ import {
 const RX_MAX_BYTES = 8 * 1024 * 1024;
 const RX_ACCEPT = "image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf";
 
-export function LensRequestForm({ draft }: { draft: LensSelectionRequestDraft }) {
+export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequestDraft; onSent?: () => void }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -77,6 +77,7 @@ export function LensRequestForm({ draft }: { draft: LensSelectionRequestDraft })
       );
       setRequestId(result.requestId);
       setStatus("sent");
+      onSent?.();
     } catch (submissionError) {
       setError(
         submissionError instanceof Error

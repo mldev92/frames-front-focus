@@ -17,10 +17,13 @@ import {
 } from "@/lib/api/lens-recommend";
 import { brandDisplayLabel, LensDetailDialog } from "@/components/LensWizard/LensWizard";
 import { LensSearchRow } from "@/components/LensSearch";
-import { formatPrice } from "@/lib/store/cart";
+import { formatPrice, useCart } from "@/lib/store/cart";
+import { CONTACT } from "@/data/contact";
+import { AppointmentModal } from "@/components/AppointmentModal";
 import { PriceSavings } from "@/components/PriceSavings";
 import { useCityStore } from "@/lib/store/city";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { Slider } from "@/components/ui/slider";
 import type { CatalogStateChange } from "@/components/CatalogListing";
 import type { CatalogQuery, FacetKey } from "@/lib/api/bitrix";
@@ -126,6 +129,7 @@ export function LensLinesCatalog({
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileFilters, setMobileFilters] = useState(false);
   const [priceDraft, setPriceDraft] = useState<[number, number]>([0, 0]);
+  const [appointmentOpen, setAppointmentOpen] = useState(false);
 
   useEffect(() => {
     const ctl = new AbortController();
@@ -394,7 +398,7 @@ export function LensLinesCatalog({
         {shown.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {shown.map((card) => (
-              <LensLineCardView key={card.id} card={card} />
+              <LensLineCardView key={card.id} card={card} onBook={() => setAppointmentOpen(true)} />
             ))}
           </div>
         ) : (
@@ -490,15 +494,32 @@ export function LensLinesCatalog({
           </div>
         </div>
       )}
+      <AppointmentModal open={appointmentOpen} onOpenChange={setAppointmentOpen} />
     </div>
   );
 }
 
-function LensLineCardView({ card }: { card: LensLineCard }) {
+function LensLineCardView({ card, onBook }: { card: LensLineCard; onBook: () => void }) {
   const [open, setOpen] = useState(false);
   const [offers, setOffers] = useState<LensRecommendCard[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [detailOffer, setDetailOffer] = useState<LensRecommendCard | null>(null);
+  const addLens = useCart((state) => state.addLens);
+  const [adding, setAdding] = useState(false);
+
+  const addFirstOffer = async () => {
+    setAdding(true);
+    try {
+      const full = await fetchLensLine(card.id);
+      const first = [...(full.offers ?? [])].sort((a, b) => (a.priceRub ?? Infinity) - (b.priceRub ?? Infinity))[0];
+      if (first) addLens(first);
+      else toast.error("Варианты линз пока недоступны. Позвоните в салон.");
+    } catch {
+      toast.error("Не удалось загрузить линзы. Попробуйте ещё раз.");
+    } finally {
+      setAdding(false);
+    }
+  };
 
   const toggle = () => {
     const next = !open;
@@ -614,6 +635,14 @@ function LensLineCardView({ card }: { card: LensLineCard }) {
           <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")} />
         </button>
       </div>
+      <div className="mt-3 grid grid-cols-2 gap-2 text-center text-xs">
+        <button type="button" disabled={adding} onClick={() => void addFirstOffer()}
+          className="rounded-full bg-brand px-3 py-2.5 font-semibold text-white disabled:opacity-50">{adding ? "Добавляем…" : "В корзину"}</button>
+        <a href={CONTACT.phone.href} className="rounded-full border border-border px-3 py-2.5">Позвонить</a>
+        <button type="button" onClick={() => document.dispatchEvent(new CustomEvent("open-callback", { detail: { subject: `Консультация по линзам ${card.title}` } }))}
+          className="rounded-full border border-border px-3 py-2.5">Консультация по телефону</button>
+        <button type="button" onClick={onBook} className="rounded-full border border-border px-3 py-2.5">Записаться к врачу</button>
+      </div>
 
       {open && (
         <div className="mt-4">
@@ -625,7 +654,7 @@ function LensLineCardView({ card }: { card: LensLineCard }) {
           {offers && offers.length > 0 && (
             <ul className="divide-y divide-border rounded-xl border border-border bg-background">
               {offers.map((offer) => (
-                <LensSearchRow key={offer.id} offer={offer} onShowDetail={setDetailOffer} />
+                <LensSearchRow key={offer.id} offer={offer} onShowDetail={setDetailOffer} onBook={onBook} />
               ))}
             </ul>
           )}

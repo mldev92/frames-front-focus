@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCart, formatPrice } from "@/lib/store/cart";
+import { lensCartDraft } from "@/lib/lens-cart";
+import { LensRequestForm } from "@/components/LensWizard/LensRequestForm";
+import { useState } from "react";
 
 export const Route = createFileRoute("/basket")({
   head: () => ({
@@ -13,10 +16,11 @@ export const Route = createFileRoute("/basket")({
 });
 
 function CartPage() {
-  const { lines, setQty, remove, totals, clear } = useCart();
+  const { lines, lensSelections, setQty, remove, removeLens, totals, clear, clearLens } = useCart();
+  const [lensSubmitted, setLensSubmitted] = useState(false);
   const { subtotal, count } = totals();
 
-  if (lines.length === 0) {
+  if (lines.length === 0 && lensSelections.length === 0 && !lensSubmitted) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-24 text-center">
         <h1 className="font-serif text-4xl">Корзина пуста</h1>
@@ -36,7 +40,7 @@ function CartPage() {
   return (
     <div className="mx-auto max-w-6xl px-4 lg:px-8 py-10">
       <h1 className="font-serif text-4xl mb-8">Корзина · {count}</h1>
-      <div className="grid lg:grid-cols-[1fr_360px] gap-12">
+      {lines.length > 0 && <div className="grid lg:grid-cols-[1fr_360px] gap-12">
         <div className="divide-y divide-border border-y border-border">
           {lines.map((l) => (
             <div key={l.lineId} className="flex gap-5 py-6">
@@ -101,7 +105,7 @@ function CartPage() {
           <h2 className="font-serif text-xl mb-5">Итого</h2>
           <div className="space-y-2 text-sm pb-4 border-b border-border">
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Товары · {count}</span>
+              <span className="text-muted-foreground">Товары · {lines.reduce((sum, line) => sum + line.qty, 0)}</span>
               <span>{formatPrice(subtotal)}</span>
             </div>
             <div className="flex justify-between">
@@ -120,7 +124,24 @@ function CartPage() {
             Перейти к оформлению
           </Link>
         </aside>
-      </div>
+      </div>}
+      {(lensSelections.length > 0 || lensSubmitted) && (
+        <section className="mt-10 border-t border-border pt-8">
+          <h2 className="font-serif text-2xl">Очковые линзы · {lensSelections.length}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">Специалист проверит рецепт, совместимость и окончательную стоимость выбранных линз.</p>
+          <div className="mt-5 divide-y divide-border border-y border-border">
+            {lensSelections.map((item) => (
+              <div key={item.id} className="flex items-start justify-between gap-4 py-4">
+                <div><div className="text-sm font-medium">{item.brand} {item.name}</div>
+                  <div className="text-xs text-muted-foreground">{item.index && `Индекс ${item.index} · `}{item.coating} · {item.qty} пара</div>
+                  <div className="mt-1 text-sm">{item.pricePerLens === null ? "Цена по запросу" : `Ориентир: ${formatPrice(item.pricePerLens * 2 * item.qty)}`}</div></div>
+                <button type="button" onClick={() => removeLens(item.id)} aria-label="Удалить линзы" className="text-muted-foreground hover:text-brand"><Trash2 className="h-4 w-4" /></button>
+              </div>
+            ))}
+          </div>
+          <LensRequestForm draft={lensCartDraft(lensSelections)} onSent={() => { setLensSubmitted(true); clearLens(); }} />
+        </section>
+      )}
     </div>
   );
 }

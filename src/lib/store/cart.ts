@@ -2,6 +2,18 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Product } from "@/data/types";
 import type { CityCode } from "@/lib/store/city";
+import type { LensRecommendCard } from "@/lib/api/lens-recommend";
+
+export interface LensCartSelection {
+  id: string;
+  name: string;
+  brand: string;
+  index: number | null;
+  coating: string;
+  treatment: string;
+  pricePerLens: number | null;
+  qty: number;
+}
 
 export interface EyePrescription {
   sphere?: string;
@@ -40,6 +52,7 @@ export interface CartLine {
 
 interface CartState {
   lines: CartLine[];
+  lensSelections: LensCartSelection[];
   saved: string[];
   isOpen: boolean;
   open: () => void;
@@ -57,6 +70,9 @@ interface CartState {
       image?: string;
     },
   ) => void;
+  addLens: (offer: LensRecommendCard) => void;
+  removeLens: (id: string) => void;
+  clearLens: () => void;
   remove: (lineId: string) => void;
   setQty: (lineId: string, qty: number) => void;
   clear: () => void;
@@ -83,6 +99,7 @@ export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
       lines: [],
+      lensSelections: [],
       saved: [],
       isOpen: false,
       open: () => set({ isOpen: true }),
@@ -138,6 +155,26 @@ export const useCart = create<CartState>()(
           isOpen: openDrawer,
         });
       },
+      addLens: (offer) => set((state) => {
+        const existing = state.lensSelections.find((item) => item.id === offer.id);
+        return {
+          lensSelections: existing
+            ? state.lensSelections.map((item) => item.id === offer.id ? { ...item, qty: item.qty + 1 } : item)
+            : [...state.lensSelections, {
+                id: offer.id,
+                name: offer.line,
+                brand: offer.supplier.toUpperCase(),
+                index: offer.index,
+                coating: offer.coating,
+                treatment: offer.treatment,
+                pricePerLens: offer.priceRub,
+                qty: 1,
+              }],
+          isOpen: true,
+        };
+      }),
+      removeLens: (id) => set((state) => ({ lensSelections: state.lensSelections.filter((item) => item.id !== id) })),
+      clearLens: () => set({ lensSelections: [] }),
       remove: (lineId) =>
         set({ lines: get().lines.filter((line) => line.lineId !== lineId) }),
       setQty: (lineId, qty) =>
@@ -155,8 +192,9 @@ export const useCart = create<CartState>()(
         }),
       totals: () => {
         const lines = get().lines;
+        const lensSelections = get().lensSelections;
         return {
-          count: lines.reduce((sum, line) => sum + line.qty, 0),
+          count: lines.reduce((sum, line) => sum + line.qty, 0) + lensSelections.reduce((sum, item) => sum + item.qty, 0),
           subtotal: lines.reduce((sum, line) => sum + line.qty * line.price, 0),
         };
       },

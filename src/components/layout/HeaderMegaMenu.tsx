@@ -1513,91 +1513,23 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader(
-                "Параметры",
-                "Все параметры",
-                regionalMenuHref(expandHref(menu.allHref, "sphere"), city),
-              )}
-              <div className="space-y-4">
-                <div>
-                  <div className="mb-2 flex items-baseline justify-between gap-2">
-                    <span className={sectionNameClass}>Сфера</span>
-                    <span className="text-[11px] text-muted-foreground">D, диоптрии</span>
-                  </div>
-                  <div className="overflow-hidden rounded-[12px] border border-[#ece7df]">
-                    <div className="grid grid-cols-7">
-                      {menu.sphereValues.map((item, index) => (
-                        <a
-                          key={item.label}
-                          href={regionalMenuHref(item.href, city)}
-                          className={cn(
-                            "border-r border-[#ece7df] px-2 py-2 text-center font-mono text-[11.5px] text-foreground transition-colors hover:bg-brand-50 hover:text-brand",
-                            index === menu.sphereValues.length - 1 && "border-r-0",
-                            item.label === "0" && "text-muted-foreground",
-                          )}
-                        >
-                          {formatSphereLabel(item.label)}
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="mb-2 flex items-baseline justify-between gap-2">
-                    <span className={sectionNameClass}>Цилиндр / ось</span>
-                    <span className="text-[11px] text-muted-foreground">для астигматизма</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {menu.cylinder.map((item) => (
-                      <a
-                        key={item.label}
-                        href={regionalMenuHref(item.href, city)}
-                        className={chipClass}
-                      >
-                        {item.label}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="mb-2 flex items-baseline justify-between gap-2">
-                    <span className={sectionNameClass}>Аддидация</span>
-                    <span className="text-[11px] text-muted-foreground">мультифокальные</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {menu.addition.map((item) => (
-                      <a
-                        key={item.label}
-                        href={regionalMenuHref(item.href, city)}
-                        className={chipClass}
-                      >
-                        {item.label}
-                      </a>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <div className="mb-2">
-                    <span className={sectionNameClass}>Радиус кривизны (BC)</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {menu.bcValues.map((item) => (
-                      <a
-                        key={item.label}
-                        href={regionalMenuHref(item.href, city)}
-                        className={chipClass}
-                      >
-                        {item.label}
-                      </a>
-                    ))}
-                  </div>
-                </div>
+              {sectionHeader("Разделы линз", "Все", regionalMenuHref(menu.allHref, city))}
+              <div className="space-y-2">
+                {menu.sections.map((item) => (
+                  <a key={item.label} href={regionalMenuHref(item.href, city)}
+                    className="flex items-center justify-between rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 text-[13px] transition-colors hover:border-brand hover:text-brand">
+                    {item.label}<ArrowRight className="h-3.5 w-3.5" />
+                  </a>
+                ))}
+              </div>
+              <div className="mt-5 border-t border-dashed border-border pt-4">
+                <div className="mb-2 text-[10.5px] uppercase tracking-[0.16em] text-muted-foreground">Скидки</div>
+                <a href={regionalMenuHref(`${menu.allHref}?expand=discount#catalog-products`, city)}
+                  className="flex items-center justify-between rounded-[14px] border border-[#ece7df] bg-white px-3 py-3 text-[13px] transition-colors hover:border-brand hover:text-brand">
+                  Линзы со скидкой<ArrowRight className="h-3.5 w-3.5" />
+                </a>
               </div>
             </section>
-
             <section>
               {sectionHeader(
                 "Дизайн",

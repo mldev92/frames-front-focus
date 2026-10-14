@@ -20,17 +20,11 @@ const CITIES: { code: CityCode; label: string }[] = [
 ];
 
 const PROMOS = [
-  { text: "ДО -40% НА СОЛНЦЕЗАЩИТНЫЕ ОЧКИ", href: "/catalog_s/opravy/vysota-oversize-crystal" },
-  { text: "ПОДАРОК К ЛИНЗАМ STELLEST", href: "/catalog_s/opravy/vysota-oversize-crystal" },
-  { text: "ОТЛИЧНЫЕ ЛИНЗЫ + КЭШБЭК 14%", href: "/catalog_s/opravy/vysota-oversize-crystal" },
+  { text: "ДО 25% НА ПРОГРЕССИВНЫЕ ЛИНЗЫ ESSILOR", href: "/catalog_s/linzy_dlya_ochkov/?brand=ESSILOR&lensType=Прогрессивные" },
+  { text: "ДО 50% НА ЛИНЗЫ STELLEST", href: "/stellest-katalog-s-linzami/" },
   {
-    text: "КУПИТЕ 2 УПАКОВКИ ЛИНЗ ULTRAFLEX PREMIER И ПОЛУЧИТЕ СКЛАДНУЮ СУМКУ В ПОДАРОК",
-    href: "/catalog_s/opravy/vysota-oversize-crystal",
-  },
-  { text: "ДЕТСКАЯ МИОПИЯ ПОД КОНТРОЛЕМ", href: "/catalog_s/opravy/vysota-oversize-crystal" },
-  {
-    text: "КУПИТЕ 2 УПАКОВКИ ЛИНЗ MISIGHT 1 DAY 90 И ПОЛУЧИТЕ 20 ЛИНЗ В ПОДАРОК + СКИДКУ 1000 р",
-    href: "/catalog_s/opravy/vysota-oversize-crystal",
+    text: "MISIGHT 1 DAY 90: 20 ЛИНЗ В ПОДАРОК И СКИДКА 1 000 ₽",
+    href: "https://optika100.com/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/",
   },
 ];
 
@@ -121,7 +115,7 @@ export function Header() {
     let request = facetSummaryCache.get(key);
     if (!request) {
       // Корень очковых линз больше не использует старые Bitrix-фасеты:
-      // меню проверяет те же 74 карточки, которые затем фильтрует страница.
+      // меню проверяет те же 79 карточек, которые затем фильтрует страница.
       request =
         segment === "linzy_dlya_ochkov"
           ? fetchLensLines().then(lensLineFacetSummary)
@@ -226,9 +220,9 @@ export function Header() {
               )}
             </div>
 
-            <span className="opacity-40">·</span>
+            {cityCode === "spb" && <span className="opacity-40">·</span>}
 
-            <a
+            {cityCode === "spb" && <a
               href={regionalHref(PROMOS[promoIdx].href)}
               className="truncate uppercase tracking-wide transition-colors hover:opacity-100"
               style={{
@@ -243,10 +237,10 @@ export function Header() {
               }}
             >
               {PROMOS[promoIdx].text}
-            </a>
+            </a>}
           </div>
 
-          <a
+          {cityCode === "spb" && <a
             href={regionalHref("/#promotions")}
             className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 font-semibold text-primary-foreground no-underline transition-colors hover:border-white/35 hover:bg-white/15 sm:px-3"
             aria-label="Все Акции"
@@ -254,7 +248,7 @@ export function Header() {
             <span className="sm:hidden">Акции</span>
             <span className="hidden sm:inline">Все Акции</span>
             <span aria-hidden="true">→</span>
-          </a>
+          </a>}
 
           <div className="hidden items-center gap-5 xl:flex">
             <button

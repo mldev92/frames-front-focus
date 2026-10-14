@@ -349,9 +349,7 @@ export function LensWizard({
       case 6:
         return !!coatingTier;
       case 7:
-        // The myopia path deliberately keeps brand unset (cross-brand query,
-        // Ошибки 2.3 п.14) and renders a DecidedCard — nothing to pick.
-        return !!brand || purpose?.id === "myopia-control";
+        return !!brand;
       case 8:
         return true;
       default:
@@ -702,18 +700,8 @@ export function LensWizard({
                 />
               ))}
             {step === 7 &&
-              (purpose?.id === "myopia-control" ? (
-                <MyopiaDecidedStep
-                  stepTitle="Бренд"
-                  option={{
-                    title: "Все бренды контроля миопии",
-                    description:
-                      "Сравним ZEISS MyoCare, Essilor Stellest и HOYA MiYOSMART — подходящую линзу подберёт специалист.",
-                  }}
-                />
-              ) : (
-                <StepBrand value={brand} onChange={setBrand} options={options} />
-              ))}
+              <StepBrand value={brand} onChange={setBrand} options={options}
+                myopiaControl={purpose?.id === "myopia-control"} />}
             {step === 8 && (
               <StepResults
                 onEditStep={setStep}
@@ -1813,10 +1801,12 @@ function StepBrand({
   value,
   onChange,
   options,
+  myopiaControl = false,
 }: {
   value: BrandOption | null;
   onChange: (v: BrandOption) => void;
   options: LensOptions | null;
+  myopiaControl?: boolean;
 }) {
   // «Все бренды» always stays; a named brand only while it can still answer.
   // Hers: «если выбран индекс 1,56, то производителя Zeiss не должно быть в
@@ -1828,11 +1818,14 @@ function StepBrand({
     zeiss: ["zeiss"],
     synchrony: ["synchrony"],
   };
+  const applicableBrands = myopiaControl
+    ? BRANDS.filter((o) => ["all", "essilor", "zeiss", "hoya"].includes(o.id))
+    : BRANDS;
   const brands = options
-    ? BRANDS.filter(
+    ? applicableBrands.filter(
         (o) => o.id === "all" || (GROUP[o.id] ?? [o.id]).some((b) => (options.brand[b] ?? 0) > 0),
       )
-    : BRANDS;
+    : applicableBrands;
   return (
     <div>
       <StepHeader

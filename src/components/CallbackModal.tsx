@@ -12,18 +12,18 @@ interface CallbackModalProps {
   subject?: string;
 }
 
-const TIMES = ["Сейчас", "Через час", "Завтра 10:00"] as const;
-
 export function CallbackModal({ open, onOpenChange, subject }: CallbackModalProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [time, setTime] = useState<string>("Сейчас");
+  const [schedule, setSchedule] = useState<"now" | "later">("now");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
   const [sent, setSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     try {
-      const comment = [subject, time !== "Сейчас" ? `Удобное время: ${time}` : undefined]
+      const comment = [subject, schedule === "later" ? `Удобное время: ${date} ${time}` : undefined]
         .filter(Boolean)
         .join(". ");
       await submitCallback({ name, phone, comment: comment || undefined });
@@ -32,7 +32,9 @@ export function CallbackModal({ open, onOpenChange, subject }: CallbackModalProp
         setSent(false);
         setName("");
         setPhone("");
-        setTime("Сейчас");
+        setSchedule("now");
+        setDate("");
+        setTime("");
         onOpenChange(false);
       }, 2000);
     } catch (err) {
@@ -48,11 +50,11 @@ export function CallbackModal({ open, onOpenChange, subject }: CallbackModalProp
         </DialogTitle>
         {subject && <p className="text-sm font-medium text-foreground">{subject}</p>}
         <p className="text-[13px] text-muted-foreground mb-4">
-          Перезвоним в течение 5 минут в рабочее время.
+          {schedule === "now" ? "Перезвоним в течение 5 минут в рабочее время." : "Перезвоним в выбранные дату и время."}
         </p>
         {sent ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            Спасибо! Перезвоним вам скоро.
+            {schedule === "now" ? "Спасибо! Перезвоним вам скоро." : "Спасибо! Перезвоним в выбранное время."}
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -81,23 +83,20 @@ export function CallbackModal({ open, onOpenChange, subject }: CallbackModalProp
               <p className="text-[10.5px] uppercase tracking-[0.06em] font-mono text-muted-foreground mb-2">
                 Удобное время
               </p>
-              <div className="grid grid-cols-3 gap-1.5">
-                {TIMES.map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setTime(t)}
-                    className={cn(
-                      "font-mono text-[11px] border rounded-md px-2 py-2 cursor-pointer transition-colors",
-                      time === t
-                        ? "bg-ink text-primary-foreground border-ink"
-                        : "bg-transparent border-border text-foreground hover:border-ink/50",
-                    )}
-                  >
-                    {t}
-                  </button>
+              <div className="grid grid-cols-2 gap-1.5">
+                {([ ["now", "Сейчас"], ["later", "Выбрать дату и время"] ] as const).map(([value, label]) => (
+                  <button key={value} type="button" onClick={() => setSchedule(value)}
+                    aria-pressed={schedule === value}
+                    className={cn("text-xs border rounded-md px-2 py-2 transition-colors", schedule === value
+                      ? "bg-ink text-primary-foreground border-ink" : "border-border hover:border-ink/50")}>{label}</button>
                 ))}
               </div>
+              {schedule === "later" && (
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  <div className="space-y-1"><Label htmlFor="cb-date">Дата звонка</Label><Input id="cb-date" type="date" required min={`${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-${String(new Date().getDate()).padStart(2, "0")}`} value={date} onChange={(e) => setDate(e.target.value)} /></div>
+                  <div className="space-y-1"><Label htmlFor="cb-time">Время звонка</Label><Input id="cb-time" type="time" required value={time} onChange={(e) => setTime(e.target.value)} /></div>
+                </div>
+              )}
             </div>
             <button
               type="submit"

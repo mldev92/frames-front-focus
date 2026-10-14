@@ -1293,7 +1293,7 @@ export function CatalogListing({
     : SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]);
 
   const FilterContent = (
-    <div className="text-sm">
+    <div className={cn("text-sm", isFramesCategory && "flex flex-col")}>
       {/* Sticky head — Header + Search + Sort stay pinned to the top of the
           sidebar scroll viewport so reset/search/sort are always reachable. */}
       <div
@@ -2551,10 +2551,16 @@ function FilterSection({
   // After the open transition finishes we drop overflow:hidden so popovers,
   // sliders, and tooltips inside the section are not clipped.
   const [overflowVisible, setOverflowVisible] = useState(defaultOpen);
+  const frameOrder: Record<string, number> = {
+    "Цена": 1, "Пол": 2, "Форма": 3, "Скидка, %": 4,
+    "Бренды": 5, "Материал": 6, "Конструкция": 7, "Цвет": 8,
+    "Длина заушника": 9, "Ширина переносицы": 10, "Ширина ободка": 11,
+  };
 
   return (
     <div
       style={{
+        order: frameOrder[title] ?? 50,
         paddingTop: "20px",
         paddingBottom: "20px",
         borderTop: "1px solid var(--color-border)",

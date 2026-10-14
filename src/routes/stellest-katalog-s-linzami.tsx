@@ -3,7 +3,8 @@ import { createPortal } from "react-dom";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { fetchLensSearch, type LensRecommendCard } from "@/lib/api/lens-recommend";
-import { formatPrice } from "@/lib/store/cart";
+import { formatPrice, useCart } from "@/lib/store/cart";
+import { CONTACT } from "@/data/contact";
 import { PriceSavings } from "@/components/PriceSavings";
 import { useCityStore } from "@/lib/store/city";
 
@@ -231,6 +232,7 @@ function StellestCatalogPage() {
 
 function StellestLensCatalog({ onBook }: { onBook: () => void }) {
   const city = useCityStore((state) => state.city);
+  const addLens = useCart((state) => state.addLens);
   const [offers, setOffers] = useState<LensRecommendCard[] | null>(null);
   const [error, setError] = useState(false);
 
@@ -300,7 +302,11 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
                     className="stellest-price-savings"
                   />
                 </span>
-                <button type="button" className="coat-btn" onClick={onBook}>Уточнить условия</button>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button type="button" className="coat-btn" onClick={() => addLens(offer)}>В корзину</button>
+                <a href={CONTACT.phone.href} className="coat-btn">Позвонить в салон</a>
+                <button type="button" className="coat-btn" onClick={onBook}>Записаться на приём</button>
               </div>
             </div>
           </article>

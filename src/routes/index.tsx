@@ -2187,11 +2187,11 @@ function MainV2PromoBlock() {
             <h4 className="font-serif" style={{ fontSize: 19, lineHeight: 1.2 }}>{promo.title}</h4>
             {promo.pct && <span className="text-sm font-semibold shrink-0">{promo.pct}</span>}
           </div>
-          <p style={{ fontSize: 12.5, lineHeight: 1.5, marginTop: 8, opacity: 0.9 }}>
+          <p className="whitespace-pre-line" style={{ fontSize: 12.5, lineHeight: 1.65, marginTop: 8, opacity: 0.9 }}>
             {promo.description}
           </p>
           <span className="inline-flex items-center gap-1 mt-3 text-xs font-semibold">
-            Подробнее <ArrowRight className="h-3.5 w-3.5" />
+            {promo.ctaLabel ?? "Подробнее"} <ArrowRight className="h-3.5 w-3.5" />
           </span>
         </a>
       ))}

@@ -10,6 +10,7 @@ export interface Promotion {
   title: string;
   description: string;
   href: string;
+  ctaLabel?: string;
   expiresAt?: Date;
   location?: string;
 }
@@ -30,10 +31,10 @@ export const promotions: Promotion[] = [
     badgeVariant: "brand",
     visual: "brand",
     pct: "−25%",
-    title: "До 25% на прогрессивные линзы",
+    title: "25% на прогрессивные линзы Varilux",
     description:
-      "25% на ESSILOR VARILUX COMFORT MAX, COMFORT MAX F-360 и LIBERTY 3.0 BCT. На остальные прогрессивные линзы: 15% при цене пары от 20 000 ₽, 10% при 15 000–19 999 ₽, 5% при цене до 14 999 ₽.",
-    href: "/catalog_s/linzy_dlya_ochkov/",
+      "ESSILOR VARILUX COMFORT MAX\nESSILOR VARILUX COMFORT MAX F-360\nESSILOR VARILUX LIBERTY 3.0 BCT",
+    href: "/catalog_s/linzy_dlya_ochkov/?brand=ESSILOR&lensType=%D0%9F%D1%80%D0%BE%D0%B3%D1%80%D0%B5%D1%81%D1%81%D0%B8%D0%B2%D0%BD%D1%8B%D0%B5",
     location: "spb",
   },
   {
@@ -44,7 +45,7 @@ export const promotions: Promotion[] = [
     pct: "−50%",
     title: "До 50% на линзы Stellest",
     description:
-      "50% на Stellest Airwear Tint и Stellest 2.0 Airwear Tint при покупке прозрачных линз Stellest. 20% на Stellest Airwear Crizal Rock; 50% на Stellest Airwear Plano Crizal Prevencia (Sph 0,0 / Cyl 0,0).",
+      "50% — Stellest Airwear Crizal Prevencia Plano\n20% — Stellest Airwear Crizal Rock\n50% — Stellest Airwear Tint и Stellest 2.0 Airwear Tint при покупке прозрачных линз Stellest",
     href: "/stellest-katalog-s-linzami/",
     location: "spb",
   },
@@ -73,9 +74,10 @@ export const promotions: Promotion[] = [
     id: "misight-spb",
     badge: "Санкт-Петербург",
     visual: "cream",
-    title: "MiSight 1 Day 90 + 20 линз в подарок",
-    description: "При покупке двух упаковок MiSight 1 Day 90 — ещё 20 линз в подарок.",
-    href: "/catalog_s/kontaktnye_linzy_/",
+    title: "MiSight 1 Day 90: подарок и скидка",
+    description: "При покупке двух упаковок MiSight 1 Day 90 — 20 линз в подарок и скидка 1 000 ₽.",
+    href: "https://optika100.com/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/",
+    ctaLabel: "Участвовать в акции",
     location: "spb",
   },
 ];
