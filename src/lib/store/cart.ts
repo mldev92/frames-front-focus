@@ -161,7 +161,15 @@ export const useCart = create<CartState>()(
         const existing = state.lensSelections.find((item) => item.id === offer.id);
         return {
           lensSelections: existing
-            ? state.lensSelections.map((item) => item.id === offer.id ? { ...item, qty: item.qty + 1 } : item)
+            ? state.lensSelections.map((item) => item.id === offer.id ? {
+                ...item,
+                qty: item.qty + 1,
+                coating: offer.coating,
+                treatment: offer.treatment,
+                pricePerLens: offer.priceRub,
+                priceBeforeDiscountPerLens: offer.priceBeforeDiscountRub,
+                discountPercent: offer.discountPercent,
+              } : item)
             : [...state.lensSelections, {
                 id: offer.id,
                 name: offer.line,
