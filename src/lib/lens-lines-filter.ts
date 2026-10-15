@@ -11,17 +11,33 @@ export interface LensLineFilterData {
   individual: boolean;
 }
 
+export interface LensLineFilterVariant {
+  offerId: string;
+  index: number | null;
+  treatment: string;
+  coating: string;
+  design: string;
+  priceRub: number | null;
+  priceBeforeDiscountRub: number | null;
+  discountPercent: number | null;
+  filterData: LensLineFilterData;
+}
+
 export interface FilterableLensLine {
   id: string;
   title: string;
   supplier: string;
   order: number;
   fromPriceRub: number | null;
+  fromPriceBeforeDiscountRub?: number | null;
+  fromDiscountPercent?: number | null;
   indexes: number[];
   treatments: string[];
   designs: string[];
   availability: "warehouse" | "order";
   filterData: LensLineFilterData;
+  filterVariants?: LensLineFilterVariant[];
+  offerCount?: number;
 }
 
 export type LensLineFilters = Partial<Record<string, string[]>>;
@@ -36,7 +52,6 @@ export const LENS_LINE_FACET_ORDER = [
   "purpose",
   "thickness",
   "lightTransmission",
-  "photochromicColor",
   "sphere",
   "astigmatic",
   "cylinder",
@@ -55,7 +70,6 @@ export const LENS_LINE_FACET_TITLES: Record<LensLineFacet, string> = {
   purpose: "Назначение",
   thickness: "Индекс / толщина",
   lightTransmission: "Светопропускание",
-  photochromicColor: "Цвет фотохрома",
   sphere: "Оптическая сила (сфера)",
   astigmatic: "Астигматическая",
   cylinder: "Цилиндр",
@@ -112,7 +126,6 @@ const VALUE_ORDER: Partial<Record<LensLineFacet, string[]>> = {
   lensType: ["Однофокальные", "Прогрессивные", "Офисные", "Бифокальные", "Контроль миопии"],
   design: ["Сферический", "Асферический", "Индивидуальный", "FreeForm"],
   lightTransmission: ["Прозрачная", "Фотохромная", "Тонированная", "Поляризованная", "Зеркальная"],
-  photochromicColor: ["Серый", "Коричневый", "Зелёный"],
   astigmatic: ["С цилиндром"],
   sunLens: ["Да"],
 };
@@ -153,7 +166,24 @@ function indexValue(index: number): string {
   return index.toFixed(2);
 }
 
+function variantAsCard(card: FilterableLensLine, variant: LensLineFilterVariant): FilterableLensLine {
+  return {
+    ...card,
+    fromPriceRub: variant.priceRub,
+    indexes: variant.index === null ? [] : [variant.index],
+    treatments: variant.treatment ? [variant.treatment] : [],
+    designs: variant.design === "unknown" ? [] : [variant.design],
+    filterData: variant.filterData,
+    filterVariants: undefined,
+  };
+}
+
 export function facetValues(card: FilterableLensLine, facet: LensLineFacet): string[] {
+  if (card.filterVariants?.length) {
+    return [...new Set(card.filterVariants.flatMap((variant) =>
+      facetValues(variantAsCard(card, variant), facet),
+    ))];
+  }
   const values = new Set<string>();
   const data = card.filterData;
 
@@ -197,12 +227,6 @@ export function facetValues(card: FilterableLensLine, facet: LensLineFacet): str
     if (data.tintCategories.includes("tinted")) values.add("Тонированная");
     if (data.tintCategories.includes("polarized")) values.add("Поляризованная");
     if (data.tintCategories.includes("mirrored")) values.add("Зеркальная");
-  }
-  if (facet === "photochromicColor") {
-    const text = normalizedText(card);
-    if (/grey|gray|серый|серая/u.test(text)) values.add("Серый");
-    if (/brown|коричнев/u.test(text)) values.add("Коричневый");
-    if (/green|зелен|зелён|pioneer/u.test(text)) values.add("Зелёный");
   }
   if (facet === "sphere") for (const value of SPHERE_OPTIONS) values.add(value);
   if (facet === "astigmatic" && data.cylMax !== null && data.cylMax > 0) values.add("С цилиндром");
@@ -262,9 +286,6 @@ const FACET_ALIASES: Partial<Record<LensLineFacet, Record<string, string>>> = {
     тонированные: "Тонированная",
     фотохромные: "Фотохромная",
   },
-  photochromicColor: {
-    зеленый: "Зелёный",
-  },
 };
 
 export function canonicalLensLineFacetValue(facet: LensLineFacet, value: string): string {
@@ -303,6 +324,11 @@ export function lensLineMatches(
   priceMax?: number,
   omitFacet?: string,
 ): boolean {
+  if (card.filterVariants?.length) {
+    return card.filterVariants.some((variant) =>
+      lensLineMatches(variantAsCard(card, variant), filters, priceMin, priceMax, omitFacet),
+    );
+  }
   const pairPrice = card.fromPriceRub === null ? null : card.fromPriceRub * 2;
   if (priceMin !== undefined && (pairPrice === null || pairPrice < priceMin)) return false;
   if (priceMax !== undefined && (pairPrice === null || pairPrice > priceMax)) return false;
@@ -323,13 +349,42 @@ export function lensLineMatches(
   return true;
 }
 
-export function filterLensLines(
-  cards: FilterableLensLine[],
+export function filterLensLines<T extends FilterableLensLine>(
+  cards: T[],
   filters: LensLineFilters,
   priceMin?: number,
   priceMax?: number,
-): FilterableLensLine[] {
-  return cards.filter((card) => lensLineMatches(card, filters, priceMin, priceMax));
+): T[] {
+  return cards.flatMap((card) => {
+    if (!card.filterVariants?.length) {
+      return lensLineMatches(card, filters, priceMin, priceMax) ? [card] : [];
+    }
+    const eligible = card.filterVariants.filter((variant) =>
+      lensLineMatches(variantAsCard(card, variant), filters, priceMin, priceMax),
+    );
+    if (!eligible.length) return [];
+    const cheapest = eligible
+      .filter((variant) => variant.priceRub !== null)
+      .sort((a, b) => (a.priceRub ?? Infinity) - (b.priceRub ?? Infinity))[0];
+    return [{
+      ...card,
+      fromPriceRub: cheapest?.priceRub ?? null,
+      fromPriceBeforeDiscountRub: cheapest?.priceBeforeDiscountRub ?? null,
+      fromDiscountPercent: cheapest?.discountPercent ?? null,
+      filterVariants: eligible,
+      offerCount: new Set(eligible.map((variant) => variant.offerId)).size,
+      availability: eligible.some((variant) =>
+        variant.filterData.availability.includes("warehouse"),
+      ) ? "warehouse" : "order",
+      indexes: [...new Set(eligible.flatMap((variant) =>
+        variant.index === null ? [] : [variant.index],
+      ))].sort((a, b) => a - b),
+      treatments: [...new Set(eligible.map((variant) => variant.treatment).filter(Boolean))],
+      designs: [...new Set(eligible.map((variant) => variant.design).filter((value) =>
+        value !== "unknown",
+      ))],
+    } as T];
+  });
 }
 
 export function lensLineFacetOptions(cards: FilterableLensLine[], facet: LensLineFacet): string[] {
@@ -353,16 +408,13 @@ export function lensLineFacetCount(
   priceMin?: number,
   priceMax?: number,
 ): number {
-  const withoutOwn = cards.filter((card) =>
-    lensLineMatches(card, filters, priceMin, priceMax, facet),
-  );
-  if (facet === "sphere" || facet === "cylinder") {
-    return withoutOwn.filter((card) => matchesNumericFacet(card, facet, [value])).length;
-  }
-  return withoutOwn.filter((card) => facetValues(card, facet).includes(value)).length;
+  const selectedForOption = { ...filters, [facet]: [value] };
+  return cards.filter((card) =>
+    lensLineMatches(card, selectedForOption, priceMin, priceMax),
+  ).length;
 }
 
-/** Фасеты шапки из того же набора, который рисует каталог 74 линеек. */
+/** Фасеты шапки из того же набора, который рисует каталог линеек. */
 export function lensLineFacetSummary(cards: FilterableLensLine[]): {
   total: number;
   facets: Partial<Record<LensLineFacet, Record<string, number>>>;

@@ -7,6 +7,7 @@ import {
   lensLineFacetCount,
   lensLineFacetOptions,
   lensLineFacetSummary,
+  LENS_LINE_FACET_ORDER,
   sortLensLines,
 } from "../../src/lib/lens-lines-filter.ts";
 
@@ -98,7 +99,7 @@ test("facet counts exclude their own active facet but retain other filters", () 
   assert.equal(lensLineFacetCount(cards, filters, "lightTransmission", "Прозрачная"), 1);
 });
 
-test("options, pair-price filtering, and sorting cover the complete 74-card response shape", () => {
+test("options, pair-price filtering, and sorting cover the complete lens-line response shape", () => {
   assert.deepEqual(lensLineFacetOptions(cards, "brand"), ["ESSILOR", "ZEISS"]);
   assert.deepEqual(
     filterLensLines(cards, {}, 15000).map((item) => item.id),
@@ -112,6 +113,50 @@ test("options, pair-price filtering, and sorting cover the complete 74-card resp
     sortLensLines(cards, "name").map((item) => item.id),
     ["base", "photo"],
   );
+});
+
+test("combined filters require one compatible offer and show its matching price", () => {
+  const clear = {
+    offerId: "clear-offer",
+    index: 1.5,
+    treatment: "Прозрачные",
+    coating: "Crizal Easy Pro",
+    design: "single",
+    priceRub: 5000,
+    priceBeforeDiscountRub: null,
+    discountPercent: null,
+    filterData: card().filterData,
+  };
+  const photoVariant = {
+    ...clear,
+    offerId: "photo-offer",
+    index: 1.6,
+    treatment: "Transitions",
+    priceRub: 9000,
+    filterData: {
+      ...clear.filterData,
+      lensTypes: ["photochromic"],
+      tintCategories: ["regular_photochromic"],
+      cylMax: 0,
+    },
+  };
+  const mixed = card({ filterVariants: [clear, photoVariant] });
+  const photoFilter = { lightTransmission: ["Фотохромная"] };
+
+  assert.equal(filterLensLines([mixed], {
+    ...photoFilter,
+    astigmatic: ["С цилиндром"],
+  }).length, 0);
+  assert.equal(lensLineFacetCount([mixed], photoFilter, "astigmatic", "С цилиндром"), 0);
+  assert.equal(filterLensLines([mixed], photoFilter)[0].fromPriceRub, 9000);
+  assert.equal(filterLensLines([mixed], photoFilter)[0].offerCount, 1);
+  assert.deepEqual(filterLensLines([mixed], photoFilter)[0].indexes, [1.6]);
+  assert.equal(filterLensLines([mixed], photoFilter, 10000, 12000).length, 0);
+  assert.equal(filterLensLines([mixed], photoFilter, 17000, 19000).length, 1);
+});
+
+test("incomplete photochromic color facet is not displayed", () => {
+  assert.equal(LENS_LINE_FACET_ORDER.includes("photochromicColor"), false);
 });
 
 test("header summary uses the same canonical facets as the lens-line grid", () => {

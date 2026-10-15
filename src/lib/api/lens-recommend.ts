@@ -1,7 +1,7 @@
 import { getStoreApiUrl } from "@/lib/api/bitrix";
 import { apiFetch } from "@/lib/api/security";
 import { useCityStore } from "@/lib/store/city";
-import type { LensLineFilterData } from "@/lib/lens-lines-filter";
+import type { LensLineFilterData, LensLineFilterVariant } from "@/lib/lens-lines-filter";
 import type { LensLineImageSource } from "@/lib/lens-line-images";
 
 /**
@@ -349,6 +349,7 @@ export interface LensLineCard {
   availability: "warehouse" | "order";
   offerCount: number;
   filterData: LensLineFilterData;
+  filterVariants?: LensLineFilterVariant[];
   offers?: LensRecommendCard[];
 }
 

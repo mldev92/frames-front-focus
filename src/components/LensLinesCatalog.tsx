@@ -55,6 +55,12 @@ const DESIGN_RU: Record<string, string> = {
 };
 const DESIGN_ORDER = ["single", "progressive", "office", "bifocal", "myopia_control"];
 const PAGE_SIZE = 24;
+const lineNoun = (count: number) =>
+  count % 10 === 1 && count % 100 !== 11
+    ? "линейка"
+    : count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 12 || count % 100 > 14)
+      ? "линейки"
+      : "линеек";
 const LENS_BRAND_MARKS: Record<string, string> = {
   essilor: "/lens-brands/essilor.png",
   hoya: "/lens-brands/hoya.svg",
@@ -144,7 +150,9 @@ export function LensLinesCatalog({
 
   const priceBounds = useMemo(() => {
     const prices = (cards ?? [])
-      .map((card) => (card.fromPriceRub === null ? null : card.fromPriceRub * 2))
+      .flatMap((card) => card.filterVariants?.length
+        ? card.filterVariants.map((variant) => variant.priceRub === null ? null : variant.priceRub * 2)
+        : [card.fromPriceRub === null ? null : card.fromPriceRub * 2])
       .filter((value): value is number => value !== null && Number.isFinite(value));
     return {
       min: prices.length ? Math.floor(Math.min(...prices) / 50) * 50 : 0,
@@ -236,6 +244,9 @@ export function LensLinesCatalog({
             <X className="h-3.5 w-3.5" /> Сбросить
           </button>
         </div>
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+          Числа показывают линейки, подходящие под остальные фильтры. Одна линейка может входить в несколько пунктов.
+        </p>
       </div>
 
       <FilterSection title="Цена за пару">
@@ -317,7 +328,7 @@ export function LensLinesCatalog({
                       {checked && <Check className="h-3 w-3" strokeWidth={3} />}
                     </span>
                     <span className="flex-1">{value}</span>
-                    <span className="text-xs text-muted-foreground">({count})</span>
+                    <span className="text-xs text-muted-foreground">({count} {lineNoun(count)})</span>
                   </button>
                 );
               })}
@@ -360,8 +371,8 @@ export function LensLinesCatalog({
           >
             <SlidersHorizontal className="h-3.5 w-3.5" /> Фильтры
           </button>
-          <span className="text-xs text-muted-foreground">
-            {sorted.length} из {cards.length} линеек
+          <span className="text-xs text-muted-foreground" aria-live="polite">
+            Найдено {sorted.length} из {cards.length} {lineNoun(cards.length)}
           </span>
           <div className="relative ml-auto">
             <select
@@ -506,12 +517,18 @@ function LensLineCardView({ card, onBook }: { card: LensLineCard; onBook: () => 
   const [detailOffer, setDetailOffer] = useState<LensRecommendCard | null>(null);
   const addLens = useCart((state) => state.addLens);
   const [adding, setAdding] = useState(false);
+  const visibleOffers = (all: LensRecommendCard[]) => {
+    if (!card.filterVariants?.length) return all;
+    const ids = new Set(card.filterVariants.map((variant) => variant.offerId));
+    return all.filter((offer) => ids.has(offer.id));
+  };
 
   const addFirstOffer = async () => {
     setAdding(true);
     try {
       const full = await fetchLensLine(card.id);
-      const first = [...(full.offers ?? [])].sort((a, b) => (a.priceRub ?? Infinity) - (b.priceRub ?? Infinity))[0];
+      const first = visibleOffers(full.offers ?? [])
+        .sort((a, b) => (a.priceRub ?? Infinity) - (b.priceRub ?? Infinity))[0];
       if (first) addLens(first);
       else toast.error("Варианты линз пока недоступны. Позвоните в салон.");
     } catch {
@@ -584,11 +601,11 @@ function LensLineCardView({ card, onBook }: { card: LensLineCard; onBook: () => 
 
       <dl className="mt-4 border-t border-border pt-1 text-[13px]">
         <div className="flex justify-between gap-4 border-b border-border/55 py-2">
-          <dt className="shrink-0 text-muted-foreground">Варианты</dt>
+          <dt className="shrink-0 text-muted-foreground">Типы в линейке</dt>
           <dd className="text-right font-medium">{card.variantLabels.join(", ")}</dd>
         </div>
         <div className="flex justify-between gap-4 py-2">
-          <dt className="text-muted-foreground">Вариантов</dt>
+          <dt className="text-muted-foreground">Подходящих вариантов</dt>
           <dd className="font-medium">{card.offerCount}</dd>
         </div>
       </dl>
@@ -651,14 +668,14 @@ function LensLineCardView({ card, onBook }: { card: LensLineCard; onBook: () => 
               <LoaderCircle className="h-5 w-5 animate-spin text-muted-foreground" />
             </div>
           )}
-          {offers && offers.length > 0 && (
+          {offers && visibleOffers(offers).length > 0 && (
             <ul className="divide-y divide-border rounded-xl border border-border bg-background">
-              {offers.map((offer) => (
+              {visibleOffers(offers).map((offer) => (
                 <LensSearchRow key={offer.id} offer={offer} onShowDetail={setDetailOffer} onBook={onBook} />
               ))}
             </ul>
           )}
-          {offers && offers.length === 0 && !loading && (
+          {offers && visibleOffers(offers).length === 0 && !loading && (
             <div className="py-4 text-center text-sm text-muted-foreground">
               Не удалось загрузить варианты — попробуйте ещё раз.
             </div>
