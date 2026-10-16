@@ -13,6 +13,7 @@ import {
 import { SalonsSection } from "@/components/SalonsSection";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
+import { VIRTUAL_TRY_ON_ENABLED } from "@/lib/runtime";
 import { Reveal } from "@/components/Reveal";
 import { catalogHref, categoryToSegment, regionalCatalogHref } from "@/data/categories";
 import { articles } from "@/data/articles";
@@ -468,7 +469,7 @@ function MainV2Page() {
                 >
                   Записаться на проверку
                 </button>
-                <a
+                {VIRTUAL_TRY_ON_ENABLED && <a
                   href={catalogHref("opravy", city)}
                   className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 text-sm font-semibold border border-foreground text-foreground bg-transparent hover:bg-foreground hover:text-background transition-colors"
                 >
@@ -488,7 +489,7 @@ function MainV2Page() {
                     />
                   </svg>
                   Примерить онлайн
-                </a>
+                </a>}
               </div>
 
               <div
@@ -1229,11 +1230,11 @@ function MainV2Page() {
       </section>
 
       <AppointmentModal open={aptOpen} onOpenChange={setAptOpen} />
-      <VirtualTryOnModal
+      {VIRTUAL_TRY_ON_ENABLED && <VirtualTryOnModal
         open={vtoOpen}
         onClose={() => setVtoOpen(false)}
         vtoSku="rayban_aviator_or_vertFlash"
-      />
+      />}
     </div>
   );
 }
@@ -1487,7 +1488,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
   const dots = product.colors?.slice(0, 4) ?? [];
   const extra = (product.colors?.length ?? 0) - dots.length;
   const showTryOn =
-    product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
+    VIRTUAL_TRY_ON_ENABLED && product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
   const productRouteParams = {
     category: categoryToSegment[product.category],
     slug: product.slug,

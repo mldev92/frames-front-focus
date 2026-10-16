@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
+import { VIRTUAL_TRY_ON_ENABLED } from "@/lib/runtime";
 
 interface Props {
   open: boolean;
@@ -16,6 +17,7 @@ export function VirtualTryOnModal({ open, onClose, vtoSku }: Props) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!VIRTUAL_TRY_ON_ENABLED) return;
     if (!open) {
       // Destroy widget while canvas is still mounted (open=false but DOM still present).
       import("jeelizvtowidget").then((mod) => {
@@ -85,7 +87,7 @@ export function VirtualTryOnModal({ open, onClose, vtoSku }: Props) {
 
   // Keep the canvas in DOM once ever opened so Jeeliz's resize timeouts
   // don't fire against a null canvas. Just hide it when closed.
-  if (!everOpened) return null;
+  if (!VIRTUAL_TRY_ON_ENABLED || !everOpened) return null;
 
   return (
     <div

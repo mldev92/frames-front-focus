@@ -12,6 +12,7 @@ import { ProductInfoSections } from "@/components/ProductInfoSections";
 import { getProductDisplayBrand } from "@/lib/product";
 import { LensWizard } from "@/components/LensWizard/LensWizard";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
+import { VIRTUAL_TRY_ON_ENABLED } from "@/lib/runtime";
 import { TBankWidget } from "@/components/TBankWidget";
 import { cn } from "@/lib/utils";
 import type { EyePrescription, Prescription } from "@/lib/store/cart";
@@ -160,7 +161,7 @@ export function ProductPage({
   const isLens = product.category === "kontaktnye-linzy";
   const isFrameLike = product.category === "opravy" || product.category === "linzy-dlya-ochkov";
   const showTryOn =
-    product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
+    VIRTUAL_TRY_ON_ENABLED && product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
   const isMisight = product.slug.toLowerCase().includes("misight");
   const showInstallment =
     (isFrameLike && product.price > 3500) || (product.category === "kontaktnye-linzy" && isMisight);

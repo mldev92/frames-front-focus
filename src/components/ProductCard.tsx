@@ -4,6 +4,7 @@ import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { categoryToSegment } from "@/data/categories";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
+import { VIRTUAL_TRY_ON_ENABLED } from "@/lib/runtime";
 import { cn } from "@/lib/utils";
 import { getProductGallery } from "@/lib/api/bitrix";
 import type { CityCode } from "@/lib/store/city";
@@ -40,7 +41,7 @@ export function ProductCard({
   const hasHoverImage = Boolean(hoverImage);
   const [vtoOpen, setVtoOpen] = useState(false);
   const vtoSku = product.vtoSku ?? "rayban_wayfarer_havane_marron";
-  const showTryOn = !noTryOnCategories.has(product.category);
+  const showTryOn = VIRTUAL_TRY_ON_ENABLED && !noTryOnCategories.has(product.category);
   const imagePadding = compactLensPreview && product.category === "kontaktnye-linzy" ? "15%" : undefined;
 
   const displayColors = product.colors?.slice(0, 3) ?? [];
