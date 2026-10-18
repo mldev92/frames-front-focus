@@ -1,3 +1,4 @@
+import "./validate-production-build.mjs";
 import { createHash } from "node:crypto";
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { execFileSync } from "node:child_process";

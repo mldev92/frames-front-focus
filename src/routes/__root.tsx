@@ -5,6 +5,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -122,10 +123,16 @@ const REGIONAL_REDIRECT_BOOTSTRAP = `(function(){try{
 }catch(_error){}})();`;
 
 function RootShell({ children }: { children: React.ReactNode }) {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const hasCanonical = useRouterState({ select: (state) => state.matches.some((match) => match.links?.some((link) => link?.rel === "canonical")) });
+  const privatePage = /^\/(?:basket|checkout|personal|search)(?:\/|$)/.test(pathname);
+  const canonicalPath = pathname === "/" ? "/" : `${pathname.replace(/\/$/, "")}/`;
   return (
     <html lang="ru">
       <head>
         <HeadContent />
+        {!hasCanonical && <link rel="canonical" href={`https://optika100.com${canonicalPath}`} />}
+        {privatePage && <meta name="robots" content="noindex, follow" />}
       </head>
       <body>
         <script dangerouslySetInnerHTML={{ __html: REGIONAL_REDIRECT_BOOTSTRAP }} />

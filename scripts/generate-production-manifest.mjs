@@ -166,7 +166,7 @@ for (const path of legacyPaths) {
 }
 for (const path of await catalogPaths()) routeSet.add(path);
 
-const routes = [...routeSet].sort((a, b) => a.localeCompare(b, "ru"));
+const routes = [...routeSet].filter((path) => !redirectSources.has(path)).sort((a, b) => a.localeCompare(b, "ru"));
 const sitemapSeo = new Map([
   ["/linzy-spb/", { priority: "0.7", changefreq: "weekly" }],
   ["/optika-spb/", { priority: "0.7", changefreq: "weekly" }],
@@ -183,7 +183,7 @@ await writeFile(new URL("production-routes.json", outputDir), `${JSON.stringify(
 const sitemap = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...routes.map((path) => {
+  ...routes.filter((path) => !/^\/(?:basket|checkout|personal|search)(?:\/|$)/.test(path)).map((path) => {
     const seo = sitemapSeo.get(path);
     if (!seo) return `  <url><loc>${origin}${path}</loc></url>`;
     return `  <url><loc>${origin}${path}</loc><changefreq>${seo.changefreq}</changefreq><priority>${seo.priority}</priority></url>`;
@@ -194,6 +194,6 @@ const sitemap = [
 await writeFile(new URL("sitemap.xml", publicDir), sitemap);
 await writeFile(
   new URL("robots.txt", publicDir),
-  `User-agent: *\nAllow: /\nDisallow: /personal/\nDisallow: /checkout/\nSitemap: ${origin}/sitemap.xml\n`,
+  `User-agent: *\nAllow: /\nDisallow: /basket/\nDisallow: /search/\nDisallow: /personal/\nDisallow: /checkout/\nSitemap: ${origin}/sitemap.xml\n`,
 );
 console.log(`Generated ${routes.length} production routes at ${generatedAt}`);

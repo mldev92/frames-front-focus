@@ -27,3 +27,18 @@ const home = await readFile(new URL("index.html", clientDir), "utf8");
 const robots = await readFile(new URL("robots.txt", clientDir), "utf8");
 if (/<meta[^>]+(?:noindex|nofollow)/i.test(home) || /Disallow:\s*\/\s*$/m.test(robots)) throw new Error("Production home or robots still blocks indexing");
 if (/beta\.optika100\.com/.test(await readFile(new URL("sitemap.xml", clientDir), "utf8"))) throw new Error("Beta URLs in production sitemap");
+
+const invalid = [];
+for (const route of routes) {
+  const relative = route === "/" ? "index.html" : `${route.replace(/^\/|\/$/g, "")}/index.html`;
+  const html = await readFile(new URL(relative, clientDir), "utf8");
+  const privatePage = /^\/(?:basket|checkout|personal|search)(?:\/|$)/.test(route);
+  const title = html.match(/<title[^>]*>(.*?)<\/title>/s)?.[1];
+  if (!title || /^(?:404\b|Страница не найдена|Ошибка)/i.test(title)) invalid.push(`${route}: error title`);
+  if (!privatePage && /<meta[^>]+(?:noindex|nofollow)/i.test(html)) invalid.push(`${route}: blocked indexing`);
+  const canonicals = [...html.matchAll(/<link\b[^>]*rel=["']canonical["'][^>]*>/gi)];
+  if (canonicals.length !== 1 || !/href=["']https:\/\/optika100\.com\//.test(canonicals[0]?.[0] ?? "")) invalid.push(`${route}: canonical missing or ambiguous`);
+  if (/<h[12][^>]*>(?:Страница не найдена|Что-то пошло не так)<\/h[12]>/.test(html)) invalid.push(`${route}: rendered error page`);
+}
+if (invalid.length) throw new Error(`Production metadata validation failed:\n${invalid.join("\n")}`);
+console.log(`Validated title, canonical and indexing on all ${routes.length} routes.`);

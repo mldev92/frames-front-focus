@@ -14,3 +14,9 @@ if (($manifest['settings']['privateBeta'] ?? true) || ($manifest['settings']['fi
 foreach ($manifest['files'] as $path => $hash) {
     if (str_contains($path, '..') || str_starts_with($path, '/') || !is_file($root . '/' . $path) || !hash_equals($hash, hash_file('sha256', $root . '/' . $path))) throw new RuntimeException('Artifact hash mismatch: ' . $path);
 }
+
+if (empty($manifest['templateFiles'])) throw new RuntimeException('Deployment tool checksums required');
+foreach ($manifest['templateFiles'] as $path => $hash) {
+    if (!in_array($path, ['deploy/production.htaccess', 'deploy/redirects.production.txt', 'deploy/release.sh', 'deploy/merge-routing.php', 'deploy/verify-release.php'], true)) throw new RuntimeException('Unexpected deployment tool');
+    if (!hash_equals($hash, hash_file('sha256', __DIR__ . '/' . basename($path)))) throw new RuntimeException('Deployment tools differ from approved artifact');
+}
