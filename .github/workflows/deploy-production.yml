@@ -1,84 +1,75 @@
 name: Deploy production
-
 on:
   workflow_dispatch:
     inputs:
       expected_sha:
-        description: Full commit SHA approved for production
+        description: Approved frontend SHA
         required: true
-
+      candidate_run_id:
+        description: Verified prepare-production workflow run ID
+        required: true
+      artifact_sha256:
+        description: Approved production-release.tgz SHA256
+        required: true
+      backend_sha:
+        description: Deployed and verified backend SHA
+        required: true
+      routing_sha256:
+        description: Approved live htaccess SHA256
+        required: true
+permissions:
+  contents: read
+  actions: read
 concurrency:
   group: optika100-production
   cancel-in-progress: false
-
 jobs:
   deploy:
     environment: production
     runs-on: ubuntu-latest
+    env:
+      FRONTEND_SHA: ${{ inputs.expected_sha }}
+      O100_BACKEND_SHA: ${{ inputs.backend_sha }}
+      O100_ROUTING_SHA256: ${{ inputs.routing_sha256 }}
+      SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+      SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+      PRODUCTION_ROOT: ${{ secrets.PRODUCTION_ROOT }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ inputs.expected_sha }}
-      - name: Verify approved commit
-        run: test "$(git rev-parse HEAD)" = "${{ inputs.expected_sha }}"
-      - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
-      - run: bunx tsc --noEmit
-      - run: bunx eslint src eslint.config.js vite.config.ts vite.config.beta.ts vite.config.production.ts
-      - run: bun test
-      - run: VITE_BITRIX_API=https://optika100.com bun run build:production
-      - name: Package release
+      - name: Verify inputs
         run: |
-          cat deploy/redirects.production.txt deploy/production.htaccess > dist/client/.htaccess
-          printf '%s\n' "${{ inputs.expected_sha }}" > dist/client/.release-sha
-          printf '%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > dist/client/.release-built-at
-          tar -czf production-release.tgz -C dist/client .
-          sha256sum production-release.tgz > production-release.tgz.sha256
-      - name: Upload staged release
+          [[ "$FRONTEND_SHA" =~ ^[a-f0-9]{40}$ && "$O100_BACKEND_SHA" =~ ^[a-f0-9]{40}$ && "$O100_ROUTING_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          test "$(git rev-parse HEAD)" = "$FRONTEND_SHA"
+      - uses: actions/download-artifact@v4
+        with:
+          name: production-candidate
+          run-id: ${{ inputs.candidate_run_id }}
+          github-token: ${{ github.token }}
+      - name: Verify approved artifact
+        env:
+          ARTIFACT_SHA256: ${{ inputs.artifact_sha256 }}
+        run: |
+          [[ "$ARTIFACT_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          printf '%s  production-release.tgz\n' "$ARTIFACT_SHA256" | sha256sum -c -
+          tar -xOf production-release.tgz ./.release-sha | grep -Fx "$FRONTEND_SHA"
+          tar -xOf production-release.tgz ./release-manifest.json > release-manifest.json
+          node -e 'const m=JSON.parse(require("fs").readFileSync("release-manifest.json")); if(m.backendSha!==process.env.O100_BACKEND_SHA || m.routingBaseline!==process.env.O100_ROUTING_SHA256) process.exit(1)'
+          printf '%s  production-release.tgz\n' "$ARTIFACT_SHA256" > production-release.tgz.sha256
+          tar -czf production-tools.tgz deploy
+      - name: Configure verified SSH host keys
         env:
           SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
-          SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
-          SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+          KNOWN_HOSTS: ${{ secrets.PRODUCTION_KNOWN_HOSTS }}
         run: |
-          install -m 600 /dev/null ~/.ssh/optika-production
+          test -n "$KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/optika-production
-          scp -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes production-release.tgz production-release.tgz.sha256 "$SSH_USER@$SSH_HOST:~/"
-      - name: Atomic release swap and smoke
-        env:
-          SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
-          SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
-          PRODUCTION_ROOT: ${{ secrets.PRODUCTION_ROOT }}
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
+      - name: Upload candidate and execute guarded switch
         run: |
-          ssh -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" \
-            "bash -s -- '$PRODUCTION_ROOT' '${{ inputs.expected_sha }}'" <<'REMOTE'
-          set -euo pipefail
-          root="$1"
-          sha="$2"
-          cd "$HOME"
-          sha256sum -c production-release.tgz.sha256
-          release="$root/o100_frontend_releases/$sha"
-          stage="$release.stage"
-          rm -rf "$stage"
-          mkdir -p "$stage"
-          tar -xzf production-release.tgz -C "$stage"
-          test -s "$stage/index.html"
-          test -s "$stage/404.html"
-          test -s "$stage/sitemap.xml"
-          test "$(cat "$stage/.release-sha")" = "$sha"
-          mv "$stage" "$release"
-          previous="$(readlink "$root/o100_frontend_current" || true)"
-          previous_htaccess="$root/.htaccess.before_$sha"
-          if [ -f "$root/.htaccess" ]; then
-            cp "$root/.htaccess" "$previous_htaccess"
-          fi
-          ln -sfn "$release" "$root/o100_frontend_next"
-          mv -Tf "$root/o100_frontend_next" "$root/o100_frontend_current"
-          cp "$release/.htaccess" "$root/.htaccess.next"
-          mv -f "$root/.htaccess.next" "$root/.htaccess"
-          printf '%s\n' "$previous" > "$root/o100_frontend_previous"
-          printf '%s\n' "$previous_htaccess" > "$root/o100_frontend_previous_htaccess"
-          REMOTE
-          for path in / /catalog_s/opravy/ /warranty/ /politika-konfidentsialnosti/ /sitemap.xml; do
-            curl --fail --silent --show-error "https://optika100.com$path" >/dev/null
-          done
-          test "$(curl -s -o /dev/null -w '%{http_code}' https://optika100.com/definitely-not-a-real-route)" = "404"
+          ssh -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
+          scp -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
+          ssh -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz"

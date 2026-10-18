@@ -1,0 +1,54 @@
+name: Prepare production candidate
+on:
+  workflow_dispatch:
+    inputs:
+      backend_sha:
+        description: Deployed backend SHA
+        required: true
+      routing_sha256:
+        description: Inspected live htaccess SHA256
+        required: true
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    env:
+      O100_BACKEND_SHA: ${{ inputs.backend_sha }}
+      O100_ROUTING_SHA256: ${{ inputs.routing_sha256 }}
+      SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+      SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+      PRODUCTION_ROOT: ${{ secrets.PRODUCTION_ROOT }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck && bun run lint && bun run test && bun run test:unit
+      - name: Read backend manifest with pinned host key
+        env:
+          SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.PRODUCTION_KNOWN_HOSTS }}
+        run: |
+          test -n "$KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/optika-production
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
+          ssh -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "cat '$PRODUCTION_ROOT/../.o100-backend-release.json'" > backend-release.json
+      - run: VITE_BITRIX_API=https://optika100.com VITE_VIRTUAL_TRY_ON=false bun run build:production
+      - name: Package candidate
+        env:
+          O100_BACKEND_MANIFEST: backend-release.json
+        run: |
+          node scripts/package-production.mjs
+          tar -czf production-release.tgz -C dist/client .
+          sha256sum production-release.tgz > production-release.tgz.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-candidate
+          retention-days: 30
+          path: |
+            production-release.tgz
+            production-release.tgz.sha256
+            dist/client/release-manifest.json
+            generated/production-routes.json

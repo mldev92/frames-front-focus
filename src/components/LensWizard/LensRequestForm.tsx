@@ -96,7 +96,7 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
         aria-live="polite"
       >
         <CheckCircle2 className="h-8 w-8 text-brand" />
-        <h2 className="mt-4 font-serif text-2xl">Заявка отправлена</h2>
+        <h2 className="mt-4 font-serif text-2xl">Заявка сохранена</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           Специалист проверит рецепт, выбранную оправу и доступные линзы, затем свяжется с вами.
         </p>

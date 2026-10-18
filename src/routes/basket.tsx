@@ -17,7 +17,7 @@ export const Route = createFileRoute("/basket")({
 });
 
 function CartPage() {
-  const { lines, lensSelections, setQty, remove, removeLens, totals, clear, clearLens } = useCart();
+  const { lines, lensSelections, setQty, remove, removeLens, totals, clear, consumeLens } = useCart();
   const [lensSubmitted, setLensSubmitted] = useState(false);
   const { subtotal, count } = totals();
 
@@ -129,7 +129,7 @@ function CartPage() {
       {(lensSelections.length > 0 || lensSubmitted) && (
         <section className="mt-10 border-t border-border pt-8">
           <h2 className="font-serif text-2xl">Очковые линзы · {lensSelections.length}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Специалист проверит рецепт, совместимость и окончательную стоимость выбранных линз.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Подбор линз — отдельная заявка специалисту. Товары выше оформляются отдельным заказом. Специалист проверит рецепт, совместимость и окончательную стоимость линз.</p>
           <div className="mt-5 divide-y divide-border border-y border-border">
             {lensSelections.map((item) => (
               <div key={item.id} className="flex items-start justify-between gap-4 py-4">
@@ -142,7 +142,7 @@ function CartPage() {
               </div>
             ))}
           </div>
-          <LensRequestForm draft={lensCartDraft(lensSelections)} onSent={() => { setLensSubmitted(true); clearLens(); }} />
+          <LensRequestForm draft={lensCartDraft(lensSelections)} onSent={() => { setLensSubmitted(true); consumeLens(lensSelections); }} />
         </section>
       )}
     </div>

@@ -66,7 +66,7 @@ const redirectSources = new Set(
       const direct = line.match(/^Redirect\s+301\s+(\S+)\s+\S+/)?.[1];
       if (direct) return direct;
       const exact = line.match(/^RedirectMatch\s+301\s+\^(\S+?)\/\?\$\s+\S+/)?.[1];
-      return exact;
+      return exact?.replace(/\\([.\-])/g, "$1");
     })
     .filter(Boolean)
     .map((path) => normalizePath(path)),

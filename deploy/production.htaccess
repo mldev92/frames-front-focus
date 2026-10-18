@@ -1,18 +1,22 @@
-DirectoryIndex index.php index.html
-Options -Indexes
+# BEGIN O100 FRONTEND
+# После HTTPS/домена, до robots и маршрутизатора Битрикса.
 RewriteEngine On
-
-RewriteRule ^(api|auth|bitrix|sale|upload|local)(/|$) - [L]
+RewriteCond %{THE_REQUEST} \s/+o100_frontend_[^\s?]* [NC]
+RewriteRule ^o100_frontend_ - [R=404,END]
+RewriteRule ^(api|auth|bitrix|sale|upload|local|order)(/|$) - [L]
 RewriteRule ^personal/(order|payment|profile)(/|$) - [L]
 RewriteRule ^(1c_exchange|payment_callback|verification)(/|$) - [L]
-RewriteRule ^.*\.(php)$ - [L]
-RewriteRule ^o100_frontend_(current|releases|previous)(/|$) - [R=404,L]
-
+RewriteRule \.php$ - [L]
+RewriteCond %{QUERY_STRING} (^|&)legacy=1(&|$)
+RewriteRule ^basket/?$ /basket/index.php [END]
+RewriteCond %{DOCUMENT_ROOT}/o100_frontend_assets/$1 -f
+RewriteRule ^assets/(.+)$ /o100_frontend_assets/$1 [END]
 RewriteCond %{DOCUMENT_ROOT}/o100_frontend_current/$1 -f
-RewriteRule ^(.+)$ /o100_frontend_current/$1 [L]
+RewriteRule ^(.+)$ /o100_frontend_current/$1 [END]
 RewriteCond %{DOCUMENT_ROOT}/o100_frontend_current/$1/index.html -f
-RewriteRule ^(.+?)/?$ /o100_frontend_current/$1/index.html [L]
-RewriteRule ^$ /o100_frontend_current/index.html [L]
-RewriteRule ^(basket|checkout|search)/?$ /o100_frontend_current/_shell.html [L]
-
-ErrorDocument 404 /o100_frontend_current/404.html
+RewriteRule ^(.+?)/?$ /o100_frontend_current/$1/index.html [END]
+RewriteRule ^$ /o100_frontend_current/index.html [END]
+RewriteRule ^(basket|checkout|search)/?$ /o100_frontend_current/_shell.html [END]
+RewriteRule ^catalog_[sn]/[a-zA-Z0-9_/-]+/?$ /local/tools/o100-product-fallback.php [END]
+ErrorDocument 404 /local/tools/o100-frontend-404.php
+# END O100 FRONTEND

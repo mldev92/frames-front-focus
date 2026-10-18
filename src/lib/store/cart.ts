@@ -1,3 +1,4 @@
+import { mergeLegacy, consumeAttemptOnce } from "@/lib/cart-migration";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Product } from "@/data/types";
@@ -32,6 +33,9 @@ export interface Prescription {
 }
 
 export interface CartLine {
+  legacySource?: string;
+  legacyDescription?: string;
+  offerId?: number | null;
   lineId: string;
   productId: number;
   slug: string;
@@ -53,6 +57,10 @@ export interface CartLine {
 }
 
 interface CartState {
+  importedSources: string[];
+  importLegacy: (lines: CartLine[]) => void;
+  consumedAttempts: string[];
+  consume: (lines: CartLine[], attemptId: string) => void;
   lines: CartLine[];
   lensSelections: LensCartSelection[];
   saved: string[];
@@ -75,6 +83,7 @@ interface CartState {
   addLens: (offer: LensRecommendCard) => void;
   removeLens: (id: string) => void;
   clearLens: () => void;
+  consumeLens: (items: LensCartSelection[]) => void;
   remove: (lineId: string) => void;
   setQty: (lineId: string, qty: number) => void;
   clear: () => void;
@@ -100,6 +109,10 @@ function lineIdentity(
 export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
+      importedSources: [],
+      importLegacy: (incoming) => set((state) => mergeLegacy(state.lines, state.importedSources ?? [], incoming)),
+      consumedAttempts: [],
+      consume: (submitted, attemptId) => set((state) => consumeAttemptOnce(state.lines, state.consumedAttempts ?? [], submitted, attemptId)),
       lines: [],
       lensSelections: [],
       saved: [],
@@ -187,6 +200,10 @@ export const useCart = create<CartState>()(
       }),
       removeLens: (id) => set((state) => ({ lensSelections: state.lensSelections.filter((item) => item.id !== id) })),
       clearLens: () => set({ lensSelections: [] }),
+      consumeLens: (submitted) => set((state) => ({ lensSelections: state.lensSelections.flatMap((item) => {
+        const sent = submitted.find((entry) => entry.id === item.id);
+        return !sent ? [item] : item.qty > sent.qty ? [{ ...item, qty: item.qty - sent.qty }] : [];
+      }) })),
       remove: (lineId) =>
         set({ lines: get().lines.filter((line) => line.lineId !== lineId) }),
       setQty: (lineId, qty) =>
@@ -213,11 +230,13 @@ export const useCart = create<CartState>()(
     }),
     {
       name: "optika-cart",
-      version: 2,
+      version: 3,
       migrate: (persisted) => {
         const state = persisted as Partial<CartState>;
         return {
           ...state,
+          importedSources: state.importedSources ?? [],
+          consumedAttempts: state.consumedAttempts ?? [],
           lines: Array.isArray(state.lines)
             ? state.lines.filter(
                 (line): line is CartLine =>

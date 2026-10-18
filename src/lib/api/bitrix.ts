@@ -1,3 +1,4 @@
+import { requestKey } from "@/lib/request-key";
 /**
  * Bitrix storefront API client.
  *
@@ -93,10 +94,23 @@ function fixtureProducts(products: Product[]): Product[] {
   }));
 }
 
+// Только при статической сборке: объединяем одинаковые публичные GET, без данных сессии.
+const prerenderResponses = new Map<string, Promise<unknown>>();
 async function fetchJson<T>(path: string): Promise<T> {
-  const res = await apiFetch(url(path));
-  if (!res.ok) throw new Error(`Bitrix API ${res.status} for ${path}`);
-  return (await res.json()) as T;
+  const cacheable = import.meta.env.SSR && import.meta.env.VITE_PRERENDER_BUILD === "true"
+    && /^(?:homepage|products|galleries|menu_counts)\.php(?:\?|$)/.test(path);
+  const read = async (): Promise<T> => {
+    const res = await apiFetch(url(path));
+    if (!res.ok) throw new Error(`Bitrix API ${res.status} for ${path}`);
+    return (await res.json()) as T;
+  };
+  if (!cacheable) return read();
+  let pending = prerenderResponses.get(path);
+  if (!pending) {
+    pending = read().catch((error: unknown) => { prerenderResponses.delete(path); throw error; });
+    prerenderResponses.set(path, pending);
+  }
+  return pending as Promise<T>;
 }
 
 export function getStoreApiUrl(path: string): string {
@@ -467,6 +481,8 @@ function menuCountsToFacets(menu: MenuCounts): Partial<Record<FacetKey, Record<s
 }
 
 export interface CallbackData {
+  city?: string;
+  requestedTime?: string;
   name: string;
   phone: string;
   comment?: string;
@@ -549,7 +565,7 @@ async function postJson<T>(path: string, body: unknown): Promise<T> {
 }
 
 export async function submitCallback(data: CallbackData): Promise<void> {
-  await postJson("callback.php", data);
+  await postJson("callback.php", { ...data, requestKey: await requestKey("callback", data) });
 }
 
 export async function submitAppointment(data: AppointmentData): Promise<void> {
@@ -598,6 +614,9 @@ export async function searchProducts(query: string, limit = 24): Promise<Product
 }
 
 export interface CreateOrderInput {
+  checkoutVersion?: 2;
+  quoteId?: string;
+  acceptPendingDelivery?: boolean;
   customer: { fullName: string; phone: string; email: string };
   lines: import("@/lib/store/cart").CartLine[];
   city: string;
@@ -615,7 +634,8 @@ export interface CreateOrderResult {
   ok: true;
   orderId: number;
   accountNumber: string;
-  total: number;
+  total: number | null;
+  deliveryStatus: "priced" | "pending_confirmation";
   itemsTotal: number;
 }
 
@@ -679,4 +699,18 @@ export async function getOrderPickupPoints(
   input: Pick<CreateOrderInput, "city">,
 ): Promise<PickupPointsResult> {
   return securePost<PickupPointsResult>("order_pickup_points.php", input);
+}
+
+export interface OrderQuote {
+  ok: true;
+  quoteId: string;
+  expiresAt: number;
+  lines: { lineId: string; productId: number; qty: number; price: number }[];
+  itemsTotal: number;
+  deliveryPrice: number | null;
+  deliveryStatus: "priced" | "pending_confirmation";
+  total: number | null;
+}
+export function quoteOrder(input: CreateOrderInput): Promise<OrderQuote> {
+  return securePost<OrderQuote>("order_quote.php", input);
 }

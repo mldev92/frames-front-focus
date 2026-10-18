@@ -4,24 +4,17 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 const manifest = JSON.parse(
   readFileSync(new URL("./generated/production-routes.json", import.meta.url), "utf8"),
 ) as { routes: string[] };
-const requestedLimit = Number(process.env.O100_PRERENDER_LIMIT ?? 0);
-const requestedRoutes = (process.env.O100_PRERENDER_ROUTES ?? "")
-  .split(",")
-  .map((path) => path.trim())
-  .filter(Boolean);
-const productionRoutes =
-  requestedRoutes.length > 0
-    ? requestedRoutes
-    : Number.isFinite(requestedLimit) && requestedLimit > 0
-    ? manifest.routes.slice(0, requestedLimit)
-    : manifest.routes;
+if (process.env.O100_PRERENDER_LIMIT || process.env.O100_PRERENDER_ROUTES) throw new Error("Partial production prerender is forbidden");
+const productionRoutes = manifest.routes;
 
 export default defineConfig({
   cloudflare: false,
   vite: {
     define: {
+      "import.meta.env.VITE_PRERENDER_BUILD": JSON.stringify("true"),
       "import.meta.env.VITE_PRIVATE_BETA": JSON.stringify("false"),
       "import.meta.env.VITE_ALLOW_FIXTURES": JSON.stringify("false"),
+      "import.meta.env.VITE_VIRTUAL_TRY_ON": JSON.stringify("false"),
     },
   },
   tanstackStart: {

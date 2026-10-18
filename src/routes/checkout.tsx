@@ -1,3 +1,5 @@
+import { readAttempt, saveAttempt, forgetAttempt, checkAttempt, cancelAttempt, withCheckoutLock, orderFingerprint, ATTEMPT_STORAGE_KEY } from "@/lib/checkout-attempt";
+import { StoreApiError } from "@/lib/api/security";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode, CSSProperties } from "react";
@@ -11,7 +13,6 @@ import {
   Search,
   Shield,
   Phone,
-  Tag,
   Check,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -19,8 +20,8 @@ import { useCart, formatPrice } from "@/lib/store/cart";
 import { useCityStore } from "@/lib/store/city";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CONTACT } from "@/data/contact";
-import { createOrder, getOrderDeliveryOptions, getStoreApiUrl } from "@/lib/api/bitrix";
-import type { DeliveryQuoteOption, PickupPointOption } from "@/lib/api/bitrix";
+import { createOrder, getOrderDeliveryOptions, getStoreApiUrl, quoteOrder } from "@/lib/api/bitrix";
+import type { DeliveryQuoteOption, PickupPointOption, CreateOrderInput, OrderQuote } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -124,7 +125,7 @@ function Checkout() {
   const isMobile = useIsMobile();
   const regionalCity = useCityStore((state) => state.city);
   const regionalCityHydrated = useCityStore((state) => state.hydrated);
-  const { totals, lines, setQty, clear } = useCart();
+  const { totals, lines, setQty, consume } = useCart();
   const { subtotal } = totals();
 
   const [open, setOpen] = useState<string | null>("region");
@@ -137,8 +138,10 @@ function Checkout() {
   );
   const [address, setAddress] = useState("");
   const [payment, setPayment] = useState<PaymentCode>("cash_on_pickup");
-  const [promoVisible, setPromoVisible] = useState(false);
-  const [promoCode, setPromoCode] = useState("");
+  const [review, setReview] = useState<{ input: CreateOrderInput; quote: OrderQuote; fingerprint: string } | null>(null);
+  const [acceptPending, setAcceptPending] = useState(false);
+  const [hasAttempt, setHasAttempt] = useState(false);
+  const [serverItemsTotal, setServerItemsTotal] = useState<number | null>(null);
   const [agreed, setAgreed] = useState(false);
   const [comment, setComment] = useState("");
   const [fullName, setFullName] = useState("");
@@ -193,9 +196,9 @@ function Checkout() {
   );
   const selectedPayment =
     paymentOptions.find((option) => option.code === payment) ?? paymentOptions[0];
-  const deliveryPrice = selectedDelivery.price ?? 0;
-  const orderTotal = subtotal + deliveryPrice;
-  const isFree = selectedDelivery.price === 0 || selectedDelivery.free;
+  const deliveryPrice = review ? review.quote.deliveryPrice : selectedDelivery.price;
+  const orderTotal = review?.quote.total ?? (serverItemsTotal ?? subtotal) + (deliveryPrice ?? 0);
+  const isFree = deliveryPrice === 0;
   const storeApiBase =
     (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ??
     "https://optika100.com";
@@ -224,12 +227,13 @@ function Checkout() {
   useEffect(() => {
     let cancelled = false;
     setQuotedDeliveryOptions(null);
+    setServerItemsTotal(null);
     setPickupPoint(null);
     if (!lines.length) return;
     setDeliveryLoading(true);
     getOrderDeliveryOptions({ city, lines })
       .then((result) => {
-        if (!cancelled) setQuotedDeliveryOptions(result.options);
+        if (!cancelled) { setQuotedDeliveryOptions(result.options); setServerItemsTotal(result.itemsTotal); }
       })
       .catch((error) => {
         console.error("[checkout] delivery quote:", error);
@@ -520,74 +524,104 @@ function Checkout() {
     }
   };
 
-  const submit = async () => {
-    if (!agreed) {
-      toast.error("Необходимо согласиться с условиями");
-      return;
-    }
-    if (!lines.length) {
-      toast.error("Корзина пуста");
-      return;
-    }
-    if (selectedDelivery.requiresPickupPoint && !pickupPoint) {
-      setOpen("delivery");
-      toast.error("Выберите пункт самовывоза СДЭК");
-      return;
-    }
-    const needsAddress = selectedDelivery.requiresAddress || selectedDelivery.requiresPickupPoint;
-    if (
-      !fullName.trim() ||
-      phone.replace(/\D/g, "").length < 10 ||
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ||
-      (needsAddress && !address.trim())
-    ) {
-      setOpen("buyer");
-      toast.error("Проверьте контактные данные");
-      return;
-    }
+  useEffect(() => {
+    setReview(null);
+    setAcceptPending(false);
+  }, [lines, city, delivery, payment, address, pickupPoint, fullName, phone, email, trackNumber, comment]);
+
+  useEffect(() => {
+    try {
+      const attempt = readAttempt();
+      setHasAttempt(Boolean(attempt));
+      if (!attempt) return;
+      const input = attempt.input;
+      setFullName(input.customer.fullName); setPhone(input.customer.phone); setEmail(input.customer.email);
+      setCity(input.city as CheckoutCity); setDelivery(input.deliveryCode); setPayment(input.paymentCode);
+      setAddress(input.address ?? ""); setComment(input.comment ?? ""); setTrackNumber(input.trackNumber ?? "");
+      if (input.pickupPoint) setPickupPoint(input.pickupPoint as PickupPoint);
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Не удалось прочитать попытку"); }
+  }, []);
+
+  const recover = async () => {
     setSubmitting(true);
     try {
-      const idempotencyKey = crypto.randomUUID().replace(/-/g, "");
-      const pickupPayload = pickupPoint
-        ? {
-            ...pickupPoint,
-            address: pickupPoint.rawAddress ?? pickupPoint.address,
-          }
-        : undefined;
-      const deliveryAddress = selectedDelivery.requiresPickupPoint
-        ? pickupPayload?.address?.trim() || address.trim()
-        : address.trim() ||
-          (selectedDelivery.code === "salon_pickup_spb"
-            ? "Самовывоз из салона «Оптика 100%», ул. Кирочная, 17"
-            : undefined);
-      const result = await createOrder(
-        {
-          customer: {
-            fullName: fullName.trim(),
-            phone: phone.trim(),
-            email: email.trim(),
-          },
-          lines,
-          city,
-          delivery: selectedDelivery.label,
-          deliveryCode: selectedDelivery.code,
-          payment: selectedPayment.label,
-          paymentCode: selectedPayment.code,
-          address: deliveryAddress,
-          pickupPoint: pickupPayload,
-          trackNumber: trackNumber.trim() || undefined,
-          comment: comment.trim() || undefined,
-        },
-        idempotencyKey,
-      );
-      setCompletedOrder(result.accountNumber);
-      clear();
-      toast.success(`Заказ №${result.accountNumber} создан`);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Не удалось создать заказ");
-    } finally {
-      setSubmitting(false);
+      await withCheckoutLock(async () => {
+        const attempt = readAttempt();
+        if (!attempt) { setHasAttempt(false); return; }
+        const status = await checkAttempt(attempt.id);
+        if (status.status === "complete" && status.result) {
+          await useCart.persist.rehydrate();
+          consume(attempt.input.lines, attempt.id); forgetAttempt(attempt.id); setHasAttempt(false);
+          setCompletedOrder(status.result.accountNumber);
+        } else toast.info(status.status === "validating" || status.status === "not_found"
+          ? "Заказ не сохранён. Проверьте данные и повторите оформление."
+          : "Результат ещё проверяется. Не создавайте новый заказ; обратитесь в салон.");
+      });
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Не удалось проверить заказ"); }
+    finally { setSubmitting(false); }
+  };
+
+  const submit = async () => {
+    if (submitting) return;
+    if (!agreed) { toast.error("Необходимо согласиться с условиями"); return; }
+    if (!lines.length) { toast.error("Корзина пуста"); return; }
+    if (selectedDelivery.requiresPickupPoint && !pickupPoint) { setOpen("delivery"); toast.error("Выберите пункт самовывоза СДЭК"); return; }
+    if (!fullName.trim() || phone.replace(/\D/g, "").length < 10 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || (selectedDelivery.requiresAddress && !address.trim())) {
+      setOpen("buyer"); toast.error("Проверьте контактные данные"); return;
     }
+    const input: CreateOrderInput = {
+      checkoutVersion: 2,
+      customer: { fullName: fullName.trim(), phone: phone.trim(), email: email.trim() },
+      lines, city, delivery: selectedDelivery.label, deliveryCode: selectedDelivery.code,
+      payment: selectedPayment.label, paymentCode: selectedPayment.code,
+      address: pickupPoint?.rawAddress ?? pickupPoint?.address ?? (address.trim() || undefined),
+      pickupPoint: pickupPoint ? { id: pickupPoint.id, address: pickupPoint.rawAddress ?? pickupPoint.address } : undefined,
+      trackNumber: trackNumber.trim() || undefined, comment: comment.trim() || undefined,
+    };
+    setSubmitting(true);
+    try {
+      await withCheckoutLock(async () => {
+        const previous = readAttempt();
+        if (previous) {
+          const status = await checkAttempt(previous.id);
+          if (status.status === "complete" && status.result) {
+            await useCart.persist.rehydrate();
+            consume(previous.input.lines, previous.id); forgetAttempt(previous.id); setHasAttempt(false);
+            setCompletedOrder(status.result.accountNumber); return;
+          }
+          if (!["validating", "not_found", "cancelled"].includes(status.status)) throw new Error("Предыдущий заказ ещё проверяется. Обратитесь в салон перед новой попыткой.");
+          if (status.status === "cancelled") { forgetAttempt(previous.id); setHasAttempt(false); }
+          else if (orderFingerprint(previous.input) !== orderFingerprint(input)) {
+            if (!window.confirm("Предыдущий заказ не сохранён. Начать новую попытку с изменёнными данными?")) return;
+            await cancelAttempt(previous.id);
+            forgetAttempt(previous.id); setHasAttempt(false); setReview(null);
+          }
+        }
+        await useCart.persist.rehydrate();
+        if (JSON.stringify(useCart.getState().lines) !== JSON.stringify(input.lines)) {
+          setReview(null);
+          throw new Error("Корзина изменилась в другой вкладке. Проверьте обновлённый состав перед оформлением.");
+        }
+        const fingerprint = orderFingerprint(input);
+        if (!review || review.fingerprint !== fingerprint || review.quote.expiresAt * 1000 <= Date.now()) {
+          const quote = await quoteOrder(input);
+          setReview({ input, quote, fingerprint }); setAcceptPending(false);
+          toast.info("Проверьте рассчитанную стоимость и подтвердите заказ."); return;
+        }
+        if (review.quote.deliveryStatus === "pending_confirmation" && !acceptPending) throw new Error("Подтвердите согласование стоимости доставки с менеджером.");
+        const approved = { ...input, quoteId: review.quote.quoteId, acceptPendingDelivery: acceptPending };
+        const attempt = saveAttempt(approved);
+        localStorage.setItem(ATTEMPT_STORAGE_KEY, JSON.stringify({ ...attempt, input: approved }));
+        setHasAttempt(true);
+        const result = await createOrder(approved, attempt.id);
+        await useCart.persist.rehydrate();
+        consume(input.lines, attempt.id); forgetAttempt(attempt.id); setHasAttempt(false);
+        setCompletedOrder(result.accountNumber);
+      });
+    } catch (error) {
+      if (error instanceof StoreApiError && error.data.code === "quote_changed") { setReview(null); setAcceptPending(false); }
+      toast.error(error instanceof Error ? error.message : "Не удалось подтвердить заказ. Корзина сохранена.");
+    } finally { setSubmitting(false); }
   };
 
   if (completedOrder) {
@@ -1018,10 +1052,10 @@ function Checkout() {
                 gap: "8px",
               }}
             >
-              <SummaryRow label="Товаров на" value={formatPrice(subtotal)} />
+              <SummaryRow label="Товаров на" value={formatPrice(review?.quote.itemsTotal ?? serverItemsTotal ?? subtotal)} />
               <SummaryRow
                 label="Доставка"
-                value={selectedDelivery.priceFormatted}
+                value={deliveryPrice === null ? "Уточняется менеджером" : formatPrice(deliveryPrice)}
                 valueStyle={isFree ? { color: "var(--success)", fontWeight: 500 } : undefined}
               />
               <SummaryRow label="Скидка" value="—" />
@@ -1039,63 +1073,25 @@ function Checkout() {
             >
               <span style={{ fontWeight: 500 }}>Итого:</span>
               <span className="font-serif" style={{ fontSize: "22px", fontWeight: 700 }}>
-                {formatPrice(orderTotal)}
+                {deliveryPrice === null ? "Уточняется" : formatPrice(orderTotal)}
               </span>
             </div>
 
-            {/* Promo */}
-            <div style={{ marginBottom: "16px" }}>
-              <button
-                type="button"
-                onClick={() => setPromoVisible((v) => !v)}
-                className="text-muted-foreground text-sm"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  padding: 0,
-                }}
-              >
-                <Tag size={14} />
-                Есть промокод?
-              </button>
-              {promoVisible && (
-                <div style={{ display: "flex", gap: "8px", marginTop: "8px" }}>
-                  <input
-                    type="text"
-                    placeholder="Введите промокод"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    className="bg-background border border-border"
-                    style={{
-                      flex: 1,
-                      borderRadius: "8px",
-                      padding: "10px 12px",
-                      fontSize: "14px",
-                      outline: "none",
-                    }}
-                  />
-                  <button
-                    type="button"
-                    style={{
-                      backgroundColor: "var(--ink)",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "8px",
-                      padding: "10px 14px",
-                      fontSize: "13px",
-                      cursor: "pointer",
-                      flexShrink: 0,
-                    }}
-                  >
-                    Применить
-                  </button>
-                </div>
-              )}
-            </div>
+            {hasAttempt && <div className="mb-4 rounded-lg border border-amber-300 p-3 text-sm" role="status">
+              Есть сохранённая попытка заказа. <button type="button" disabled={submitting} onClick={() => void recover()} className="underline">Проверить результат</button>
+            </div>}
+            {review && <div className="mb-4 rounded-lg border p-3 text-sm" aria-live="polite">
+              <strong>Расчёт магазина</strong>
+              {review.quote.lines.map((line) => <p key={line.lineId}>{lines.find((item) => item.lineId === line.lineId)?.name}: {line.qty} × {formatPrice(line.price)}</p>)}
+              <p>Товары: {formatPrice(review.quote.itemsTotal)}</p>
+              <p>Доставка: {review.quote.deliveryPrice === null ? "уточняется менеджером" : formatPrice(review.quote.deliveryPrice)}</p>
+              <p>Итого: {review.quote.total === null ? "после согласования доставки" : formatPrice(review.quote.total)}</p>
+              {review.quote.deliveryStatus === "pending_confirmation" && <label className="mt-2 flex gap-2">
+                <input type="checkbox" checked={acceptPending} onChange={(event) => setAcceptPending(event.target.checked)} />
+                Стоимость доставки и окончательную сумму согласует менеджер до оплаты.
+              </label>}
+              <p className="mt-2">Менеджер подтвердит заказ и при необходимости отправит ссылку на оплату.</p>
+            </div>}
 
             {/* Agreement */}
             <div
@@ -1165,7 +1161,7 @@ function Checkout() {
               onMouseOver={(e) => (e.currentTarget.style.opacity = "0.85")}
               onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
             >
-              {submitting ? "Создаём заказ..." : "Оформить заказ"}
+              {submitting ? "Проверяем заказ..." : review ? "Подтвердить заказ" : "Рассчитать и проверить заказ"}
             </button>
 
             {/* Trust badges */}

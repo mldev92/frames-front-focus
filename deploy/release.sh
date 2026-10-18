@@ -1,0 +1,105 @@
+#!/usr/bin/env bash
+# Переключение и возврат без восстановления базы данных.
+set -Eeuo pipefail
+action=${1:?deploy or rollback}
+root=$(realpath "${2:?document root}")
+[[ -d "$root/bitrix" && -f "$root/.htaccess" ]] || { echo 'Invalid Bitrix document root' >&2; exit 2; }
+state="$(dirname "$root")/.o100-deploy"
+mkdir -p "$state"
+chmod 700 "$state"
+exec 9>"$state/lock"
+flock -w 60 9
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+php_bin=${O100_PHP:-php8.1}
+origin=${O100_SMOKE_ORIGIN:?Set smoke origin}
+curl_args=(--max-time 30 --silent --show-error)
+if [[ -n "${O100_SMOKE_CURL_CONFIG:-}" ]]; then curl_args+=(--config "$O100_SMOKE_CURL_CONFIG"); fi
+smoke() {
+  local path status
+  for path in / /catalog_s/opravy/ /catalog_n/opravy/ /basket/ /order/ /auth/ /api/store/csrf.php /sitemap.xml; do
+    curl "${curl_args[@]}" --fail "$origin$path" >/dev/null || return 1
+  done
+  status=$(curl "${curl_args[@]}" --output /dev/null --write-out '%{http_code}' "$origin/cutover-missing-route-9f381a/")
+  [[ "$status" == 404 ]]
+}
+restore() {
+  local transaction=$1 previous
+  [[ -f "$transaction/htaccess" && -f "$transaction/previous" ]] || return 1
+  previous=$(cat "$transaction/previous")
+  if [[ -n "$previous" ]]; then
+    [[ "$previous" == "$root/o100_frontend_releases/"* && -s "$previous/index.html" ]] || return 1
+    ln -sfn "$previous" "$root/o100_frontend_next"
+    mv -Tf "$root/o100_frontend_next" "$root/o100_frontend_current"
+  fi
+  cp "$transaction/htaccess" "$root/.htaccess.next"
+  mv -f "$root/.htaccess.next" "$root/.htaccess"
+  if [[ -z "$previous" && -L "$root/o100_frontend_current" ]]; then unlink "$root/o100_frontend_current"; fi
+  if [[ -s "$transaction/parent-transaction" ]]; then
+    cp "$transaction/parent-transaction" "$state/active-transaction.next"
+    mv -f "$state/active-transaction.next" "$state/active-transaction"
+  else
+    rm -f "$state/active-transaction"
+  fi
+}
+if [[ "$action" == rollback ]]; then
+  transaction=$(cat "$state/active-transaction")
+  [[ "$transaction" == "$state/transactions/"* ]] || exit 2
+  restore "$transaction"
+  smoke
+  printf '%s\n' rolled-back > "$transaction/status"
+  exit
+fi
+[[ "$action" == deploy ]] || exit 2
+sha=${3:?approved frontend SHA}
+baseline=${4:?approved routing SHA256}
+archive=${5:?release archive}
+[[ "$sha" =~ ^[a-f0-9]{40}$ && "$baseline" =~ ^[a-f0-9]{64}$ ]] || exit 2
+[[ "$(sha256sum "$root/.htaccess" | cut -d' ' -f1)" == "$baseline" ]] || { echo 'Routing drift; deployment refused' >&2; exit 3; }
+release="$root/o100_frontend_releases/$sha"
+[[ ! -e "$release" ]] || { echo 'Immutable release already exists' >&2; exit 3; }
+stage="$release.stage-$$"
+mkdir -p "$stage"
+tar -xzf "$archive" -C "$stage" --no-same-owner
+for file in index.html _shell.html 404.html sitemap.xml robots.txt release-manifest.json; do test -s "$stage/$file"; done
+[[ "$(cat "$stage/.release-sha")" == "$sha" ]]
+"$php_bin" "$script_dir/verify-release.php" "$stage" "$root"
+transaction="$state/transactions/$(date -u +%Y%m%dT%H%M%SZ)-$sha"
+mkdir -p "$transaction"
+cp "$root/.htaccess" "$transaction/htaccess"
+"$php_bin" "$script_dir/merge-routing.php" "$root/.htaccess" "$script_dir" "$baseline" "$transaction/next.htaccess"
+readlink "$root/o100_frontend_current" > "$transaction/previous" || : > "$transaction/previous"
+if [[ -s "$state/active-transaction" ]]; then cp "$state/active-transaction" "$transaction/parent-transaction"; fi
+mv "$stage" "$release"
+mkdir -p "$root/o100_frontend_assets" "$root/assets"
+if [[ -d "$release/assets" ]]; then
+  while IFS= read -r -d '' asset; do
+    relative=${asset#"$release/assets/"}
+    for destination in "$root/o100_frontend_assets/$relative" "$root/assets/$relative"; do
+      if [[ -f "$destination" ]]; then cmp "$asset" "$destination" || { echo "Asset collision: $relative" >&2; exit 3; }
+      else mkdir -p "$(dirname "$destination")"; cp "$asset" "$destination"; fi
+    done
+  done < <(find "$release/assets" -type f -print0)
+fi
+printf '%s\n' "$transaction" > "$state/active-transaction.next"
+mv -f "$state/active-transaction.next" "$state/active-transaction"
+armed=1
+revert_on_error() {
+  local code=$?
+  trap - ERR HUP INT TERM
+  if [[ "$armed" == 1 ]]; then
+    restore "$transaction" && printf '%s\n' automatically-restored > "$transaction/status"
+    smoke || echo 'Rollback smoke failed: operator intervention required' >&2
+  fi
+  exit "${code:-1}"
+}
+trap revert_on_error ERR HUP INT TERM
+ln -sfn "$release" "$root/o100_frontend_next"
+mv -Tf "$root/o100_frontend_next" "$root/o100_frontend_current"
+cp "$transaction/next.htaccess" "$root/.htaccess.next"
+mv -f "$root/.htaccess.next" "$root/.htaccess"
+[[ "${O100_TEST_FAIL_AFTER_SWAP:-0}" != 1 ]]
+smoke
+armed=0
+trap - ERR HUP INT TERM
+printf '%s\n' deployed > "$transaction/status"
+echo "Deployed $sha; rollback transaction: $transaction"

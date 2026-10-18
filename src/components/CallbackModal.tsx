@@ -1,3 +1,4 @@
+import { useCityStore } from "@/lib/store/city";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -13,6 +14,8 @@ interface CallbackModalProps {
 }
 
 export function CallbackModal({ open, onOpenChange, subject }: CallbackModalProps) {
+  const city = useCityStore((state) => state.city);
+  const [sending, setSending] = useState(false);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [schedule, setSchedule] = useState<"now" | "later">("now");
@@ -22,11 +25,13 @@ export function CallbackModal({ open, onOpenChange, subject }: CallbackModalProp
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (sending) return;
+    setSending(true);
     try {
       const comment = [subject, schedule === "later" ? `Удобное время: ${date} ${time}` : undefined]
         .filter(Boolean)
         .join(". ");
-      await submitCallback({ name, phone, comment: comment || undefined });
+      await submitCallback({ name, phone, comment: comment || undefined, city: city === "nvk" ? "Новокузнецк" : "Санкт-Петербург", requestedTime: schedule === "later" ? `${date} ${time} (местное время салона)` : "В ближайшее рабочее время" });
       setSent(true);
       setTimeout(() => {
         setSent(false);
@@ -37,9 +42,9 @@ export function CallbackModal({ open, onOpenChange, subject }: CallbackModalProp
         setTime("");
         onOpenChange(false);
       }, 2000);
-    } catch (err) {
+    } catch {
       toast.error("Не удалось отправить заявку. Позвоните нам напрямую.");
-    }
+    } finally { setSending(false); }
   }
 
   return (
@@ -54,7 +59,7 @@ export function CallbackModal({ open, onOpenChange, subject }: CallbackModalProp
         </p>
         {sent ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
-            {schedule === "now" ? "Спасибо! Перезвоним вам скоро." : "Спасибо! Перезвоним в выбранное время."}
+            {schedule === "now" ? "Заявка сохранена. Менеджер свяжется с вами в рабочее время." : "Заявка сохранена. Указанное время передано для согласования."}
           </p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -99,7 +104,7 @@ export function CallbackModal({ open, onOpenChange, subject }: CallbackModalProp
               )}
             </div>
             <button
-              type="submit"
+              type="submit" disabled={sending}
               className="w-full bg-ink text-primary-foreground rounded-full py-3 text-sm font-medium hover:opacity-90 transition-opacity"
             >
               Жду звонка

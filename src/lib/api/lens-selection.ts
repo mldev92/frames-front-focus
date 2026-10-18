@@ -1,3 +1,4 @@
+import { requestKey } from "@/lib/request-key";
 import { securePost, securePostForm } from "@/lib/api/security";
 
 export interface LensSelectionRequestDraft {
@@ -65,7 +66,7 @@ export interface LensSelectionRequestOptions {
   prescriptionLater?: boolean;
 }
 
-export function submitLensSelectionRequest(
+export async function submitLensSelectionRequest(
   draft: LensSelectionRequestDraft,
   customer: LensSelectionCustomer,
   options: LensSelectionRequestOptions = {},
@@ -76,13 +77,14 @@ export function submitLensSelectionRequest(
     prescriptionLater: options.prescriptionLater ?? false,
     sourceUrl: typeof window === "undefined" ? "" : window.location.href,
   };
+  const keyedPayload = { ...payload, requestKey: await requestKey("lens", payload, options.file) };
   // With a file the request goes multipart (payload JSON + the file); without
   // one it stays the plain JSON POST it has always been.
   if (options.file) {
     const form = new FormData();
-    form.append("payload", JSON.stringify(payload));
+    form.append("payload", JSON.stringify(keyedPayload));
     form.append("prescriptionFile", options.file);
     return securePostForm<LensSelectionRequestResponse>("lens_selection_request.php", form);
   }
-  return securePost<LensSelectionRequestResponse>("lens_selection_request.php", payload);
+  return securePost<LensSelectionRequestResponse>("lens_selection_request.php", keyedPayload);
 }

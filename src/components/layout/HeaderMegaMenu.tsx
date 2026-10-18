@@ -1513,7 +1513,6 @@ function ContactMegaPanel({ menu }: { menu: ContactMegaMenu }) {
             </section>
 
             <section>
-              {sectionHeader("Разделы линз", "Все", regionalMenuHref(menu.allHref, city))}
               <div className="space-y-2">
                 {menu.sections.map((item) => (
                   <a key={item.label} href={regionalMenuHref(item.href, city)}

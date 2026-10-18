@@ -61,6 +61,10 @@ export async function getCsrfToken(force = false): Promise<string> {
   return csrfPromise;
 }
 
+export class StoreApiError extends Error {
+  constructor(message: string, public status: number, public data: Record<string, unknown>) { super(message); }
+}
+
 export async function securePost<T>(
   path: string,
   body: unknown,
@@ -83,7 +87,7 @@ export async function securePost<T>(
   };
   if (!response.ok) {
     if (response.status === 403) void getCsrfToken(true);
-    throw new Error(data.error ?? data.message ?? `HTTP ${response.status}`);
+    throw new StoreApiError(data.error ?? data.message ?? `HTTP ${response.status}`, response.status, data as Record<string, unknown>);
   }
   return data;
 }
@@ -108,7 +112,7 @@ export async function securePostForm<T>(path: string, form: FormData): Promise<T
   };
   if (!response.ok) {
     if (response.status === 403) void getCsrfToken(true);
-    throw new Error(data.error ?? data.message ?? `HTTP ${response.status}`);
+    throw new StoreApiError(data.error ?? data.message ?? `HTTP ${response.status}`, response.status, data as Record<string, unknown>);
   }
   return data;
 }

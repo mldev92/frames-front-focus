@@ -1,47 +1,31 @@
 name: Roll back production
-
 on:
   workflow_dispatch:
-
+    inputs:
+      deployed_sha:
+        description: SHA of the release being rolled back
+        required: true
 concurrency:
   group: optika100-production
   cancel-in-progress: false
-
 jobs:
   rollback:
     environment: production
     runs-on: ubuntu-latest
     steps:
-      - name: Restore previous release
+      - name: Restore saved routing and previous frontend
         env:
+          DEPLOYED_SHA: ${{ inputs.deployed_sha }}
           SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.PRODUCTION_KNOWN_HOSTS }}
           SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
           SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
           PRODUCTION_ROOT: ${{ secrets.PRODUCTION_ROOT }}
         run: |
-          install -m 600 /dev/null ~/.ssh/optika-production
+          [[ "$DEPLOYED_SHA" =~ ^[a-f0-9]{40}$ ]]
+          test -n "$KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
           printf '%s\n' "$SSH_KEY" > ~/.ssh/optika-production
-          ssh -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" \
-            "bash -s -- '$PRODUCTION_ROOT'" <<'REMOTE'
-          set -euo pipefail
-          root="$1"
-          previous="$(cat "$root/o100_frontend_previous")"
-          previous_htaccess="$(cat "$root/o100_frontend_previous_htaccess")"
-          test -d "$previous"
-          test -f "$previous/index.html"
-          test -f "$previous_htaccess"
-
-          current="$(readlink "$root/o100_frontend_current")"
-          ln -sfn "$previous" "$root/o100_frontend_rollback"
-          mv -Tf "$root/o100_frontend_rollback" "$root/o100_frontend_current"
-          cp "$previous_htaccess" "$root/.htaccess.next"
-          mv -f "$root/.htaccess.next" "$root/.htaccess"
-          printf '%s\n' "$current" > "$root/o100_frontend_previous"
-          REMOTE
-
-      - name: Smoke rolled-back site
-        run: |
-          for path in / /catalog_s/opravy/ /warranty/ /politika-konfidentsialnosti/; do
-            curl --fail --silent --show-error "https://optika100.com$path" >/dev/null
-          done
-          test "$(curl -s -o /dev/null -w '%{http_code}' https://optika100.com/definitely-not-a-real-route)" = "404"
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
+          ssh -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "O100_SMOKE_ORIGIN=https://optika100.com bash ~/o100-upload-$DEPLOYED_SHA/deploy/release.sh rollback '$PRODUCTION_ROOT'"

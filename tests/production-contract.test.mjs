@@ -4,7 +4,7 @@ import test from "node:test";
 
 test("production routing preserves backend-owned prefixes", async () => {
   const htaccess = await readFile(new URL("../deploy/production.htaccess", import.meta.url), "utf8");
-  assert.match(htaccess, /\^\(api\|auth\|bitrix\|sale\|upload\|local\)/);
+  assert.match(htaccess, /\^\(api\|auth\|bitrix\|sale\|upload\|local\|order\)/);
 });
 
 test("checkout uses the native order endpoint and correct privacy route", async () => {

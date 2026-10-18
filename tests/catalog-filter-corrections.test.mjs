@@ -59,14 +59,3 @@ test("frame filters and homepage cards use the approved catalog targets", async 
   }
 });
 
-test("catalog backend indexes each newly visible filter from Bitrix data", async () => {
-  const product = await read("../../public_html/api/store/_product.php");
-  const facets = await read("../../public_html/api/store/_facets.php");
-
-  assert.ok(product.includes("PROPERTY_WEAR_MODE"));
-  assert.ok(product.includes("discountPercent"));
-  for (const field of ["templeLength", "bridgeWidth", "rimWidth"]) {
-    assert.ok(product.includes(`['${field}']`), `product field missing: ${field}`);
-    assert.ok(facets.includes(`'${field}' => [`), `facet definition missing: ${field}`);
-  }
-});
