@@ -1,3 +1,4 @@
+import { CartPrescription } from "@/components/CartPrescription";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCart, formatPrice } from "@/lib/store/cart";
@@ -66,6 +67,7 @@ function CartPage() {
                     Назначение: {l.parameters.purpose}
                   </div>
                 )}
+                <CartPrescription line={l} />
                 <div className="mt-3 flex items-center border border-border rounded-sm w-fit">
                   <button
                     onClick={() => setQty(l.lineId, l.qty - 1)}
@@ -115,7 +117,7 @@ function CartPage() {
             </div>
           </div>
           <div className="flex justify-between items-baseline pt-4 mb-6">
-            <span>К оплате</span>
+            <span>Товары без доставки</span>
             <span className="font-serif text-2xl">{formatPrice(subtotal)}</span>
           </div>
           <Link

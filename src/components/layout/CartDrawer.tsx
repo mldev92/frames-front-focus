@@ -57,6 +57,7 @@ export function CartDrawer() {
                         Назначение: {l.parameters.purpose}
                       </div>
                     )}
+                    {l.legacyDescription && <p className="mt-1 text-xs text-muted-foreground">Сохранённые параметры: {l.legacyDescription}</p>}
                     {l.parameters.lensEyeMode && (
                       <div className="text-xs text-muted-foreground mt-0.5">
                         Глаза: {l.parameters.lensEyeMode === "different" ? "разные параметры" : "одинаковые параметры"}

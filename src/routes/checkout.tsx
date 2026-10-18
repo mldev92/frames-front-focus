@@ -1,3 +1,4 @@
+import { CartPrescription } from "@/components/CartPrescription";
 import { readAttempt, saveAttempt, forgetAttempt, checkAttempt, cancelAttempt, withCheckoutLock, orderFingerprint, ATTEMPT_STORAGE_KEY } from "@/lib/checkout-attempt";
 import { StoreApiError } from "@/lib/api/security";
 import { createFileRoute, Link } from "@tanstack/react-router";
@@ -892,6 +893,7 @@ function Checkout() {
                       <div style={{ fontSize: "14px", fontWeight: 500, marginBottom: "2px" }}>
                         {line.name}
                       </div>
+                      <CartPrescription line={line} />
                       {line.parameters.color && (
                         <div className="text-muted-foreground" style={{ fontSize: "12px" }}>
                           Цвет: {line.parameters.color}
@@ -1028,6 +1030,7 @@ function Checkout() {
                       >
                         {line.name} ({line.qty} шт.)
                       </div>
+                      <CartPrescription line={line} />
                       {line.parameters.color && (
                         <div className="text-muted-foreground" style={{ fontSize: "11px" }}>
                           {line.parameters.color}
