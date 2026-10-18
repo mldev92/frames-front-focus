@@ -18,9 +18,24 @@ async function worker() {
   }
 }
 await Promise.all(Array.from({ length: 8 }, worker));
+const redirectText = await readFile("deploy/redirects.production.txt", "utf8");
+let redirectCount = 0;
+for (const line of redirectText.split(/\r?\n/)) {
+  if (!line.startsWith("RedirectMatch ")) continue;
+  const match = line.match(/^RedirectMatch 301 \^(\S+?)\/\?\$\s+(\S+)$/);
+  if (!match) throw new Error(`Unverified redirect pattern: ${line}`);
+  const source = match[1].replace(/\\([.\-])/g, "$1") + "/";
+  const response = await fetch(origin + source + "?cutover_probe=1", { redirect: "manual" });
+  const expected = new URL(match[2], origin);
+  expected.searchParams.set("cutover_probe", "1");
+  if (response.status !== 301 || response.headers.get("location") !== expected.href) {
+    failures.push(`${source}: expected redirect ${expected.href}, got ${response.status} ${response.headers.get("location")}`);
+  }
+  redirectCount++;
+}
 for (const route of ["/o100_frontend_current/index.html", "/o100_frontend_releases/private/index.html", "/cutover-unknown-page/", "/catalog_s/opravy/cutover-unknown-product/"]) {
   const response = await fetch(origin + route, {redirect:"manual"});
   if (response.status !== 404) failures.push(`${route}: expected 404, got ${response.status}`);
 }
 if (failures.length) throw new Error(`${failures.length} Apache failures:\n${failures.slice(0, 50).join("\n")}`);
-console.log(`PASS: Apache served all ${routes.length} manifest routes byte-for-byte; private and unknown paths returned 404.`);
+console.log(`PASS: Apache served all ${routes.length} manifest routes byte-for-byte; ${redirectCount} exact redirects preserved targets and queries; private and unknown paths returned 404.`);

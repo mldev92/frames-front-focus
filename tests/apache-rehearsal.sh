@@ -7,7 +7,7 @@ printf '%s\n' '<?php echo "LEGACY";' > "$root/index.php"
 printf '%s\n' '<?php echo "BASKET";' > "$root/basket/index.php"
 printf '%s\n' '<?php echo "ORDER";' > "$root/order/index.php"
 printf '%s\n' '<?php echo "AUTH";' > "$root/auth/index.php"
-printf '%s\n' '<?php echo "{}";' > "$root/api/store/csrf.php"
+printf '%s\n' '<?php echo isset($_GET["auth"]) ? ($_SERVER["REMOTE_USER"] ?? "MISSING") : "{}";' > "$root/api/store/csrf.php"
 printf '%s\n' '<?php http_response_code(404); echo "LEGACY404";' > "$root/404.php"
 printf '%s\n' '<?php if(str_contains($_SERVER["REQUEST_URI"],"/opravy/")){echo "CATALOG";}else{http_response_code(404);echo "LEGACY404";}' > "$root/bitrix/urlrewrite.php"
 printf '%s\n' '<urlset />' > "$root/sitemap.xml"
@@ -67,6 +67,11 @@ make_archive "$sha"
 bash /frontend/deploy/release.sh deploy "$root" "$sha" "$baseline" "/evidence/$sha.tgz"
 check 301 /catalog_s/
 check 301 /catalog_n/
+check 301 '/catalog_s/kontaktnye_linzy_/biofinity_6_sht/?utm_source=rehearsal'
+curl -s -D /tmp/headers -o /dev/null "$O100_SMOKE_ORIGIN/catalog_s/kontaktnye_linzy_/biofinity_6_sht/?utm_source=rehearsal"
+grep -q '/catalog_s/prozrachnye/biofinity_6_sht/?utm_source=rehearsal' /tmp/headers
+check 404 /catalog_s/kontaktnye_linzy_/biofinity_6_sht/unrelated/
+curl -s -H 'Authorization: Bearer rehearsal' "$O100_SMOKE_ORIGIN/api/store/csrf.php?auth=1" | grep -q 'Bearer rehearsal'
 check 200 /catalog_s/opravy/deep-product/
 grep -q DEEP-SPB /tmp/response
 check 200 /catalog_n/opravy/deep-product/
@@ -85,6 +90,15 @@ if O100_TEST_FAIL_AFTER_SWAP=1 bash /frontend/deploy/release.sh deploy "$root" "
 cmp /evidence/react.htaccess "$root/.htaccess"
 check 200 /assets/test-hash.js
 echo 'PASS: Apache redirects, deep links, private paths, native routes, 404, first and subsequent automatic rollback'
+
+sha=4444444444444444444444444444444444444444
+make_archive "$sha"
+baseline=$(sha256sum "$root/.htaccess" | cut -d' ' -f1)
+bash /frontend/deploy/release.sh deploy "$root" "$sha" "$baseline" "/evidence/$sha.tgz"
+bash /frontend/deploy/release.sh rollback "$root"
+[[ "$(readlink "$root/o100_frontend_current")" == "$root/o100_frontend_releases/2222222222222222222222222222222222222222" ]]
+cmp /evidence/react.htaccess "$root/.htaccess"
+echo 'PASS: manual React-to-React rollback restores the previous release'
 
 bash /frontend/deploy/release.sh rollback "$root"
 cmp /evidence/legacy.htaccess "$root/.htaccess"
