@@ -51,11 +51,13 @@ jobs:
         env:
           ARTIFACT_SHA256: ${{ inputs.artifact_sha256 }}
         run: |
+          set -Eeuo pipefail
           [[ "$ARTIFACT_SHA256" =~ ^[a-f0-9]{64}$ ]]
           printf '%s  production-release.tgz\n' "$ARTIFACT_SHA256" | sha256sum -c -
           tar -xOf production-release.tgz ./.release-sha | grep -Fx "$FRONTEND_SHA"
           tar -xOf production-release.tgz ./release-manifest.json > release-manifest.json
           node -e 'const m=JSON.parse(require("fs").readFileSync("release-manifest.json")); if(m.backendSha!==process.env.O100_BACKEND_SHA || m.routingBaseline!==process.env.O100_ROUTING_SHA256) process.exit(1)'
+          node -e 'const fs=require("fs"),m=JSON.parse(fs.readFileSync("release-manifest.json")),log=fs.readFileSync("apache-production.log","utf8"); if(!log.includes(`PASS: Apache served all ${m.routeCount} manifest routes byte-for-byte;`)) throw new Error("Full Apache acceptance evidence is missing")'
           printf '%s  production-release.tgz\n' "$ARTIFACT_SHA256" > production-release.tgz.sha256
           tar -czf production-tools.tgz deploy
       - name: Configure verified SSH host keys
