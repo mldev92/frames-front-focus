@@ -2,7 +2,7 @@
 # После HTTPS/домена, до robots и маршрутизатора Битрикса.
 RewriteEngine On
 RewriteRule ^blog/pochemyMi\.php/?$ /o-nas/?%{QUERY_STRING}#pochemu-my [R=301,NE,END]
-RewriteRule ^catalog_s/linzy_dlya_ochkov/ofisnye/VX\x20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/?$ /catalog_s/linzy_dlya_ochkov/VX%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/ [R=301,NE,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/ofisnye/VX\x20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/?$ /catalog_s/linzy_dlya_ochkov/VX\%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/ [R=301,NE,END]
 RewriteRule .* - [E=REMOTE_USER:%{HTTP:Authorization}]
 RewriteRule ^o100_frontend_ - [R=404,END]
 RewriteRule ^(api|auth|bitrix|sale|upload|local|order)(/|$) - [L]
