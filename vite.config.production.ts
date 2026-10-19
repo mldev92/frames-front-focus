@@ -20,7 +20,8 @@ export default defineConfig({
   tanstackStart: {
     spa: {
       enabled: true,
-      maskPath: "/basket/",
+      // Уникальный URL исключает дедупликацию оболочки с полноценной страницей корзины.
+      maskPath: "/basket/?__o100_shell=1",
       prerender: { outputPath: "/_shell" },
     },
     pages: productionRoutes.map((path) => ({ path })),

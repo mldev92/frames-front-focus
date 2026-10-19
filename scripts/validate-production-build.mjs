@@ -26,6 +26,9 @@ if (missing.length) {
 
 console.log(`Validated ${routes.length} prerendered production routes and release assets.`);
 
+const shell = await readFile(new URL("_shell.html", clientDir), "utf8");
+if (!shell.includes('id="$tsr-stream-barrier"')) throw new Error("Production SPA shell is missing the TanStack bootstrap barrier");
+
 const home = await readFile(new URL("index.html", clientDir), "utf8");
 const robots = await readFile(new URL("robots.txt", clientDir), "utf8");
 if (/<meta[^>]+(?:noindex|nofollow)/i.test(home) || /Disallow:\s*\/\s*$/m.test(robots)) throw new Error("Production home or robots still blocks indexing");
