@@ -39,6 +39,7 @@ jobs:
           sha256sum production-release.tgz > production-release.tgz.sha256
       - name: Rehearse complete artifact on isolated Apache
         run: |
+          set -Eeuo pipefail
           docker run -d --name candidate-apache -p 127.0.0.1:8089:80 -v "$PWD:/frontend:ro" php:8.1-apache bash -c 'a2enmod rewrite && apache2-foreground'
           for attempt in $(seq 1 30); do docker exec candidate-apache curl -s http://127.0.0.1/ >/dev/null && break; sleep 1; done
           docker exec candidate-apache bash /frontend/tests/apache-rehearsal.sh | tee apache-rollback.log

@@ -8,8 +8,6 @@ RedirectMatch 301 ^/about/?$ /o-nas/
 RedirectMatch 301 ^/blog/linzy\-dlya\-ochkov/linzy\-dlya\-ochkov\-stellest/?$ /stellest-katalog-s-linzami/
 RedirectMatch 301 ^/blog/linzy\-dlya\-ochkov/miopiya\-prichiny\-oslozhneniya\-korrektsiya/?$ /blog/linzy-dlya-ochkov/
 RedirectMatch 301 ^/blog/pochemyMi_111\.php/?$ /blog/
-RedirectMatch 301 ^/blog/pochemyMi\.php/?$ /o-nas/#pochemu-my
-RedirectMatch 301 ^/blog/pochemyMi\.php/?$ /o-nas/#pochemu-my
 RedirectMatch 301 ^/catalog_s/kontaktnye_linzy/?$ /catalog_s/kontaktnye_linzy_/
 RedirectMatch 301 ^/catalog_s/ochki/?$ /catalog_s/opravy/
 RedirectMatch 301 ^/catalog/?$ /catalog_s/opravy/
@@ -139,7 +137,7 @@ RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/ormix_crizal_preven
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/shamir_altolite_1_6_nms/?$ /catalog_s/linzy_dlya_ochkov/shamir_altolite_1_6_nms/
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/shamir_altolite_as_1_67_glacier/?$ /catalog_s/linzy_dlya_ochkov/shamir_altolite_as_1_67_glacier/
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/zeiss_1_5_dv_blue_protect/?$ /catalog_s/linzy_dlya_ochkov/zeiss_1_5_dv_blue_protect/
-RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/ofisnye/VX%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/?$ /catalog_s/linzy_dlya_ochkov/VX%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/
+RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/ofisnye/VX\x20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/?$ /catalog_s/linzy_dlya_ochkov/VX%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/ofisnye/essentials_home_work_1_5_trio/?$ /catalog_s/linzy_dlya_ochkov/essentials_home_work_1_5_trio/
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/ofisnye/hoyalux_id_workstyle_3_1_5_hvll_bluecontrol/?$ /catalog_s/linzy_dlya_ochkov/hoyalux_id_workstyle_3_1_5_hvll_bluecontrol/
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/ofisnye/vx_start_orma_crizal_easy_pro_1_3_ot_1_50_do_3_00/?$ /catalog_s/linzy_dlya_ochkov/vx_start_orma_crizal_easy_pro_1_3_ot_1_50_do_3_00/

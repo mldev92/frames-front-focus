@@ -24,7 +24,7 @@ for (const line of redirectText.split(/\r?\n/)) {
   if (!line.startsWith("RedirectMatch ")) continue;
   const match = line.match(/^RedirectMatch 301 \^(\S+?)\/\?\$\s+(\S+)$/);
   if (!match) throw new Error(`Unverified redirect pattern: ${line}`);
-  const source = match[1].replace(/\\([.\-])/g, "$1") + "/";
+  const source = match[1].replace(/\\x20/g, "%20").replace(/\\([.\-])/g, "$1") + "/";
   const response = await fetch(origin + source + "?cutover_probe=1", { redirect: "manual" });
   const expected = new URL(match[2], origin);
   expected.searchParams.set("cutover_probe", "1");
@@ -33,6 +33,9 @@ for (const line of redirectText.split(/\r?\n/)) {
   }
   redirectCount++;
 }
+const fragment = await fetch(origin + "/blog/pochemyMi.php/?cutover_probe=1", { redirect: "manual" });
+if (fragment.status !== 301 || fragment.headers.get("location") !== origin + "/o-nas/?cutover_probe=1#pochemu-my") failures.push("Fragment redirect did not preserve query before anchor");
+redirectCount++;
 for (const route of ["/o100_frontend_current/index.html", "/%6f100_frontend_current/index.html", "/o100_frontend_releases/private/index.html", "/cutover-unknown-page/", "/catalog_s/opravy/cutover-unknown-product/", "/main-v2/", "/loyalty/"]) {
   const response = await fetch(origin + route, {redirect:"manual"});
   if (response.status !== 404) failures.push(`${route}: expected 404, got ${response.status}`);

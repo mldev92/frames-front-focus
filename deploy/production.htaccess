@@ -1,6 +1,7 @@
 # BEGIN O100 FRONTEND
 # После HTTPS/домена, до robots и маршрутизатора Битрикса.
 RewriteEngine On
+RewriteRule ^blog/pochemyMi\.php/?$ /o-nas/#pochemu-my [R=301,NE,END]
 RewriteRule .* - [E=REMOTE_USER:%{HTTP:Authorization}]
 RewriteRule ^o100_frontend_ - [R=404,END]
 RewriteRule ^(api|auth|bitrix|sale|upload|local|order)(/|$) - [L]

@@ -25,6 +25,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Rehearse Apache routing and rollback
         run: |
+          set -Eeuo pipefail
           docker run -d --name cutover -v "$PWD:/frontend:ro" php:8.1-apache bash -c 'a2enmod rewrite && apache2-foreground'
           for attempt in $(seq 1 30); do docker exec cutover curl -s http://127.0.0.1/ >/dev/null && break; sleep 1; done
           docker exec cutover bash /frontend/tests/apache-rehearsal.sh | tee apache-rehearsal.log
