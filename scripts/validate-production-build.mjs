@@ -33,9 +33,11 @@ for (const route of routes) {
   const relative = route === "/" ? "index.html" : `${route.replace(/^\/|\/$/g, "")}/index.html`;
   const html = await readFile(new URL(relative, clientDir), "utf8");
   const privatePage = /^\/(?:basket|checkout|personal|search)(?:\/|$)/.test(route);
+  // Эти юридические страницы намеренно закрыты от индексации в исходной витрине.
+  const legalPage = ["/politika-konfidentsialnosti/", "/requisites/"].includes(route);
   const title = html.match(/<title[^>]*>(.*?)<\/title>/s)?.[1];
   if (!title || /^(?:404\b|Страница не найдена|Ошибка)/i.test(title)) invalid.push(`${route}: error title`);
-  if (!privatePage && /<meta[^>]+(?:noindex|nofollow)/i.test(html)) invalid.push(`${route}: blocked indexing`);
+  if ((!privatePage && !legalPage && /<meta[^>]+noindex/i.test(html)) || /<meta[^>]+nofollow/i.test(html)) invalid.push(`${route}: blocked indexing`);
   const canonicals = [...html.matchAll(/<link\b[^>]*rel=["']canonical["'][^>]*>/gi)];
   if (canonicals.length !== 1 || !/href=["']https:\/\/optika100\.com\//.test(canonicals[0]?.[0] ?? "")) invalid.push(`${route}: canonical missing or ambiguous`);
   if (/<h[12][^>]*>(?:Страница не найдена|Что-то пошло не так)<\/h[12]>/.test(html)) invalid.push(`${route}: rendered error page`);

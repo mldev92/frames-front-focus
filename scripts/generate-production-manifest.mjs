@@ -183,7 +183,8 @@ await writeFile(new URL("production-routes.json", outputDir), `${JSON.stringify(
 const sitemap = [
   '<?xml version="1.0" encoding="UTF-8"?>',
   '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-  ...routes.filter((path) => !/^\/(?:basket|checkout|personal|search)(?:\/|$)/.test(path)).map((path) => {
+  ...routes.filter((path) => !/^\/(?:basket|checkout|personal|search)(?:\/|$)/.test(path)
+    && !["/politika-konfidentsialnosti/", "/requisites/"].includes(path)).map((path) => {
     const seo = sitemapSeo.get(path);
     if (!seo) return `  <url><loc>${origin}${path}</loc></url>`;
     return `  <url><loc>${origin}${path}</loc><changefreq>${seo.changefreq}</changefreq><priority>${seo.priority}</priority></url>`;
