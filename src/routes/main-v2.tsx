@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { ProductCarousel } from "@/components/ProductCarousel";
@@ -16,6 +16,9 @@ import { promotions } from "@/data/promotions";
 import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/main-v2")({
+  beforeLoad: () => {
+    if (!import.meta.env.DEV && import.meta.env.VITE_PRIVATE_BETA !== "true") throw notFound();
+  },
   head: () => ({
     meta: [
       { title: "ОПТИКА 100% — оправы, очки и контактные линзы" },

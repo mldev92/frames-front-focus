@@ -27,6 +27,7 @@ const staticRoutes = [
   "/personal/orders/",
   "/personal/private/",
   "/podbor-ochkov/",
+  "/podbor-linz/",
   "/politika-konfidentsialnosti/",
   "/remont-ochkov/",
   "/requisites/",

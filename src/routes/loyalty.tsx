@@ -1,8 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowRight, Gift, Info, Star } from "lucide-react";
 import { CONTACT } from "@/data/contact";
 
 export const Route = createFileRoute("/loyalty")({
+  beforeLoad: () => {
+    if (!import.meta.env.DEV && import.meta.env.VITE_PRIVATE_BETA !== "true") throw notFound();
+  },
   head: () => ({ meta: [{ title: "Программа лояльности — ОПТИКА 100%" }] }),
   component: LoyaltyPage,
 });

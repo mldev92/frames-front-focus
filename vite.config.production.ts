@@ -29,7 +29,7 @@ export default defineConfig({
     },
     prerender: {
       enabled: true,
-      autoStaticPathsDiscovery: true,
+      autoStaticPathsDiscovery: false,
       crawlLinks: false,
       concurrency: 4,
       failOnError: true,

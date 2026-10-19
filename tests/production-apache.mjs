@@ -33,7 +33,7 @@ for (const line of redirectText.split(/\r?\n/)) {
   }
   redirectCount++;
 }
-for (const route of ["/o100_frontend_current/index.html", "/o100_frontend_releases/private/index.html", "/cutover-unknown-page/", "/catalog_s/opravy/cutover-unknown-product/"]) {
+for (const route of ["/o100_frontend_current/index.html", "/o100_frontend_releases/private/index.html", "/cutover-unknown-page/", "/catalog_s/opravy/cutover-unknown-product/", "/main-v2/", "/loyalty/"]) {
   const response = await fetch(origin + route, {redirect:"manual"});
   if (response.status !== 404) failures.push(`${route}: expected 404, got ${response.status}`);
 }

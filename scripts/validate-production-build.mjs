@@ -8,6 +8,9 @@ const manifest = JSON.parse(
 );
 const routes = manifest.routes;
 const clientDir = new URL("../dist/client/", import.meta.url);
+for (const prototype of ["main-v2/index.html", "loyalty/index.html"]) {
+  if (existsSync(new URL(prototype, clientDir))) throw new Error(`Prototype page in production artifact: ${prototype}`);
+}
 const missing = routes.filter((route) => {
   const relative = route === "/" ? "index.html" : `${route.replace(/^\/|\/$/g, "")}/index.html`;
   return !existsSync(new URL(relative, clientDir));
