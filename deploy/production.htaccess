@@ -2,7 +2,6 @@
 # После HTTPS/домена, до robots и маршрутизатора Битрикса.
 RewriteEngine On
 RewriteRule .* - [E=REMOTE_USER:%{HTTP:Authorization}]
-RewriteCond %{THE_REQUEST} \s/+o100_frontend_[^\s?]* [NC]
 RewriteRule ^o100_frontend_ - [R=404,END]
 RewriteRule ^(api|auth|bitrix|sale|upload|local|order)(/|$) - [L]
 RewriteRule ^personal/(order|payment|profile)(/|$) - [L]

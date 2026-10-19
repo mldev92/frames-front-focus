@@ -79,6 +79,8 @@ check 200 /assets/test-hash.js
 check 200 '/basket/?legacy=1'
 grep -q BASKET /tmp/response
 check 404 /o100_frontend_current/index.html
+check 404 /%6f100_frontend_current/index.html
+check 404 /o100_frontend_assets/test-hash.js
 check 404 /unknown-path/
 check 404 /catalog_s/opravy/unknown-product/
 cp "$root/.htaccess" /evidence/react.htaccess
