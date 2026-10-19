@@ -36,6 +36,11 @@ for (const line of redirectText.split(/\r?\n/)) {
 const fragment = await fetch(origin + "/blog/pochemyMi.php/?cutover_probe=1", { redirect: "manual" });
 if (fragment.status !== 301 || fragment.headers.get("location") !== origin + "/o-nas/?cutover_probe=1#pochemu-my") failures.push("Fragment redirect did not preserve query before anchor");
 redirectCount++;
+const spaceSource = "/catalog_s/linzy_dlya_ochkov/ofisnye/VX%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/";
+const spaceTarget = "/catalog_s/linzy_dlya_ochkov/VX%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/";
+const spaced = await fetch(origin + spaceSource + "?cutover_probe=1", { redirect: "manual" });
+if (spaced.status !== 301 || spaced.headers.get("location") !== origin + spaceTarget + "?cutover_probe=1") failures.push("Space redirect did not preserve encoding and query");
+redirectCount++;
 for (const route of ["/o100_frontend_current/index.html", "/%6f100_frontend_current/index.html", "/o100_frontend_releases/private/index.html", "/cutover-unknown-page/", "/catalog_s/opravy/cutover-unknown-product/", "/main-v2/", "/loyalty/"]) {
   const response = await fetch(origin + route, {redirect:"manual"});
   if (response.status !== 404) failures.push(`${route}: expected 404, got ${response.status}`);

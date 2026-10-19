@@ -72,6 +72,8 @@ const redirectSources = new Set(
     .filter(Boolean)
     .map((path) => normalizePath(path)),
 );
+// Эти два точных редиректа используют mod_rewrite для корректных fragment/пробела.
+for (const source of ["/blog/pochemyMi.php/", "/catalog_s/linzy_dlya_ochkov/ofisnye/VX%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/"]) redirectSources.add(normalizePath(source));
 
 function normalizePath(value) {
   const url = new URL(value, origin);
