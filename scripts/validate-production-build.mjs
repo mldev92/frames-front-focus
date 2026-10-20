@@ -39,6 +39,8 @@ const invalid = [];
 const knownCatalogPaths = new Set([
   ...routes,
   ...redirectPaths(await readFile(new URL("../deploy/redirects.production.txt", import.meta.url), "utf8")),
+  // Этот точный редирект записан в mod_rewrite, чтобы сохранить пробел и query.
+  "/catalog_s/linzy_dlya_ochkov/ofisnye/VX Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/",
 ]);
 const brokenCatalogLinks = new Map();
 for (const route of routes) {

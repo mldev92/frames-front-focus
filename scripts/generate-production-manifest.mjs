@@ -130,6 +130,17 @@ async function catalogPaths() {
     ["nvk", "catalog_n", "soputstvuyushchie_tovary"],
   ];
   const paths = new Set();
+  for (const city of ["spb", "nvk"]) {
+    const response = await fetch(`${origin}/api/store/catalog_sections.php?city=${city}`);
+    if (!response.ok) throw new Error(`Catalog sections ${city}: ${response.status}`);
+    const data = await response.json();
+    if (data.city !== city || !data.sections?.length) throw new Error(`Empty section tree: ${city}`);
+    for (const section of data.sections) {
+      const path = normalizePath(section.path);
+      if (!path?.startsWith(city === "nvk" ? "/catalog_n/" : "/catalog_s/")) throw new Error("Invalid regional section");
+      paths.add(path);
+    }
+  }
   // Общий подбор очковых линз доступен в обоих городах.
   paths.add("/catalog_n/linzy_dlya_ochkov/");
   for (const [city, namespace, category] of categories) {

@@ -5,7 +5,7 @@ import { ProductCard } from "./ProductCard";
 import { Slider } from "./ui/slider";
 import { getCatalogBanners } from "@/data/catalog-banners";
 import { contactLensSubcategories } from "@/data/contact-lens-catalog-seo";
-import { catalogPrefix, regionalCatalogHref } from "@/data/categories";
+import { catalogPrefix, catalogHref, regionalCatalogHref } from "@/data/categories";
 import { CONTACT } from "@/data/contact";
 import type { Category, Product } from "@/data/types";
 import type { CatalogPage, CatalogQuery, FacetKey as ServerFacetKey } from "@/lib/api/bitrix";
@@ -597,6 +597,15 @@ function getPageRange(total: number, page: number, pageSize: number) {
 
 function getAccessoriesNavGroups(city: CityCode): AccessoriesNavGroup[] {
   const base = `${catalogPrefix(city)}/${ACCESSORIES_BASE_SEGMENT}`;
+  // В каталоге NvK эти разделы находятся непосредственно в корне аксессуаров.
+  if (city === "nvk") return [{
+    title: "Разделы аксессуаров",
+    items: [
+      { label: "Аксессуары", href: `${base}/aksessuary/` },
+      { label: "Очистители и капли", href: `${base}/ochistiteli_i_kapli/` },
+      { label: "Растворы", href: `${base}/rastvory/` },
+    ],
+  }];
   return [
     {
       title: "Для контактных линз",
@@ -1398,7 +1407,7 @@ export function CatalogListing({
             {[
               {
                 label: "Все контактные линзы",
-                href: `${catalogPrefix(city)}/kontaktnye_linzy_/`,
+                href: catalogHref("kontaktnye-linzy", city),
               },
               ...contactLensSubcategories.map((item) => ({
                 label: item.label,

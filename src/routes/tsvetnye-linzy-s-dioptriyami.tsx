@@ -108,7 +108,6 @@ function CorrectiveColoredLensesPage() {
               product={product}
               compactLensPreview
               city="spb"
-              productHref={`/catalog_s/tsvetnye/${product.slug}/`}
             />
           ))}
         </div>
