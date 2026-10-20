@@ -119,7 +119,8 @@ RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/1_5_sync_iii_blc_se
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/as_1_6_hmc/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/as_1_6_hmc/
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/as_stylis_blue_capture_crizal_easy_pro_uv/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/as_stylis_blue_capture_crizal_easy_pro_uv/
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/cosmolit_1_67_solitaire_protect_plus_2/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/cosmolit_1_67_solitaire_protect_plus_2/
-RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/criol_1_6hmc/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/criol_1_6hmc/
+RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/criol_1_6hmc/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/odnofokalnye/cryol_1_6hmc/
+RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/criol_1_6hmc/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/odnofokalnye/cryol_1_6hmc/
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/elements_indoor_7_outdoor_protection_grey_broun_as_1_56_hmc/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/elements_indoor_7_outdoor_protection_grey_broun_as_1_56_hmc/
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/essilor_f_360_orma_crizal_easy_uv/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/essilor_f_360_orma_crizal_easy_uv/
 RedirectMatch 301 ^/catalog_s/linzy_dlya_ochkov/odnofokalnye/essilor_f_360_orma_crizal_prevencia/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/essilor_f_360_orma_crizal_prevencia/
