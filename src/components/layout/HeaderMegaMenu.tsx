@@ -1910,6 +1910,16 @@ function GlassesMegaPanel({
 
 function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
   const city = useCityStore((state) => state.city);
+  // NvK имеет собственное плоское дерево аксессуаров; разделов «Для очков» в нём нет.
+  const groups = city === "nvk" ? [{
+    title: "Аксессуары",
+    allHref: catalogHref("aksessuary", city),
+    items: [
+      {label: "Аксессуары", href: "/catalog_n/soputstvuyushchie_tovary/aksessuary/", icon: <Eye className="h-4 w-4" />},
+      {label: "Очистители и капли", href: "/catalog_n/soputstvuyushchie_tovary/ochistiteli_i_kapli/", icon: <Droplets className="h-4 w-4" />},
+      {label: "Растворы", href: "/catalog_n/soputstvuyushchie_tovary/rastvory/", icon: <Droplets className="h-4 w-4" />},
+    ],
+  }] : menu.groups;
 
   return (
     <div className={panelShellClass}>
@@ -1936,7 +1946,7 @@ function AccessoriesMegaPanel({ menu }: { menu: AccessoriesMegaMenu }) {
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[1fr_1fr_0.9fr]">
-            {menu.groups.map((group) => (
+            {groups.map((group) => (
               <section key={group.title}>
                 {sectionHeader(group.title, "Все", regionalMenuHref(group.allHref, city))}
                 <div className="space-y-1.5">
