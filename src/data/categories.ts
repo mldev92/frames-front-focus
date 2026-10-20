@@ -78,6 +78,18 @@ export const catalogHref = (category: Category, city: CityCode = "spb") =>
 export const productHref = (category: Category, slug: string, city: CityCode = "spb") =>
   `${catalogHref(category, city)}${slug}/`;
 
+// Старый SEO-адрес карточки не определяет существующий родительский раздел.
+export function productCatalogHref(
+  product: Pick<Product, "canonicalPath" | "category">,
+  city: CityCode = "spb",
+) {
+  const path = product.canonicalPath;
+  if (path && /^\/catalog_[sn]\/[^/]+\/.+/.test(path)) {
+    return path.replace(/\/[^/]+\/?$/, "/");
+  }
+  return catalogHref(product.category, city);
+}
+
 // Фото, название и сохранённые ссылки должны вести на один региональный URL.
 export function productCardHref(
   product: Pick<Product, "canonicalPath" | "category" | "slug">,

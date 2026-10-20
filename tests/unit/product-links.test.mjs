@@ -1,8 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { productCardHref, catalogHref, regionalCatalogHref } from "../../src/data/categories.ts";
+import { productCardHref, productCatalogHref, catalogHref, regionalCatalogHref } from "../../src/data/categories.ts";
 
 const product = { category: "opravy", slug: "oprava_okula_ok_1190_f3" };
+test("old SEO product aliases use the actual parent section for breadcrumbs", () => {
+  assert.equal(productCatalogHref({category:"kontaktnye-linzy",canonicalPath:"/catalog_s/kontaktnye_linzy_/prozrachnye/1_day_acuvue_moist_30_sht/"}), "/catalog_s/kontaktnye_linzy_/prozrachnye/");
+  assert.equal(productCatalogHref({category:"aksessuary",canonicalPath:"/catalog_n/soputstvuyushchie_tovary/rastvory/renu_multiplus_120ml/"},"nvk"), "/catalog_n/soputstvuyushchie_tovary/rastvory/");
+  assert.equal(productCatalogHref({category:"kontaktnye-linzy"},"nvk"), "/catalog_n/kontaktnye_linzy/");
+});
 test("product cards prefer the product URL over the currently browsed category", () => {
   assert.equal(productCardHref({ ...product, canonicalPath: "/catalog_s/opravy/zhenskie/oprava_okula_ok_1190_f3/" }, "spb", "/catalog_s/opravy/"),
     "/catalog_s/opravy/zhenskie/oprava_okula_ok_1190_f3/");

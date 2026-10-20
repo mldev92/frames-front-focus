@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CircleAlert, Heart, ChevronRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { catalogSectionTitle } from "@/data/categories";
+import { catalogSectionTitle, productCatalogHref } from "@/data/categories";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { ProductCard } from "@/components/ProductCard";
@@ -136,6 +136,7 @@ export function ProductPage({
   catalogPath: string;
 }) {
   const { product, related } = data;
+  const productCatalogPath = productCatalogHref(product, city);
   const setCity = useCityStore((state) => state.setCity);
   const displayBrand = getProductDisplayBrand(product);
   const { add, toggleSaved, saved } = useCart();
@@ -209,8 +210,8 @@ export function ProductPage({
           Главная
         </Link>
         <ChevronRight className="h-3 w-3" />
-        <a href={`${catalogPath.replace(/\/$/, "")}/`} className="hover:text-foreground capitalize">
-          {catalogSectionTitle(catalogPath, categoryName(product.category))}
+        <a href={productCatalogPath} className="hover:text-foreground capitalize">
+          {catalogSectionTitle(productCatalogPath, categoryName(product.category))}
         </a>
         <ChevronRight className="h-3 w-3" />
         <span>{product.name}</span>
