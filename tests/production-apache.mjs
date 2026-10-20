@@ -1,9 +1,11 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
+import { catalogLinks } from "../scripts/catalog-link-check.mjs";
 const routes = JSON.parse(await readFile("generated/production-routes.json", "utf8")).routes;
 const origin = process.env.O100_REHEARSAL_ORIGIN || "http://127.0.0.1:8089";
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const failures = [];
+const navigationLinks = new Set();
 let position = 0;
 async function worker() {
   while (position < routes.length) {
@@ -13,11 +15,40 @@ async function worker() {
       const response = await fetch(origin + route, { redirect: "manual", signal: AbortSignal.timeout(30000) });
       const body = Buffer.from(await response.arrayBuffer());
       const expected = await readFile("dist/client/" + filename);
+      for (const link of catalogLinks(expected.toString("utf8"))) navigationLinks.add(link);
       if (response.status !== 200 || hash(body) !== hash(expected)) failures.push(`${route}: status=${response.status}, content match=${hash(body) === hash(expected)}`);
     } catch (error) { failures.push(`${route}: ${error.message}`); }
   }
 }
 await Promise.all(Array.from({ length: 8 }, worker));
+// Проходим именно ссылки из страниц, включая полную цепочку старых редиректов.
+const pendingLinks = [...navigationLinks];
+let linkPosition = 0;
+async function navigationWorker() {
+  while (linkPosition < pendingLinks.length) {
+    const source = pendingLinks[linkPosition++];
+    let path = source;
+    const seen = new Set();
+    try {
+      for (let hop = 0; ; hop++) {
+        if (seen.has(path) || hop > 5) throw new Error("redirect loop");
+        seen.add(path);
+        const response = await fetch(origin + path, { redirect: "manual", signal: AbortSignal.timeout(30000) });
+        if ([301, 302, 307, 308].includes(response.status)) {
+          const location = response.headers.get("location");
+          if (!location) throw new Error("redirect without Location");
+          const target = new URL(location, origin);
+          if (![new URL(origin).origin, "https://optika100.com"].includes(target.origin)) throw new Error("unexpected redirect origin");
+          path = target.pathname + target.search;
+          continue;
+        }
+        if (response.status !== 200) throw new Error(`status ${response.status} at ${path}`);
+        break;
+      }
+    } catch (error) { failures.push(`Navigation ${source}: ${error.message}`); }
+  }
+}
+await Promise.all(Array.from({ length: 4 }, navigationWorker));
 const redirectText = await readFile("deploy/redirects.production.txt", "utf8");
 let redirectCount = 0;
 for (const line of redirectText.split(/\r?\n/)) {
@@ -48,3 +79,4 @@ for (const route of ["/o100_frontend_current/index.html", "/%6f100_frontend_curr
 }
 if (failures.length) throw new Error(`${failures.length} Apache failures:\n${failures.slice(0, 50).join("\n")}`);
 console.log(`PASS: Apache served all ${routes.length} manifest routes byte-for-byte; ${redirectCount} exact redirects preserved targets and queries; private and unknown paths returned 404.`);
+console.log(`PASS: followed ${navigationLinks.size} catalog links from rendered pages, including redirect chains.`);

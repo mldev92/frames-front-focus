@@ -130,6 +130,8 @@ async function catalogPaths() {
     ["nvk", "catalog_n", "soputstvuyushchie_tovary"],
   ];
   const paths = new Set();
+  // Общий подбор очковых линз доступен в обоих городах.
+  paths.add("/catalog_n/linzy_dlya_ochkov/");
   for (const [city, namespace, category] of categories) {
     paths.add(`/${namespace}/${category}/`);
     let page = 1;
@@ -148,7 +150,13 @@ async function catalogPaths() {
       pages = Math.max(1, Number(data.pages) || 1);
       for (const product of data.products || []) {
         const canonical = normalizePath(product.canonicalPath || `/${namespace}/${category}/${product.slug}/`);
-        if (canonical) paths.add(canonical.replace(/^\/catalog_s\//, `/${namespace}/`));
+        if (canonical) {
+          paths.add(canonical);
+          // Меню и хлебные крошки используют настоящее дерево, а не старые
+          // сокращённые адреса разделов из sitemap.
+          const parts = canonical.split("/").filter(Boolean);
+          for (let length = 2; length < parts.length; length++) paths.add(`/${parts.slice(0, length).join("/")}/`);
+        }
       }
       page += 1;
     } while (page <= pages);
