@@ -191,9 +191,10 @@ function Checkout() {
     () =>
       PAYMENT_OPTIONS.filter(
         (option) =>
-          option.code !== "cash_on_pickup" || selectedDelivery.code === "salon_pickup_spb",
+          (option.code !== "cash_on_pickup" || selectedDelivery.code === "salon_pickup_spb") &&
+          (option.code !== "t_installment" || city !== "Новокузнецк"),
       ),
-    [selectedDelivery.code],
+    [city, selectedDelivery.code],
   );
   const selectedPayment =
     paymentOptions.find((option) => option.code === payment) ?? paymentOptions[0];

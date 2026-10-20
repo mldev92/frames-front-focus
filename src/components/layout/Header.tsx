@@ -3,10 +3,10 @@ import { Search, User, Heart, ShoppingBag, Menu, X, ChevronDown } from "lucide-r
 import { useEffect, useRef, useState } from "react";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
-import { CONTACT, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
+import { contactForCity, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
 import { HEADER_NAV_ITEMS, HeaderMegaPanel, isMegaNavItem } from "./HeaderMegaMenu";
 import { SiteLogo } from "./SiteLogo";
-import { useCityStore, type CityCode, CITY_LABELS } from "@/lib/store/city";
+import { useCityStore, type RegionCode, REGION_LABELS } from "@/lib/store/city";
 import { regionalLocationHref, regionalSiteHref } from "@/lib/city-routing";
 import { getCatalogFacetSummary, type CatalogFacetSummary } from "@/lib/api/bitrix";
 import { catalogSegmentFromHref } from "@/lib/header-menu-facets";
@@ -14,19 +14,25 @@ import { fetchLensLines } from "@/lib/api/lens-recommend";
 import { lensLineFacetSummary } from "@/lib/lens-lines-filter";
 import { AppointmentModal } from "@/components/AppointmentModal";
 
-const CITIES: { code: CityCode; label: string }[] = [
+const CITIES: { code: RegionCode; label: string }[] = [
   { code: "spb", label: "Санкт-Петербург" },
   { code: "nvk", label: "Новокузнецк" },
+  { code: "all", label: "Вся Россия" },
 ];
 
 const PROMOS = [
-  { text: "ДО 25% НА ПРОГРЕССИВНЫЕ ЛИНЗЫ ESSILOR", href: "/catalog_s/linzy_dlya_ochkov/?brand=ESSILOR&lensType=Прогрессивные" },
+  {
+    text: "ДО 25% НА ПРОГРЕССИВНЫЕ ЛИНЗЫ ESSILOR",
+    href: "/catalog_s/linzy_dlya_ochkov/?brand=ESSILOR&lensType=Прогрессивные",
+  },
   { text: "ДО 50% НА ЛИНЗЫ STELLEST", href: "/stellest-katalog-s-linzami/" },
   {
     text: "MISIGHT 1 DAY 90: 20 ЛИНЗ В ПОДАРОК И СКИДКА 1 000 ₽",
     href: "/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/",
   },
 ];
+
+const NVK_PROMOS = [{ text: "АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА", href: "/contacts/" }];
 
 type FacetLoadState =
   | { status: "loading" }
@@ -44,7 +50,12 @@ export function Header() {
   const [appointmentOpen, setAppointmentOpen] = useState(false);
   const [facetStates, setFacetStates] = useState<Record<string, FacetLoadState>>({});
 
-  const { city: cityCode, hydrated: cityHydrated, setCity: setCityCode } = useCityStore();
+  const {
+    city: cityCode,
+    region: regionCode,
+    hydrated: cityHydrated,
+    setRegion: setRegionCode,
+  } = useCityStore();
   const [cityOpen, setCityOpen] = useState(false);
   const cityRef = useRef<HTMLDivElement>(null);
 
@@ -77,38 +88,44 @@ export function Header() {
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [cityOpen]);
 
-  function selectCity(code: CityCode) {
+  function selectCity(code: RegionCode) {
     setCityOpen(false);
-    if (code === cityCode) return;
+    if (code === regionCode) return;
+    const nextCity = code === "nvk" ? "nvk" : "spb";
 
     // Переход между региональными каталогами выполняется только по выбору пользователя.
     if (/^\/catalog_[sn]\//.test(window.location.pathname)) {
-      const nextHref = regionalLocationHref(window.location, code);
-      setCityCode(code);
+      const nextHref = regionalLocationHref(window.location, nextCity);
+      setRegionCode(code);
       window.location.assign(nextHref);
       return;
     }
-    setCityCode(code);
+    setRegionCode(code);
   }
 
-  const cityLabel = CITY_LABELS[cityCode] ?? cityCode;
+  const cityLabel = REGION_LABELS[regionCode] ?? regionCode;
   const regionalHref = (href: string) => regionalSiteHref(href, cityCode);
   const localSalon = cityCode === "nvk" ? NK_SALONS[0] : PRIMARY_SALON;
-
   const [promoIdx, setPromoIdx] = useState(0);
   const [promoVisible, setPromoVisible] = useState(true);
+  const contact = contactForCity(cityCode);
+  const cityPromos = cityCode === "nvk" ? NVK_PROMOS : PROMOS;
+  const currentPromo = cityPromos[promoIdx % cityPromos.length];
+  const navigationItems = HEADER_NAV_ITEMS.filter(
+    (item) => cityCode !== "nvk" || item.label !== "Линзы для очков",
+  );
 
   useEffect(() => {
     const intervalId = setInterval(() => {
       setPromoVisible(false);
       setTimeout(() => {
-        setPromoIdx((index) => (index + 1) % PROMOS.length);
+        setPromoIdx((index) => (index + 1) % cityPromos.length);
         setPromoVisible(true);
       }, 300);
     }, 4000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [cityPromos.length]);
 
   const openMegaItem = HEADER_NAV_ITEMS.find(
     (item) => item.href === openMegaHref && isMegaNavItem(item),
@@ -199,7 +216,7 @@ export function Header() {
                   style={{ top: "calc(100% + 6px)", minWidth: "180px" }}
                 >
                   {CITIES.map(({ code, label }) => {
-                    const isActive = code === cityCode;
+                    const isActive = code === regionCode;
                     return (
                       <button
                         key={code}
@@ -230,10 +247,10 @@ export function Header() {
               )}
             </div>
 
-            {cityCode === "spb" && <span className="opacity-40">·</span>}
+            <span className="opacity-40">·</span>
 
-            {cityCode === "spb" && <a
-              href={regionalHref(PROMOS[promoIdx].href)}
+            <a
+              href={regionalHref(currentPromo.href)}
               className="truncate uppercase tracking-wide transition-colors hover:opacity-100"
               style={{
                 opacity: promoVisible ? 0.75 : 0,
@@ -246,33 +263,35 @@ export function Header() {
                 minWidth: 0,
               }}
             >
-              {PROMOS[promoIdx].text}
-            </a>}
+              {currentPromo.text}
+            </a>
           </div>
 
-          {cityCode === "spb" && <a
-            href={regionalHref("/#promotions")}
+          <a
+            href={regionalHref(cityCode === "nvk" ? "/contacts/" : "/#promotions")}
             className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 font-semibold text-primary-foreground no-underline transition-colors hover:border-white/35 hover:bg-white/15 sm:px-3"
             aria-label="Все Акции"
           >
             <span className="sm:hidden">Акции</span>
             <span className="hidden sm:inline">Все Акции</span>
             <span aria-hidden="true">→</span>
-          </a>}
+          </a>
 
           <div className="hidden items-center gap-5 xl:flex">
-            <button
-              onClick={() => document.dispatchEvent(new CustomEvent("open-callback"))}
-              className="border-b border-dotted border-white/30 pb-px opacity-70 transition-opacity hover:border-white/70 hover:opacity-100"
-            >
-              Заказать звонок
-            </button>
+            {cityCode !== "nvk" && (
+              <button
+                onClick={() => document.dispatchEvent(new CustomEvent("open-callback"))}
+                className="border-b border-dotted border-white/30 pb-px opacity-70 transition-opacity hover:border-white/70 hover:opacity-100"
+              >
+                Заказать звонок
+              </button>
+            )}
             <a
-              href={CONTACT.phone.href}
+              href={contact.phone.href}
               className="flex items-center gap-2 rounded-full border border-transparent bg-white/10 px-3.5 py-1 text-[13px] font-semibold text-primary-foreground no-underline transition-all hover:border-white/20 hover:bg-white/15"
             >
               <span className="h-1.5 w-1.5 animate-[pulse-ring_2s_infinite] rounded-full bg-success shadow-[0_0_0_0_oklch(0.75_0.18_150/0.6)]" />
-              {CONTACT.phone.label}
+              {contact.phone.label}
               <svg
                 width="11"
                 height="11"
@@ -307,7 +326,7 @@ export function Header() {
             <SiteLogo imageClassName="h-7 sm:h-9 xl:h-10" />
 
             <nav className="hidden h-full min-w-0 flex-1 items-stretch justify-center gap-0 px-1 xl:flex 2xl:gap-1 2xl:px-3">
-              {HEADER_NAV_ITEMS.map((item) => {
+              {navigationItems.map((item) => {
                 const hasMega = isMegaNavItem(item);
                 const isOpen = openMegaItem?.href === item.href;
 
@@ -444,7 +463,7 @@ export function Header() {
             </div>
 
             <nav className="flex flex-col gap-1">
-              {HEADER_NAV_ITEMS.map((item) => (
+              {navigationItems.map((item) => (
                 <a
                   key={item.href}
                   href={regionalHref(item.href)}
@@ -458,15 +477,9 @@ export function Header() {
 
             <div className="mt-8 space-y-3 text-sm text-muted-foreground">
               <p>{localSalon.routeQuery}</p>
-              {cityCode === "spb" ? (
-                <a href={CONTACT.email.href} className="block">
-                  {CONTACT.email.label}
-                </a>
-              ) : (
-                <a href={CONTACT.phone.href} className="block">
-                  {CONTACT.phone.label}
-                </a>
-              )}
+              <a href={contact.email.href} className="block">
+                {contact.email.label}
+              </a>
             </div>
           </div>
         </div>

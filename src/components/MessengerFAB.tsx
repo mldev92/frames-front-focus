@@ -2,35 +2,41 @@ import { useState, useEffect } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { X, MessageCircle, Phone, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CONTACT, PRIMARY_SALON } from "@/data/contact";
+import { contactForCity, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
+import { useCityStore } from "@/lib/store/city";
 import { CallbackModal } from "./CallbackModal";
 
-const CHANNELS = [
-  {
-    name: "Telegram",
-    handle: CONTACT.telegram.label,
-    href: CONTACT.telegram.href,
-    bg: "bg-[oklch(0.6_0.18_230)]",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M21.94 4.84L18.78 19.7c-.24 1.05-.86 1.31-1.74.82l-4.81-3.55-2.32 2.24c-.26.26-.47.47-.97.47l.34-4.91 8.94-8.08c.39-.35-.08-.54-.6-.19l-11.05 6.96-4.76-1.49c-1.03-.32-1.05-1.03.21-1.52l18.62-7.18c.86-.32 1.62.19 1.34 1.57z" />
-      </svg>
-    ),
-  },
-  {
-    name: "MAX",
-    handle: CONTACT.max.label,
-    href: CONTACT.max.href,
-    bg: "bg-[oklch(0.65_0.18_150)]",
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M17.5 14.4c-.3-.1-1.8-.9-2-1s-.5-.1-.7.2c-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.6.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.7-1-2.3-.3-.6-.6-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 3 1.2 3.2c.1.2 2.1 3.2 5.2 4.5 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 0C5.4 0 0 5.4 0 12c0 2.1.5 4.1 1.6 5.9L0 24l6.3-1.6c1.7 1 3.7 1.5 5.7 1.5 6.6 0 12-5.4 12-12S18.6 0 12 0z" />
-      </svg>
-    ),
-  },
-] as const;
+const channelsFor = (contact: ReturnType<typeof contactForCity>) =>
+  [
+    {
+      name: "Telegram",
+      handle: contact.telegram.label,
+      href: contact.telegram.href,
+      bg: "bg-[oklch(0.6_0.18_230)]",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21.94 4.84L18.78 19.7c-.24 1.05-.86 1.31-1.74.82l-4.81-3.55-2.32 2.24c-.26.26-.47.47-.97.47l.34-4.91 8.94-8.08c.39-.35-.08-.54-.6-.19l-11.05 6.96-4.76-1.49c-1.03-.32-1.05-1.03.21-1.52l18.62-7.18c.86-.32 1.62.19 1.34 1.57z" />
+        </svg>
+      ),
+    },
+    {
+      name: "MAX",
+      handle: contact.max.label,
+      href: contact.max.href,
+      bg: "bg-[oklch(0.65_0.18_150)]",
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17.5 14.4c-.3-.1-1.8-.9-2-1s-.5-.1-.7.2c-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.4.5-.6.2-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.7-1.7-1-2.3-.3-.6-.6-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 3 1.2 3.2c.1.2 2.1 3.2 5.2 4.5 1.9.8 2.7.9 3.6.8.6-.1 1.7-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.3-.6-.4zM12 0C5.4 0 0 5.4 0 12c0 2.1.5 4.1 1.6 5.9L0 24l6.3-1.6c1.7 1 3.7 1.5 5.7 1.5 6.6 0 12-5.4 12-12S18.6 0 12 0z" />
+        </svg>
+      ),
+    },
+  ] as const;
 
 export function MessengerFAB() {
+  const city = useCityStore((state) => state.city);
+  const contact = contactForCity(city);
+  const localSalon = city === "nvk" ? NK_SALONS[0] : PRIMARY_SALON;
+  const channels = channelsFor(contact);
   const [open, setOpen] = useState(false);
   const [callbackOpen, setCallbackOpen] = useState(false);
   const [callbackSubject, setCallbackSubject] = useState<string | undefined>();
@@ -38,14 +44,20 @@ export function MessengerFAB() {
 
   useEffect(() => {
     const handler = (event: Event) => {
+      if (city === "nvk") return;
       const subject = event instanceof CustomEvent ? event.detail?.subject : undefined;
       setCallbackSubject(typeof subject === "string" ? subject : undefined);
       setCallbackOpen(true);
     };
     document.addEventListener("open-callback", handler);
     return () => document.removeEventListener("open-callback", handler);
-  }, []);
-  const isProductPage = /^\/catalog_s\/[^/]+\/[^/]+\/?$/.test(pathname);
+  }, [city]);
+
+  useEffect(() => {
+    if (city === "nvk") setCallbackOpen(false);
+  }, [city]);
+
+  const isProductPage = /^\/catalog_[sn]\/[^/]+\/[^/]+\/?$/.test(pathname);
 
   return (
     <>
@@ -73,7 +85,7 @@ export function MessengerFAB() {
               </p>
             </div>
             <ul className="p-2 grid gap-0.5 list-none m-0">
-              {CHANNELS.map((ch) => (
+              {channels.map((ch) => (
                 <li key={ch.name}>
                   <a
                     href={ch.href}
@@ -101,7 +113,7 @@ export function MessengerFAB() {
               ))}
               <li className="border-t border-border mt-1 pt-1">
                 <a
-                  href={CONTACT.phone.href}
+                  href={contact.phone.href}
                   className="flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-foreground no-underline hover:bg-surface transition-colors"
                 >
                   <span className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center text-white bg-ink shrink-0">
@@ -110,7 +122,7 @@ export function MessengerFAB() {
                   <span className="flex-1 min-w-0 grid gap-0.5">
                     <span className="text-[14px] font-medium">Позвонить</span>
                     <span className="font-mono text-[11.5px] text-muted-foreground">
-                      {CONTACT.phone.label}
+                      {contact.phone.label}
                     </span>
                   </span>
                   <span className="text-muted-foreground text-sm">→</span>
@@ -118,7 +130,7 @@ export function MessengerFAB() {
               </li>
               <li>
                 <a
-                  href={CONTACT.email.href}
+                  href={contact.email.href}
                   className="flex items-center gap-3.5 px-3.5 py-3 rounded-xl text-foreground no-underline hover:bg-surface transition-colors"
                 >
                   <span className="w-[38px] h-[38px] rounded-[10px] flex items-center justify-center text-white bg-[oklch(0.55_0.14_60)] shrink-0">
@@ -127,7 +139,7 @@ export function MessengerFAB() {
                   <span className="flex-1 min-w-0 grid gap-0.5">
                     <span className="text-[14px] font-medium">Email</span>
                     <span className="font-mono text-[11.5px] text-muted-foreground">
-                      {CONTACT.email.label}
+                      {contact.email.label}
                     </span>
                   </span>
                   <span className="text-muted-foreground text-sm">→</span>
@@ -136,21 +148,23 @@ export function MessengerFAB() {
             </ul>
             <div className="px-[22px] pb-[18px] pt-3 border-t border-border text-[11.5px] text-muted-foreground leading-relaxed">
               <div className="flex items-center gap-2 before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-success before:animate-pulse">
-                сегодня работаем до {PRIMARY_SALON.closesAt}
+                сегодня работаем до {localSalon.closesAt}
               </div>
               <div className="mt-1.5">
                 В нерабочее время — оставьте сообщение, мы ответим утром.
               </div>
-              <button
-                onClick={() => {
-                  setOpen(false);
-                  setCallbackSubject(undefined);
-                  setCallbackOpen(true);
-                }}
-                className="mt-3 text-brand hover:underline cursor-pointer bg-transparent border-0 p-0 text-[11.5px]"
-              >
-                Заказать обратный звонок →
-              </button>
+              {city !== "nvk" && (
+                <button
+                  onClick={() => {
+                    setOpen(false);
+                    setCallbackSubject(undefined);
+                    setCallbackOpen(true);
+                  }}
+                  className="mt-3 text-brand hover:underline cursor-pointer bg-transparent border-0 p-0 text-[11.5px]"
+                >
+                  Заказать обратный звонок →
+                </button>
+              )}
             </div>
           </div>
         )}
@@ -168,7 +182,13 @@ export function MessengerFAB() {
         </button>
       </div>
 
-      <CallbackModal open={callbackOpen} onOpenChange={setCallbackOpen} subject={callbackSubject} />
+      {city !== "nvk" && (
+        <CallbackModal
+          open={callbackOpen}
+          onOpenChange={setCallbackOpen}
+          subject={callbackSubject}
+        />
+      )}
     </>
   );
 }

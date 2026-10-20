@@ -1,8 +1,10 @@
+const SHARED_PHONE = {
+  label: "8-800-700-0214",
+  href: "tel:88007000214",
+} as const;
+
 export const CONTACT = {
-  phone: {
-    label: "8-800-700-0214",
-    href: "tel:88007000214",
-  },
+  phone: SHARED_PHONE,
   email: {
     label: "sale-spb@optika100.com",
     href: "mailto:sale-spb@optika100.com",
@@ -16,6 +18,26 @@ export const CONTACT = {
     href: "https://max.ru/u/f9LHodD0cOI_EAJSmZrDRX2jCU-Utq7h8zwAFsU9joaV_FY1vzI0MufrfVg",
   },
 } as const;
+
+export const NVK_CONTACT = {
+  phone: {
+    ...SHARED_PHONE,
+  },
+  email: {
+    label: "sale@optika100.com",
+    href: "mailto:sale@optika100.com",
+  },
+  telegram: {
+    label: "@optica_100",
+    href: "tg://resolve?domain=optica_100",
+  },
+  max: {
+    label: "MAX",
+    href: "https://max.ru/u/f9LHodD0cOI9mxgb1lKx2s5xbbX2Psd4fGNop-GbIAElZQq-ARajInTU6GA",
+  },
+} as const;
+
+export const contactForCity = (city: "spb" | "nvk") => (city === "nvk" ? NVK_CONTACT : CONTACT);
 
 export type SalonCity = "spb" | "nk";
 

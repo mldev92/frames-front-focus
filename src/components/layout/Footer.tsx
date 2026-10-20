@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Mail, MessageCircle, Phone, Send } from "lucide-react";
+import { Mail, MessageCircle, Send } from "lucide-react";
 import { AppointmentModal } from "@/components/AppointmentModal";
-import { CONTACT } from "@/data/contact";
+import { contactForCity } from "@/data/contact";
 import { SiteLogo } from "./SiteLogo";
 import { useCityStore } from "@/lib/store/city";
 import { serviceHref } from "@/data/services";
@@ -55,12 +55,19 @@ const COLS = [
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const city = useCityStore((state) => state.city);
+  const contact = contactForCity(city);
   const [appointmentOpen, setAppointmentOpen] = useState(false);
   const cityColumns = COLS.map((column) => ({
     ...column,
     links: column.links.filter(
       ([, href]) =>
-        city === "spb" || !["/linzy-spb/", "/biometriya-glaza/", "/optika-spb/"].includes(href),
+        city === "spb" ||
+        ![
+          "/catalog_s/linzy_dlya_ochkov/",
+          "/linzy-spb/",
+          "/biometriya-glaza/",
+          "/optika-spb/",
+        ].includes(href),
     ),
   }));
 
@@ -112,37 +119,24 @@ export function Footer() {
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs text-muted-foreground">
           <div>
-            © {currentYear} ОПТИКА 100% ·{" "}
-            {city === "spb" ? (
-              <>
-                ул. Кирочная, 17, СПб ·{" "}
-                <a href={CONTACT.email.href} className="hover:text-foreground">
-                  {CONTACT.email.label}
-                </a>
-              </>
-            ) : (
-              <>
-                Новокузнецк ·{" "}
-                <a href={CONTACT.phone.href} className="hover:text-foreground">
-                  {CONTACT.phone.label}
-                </a>
-              </>
-            )}
+            © {currentYear} ОПТИКА 100% · {city === "spb" ? "ул. Кирочная, 17, СПб" : "Новокузнецк"}{" "}
+            ·{" "}
+            <a href={contact.email.href} className="hover:text-foreground">
+              {contact.email.label}
+            </a>
           </div>
           <div className="flex gap-4">
-            {city === "spb" && (
-              <a
-                href={CONTACT.telegram.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Telegram"
-                className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
-              >
-                <Send className="h-5 w-5" />
-              </a>
-            )}
             <a
-              href={CONTACT.max.href}
+              href={contact.telegram.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Telegram"
+              className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
+            >
+              <Send className="h-5 w-5" />
+            </a>
+            <a
+              href={contact.max.href}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="MAX"
@@ -150,23 +144,13 @@ export function Footer() {
             >
               <MessageCircle className="h-5 w-5" />
             </a>
-            {city === "spb" ? (
-              <a
-                href={CONTACT.email.href}
-                aria-label="Email"
-                className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
-              >
-                <Mail className="h-5 w-5" />
-              </a>
-            ) : (
-              <a
-                href={CONTACT.phone.href}
-                aria-label="Телефон"
-                className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
-              >
-                <Phone className="h-5 w-5" />
-              </a>
-            )}
+            <a
+              href={contact.email.href}
+              aria-label="Email"
+              className="p-2 rounded-full bg-foreground/10 hover:bg-foreground/20 transition-colors"
+            >
+              <Mail className="h-5 w-5" />
+            </a>
           </div>
         </div>
       </div>

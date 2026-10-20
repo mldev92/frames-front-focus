@@ -6,7 +6,7 @@ import { Slider } from "./ui/slider";
 import { getCatalogBanners } from "@/data/catalog-banners";
 import { contactLensSubcategories } from "@/data/contact-lens-catalog-seo";
 import { catalogPrefix, catalogHref, regionalCatalogHref } from "@/data/categories";
-import { CONTACT } from "@/data/contact";
+import { contactForCity } from "@/data/contact";
 import type { Category, Product } from "@/data/types";
 import type { CatalogPage, CatalogQuery, FacetKey as ServerFacetKey } from "@/lib/api/bitrix";
 import type { CityCode } from "@/lib/store/city";
@@ -88,7 +88,6 @@ type AccessoriesNavGroup = {
   items: Array<{ href: string; label: string }>;
 };
 
-const CORPORATE_EMAIL = CONTACT.email.label;
 const normalize = (v?: string) => (v ?? "").trim().toLowerCase();
 const ACCESSORIES_BASE_SEGMENT = "soputstvuyushchie_tovary";
 
@@ -962,6 +961,7 @@ export function CatalogListing({
   city = "spb",
   onStateChange,
 }: ListingProps) {
+  const corporateEmail = contactForCity(city).email.label;
   // The current page slice — the SERVER already applied every filter; this
   // component never re-filters it. Totals/counts/bounds also come from `data`.
   const products = data.products;
@@ -1287,7 +1287,7 @@ export function CatalogListing({
       "",
       "Источник: фильтр Наличие (Под заказ)",
     ].join("\n");
-    const href = `mailto:${CORPORATE_EMAIL}?subject=${encodeURIComponent(
+    const href = `mailto:${corporateEmail}?subject=${encodeURIComponent(
       "Заявка на товар под заказ",
     )}&body=${encodeURIComponent(body)}`;
     if (typeof window !== "undefined") {
@@ -1683,7 +1683,7 @@ export function CatalogListing({
                 <>
                   {preorderSent ? (
                     <p className="text-sm text-muted-foreground">
-                      Черновик письма открыт. Отправьте его, чтобы заявка ушла на {CORPORATE_EMAIL}.
+                      Черновик письма открыт. Отправьте его, чтобы заявка ушла на {corporateEmail}.
                     </p>
                   ) : (
                     <form onSubmit={handlePreorderSubmit} className="space-y-2.5">

@@ -23,7 +23,7 @@ import { Calendar, Users, Award, Phone, Send } from "lucide-react";
 import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
-import { CONTACT, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
+import { CONTACT, contactForCity, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
 import { useCityStore } from "@/lib/store/city";
 import { getHomepageData, getProductGallery } from "@/lib/api/bitrix";
 
@@ -278,6 +278,7 @@ function MainV2Page() {
   const [aptOpen, setAptOpen] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
   const city = useCityStore((state) => state.city);
+  const contact = contactForCity(city);
 
   const { data: { popularModels, contactLensProducts, lensPromo } = { popularModels: [], contactLensProducts: [], lensPromo: null } } = useQuery({
     queryKey: ["homepage", city],
@@ -487,7 +488,7 @@ function MainV2Page() {
               </div>
 
               <div
-                className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6"
+                className={`mt-10 grid grid-cols-2 gap-4 sm:gap-6 ${city === "nvk" ? "sm:grid-cols-3" : "sm:grid-cols-4"}`}
                 style={{ maxWidth: 680 }}
               >
                 <div className="flex items-start gap-2.5">
@@ -504,28 +505,30 @@ function MainV2Page() {
                   </div>
                 </div>
 
-                <Link
-                  to="/tinkoff"
-                  aria-label="Рассрочка 0‑0‑3 от Т‑Банка, без переплат"
-                  className="group flex items-start gap-2.5 text-inherit no-underline transition-transform duration-200 hover:-translate-y-px"
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand/10 text-brand transition-colors duration-200 group-hover:bg-brand/15">
-                    <img
-                      src="/t_icon_red.webp"
-                      alt=""
-                      loading="lazy"
-                      className="h-5 w-4 object-contain"
-                    />
-                  </span>
-                  <div className="flex min-w-0 flex-col">
-                    <strong className="border-b border-dashed border-transparent font-serif text-[18px] leading-[1.1] text-foreground transition-colors group-hover:border-brand/40">
-                      0‑0‑3
-                    </strong>
-                    <span className="mt-0.5 text-[12px] leading-[1.35] text-muted-foreground">
-                      рассрочка от Т‑Банка
+                {city !== "nvk" && (
+                  <Link
+                    to="/tinkoff"
+                    aria-label="Рассрочка 0‑0‑3 от Т‑Банка, без переплат"
+                    className="group flex items-start gap-2.5 text-inherit no-underline transition-transform duration-200 hover:-translate-y-px"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand/10 text-brand transition-colors duration-200 group-hover:bg-brand/15">
+                      <img
+                        src="/t_icon_red.webp"
+                        alt=""
+                        loading="lazy"
+                        className="h-5 w-4 object-contain"
+                      />
                     </span>
-                  </div>
-                </Link>
+                    <div className="flex min-w-0 flex-col">
+                      <strong className="border-b border-dashed border-transparent font-serif text-[18px] leading-[1.1] text-foreground transition-colors group-hover:border-brand/40">
+                        0‑0‑3
+                      </strong>
+                      <span className="mt-0.5 text-[12px] leading-[1.35] text-muted-foreground">
+                        рассрочка от Т‑Банка
+                      </span>
+                    </div>
+                  </Link>
+                )}
 
                 <div className="flex items-start gap-2.5">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
@@ -1167,11 +1170,15 @@ function MainV2Page() {
               </a>
               <div className="flex items-center gap-2 mt-auto">
                 {(city === "nvk"
-                  ? [{ name: "MAX", href: CONTACT.max.href }]
+                  ? [
+                      { name: "Email", href: contact.email.href },
+                      { name: "Telegram", href: contact.telegram.href },
+                      { name: "MAX", href: contact.max.href },
+                    ]
                   : [
-                      { name: "Email", href: CONTACT.email.href },
-                      { name: "Telegram", href: CONTACT.telegram.href },
-                      { name: "MAX", href: CONTACT.max.href },
+                      { name: "Email", href: contact.email.href },
+                      { name: "Telegram", href: contact.telegram.href },
+                      { name: "MAX", href: contact.max.href },
                     ]
                 ).map((m) => (
                   <a
@@ -1201,7 +1208,7 @@ function MainV2Page() {
               </p>
               {city === "spb" ? (
                 <a
-                  href={CONTACT.telegram.href}
+                  href={contact.telegram.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
@@ -1210,7 +1217,7 @@ function MainV2Page() {
                 </a>
               ) : (
                 <a
-                  href={CONTACT.max.href}
+                  href={contact.max.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
