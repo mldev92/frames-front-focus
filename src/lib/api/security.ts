@@ -1,4 +1,4 @@
-const BASE = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ?? "";
+const BASE = (import.meta.env?.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ?? "";
 
 let csrfPromise: Promise<string> | null = null;
 const SLOW_API_MS = 2000;
@@ -62,7 +62,45 @@ export async function getCsrfToken(force = false): Promise<string> {
 }
 
 export class StoreApiError extends Error {
-  constructor(message: string, public status: number, public data: Record<string, unknown>) { super(message); }
+  public status: number;
+  public data: Record<string, unknown>;
+
+  constructor(message: string, status: number, data: Record<string, unknown>) {
+    super(message);
+    this.status = status;
+    this.data = data;
+  }
+}
+
+type StoreResponse<T> = T & {
+  error?: string;
+  message?: string;
+  code?: string;
+};
+
+async function csrfPost<T>(
+  path: string,
+  buildInit: (csrfToken: string) => RequestInit,
+  retryCsrf = true,
+): Promise<T> {
+  const csrfToken = await getCsrfToken();
+  const response = await apiFetch(apiUrl(path), buildInit(csrfToken));
+  const data = (await response.json().catch(() => ({}))) as StoreResponse<T>;
+  if (response.ok) return data;
+
+  const csrfExpired = response.status === 403 && (
+    data.code === "csrf_invalid"
+    || data.error === "Сессия устарела. Обновите страницу и повторите попытку."
+  );
+  if (retryCsrf && csrfExpired) {
+    await getCsrfToken(true);
+    return csrfPost(path, buildInit, false);
+  }
+  throw new StoreApiError(
+    data.error ?? data.message ?? `HTTP ${response.status}`,
+    response.status,
+    data as Record<string, unknown>,
+  );
 }
 
 export async function securePost<T>(
@@ -70,8 +108,8 @@ export async function securePost<T>(
   body: unknown,
   extraHeaders: Record<string, string> = {},
 ): Promise<T> {
-  const csrfToken = await getCsrfToken();
-  const response = await apiFetch(apiUrl(path), {
+  const serializedBody = JSON.stringify(body);
+  return csrfPost<T>(path, (csrfToken) => ({
     method: "POST",
     credentials: "include",
     headers: {
@@ -79,17 +117,8 @@ export async function securePost<T>(
       "X-CSRF-Token": csrfToken,
       ...extraHeaders,
     },
-    body: JSON.stringify(body),
-  });
-  const data = (await response.json().catch(() => ({}))) as T & {
-    error?: string;
-    message?: string;
-  };
-  if (!response.ok) {
-    if (response.status === 403) void getCsrfToken(true);
-    throw new StoreApiError(data.error ?? data.message ?? `HTTP ${response.status}`, response.status, data as Record<string, unknown>);
-  }
-  return data;
+    body: serializedBody,
+  }));
 }
 
 /**
@@ -99,20 +128,10 @@ export async function securePost<T>(
  * server reads before the body (o_require_csrf).
  */
 export async function securePostForm<T>(path: string, form: FormData): Promise<T> {
-  const csrfToken = await getCsrfToken();
-  const response = await apiFetch(apiUrl(path), {
+  return csrfPost<T>(path, (csrfToken) => ({
     method: "POST",
     credentials: "include",
     headers: { "X-CSRF-Token": csrfToken },
     body: form,
-  });
-  const data = (await response.json().catch(() => ({}))) as T & {
-    error?: string;
-    message?: string;
-  };
-  if (!response.ok) {
-    if (response.status === 403) void getCsrfToken(true);
-    throw new StoreApiError(data.error ?? data.message ?? `HTTP ${response.status}`, response.status, data as Record<string, unknown>);
-  }
-  return data;
+  }));
 }
