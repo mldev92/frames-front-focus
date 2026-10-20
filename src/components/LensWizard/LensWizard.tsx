@@ -150,6 +150,7 @@ export function LensWizard({
   const [design, setDesign] = useState<DesignOption | null>(null);
   const [coatingTier, setCoatingTier] = useState<CoatingTierOption | null>(null);
   const [brand, setBrand] = useState<BrandOption | null>(null);
+  const [requestSaved, setRequestSaved] = useState(false);
 
   // What is still answerable at each remaining step, counted by the server
   // against the real catalogue under everything already chosen. Her «Выдача
@@ -272,6 +273,10 @@ export function LensWizard({
     if (open) scrollRef.current?.scrollTo({ top: 0, behavior: "auto" });
   }, [open, step]);
 
+  useEffect(() => {
+    if (step !== LAST_STEP) setRequestSaved(false);
+  }, [step]);
+
   if (!open) return null;
 
   const goNext = () =>
@@ -304,6 +309,7 @@ export function LensWizard({
     setDesign(null);
     setCoatingTier(null);
     setBrand(null);
+    setRequestSaved(false);
   };
 
   const closeWizard = () => {
@@ -705,6 +711,7 @@ export function LensWizard({
             {step === 8 && (
               <StepResults
                 onEditStep={setStep}
+                onRequestSaved={() => setRequestSaved(true)}
                 frame={frame}
                 selectedColor={selectedColor}
                 purpose={purpose}
@@ -784,6 +791,14 @@ export function LensWizard({
             >
               Далее
             </button>
+          ) : requestSaved ? (
+            <span
+              role="status"
+              className="flex shrink-0 items-center gap-2 rounded-full bg-brand/10 px-5 py-3 text-sm font-semibold text-brand sm:px-8"
+            >
+              <Check className="h-4 w-4" aria-hidden />
+              Заявка сохранена
+            </span>
           ) : (
             <a
               href="#lens-request-form"
@@ -1857,6 +1872,7 @@ function StepBrand({
 
 function StepResults({
   onEditStep,
+  onRequestSaved,
   frame,
   selectedColor,
   purpose,
@@ -1878,6 +1894,7 @@ function StepResults({
 }: {
   /** Jump back to a step, so a dead end can offer a way out of itself. */
   onEditStep: (step: StepId) => void;
+  onRequestSaved: () => void;
   frame?: Product | null;
   selectedColor?: string;
   purpose: PurposeOption | null;
@@ -2055,7 +2072,7 @@ function StepResults({
         {PRELIMINARY_NOTICE}
       </p>
 
-      <LensRequestForm draft={requestDraft} />
+      <LensRequestForm draft={requestDraft} onSent={onRequestSaved} />
     </div>
   );
 }
