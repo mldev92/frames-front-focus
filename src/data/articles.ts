@@ -60,7 +60,8 @@ export const articles: Article[] = RAW.map(([slug, title, excerpt], i) => ({
     : [],
   // Удалённый товар и устаревшая акция ведут к действующему подбору очковых линз.
   contentHtml: importedContent[slug as keyof typeof importedContent]
-    ?.replace(/\/catalog_s\/linzy_dlya_ochkov\/varilux_kh_orma_crizal_prevencia_uv\//g, "/catalog_s/linzy_dlya_ochkov/")
+    ?.replace(/(href=["'])https?:\/\/(?:www\.)?optika100\.com\//g, "$1/")
+    .replace(/\/catalog_s\/linzy_dlya_ochkov\/varilux_kh_orma_crizal_prevencia_uv\//g, "/catalog_s/linzy_dlya_ochkov/")
     .replace(/\/catalog_s\/linzy_dlya_ochkov\/filter\/manufacturer-is-7030d4b8da27ac41761fd58180e02803\/cml2_skidka-is-20\/apply\//g, "/catalog_s/linzy_dlya_ochkov/"),
   productionUrl: `https://optika100.com/blog/${CATEGORY_SLUG}/${slug}/`,
   isMigrated:

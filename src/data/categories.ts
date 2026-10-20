@@ -94,7 +94,12 @@ export function productCardHref(
 
 /** Rewrite catalog links to use the correct city prefix (/catalog_s vs /catalog_n). */
 export const regionalCatalogHref = (href: string, city: CityCode = "spb") => {
+  href = href.replace(/^https:\/\/(?:www\.)?optika100\.com(?=\/)/, "");
   if (!href.startsWith("/catalog_s/") && !href.startsWith("/catalog_n/")) return href;
+  // У одной акции разные реальные коды товара в двух инфоблоках.
+  if (href === "/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/" && city === "nvk") {
+    return "/catalog_n/kontaktnye_linzy/dlya_kontrolya_miopii/misight_1_day_90sht_8359/";
+  }
   const path = href.replace(/^\/catalog_[sn]\//, "/")
     .replace(/^\/kontaktnye_linzy_?(?=\/|$)/, city === "nvk" ? "/kontaktnye_linzy" : "/kontaktnye_linzy_");
   return `${catalogPrefix(city)}${path}`;
