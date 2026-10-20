@@ -1,7 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { catalogLinks } from "../scripts/catalog-link-check.mjs";
-const routes = JSON.parse(await readFile("generated/production-routes.json", "utf8")).routes;
+const routeManifest = JSON.parse(await readFile("generated/production-routes.json", "utf8"));
+const routes = routeManifest.routes;
 const origin = process.env.O100_REHEARSAL_ORIGIN || "http://127.0.0.1:8089";
 const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const failures = [];
@@ -73,7 +74,7 @@ const spaceTarget = "/catalog_s/linzy_dlya_ochkov/VX%20Start_orma_crizal_prevenc
 const spaced = await fetch(origin + spaceSource + "?cutover_probe=1", { redirect: "manual" });
 if (spaced.status !== 301 || spaced.headers.get("location") !== "https://optika100.com" + spaceTarget + "?cutover_probe=1") failures.push("Space redirect did not preserve encoding and query");
 redirectCount++;
-for (const route of ["/o100_frontend_current/index.html", "/%6f100_frontend_current/index.html", "/o100_frontend_releases/private/index.html", "/cutover-unknown-page/", "/catalog_s/opravy/cutover-unknown-product/", "/main-v2/", "/loyalty/"]) {
+for (const route of ["/o100_frontend_current/index.html", "/%6f100_frontend_current/index.html", "/o100_frontend_releases/private/index.html", "/cutover-unknown-page/", "/catalog_s/opravy/cutover-unknown-product/", "/main-v2/", "/loyalty/", ...(routeManifest.retiredRedirectTargets || [])]) {
   const response = await fetch(origin + route, {redirect:"manual"});
   if (response.status !== 404) failures.push(`${route}: expected 404, got ${response.status}`);
 }

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { catalogLinks, redirectPaths } from "../scripts/catalog-link-check.mjs";
+import { catalogLinks, redirectPaths, redirectTargets } from "../scripts/catalog-link-check.mjs";
 
 test("crawling actual card anchors catches the omitted short Okula URL", () => {
   const canonical = "/catalog_s/opravy/zhenskie/oprava_okula_ok_1190_f3/";
@@ -8,6 +8,15 @@ test("crawling actual card anchors catches the omitted short Okula URL", () => {
   const known = new Set([canonical]);
   const links = catalogLinks(`<a href="${short}?color=red&amp;sort=price">Фото</a><a href="${canonical}">Название</a>`);
   assert.deepEqual(links.filter((link) => !known.has(link)), [short]);
+});
+
+test("the final SEO destination is required even when the source card URL is already known", () => {
+  const source = "/catalog_s/kontaktnye_linzy_/tsvetnye/air_optix_colors/";
+  const target = "/catalog_s/kontaktnye_linzy_/air_optix_colors/";
+  const redirects = `RedirectMatch 301 ^${source}?$ https://optika100.com${target}`;
+  assert.ok(redirectPaths(redirects).has(source));
+  assert.deepEqual([...redirectTargets(redirects)], [target]);
+  assert.equal(new Set([source]).has(target), false);
 });
 test("catalog link extraction keeps both regions and ignores external links", () => {
   assert.deepEqual(catalogLinks('<a href="/catalog_n/opravy/test">Товар</a><a href="https://example.com/catalog_s/x/">Внешняя</a>'),

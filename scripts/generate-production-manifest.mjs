@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { redirectTargets } from "./catalog-link-check.mjs";
 
 const origin = (process.env.VITE_BITRIX_API || "https://optika100.com").replace(/\/$/, "");
 const outputDir = new URL("../generated/", import.meta.url);
@@ -177,6 +178,7 @@ async function catalogPaths() {
 
 const routeSet = new Set([...staticRoutes, ...articleRoutes]);
 const legacyPaths = await sitemapPaths();
+console.log(`Read ${legacyPaths.size} paths from the live legacy sitemap.`);
 for (const path of legacyPaths) {
   if (redirectSources.has(path)) continue;
   const isCatalog = path.startsWith("/catalog_s/") || path.startsWith("/catalog_n/");
@@ -187,6 +189,45 @@ for (const path of legacyPaths) {
   throw new Error(`Legacy sitemap path has no React route or reviewed redirect: ${path}`);
 }
 for (const path of await catalogPaths()) routeSet.add(path);
+console.log(`Collected ${routeSet.size} sitemap, native section and current catalog paths.`);
+
+// Старый sitemap не перечисляет все согласованные SEO-адреса. Без них полная
+// карточка может отвечать 301, а конечный короткий URL — 404 или циклом fallback.
+const destinations = redirectTargets(redirectText);
+destinations.add("/catalog_s/linzy_dlya_ochkov/VX Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/");
+const missingTargets = [...destinations].filter((path) => !routeSet.has(path) && !redirectSources.has(path));
+// Проверено в Bitrix 20.10.2026: элементы 24669 и 49976 имеют ACTIVE=N.
+// Не создаём успешную карточку для снятых товаров; реальные ссылки на них
+// по-прежнему отклоняются полной проверкой переходов Apache.
+const reviewedInactiveTargets = new Set([
+  "/catalog_s/linzy_dlya_ochkov/fsv_1_5_uc/",
+  "/catalog_s/solntsezashchitnye_ochki/solntsezashchitnye_ochki_ray_ban_3025_aviator_large_metal_9196af58/",
+]);
+const retiredRedirectTargets = [];
+let targetPosition = 0;
+let validatedTargets = 0;
+async function validateRedirectTarget() {
+  while (targetPosition < missingTargets.length) {
+    const path = missingTargets[targetPosition++];
+    const parts = path.split("/").filter(Boolean);
+    if (!/^catalog_[sn]$/.test(parts[0]) || parts.length < 3) throw new Error(`Unverified redirect target: ${path}`);
+    const slug = parts.at(-1);
+    const params = new URLSearchParams({slug, city: parts[0] === "catalog_n" ? "nvk" : "spb", section: parts.slice(1, -1).join("/")});
+    const response = await fetch(`${origin}/api/store/product.php?${params}`, {signal: AbortSignal.timeout(30000)});
+    if (response.status === 404 && reviewedInactiveTargets.has(path)) {
+      retiredRedirectTargets.push(path);
+      continue;
+    }
+    if (!response.ok) throw new Error(`Redirect target product unavailable: ${path} (${response.status})`);
+    const product = await response.json();
+    if (!product.id || product.slug !== slug) throw new Error(`Redirect target identity mismatch: ${path}`);
+    routeSet.add(path);
+    validatedTargets++;
+    if (validatedTargets % 50 === 0) console.log(`Validated ${validatedTargets}/${missingTargets.length} additional SEO destinations.`);
+  }
+}
+await Promise.all(Array.from({length: 4}, validateRedirectTarget));
+console.log(`Validated ${missingTargets.length - retiredRedirectTargets.length} additional SEO destinations; ${retiredRedirectTargets.length} confirmed inactive products retain 404.`);
 
 const routes = [...routeSet].filter((path) => !redirectSources.has(path)).sort((a, b) => a.localeCompare(b, "ru"));
 const sitemapSeo = new Map([
@@ -196,7 +237,7 @@ const sitemapSeo = new Map([
   ["/biometriya-glaza/", { priority: "0.6", changefreq: "monthly" }],
 ]);
 const generatedAt = new Date().toISOString();
-const snapshot = { version: 1, generatedAt, origin, count: routes.length, routes };
+const snapshot = { version: 1, generatedAt, origin, count: routes.length, routes, retiredRedirectTargets: retiredRedirectTargets.sort() };
 
 await mkdir(outputDir, { recursive: true });
 await mkdir(publicDir, { recursive: true });
