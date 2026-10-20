@@ -59,6 +59,8 @@ test("shared pages derive regional text and links from the selected city", async
   assert.match(productInfo, /Доставка по Новокузнецку/);
   assert.match(appointment, /salon\.city === "nk"/);
   assert.match(appointment, /availableSalons\.map/);
+  assert.match(appointment, /if \(!open\) \{/);
+  assert.doesNotMatch(appointment, /if \(!open \|\| step !== 2\)/);
   assert.match(checkout, /regionalCity === "nvk" \? "Новокузнецк" : "Санкт-Петербург"/);
 });
 

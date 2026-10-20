@@ -174,7 +174,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   }, [confirmationExpiresAt, open, step]);
 
   useEffect(() => {
-    if (!open || step !== 2) {
+    if (!open) {
       return;
     }
 
@@ -210,7 +210,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [ageType, open, selectedSalon.clinicUid, service, step]);
+  }, [ageType, open, selectedSalon.clinicUid, service]);
 
   function reset() {
     setStep(1);
