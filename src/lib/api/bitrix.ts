@@ -182,7 +182,14 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
  * Homepage payload: featured frames, featured contact lenses, and optional
  * admin-managed promo copy for the lens promo block.
  */
-export async function getHomepageData(): Promise<HomepageResponse> {
+export async function getHomepageData(city: "spb" | "nvk" = "spb"): Promise<HomepageResponse> {
+  if (city === "nvk") {
+    const [popularModels, contactLensProducts] = await Promise.all([
+      getProducts("opravy", { limit: 8, city }),
+      getProducts("kontaktnye_linzy", { limit: 4, city }),
+    ]);
+    return { popularModels, contactLensProducts, lensPromo: null };
+  }
   if (!BASE && ALLOW_FIXTURES) {
     const [popularModels, contactLensProducts] = await Promise.all([
       getProducts("opravy", { limit: 8 }),

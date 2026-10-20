@@ -24,7 +24,7 @@ const PROMOS = [
   { text: "ДО 50% НА ЛИНЗЫ STELLEST", href: "/stellest-katalog-s-linzami/" },
   {
     text: "MISIGHT 1 DAY 90: 20 ЛИНЗ В ПОДАРОК И СКИДКА 1 000 ₽",
-    href: "https://optika100.com/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/",
+    href: "/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/",
   },
 ];
 

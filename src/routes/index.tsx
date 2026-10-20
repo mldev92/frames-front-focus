@@ -1,5 +1,6 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { startTransition, useEffect, useRef, useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   ChevronLeft,
@@ -15,7 +16,7 @@ import { AppointmentModal } from "@/components/AppointmentModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { VIRTUAL_TRY_ON_ENABLED } from "@/lib/runtime";
 import { Reveal } from "@/components/Reveal";
-import { catalogHref, categoryToSegment, regionalCatalogHref } from "@/data/categories";
+import { catalogHref, categoryToSegment, regionalCatalogHref, productCardHref } from "@/data/categories";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
 import { Calendar, Users, Award, Phone, Send } from "lucide-react";
@@ -273,23 +274,16 @@ const CAT_CELLS = [
 
 function MainV2Page() {
   const initialHomepageData = Route.useLoaderData();
-  const [{ popularModels, contactLensProducts, lensPromo }, setHomepageData] =
-    useState(initialHomepageData);
   const recent = articles.slice(0, 2);
   const [aptOpen, setAptOpen] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
   const city = useCityStore((state) => state.city);
 
-  useEffect(() => {
-    let active = true;
-    getHomepageData().then((data) => {
-      if (!active) return;
-      startTransition(() => setHomepageData(data));
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { data: { popularModels, contactLensProducts, lensPromo } = { popularModels: [], contactLensProducts: [], lensPromo: null } } = useQuery({
+    queryKey: ["homepage", city],
+    queryFn: () => getHomepageData(city),
+    initialData: city === "spb" ? initialHomepageData : undefined,
+  });
 
   return (
     <div>
@@ -1475,10 +1469,8 @@ function MainV2BuyTogetherBanner() {
  */
 function MainV2ProductCard({ product }: { product: Product }) {
   const { toggleSaved, saved } = useCart();
-  const navigate = useNavigate();
   const city = useCityStore((state) => state.city);
-  const productRoute =
-    city === "nvk" ? "/catalog_n/$category/$slug/" : "/catalog_s/$category/$slug/";
+  const productRoute = productCardHref(product, city);
   const isSaved = saved.includes(product.slug);
   const primaryImage = product.images[0] ?? "/no-product-image.svg";
   const [fetchedHoverImage, setFetchedHoverImage] = useState<string | undefined>();
@@ -1489,10 +1481,6 @@ function MainV2ProductCard({ product }: { product: Product }) {
   const extra = (product.colors?.length ?? 0) - dots.length;
   const showTryOn =
     VIRTUAL_TRY_ON_ENABLED && product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
-  const productRouteParams = {
-    category: categoryToSegment[product.category],
-    slug: product.slug,
-  };
 
   // Compose display name: prefer brand prefix when set (e.g. "Ray-Ban RX 7159"),
   // else fall back to product.name alone.
@@ -1527,9 +1515,8 @@ function MainV2ProductCard({ product }: { product: Product }) {
       }}
     >
       <div className="relative block aspect-square">
-        <Link
-          to={productRoute}
-          params={productRouteParams}
+        <a
+          href={productRoute}
           className="relative block h-full w-full"
           aria-label={displayName}
           onMouseEnter={prepareHoverImage}
@@ -1553,15 +1540,12 @@ function MainV2ProductCard({ product }: { product: Product }) {
               className="absolute inset-0 h-full w-full object-contain p-7 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500"
             />
           )}
-        </Link>
+        </a>
         {showTryOn && (
           <button
             type="button"
             onClick={() =>
-              navigate({
-                to: productRoute,
-                params: productRouteParams,
-              })
+              window.location.assign(productRoute)
             }
             className="absolute top-3 right-3 z-10 inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium text-foreground transition-all duration-200 hover:-translate-y-0.5 hover:text-brand active:translate-y-0 active:scale-[0.98]"
             style={{
@@ -1605,14 +1589,13 @@ function MainV2ProductCard({ product }: { product: Product }) {
       </div>
 
       <div className="flex flex-col gap-2" style={{ padding: "18px 20px 22px" }}>
-        <Link
-          to={productRoute}
-          params={productRouteParams}
+        <a
+          href={productRoute}
           className="text-sm text-foreground hover:text-brand transition-colors"
           style={{ lineHeight: 1.3 }}
         >
           {displayName}
-        </Link>
+        </a>
         <div className="text-foreground" style={{ fontSize: 15, fontWeight: 600 }}>
           {formatPrice(product.price)}
         </div>
@@ -1906,13 +1889,8 @@ function MainV2ContactLensCard({
 }) {
   const { toggleSaved, saved } = useCart();
   const city = useCityStore((state) => state.city);
-  const productRoute =
-    city === "nvk" ? "/catalog_n/$category/$slug/" : "/catalog_s/$category/$slug/";
+  const productRoute = productCardHref(product, city);
   const isSaved = saved.includes(product.slug);
-  const productRouteParams = {
-    category: categoryToSegment[product.category],
-    slug: product.slug,
-  };
   const packSize = product.specs.find((spec) => spec.label === "Упаковка")?.value;
   const lensMeta = [product.wearMode, packSize].filter(Boolean).join(" · ");
   const primaryImage = product.images[0] ?? "/no-product-image.svg";
@@ -1949,9 +1927,8 @@ function MainV2ContactLensCard({
           borderBottom: "1px solid var(--border)",
         }}
       >
-        <Link
-          to={productRoute}
-          params={productRouteParams}
+        <a
+          href={productRoute}
           className="absolute inset-0 block"
           aria-label={displayName}
         >
@@ -2011,7 +1988,7 @@ function MainV2ContactLensCard({
               className="h-full w-full object-contain p-7 transition-transform duration-500 group-hover/card:scale-[1.03]"
             />
           )}
-        </Link>
+        </a>
         <span
           className="absolute left-3 top-3 inline-flex items-center rounded-full border px-3 py-1.5 text-[11px] font-medium"
           style={{
@@ -2040,14 +2017,13 @@ function MainV2ContactLensCard({
       </div>
 
       <div className="flex flex-col gap-2" style={{ padding: "18px 20px 22px" }}>
-        <Link
-          to={productRoute}
-          params={productRouteParams}
+        <a
+          href={productRoute}
           className="font-serif text-foreground transition-colors hover:text-brand"
           style={{ fontSize: 18, lineHeight: 1.25 }}
         >
           {displayName}
-        </Link>
+        </a>
         <div className="text-muted-foreground" style={{ fontSize: 12.5, lineHeight: 1.45 }}>
           {lensMeta || "Контактные линзы"}
         </div>

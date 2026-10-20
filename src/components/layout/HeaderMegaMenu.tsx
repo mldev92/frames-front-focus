@@ -754,7 +754,7 @@ const FRAMES_MENU = buildFrameMega("opravy", {
     imageSrc: "/Anselm - Oval.webp",
     imageAlt: "O.D.L. Anselm Oval",
     price: "от 8 900 ₽",
-    ctaHref: "/catalog_s/opravy/odl-minimal/",
+    ctaHref: "/catalog_s/opravy/?brand=O.D.L",
   },
 });
 
