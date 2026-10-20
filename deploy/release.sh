@@ -15,10 +15,30 @@ origin=${O100_SMOKE_ORIGIN:?Set smoke origin}
 curl_args=(--max-time 30 --silent --show-error)
 if [[ -n "${O100_SMOKE_CURL_CONFIG:-}" ]]; then curl_args+=(--config "$O100_SMOKE_CURL_CONFIG"); fi
 smoke() {
-  local path status
+  local path status html links link
   for path in / /catalog_s/opravy/ /catalog_n/opravy/ /basket/ /order/ /auth/ /api/store/csrf.php /sitemap.xml; do
     curl "${curl_args[@]}" --fail "$origin$path" >/dev/null || return 1
   done
+  # Проверяем ссылки настоящих карточек: успешный ответ категории недостаточен.
+  if [[ -L "$root/o100_frontend_current" ]]; then
+    for path in /catalog_s/opravy/ /catalog_n/opravy/; do
+      html=$(curl "${curl_args[@]}" --fail "$origin$path") || return 1
+      links=$(printf '%s' "$html" | "$php_bin" -r '
+        preg_match_all("~<a\b[^>]*>~i", stream_get_contents(STDIN), $tags);
+        $links=[];
+        foreach ($tags[0] as $tag) {
+          if (!preg_match("~\bdata-product-id=\"[0-9]+\"~", $tag)) continue;
+          if (preg_match("~\bhref=\"(/catalog_[sn]/[^\"<>[:space:]]+)\"~", $tag, $m)) $links[$m[1]]=true;
+        }
+        if (!$links) exit(1);
+        echo implode("\n", array_slice(array_keys($links), 0, 3));
+      ') || return 1
+      while IFS= read -r link; do
+        status=$(curl "${curl_args[@]}" --output /dev/null --write-out '%{http_code}' "$origin$link") || return 1
+        [[ "$status" == 200 ]] || { echo "Product navigation failed: $link ($status)" >&2; return 1; }
+      done <<< "$links"
+    done
+  fi
   status=$(curl "${curl_args[@]}" --output /dev/null --write-out '%{http_code}' "$origin/cutover-missing-route-9f381a/")
   [[ "$status" == 404 ]]
 }

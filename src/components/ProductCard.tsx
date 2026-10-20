@@ -66,6 +66,7 @@ export function ProductCard({
     <div className="group/card">
       <a
         href={href}
+        data-product-id={product.id}
         className="block relative aspect-square bg-surface rounded-sm overflow-hidden transition-all duration-500 group-hover/card:bg-cream/60 group-hover/card:shadow-sm"
         onMouseEnter={prepareHoverImage}
         onFocus={prepareHoverImage}

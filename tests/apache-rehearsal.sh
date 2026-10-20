@@ -29,8 +29,8 @@ BASELINE
 cp "$root/.htaccess" /evidence/legacy.htaccess
 mkdir -p /candidate/assets /candidate/catalog_s/opravy/deep-product /candidate/catalog_n/opravy/deep-product
 for file in index.html _shell.html 404.html; do printf '%s\n' 'REACT' > "/candidate/$file"; done
-printf '%s\n' 'SPB-CATALOG' > /candidate/catalog_s/opravy/index.html
-printf '%s\n' 'NVK-CATALOG' > /candidate/catalog_n/opravy/index.html
+printf '%s\n' 'SPB-CATALOG <a href="/catalog_s/opravy/deep-product/" data-product-id="1">Товар</a>' > /candidate/catalog_s/opravy/index.html
+printf '%s\n' 'NVK-CATALOG <a href="/catalog_n/opravy/deep-product/" data-product-id="2">Товар</a>' > /candidate/catalog_n/opravy/index.html
 printf '%s\n' 'DEEP-SPB' > /candidate/catalog_s/opravy/deep-product/index.html
 printf '%s\n' 'DEEP-NVK' > /candidate/catalog_n/opravy/deep-product/index.html
 printf '%s\n' 'ASSET' > /candidate/assets/test-hash.js
@@ -113,3 +113,13 @@ check 200 /assets/test-hash.js
 check 200 /basket/
 grep -q BASKET /tmp/response
 echo 'PASS: manual rollback after failed update restores legacy; old assets retained'
+
+# Категория отвечает 200, но её настоящая карточка ведёт в 404: выпуск обязан откатиться.
+sed -i 's@/deep-product/@/missing-product/@g' /candidate/catalog_n/opravy/index.html
+sha=5555555555555555555555555555555555555555
+make_archive "$sha"
+baseline=$(sha256sum "$root/.htaccess" | cut -d' ' -f1)
+if bash /frontend/deploy/release.sh deploy "$root" "$sha" "$baseline" "/evidence/$sha.tgz"; then echo 'Broken product link was accepted' >&2; exit 1; fi
+cmp /evidence/legacy.htaccess "$root/.htaccess"
+[[ ! -L "$root/o100_frontend_current" ]]
+echo 'PASS: broken Novokuznetsk card link automatically restores legacy'
