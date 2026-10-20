@@ -127,8 +127,8 @@ test("production sitemap policy contains only the four approved landing entries"
 
 test("future production redirect policy keeps only the two approved SEO consolidations", async () => {
   const source = await read("../deploy/redirects.production.txt");
-  assert.ok(source.includes("RedirectMatch 301 ^/kontaktnye_lynzy_/?$ /catalog_s/kontaktnye_linzy_/"));
-  assert.ok(source.includes("RedirectMatch 301 ^/kupit-linzy-spb/?$ /linzy-spb/"));
+  assert.ok(source.includes("RedirectMatch 301 ^/kontaktnye_lynzy_/?$ https://optika100.com/catalog_s/kontaktnye_linzy_/"));
+  assert.ok(source.includes("RedirectMatch 301 ^/kupit-linzy-spb/?$ https://optika100.com/linzy-spb/"));
   assert.ok(!source.includes("^/tsvetnye-linzy/?$"));
   assert.ok(!source.includes("^/multifokalnye-linzy/?$"));
 });

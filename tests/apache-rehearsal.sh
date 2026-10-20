@@ -71,9 +71,9 @@ check 301 '/catalog_s/kontaktnye_linzy_/biofinity_6_sht/?utm_source=rehearsal'
 curl -s -D /tmp/headers -o /dev/null "$O100_SMOKE_ORIGIN/catalog_s/kontaktnye_linzy_/biofinity_6_sht/?utm_source=rehearsal"
 grep -q '/catalog_s/prozrachnye/biofinity_6_sht/?utm_source=rehearsal' /tmp/headers
 curl -s -D /tmp/headers -o /dev/null "$O100_SMOKE_ORIGIN/blog/pochemyMi.php/?cutover_probe=1"
-grep -Fq 'Location: http://127.0.0.1/o-nas/?cutover_probe=1#pochemu-my' /tmp/headers || { cat /tmp/headers; exit 1; }
+grep -Fq 'Location: https://optika100.com/o-nas/?cutover_probe=1#pochemu-my' /tmp/headers || { cat /tmp/headers; exit 1; }
 curl -s -D /tmp/headers -o /dev/null "$O100_SMOKE_ORIGIN/catalog_s/linzy_dlya_ochkov/ofisnye/VX%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/?cutover_probe=1"
-grep -Fq 'Location: http://127.0.0.1/catalog_s/linzy_dlya_ochkov/VX%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/?cutover_probe=1' /tmp/headers || { cat /tmp/headers; exit 1; }
+grep -Fq 'Location: https://optika100.com/catalog_s/linzy_dlya_ochkov/VX%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/?cutover_probe=1' /tmp/headers || { cat /tmp/headers; exit 1; }
 check 404 /catalog_s/kontaktnye_linzy_/biofinity_6_sht/unrelated/
 curl -s -H 'Authorization: Bearer rehearsal' "$O100_SMOKE_ORIGIN/api/store/csrf.php?auth=1" | grep -q 'Bearer rehearsal'
 check 200 /catalog_s/opravy/deep-product/
