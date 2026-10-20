@@ -2,7 +2,7 @@ import { useRef, useState } from "react";
 import { Heart } from "lucide-react";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
-import { categoryToSegment } from "@/data/categories";
+import { productCardHref } from "@/data/categories";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { VIRTUAL_TRY_ON_ENABLED } from "@/lib/runtime";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,7 @@ export function ProductCard({
   productHref,
 }: ProductCardProps) {
   const { toggleSaved, saved } = useCart();
+  const href = productCardHref(product, city, catalogPath, productHref);
   const isSaved = saved.includes(product.slug);
   const [selectedColorName, setSelectedColorName] = useState<string | undefined>();
   const selectedColor = product.colors?.find((item) => item.name === selectedColorName);
@@ -64,11 +65,7 @@ export function ProductCard({
   return (
     <div className="group/card">
       <a
-        href={
-          productHref ?? (catalogPath
-            ? `${catalogPath.replace(/\/$/, "")}/${product.slug}/`
-            : `/catalog_s/${categoryToSegment[product.category]}/${product.slug}/`)
-        }
+        href={href}
         className="block relative aspect-square bg-surface rounded-sm overflow-hidden transition-all duration-500 group-hover/card:bg-cream/60 group-hover/card:shadow-sm"
         onMouseEnter={prepareHoverImage}
         onFocus={prepareHoverImage}
@@ -173,11 +170,7 @@ export function ProductCard({
       <div className="mt-3 space-y-1.5">
         <div className="text-xs text-muted-foreground uppercase tracking-wider">{product.brand}</div>
         <a
-          href={
-            catalogPath
-              ? `${catalogPath.replace(/\/$/, "")}/${product.slug}/`
-              : `/catalog_s/${categoryToSegment[product.category]}/${product.slug}/`
-          }
+          href={href}
           className="block text-base font-semibold leading-snug hover:text-brand transition-colors"
         >
           {product.name}

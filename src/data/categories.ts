@@ -1,4 +1,4 @@
-import type { Category } from "./types";
+import type { Category, Product } from "./types";
 import type { CityCode } from "@/lib/store/city";
 
 export interface CategoryInfo {
@@ -77,6 +77,21 @@ export const catalogHref = (category: Category, city: CityCode = "spb") =>
 
 export const productHref = (category: Category, slug: string, city: CityCode = "spb") =>
   `${catalogPrefix(city)}/${categoryToSegment[category]}/${slug}/`;
+
+// Фото, название и сохранённые ссылки должны вести на один региональный URL.
+export function productCardHref(
+  product: Pick<Product, "canonicalPath" | "category" | "slug">,
+  city: CityCode = "spb",
+  catalogPath?: string,
+  override?: string,
+) {
+  if (override) return override;
+  const prefix = catalogPath?.match(/^\/catalog_[sn](?=\/|$)/)?.[0] ?? catalogPrefix(city);
+  if (product.canonicalPath) return product.canonicalPath.replace(/^\/catalog_[sn]/, prefix);
+  return catalogPath
+    ? `${catalogPath.replace(/\/$/, "")}/${product.slug}/`
+    : `${prefix}/${categoryToSegment[product.category]}/${product.slug}/`;
+}
 
 /** Rewrite catalog links to use the correct city prefix (/catalog_s vs /catalog_n). */
 export const regionalCatalogHref = (href: string, city: CityCode = "spb") => {
