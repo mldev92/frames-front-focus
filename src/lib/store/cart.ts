@@ -1,4 +1,5 @@
 import { mergeLegacy, consumeAttemptOnce } from "@/lib/cart-migration";
+import { mergePersistedCart } from "@/lib/cart-persistence";
 import { productCardHref } from "@/data/categories";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -229,6 +230,7 @@ export const useCart = create<CartState>()(
     {
       name: "optika-cart",
       version: 3,
+      merge: mergePersistedCart,
       migrate: (persisted) => {
         const state = persisted as Partial<CartState>;
         return {
