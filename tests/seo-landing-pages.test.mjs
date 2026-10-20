@@ -94,7 +94,9 @@ test("commercial FAQ answers preserve current pricing rules and lenses expose an
 test("corrective colored products require a non-zero sphere and use final product paths", async () => {
   const source = await read("../src/routes/tsvetnye-linzy-s-dioptriyami.tsx");
   assert.match(source, /parsed !== 0/);
-  assert.match(source, /productHref=\{`\/catalog_s\/tsvetnye\/\$\{product\.slug\}\/`\}/);
+  // Карточка использует canonicalPath API, без старого короткого переопределения.
+  assert.match(source, /<ProductCard[\s\S]*?product=\{product\}/);
+  assert.doesNotMatch(source, /productHref=/);
   assert.ok(source.includes('heroImage="/tsvetnye_linzy_dioptrii.webp"'));
 });
 

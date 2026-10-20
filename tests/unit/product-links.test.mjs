@@ -25,3 +25,8 @@ test("the promotional product resolves to the actual Novokuznetsk SKU URL", () =
 test("explicit editorial destination is shared by photo and title", () => {
   assert.equal(productCardHref(product, "spb", "/catalog_s/opravy/", "/catalog_s/special/product/"), "/catalog_s/special/product/");
 });
+
+test("colored lens landing cards keep the full native category tree", () => {
+  const lens = {category:"kontaktnye-linzy",slug:"air_optix_colors",canonicalPath:"/catalog_s/kontaktnye_linzy_/tsvetnye/air_optix_colors/"};
+  assert.equal(productCardHref(lens,"spb"),lens.canonicalPath);
+});
