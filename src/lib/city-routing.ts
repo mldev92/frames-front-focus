@@ -1,4 +1,4 @@
-import { regionalCatalogHref } from "@/data/categories";
+import { regionalCatalogHref, catalogHref, categoryForCatalogPath } from "@/data/categories";
 import { diagnosticsHref } from "@/data/services";
 import type { CityCode } from "@/lib/store/city";
 
@@ -12,8 +12,8 @@ const DIAGNOSTICS_PATHS = new Set([
 const NVK_ROUTE_FALLBACKS = new Map<string, string>([
   ["/optika-spb", "/contacts/"],
   ["/optika-spb/", "/contacts/"],
-  ["/tsvetnye-linzy-s-dioptriyami", "/catalog_n/kontaktnye_linzy_/tsvetnye/"],
-  ["/tsvetnye-linzy-s-dioptriyami/", "/catalog_n/kontaktnye_linzy_/tsvetnye/"],
+  ["/tsvetnye-linzy-s-dioptriyami", "/catalog_n/kontaktnye_linzy/tsvetnye/"],
+  ["/tsvetnye-linzy-s-dioptriyami/", "/catalog_n/kontaktnye_linzy/tsvetnye/"],
   ["/biometriya-glaza", "/kabinet-diagnostiki-nk/"],
   ["/biometriya-glaza/", "/kabinet-diagnostiki-nk/"],
 ]);
@@ -31,6 +31,14 @@ export function regionalLocationHref(
   location: Pick<Location, "pathname" | "search" | "hash">,
   city: CityCode,
 ) {
+  // Ассортимент и коды товаров городов различаются: переключение города
+  // возвращает в соответствующую категорию, не выдумывает адрес другого товара.
+  if (/^\/catalog_[sn]\//.test(location.pathname)) {
+    const currentCity = location.pathname.startsWith("/catalog_n/") ? "nvk" : "spb";
+    if (currentCity === city) return `${location.pathname}${location.search}${location.hash}`;
+    const category = categoryForCatalogPath(location.pathname);
+    if (category) return catalogHref(category, city);
+  }
   const pathname = regionalSiteHref(location.pathname, city);
   return `${pathname}${location.search}${location.hash}`;
 }

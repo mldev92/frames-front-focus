@@ -252,23 +252,8 @@ export async function getProduct(
   const cached = regionalProductCache.get(productCacheKey(city, slug));
   if (cached) return cached;
 
-  if (city === "nvk") {
-    if (!section) return null;
-    const first = await getProductsPage(section, { city, page: 1, limit: 96 });
-    let product = first.products.find((item) => item.slug === slug);
-    for (let page = 2; page <= first.pages && !product; page += 1) {
-      const next = await getProductsPage(section, { city, page, limit: 96 });
-      product = next.products.find((item) => item.slug === slug);
-    }
-    if (!product) return null;
-    const images = await getProductGallery(slug, city, section);
-    const hydrated = images.length ? { ...product, images } : product;
-    regionalProductCache.set(productCacheKey(city, slug), hydrated);
-    return hydrated;
-  }
-
   try {
-    const res = await apiFetch(url(`product.php?slug=${encodeURIComponent(slug)}`));
+    const res = await apiFetch(url(`product.php?slug=${encodeURIComponent(slug)}&city=${city}&section=${encodeURIComponent(section)}`));
     if (res.status === 404) return null;
     if (!res.ok) throw new Error(`Bitrix API ${res.status}`);
     const data = (await res.json()) as Product | { error: string };
@@ -592,7 +577,7 @@ export async function getAppointmentSlots(
 }
 
 /** Name/article substring search. */
-export async function searchProducts(query: string, limit = 24): Promise<Product[]> {
+export async function searchProducts(query: string, limit = 24, city: "spb" | "nvk" = "spb"): Promise<Product[]> {
   const q = query.trim();
   if (q.length < 2) return [];
   if (!BASE && ALLOW_FIXTURES) {
@@ -604,7 +589,7 @@ export async function searchProducts(query: string, limit = 24): Promise<Product
   if (!BASE) throw new Error("VITE_BITRIX_API is required");
   try {
     const data = await fetchJson<{ products: Product[]; total: number }>(
-      `search.php?q=${encodeURIComponent(q)}&limit=${limit}`,
+      `search.php?q=${encodeURIComponent(q)}&limit=${limit}&city=${city}`,
     );
     return data.products.map(normalizeProduct);
   } catch (e) {

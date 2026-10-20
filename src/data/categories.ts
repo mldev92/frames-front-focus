@@ -73,10 +73,10 @@ export const catalogPrefix = (city: CityCode = "spb") =>
   city === "nvk" ? "/catalog_n" : "/catalog_s";
 
 export const catalogHref = (category: Category, city: CityCode = "spb") =>
-  `${catalogPrefix(city)}/${categoryToSegment[category]}/`;
+  `${catalogPrefix(city)}/${city === "nvk" && category === "kontaktnye-linzy" ? "kontaktnye_linzy" : categoryToSegment[category]}/`;
 
 export const productHref = (category: Category, slug: string, city: CityCode = "spb") =>
-  `${catalogPrefix(city)}/${categoryToSegment[category]}/${slug}/`;
+  `${catalogHref(category, city)}${slug}/`;
 
 // Фото, название и сохранённые ссылки должны вести на один региональный URL.
 export function productCardHref(
@@ -87,16 +87,16 @@ export function productCardHref(
 ) {
   if (override) return override;
   const prefix = catalogPath?.match(/^\/catalog_[sn](?=\/|$)/)?.[0] ?? catalogPrefix(city);
-  if (product.canonicalPath) return product.canonicalPath.replace(/^\/catalog_[sn]/, prefix);
-  return catalogPath
-    ? `${catalogPath.replace(/\/$/, "")}/${product.slug}/`
-    : `${prefix}/${categoryToSegment[product.category]}/${product.slug}/`;
+  if (product.canonicalPath) return product.canonicalPath;
+  // Без адреса товара используем известный корень категории, а не текущий фильтр.
+  return productHref(product.category, product.slug, prefix === "/catalog_n" ? "nvk" : "spb");
 }
 
 /** Rewrite catalog links to use the correct city prefix (/catalog_s vs /catalog_n). */
 export const regionalCatalogHref = (href: string, city: CityCode = "spb") => {
   if (!href.startsWith("/catalog_s/") && !href.startsWith("/catalog_n/")) return href;
-  const path = href.replace(/^\/catalog_[sn]\//, "/");
+  const path = href.replace(/^\/catalog_[sn]\//, "/")
+    .replace(/^\/kontaktnye_linzy_?(?=\/|$)/, city === "nvk" ? "/kontaktnye_linzy" : "/kontaktnye_linzy_");
   return `${catalogPrefix(city)}${path}`;
 };
 

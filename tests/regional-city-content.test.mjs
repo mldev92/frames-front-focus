@@ -11,7 +11,7 @@ test("regional routing preserves the explicit SPb lens landing", async () => {
   const lenses = await read("../src/routes/linzy-spb.tsx");
   const expectedMappings = [
     '["/optika-spb/", "/contacts/"]',
-    '["/tsvetnye-linzy-s-dioptriyami/", "/catalog_n/kontaktnye_linzy_/tsvetnye/"]',
+    '["/tsvetnye-linzy-s-dioptriyami/", "/catalog_n/kontaktnye_linzy/tsvetnye/"]',
     '["/biometriya-glaza/", "/kabinet-diagnostiki-nk/"]',
   ];
 

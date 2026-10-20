@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Search as SearchIcon } from "lucide-react";
 import { searchProducts } from "@/lib/api/bitrix";
 import type { Product } from "@/data/types";
@@ -29,10 +30,15 @@ export const Route = createFileRoute("/search")({
 
 function SearchPage() {
   const { q } = Route.useSearch();
-  const { pages, products } = Route.useLoaderData();
+  const { pages, products: initialProducts } = Route.useLoaderData();
   const navigate = Route.useNavigate();
   const [query, setQuery] = useState(q);
   const city = useCityStore((state) => state.city);
+  const { data: products = [] } = useQuery({
+    queryKey: ["search-products", q, city],
+    queryFn: () => searchProducts(q, 24, city),
+    initialData: city === "spb" ? initialProducts : undefined,
+  });
   const regionalPages = pages.filter((page) => city === "spb" || page.region !== "spb");
 
   const term = q.trim();

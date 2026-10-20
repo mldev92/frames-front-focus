@@ -1,4 +1,5 @@
 import { mergeLegacy, consumeAttemptOnce } from "@/lib/cart-migration";
+import { productCardHref } from "@/data/categories";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Product } from "@/data/types";
@@ -156,10 +157,7 @@ export const useCart = create<CartState>()(
               brand: product.brand,
               category: product.category,
               catalogNamespace: namespace,
-              canonicalPath: (
-                product.canonicalPath ??
-                `/${namespace}/${product.category}/${product.slug}/`
-              ).replace(/^\/catalog_[sn]/, `/${namespace}`),
+              canonicalPath: productCardHref(product, city),
               authoritativeBasePrice: product.price,
               price: product.price,
               image: opts?.image ?? product.images[0] ?? "",
