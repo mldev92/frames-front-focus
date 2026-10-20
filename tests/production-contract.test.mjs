@@ -20,3 +20,12 @@ test("cart lines retain authoritative product identity", async () => {
     assert.match(cart, new RegExp(field));
   }
 });
+
+test("production builds use the checked-in article snapshot", async () => {
+  const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+  const articles = JSON.parse(
+    await readFile(new URL("../src/data/articles-content.json", import.meta.url), "utf8"),
+  );
+  assert.doesNotMatch(pkg.scripts["build:production"], /content:production/);
+  assert.ok(Object.keys(articles).length >= 10);
+});
