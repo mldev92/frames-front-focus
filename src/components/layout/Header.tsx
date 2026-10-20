@@ -52,6 +52,9 @@ export function Header() {
 
   useEffect(() => {
     if (!mounted || !cityHydrated) return;
+    // Прямая ссылка определяет город каталога. Сохранённое предпочтение не
+    // должно увести с товара до завершения его loader; страница синхронизирует город.
+    if (/^\/catalog_[sn]\//.test(window.location.pathname)) return;
 
     const nextHref = regionalLocationHref(window.location, cityCode);
     const currentHref = `${window.location.pathname}${window.location.search}${window.location.hash}`;
@@ -78,6 +81,13 @@ export function Header() {
     setCityOpen(false);
     if (code === cityCode) return;
 
+    // Переход между региональными каталогами выполняется только по выбору пользователя.
+    if (/^\/catalog_[sn]\//.test(window.location.pathname)) {
+      const nextHref = regionalLocationHref(window.location, code);
+      setCityCode(code);
+      window.location.assign(nextHref);
+      return;
+    }
     setCityCode(code);
   }
 
