@@ -91,6 +91,9 @@ test("shared pages derive regional text and links from the selected city", async
   assert.match(appointment, /availableSalons\.map/);
   assert.match(appointment, /if \(!open\) \{/);
   assert.doesNotMatch(appointment, /if \(!open \|\| step !== 2\)/);
+  assert.match(appointment, /h-\[calc\(100dvh-32px\)\].*w-full min-w-0/);
+  assert.match(appointment, /parseAppointmentLocalDate/);
+  assert.match(appointment, /Показываем только дни, где есть свободное время/);
   assert.match(checkout, /regionalCity === "nvk" \? "Новокузнецк" : "Санкт-Петербург"/);
 });
 

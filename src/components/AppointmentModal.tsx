@@ -385,12 +385,12 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className="max-h-[calc(100vh-32px)] p-0 gap-0 overflow-hidden border-0 rounded-[2rem] shadow-xl bg-background"
+        className="max-h-[calc(100dvh-32px)] p-0 gap-0 overflow-hidden border-0 rounded-[1.5rem] md:rounded-[2rem] shadow-xl bg-background"
         style={{ maxWidth: "1088px", width: "calc(100vw - 32px)" }}
       >
         <DialogTitle className="sr-only">Онлайн-запись к врачу</DialogTitle>
 
-        <div className="flex max-h-[calc(100vh-32px)] min-h-[620px] flex-col md:flex-row">
+        <div className="flex h-[calc(100dvh-32px)] max-h-[calc(100dvh-32px)] w-full min-w-0 flex-col overflow-hidden md:h-auto md:min-h-[620px] md:flex-row">
           <div className="relative hidden md:flex flex-col justify-between overflow-hidden w-[320px] min-w-[320px] p-8 bg-ink">
             {STEPS.map((item, index) => (
               <img
@@ -450,17 +450,23 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
             </div>
           </div>
 
-          <div className="relative flex min-h-0 min-w-0 flex-1 flex-col bg-cream">
-            <div className="md:hidden px-6 pt-6 pb-2">
+          <div className="relative flex w-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-cream">
+            <div className="md:hidden px-4 pt-6 pb-2 sm:px-6">
               <div className="text-[10px] uppercase tracking-[0.18em] text-foreground/45 font-semibold">
                 Шаг {step} из {STEPS.length}
               </div>
               <div className="font-serif text-lg mt-1">{STEPS[step - 1].label}</div>
             </div>
 
-            <div className="flex-1 min-h-0 overflow-hidden">
+            <div className="flex-1 min-h-0 min-w-0 overflow-x-hidden overflow-y-auto">
               {step === 1 && (
-                <div key="step-1" className={cn("h-full px-6 py-8 md:p-10 flex flex-col", slideIn)}>
+                <div
+                  key="step-1"
+                  className={cn(
+                    "min-h-full w-full min-w-0 px-4 py-6 sm:px-6 sm:py-8 md:p-10 flex flex-col",
+                    slideIn,
+                  )}
+                >
                   <div className="flex-1 flex flex-col justify-center gap-10 max-w-[440px] w-full mx-auto">
                     <div className="space-y-3">
                       <FieldLabel>Выберите филиал</FieldLabel>
@@ -468,7 +474,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                         <button
                           type="button"
                           onClick={() => setSalonOpen((value) => !value)}
-                          className="w-full bg-background border border-border rounded-xl pl-11 pr-10 py-4 text-left shadow-xs hover:border-brand/40 focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand transition-all"
+                          className="w-full min-w-0 overflow-hidden bg-background border border-border rounded-xl pl-11 pr-10 py-4 text-left shadow-xs hover:border-brand/40 focus:outline-none focus:ring-2 focus:ring-brand/15 focus:border-brand transition-all"
                         >
                           <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-brand" />
                           <span className="block text-[14px] text-foreground truncate">
@@ -520,7 +526,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
 
                     <div className="space-y-3">
                       <FieldLabel>Тип записи</FieldLabel>
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid min-w-0 grid-cols-1 gap-3 min-[360px]:grid-cols-2">
                         {(["adult", "child"] as AgeType[]).map((value) => (
                           <ChoiceCard
                             key={value}
@@ -543,7 +549,10 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
               {step === 2 && (
                 <div
                   key="step-2"
-                  className={cn("flex h-full min-h-0 flex-col px-6 py-8 md:p-10", slideIn)}
+                  className={cn(
+                    "flex min-h-full w-full min-w-0 flex-col px-4 py-6 sm:px-6 sm:py-8 md:p-10",
+                    slideIn,
+                  )}
                 >
                   <div className="flex-1 min-h-0 overflow-y-auto pr-1">
                     <div className="mx-auto flex w-full max-w-[720px] flex-col gap-6 pb-2">
@@ -593,7 +602,10 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                           <div className="space-y-4">
                             {groupedSlots.length > 1 && (
                               <div className="space-y-3">
-                                <FieldLabel>Выберите день</FieldLabel>
+                                <FieldLabel>Ближайшие доступные даты</FieldLabel>
+                                <p className="text-[11px] leading-relaxed text-foreground/45">
+                                  Показываем только дни, где есть свободное время.
+                                </p>
                                 <div className="-mx-1 overflow-x-auto px-1 pb-1">
                                   <div className="flex min-w-max gap-2">
                                     {groupedSlots.map((group) => {
@@ -614,7 +626,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                                           )}
                                         >
                                           <span className="text-[13px] font-semibold text-foreground">
-                                            {formatSlotDayShort(group.slots[0].timeBegin)}
+                                            {formatSlotDayShort(group.dateKey)}
                                           </span>
                                           <span className="mt-1 text-[11px] text-foreground/45">
                                             {group.slots.length}{" "}
@@ -690,7 +702,13 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
               )}
 
               {step === 3 && (
-                <div key="step-3" className={cn("h-full px-6 py-8 md:p-10 flex flex-col", slideIn)}>
+                <div
+                  key="step-3"
+                  className={cn(
+                    "min-h-full w-full min-w-0 px-4 py-6 sm:px-6 sm:py-8 md:p-10 flex flex-col",
+                    slideIn,
+                  )}
+                >
                   <form
                     onSubmit={handleSubmit}
                     className="flex-1 flex flex-col gap-4 max-w-[500px] w-full mx-auto"
@@ -796,7 +814,13 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
               )}
 
               {step === 4 && (
-                <div key="step-4" className={cn("h-full px-6 py-8 md:p-10 flex flex-col", slideIn)}>
+                <div
+                  key="step-4"
+                  className={cn(
+                    "min-h-full w-full min-w-0 px-4 py-6 sm:px-6 sm:py-8 md:p-10 flex flex-col",
+                    slideIn,
+                  )}
+                >
                   {sent ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-center gap-4 px-4">
                       <div className="h-16 w-16 rounded-full bg-brand/10 border-2 border-brand/30 grid place-items-center">
@@ -909,11 +933,13 @@ function groupSlotsByDay(slots: AppointmentSlot[]) {
     groups.set(dateKey, existing);
   }
 
-  return Array.from(groups.entries()).map(([dateKey, daySlots]) => ({
-    dateKey,
-    label: formatSlotDay(daySlots[0].timeBegin),
-    slots: daySlots,
-  }));
+  return Array.from(groups.entries())
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([dateKey, daySlots]) => ({
+      dateKey,
+      label: formatSlotDay(dateKey),
+      slots: daySlots,
+    }));
 }
 
 function normalizeRussianPhone(value: string): string | null {
@@ -958,14 +984,14 @@ function formatSlotDay(isoDate: string): string {
     weekday: "long",
     day: "numeric",
     month: "long",
-  }).format(new Date(isoDate));
+  }).format(parseAppointmentLocalDate(isoDate));
 }
 
 function formatSlotTime(isoDate: string): string {
   return new Intl.DateTimeFormat("ru-RU", {
     hour: "2-digit",
     minute: "2-digit",
-  }).format(new Date(isoDate));
+  }).format(parseAppointmentLocalDate(isoDate));
 }
 
 function formatSlotDayShort(isoDate: string): string {
@@ -973,7 +999,21 @@ function formatSlotDayShort(isoDate: string): string {
     day: "numeric",
     month: "short",
     weekday: "short",
-  }).format(new Date(isoDate));
+  }).format(parseAppointmentLocalDate(isoDate));
+}
+
+function parseAppointmentLocalDate(value: string): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(value);
+  if (!match) return new Date(Number.NaN);
+
+  return new Date(
+    Number(match[1]),
+    Number(match[2]) - 1,
+    Number(match[3]),
+    Number(match[4] ?? 12),
+    Number(match[5] ?? 0),
+    Number(match[6] ?? 0),
+  );
 }
 
 function formatPrice(value: number): string {
@@ -1078,7 +1118,7 @@ function ChoiceCard({
       type="button"
       onClick={onClick}
       className={cn(
-        "relative text-left p-5 rounded-[1.25rem] transition-all duration-300 active:scale-[0.98] hover:-translate-y-0.5",
+        "relative min-w-0 text-left p-4 sm:p-5 rounded-[1.25rem] transition-all duration-300 active:scale-[0.98] hover:-translate-y-0.5",
         selected
           ? "bg-ink text-primary-foreground shadow-md"
           : "bg-background border border-border hover:border-brand/30 hover:shadow-sm",
