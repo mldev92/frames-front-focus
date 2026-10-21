@@ -1,6 +1,18 @@
 # BEGIN O100 FRONTEND
 # После HTTPS/домена, до robots и маршрутизатора Битрикса.
 RewriteEngine On
+<IfModule mod_headers.c>
+  # HTML всегда перепроверяется: открытая вкладка не должна оставаться на старом релизе.
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+  # Имена сборочных ресурсов содержат хеш, поэтому их можно кешировать надолго.
+  <FilesMatch "\.(?:css|js|woff2?)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
 RewriteRule ^blog/pochemyMi\.php/?$ https://optika100.com/o-nas/?%{QUERY_STRING}#pochemu-my [R=301,NE,END]
 RewriteRule ^catalog_s/linzy_dlya_ochkov/ofisnye/VX\x20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/VX\%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/ [R=301,NE,END]
 RewriteRule .* - [E=REMOTE_USER:%{HTTP:Authorization}]

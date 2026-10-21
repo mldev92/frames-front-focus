@@ -1,4 +1,11 @@
-import { useEffect, useState, type FormEvent, type HTMLAttributes, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type HTMLAttributes,
+  type ReactNode,
+} from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { SALONS as salons, type VerifiedSalon } from "@/data/contact";
 import { cn } from "@/lib/utils";
@@ -106,6 +113,8 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsError, setSlotsError] = useState("");
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
+  const slotsRef = useRef<AppointmentSlot[]>([]);
+  const [slotsRefreshSequence, setSlotsRefreshSequence] = useState(0);
   const [selectedDateKey, setSelectedDateKey] = useState("");
   const [selectedSlotId, setSelectedSlotId] = useState("");
 
@@ -135,9 +144,15 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     confirmationExpiresAt > 0 ? Math.max(0, confirmationExpiresAt - confirmationNow) : 0;
 
   useEffect(() => {
+    slotsRef.current = [];
+    setSlots([]);
     setSelectedDateKey("");
     setSelectedSlotId("");
   }, [salonId, ageType, service]);
+
+  useEffect(() => {
+    slotsRef.current = slots;
+  }, [slots]);
 
   useEffect(() => {
     if (!availableSalons.some((salon) => salon.id === salonId)) {
@@ -174,14 +189,16 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   }, [confirmationExpiresAt, open, step]);
 
   useEffect(() => {
-    if (!open) {
+    if (!open || (step !== 1 && step !== 2)) {
       return;
     }
 
     let cancelled = false;
-    setSlotsLoading(true);
-    setSlotsError("");
-    setSlots([]);
+    const isBackgroundRefresh = slotsRef.current.length > 0;
+    if (!isBackgroundRefresh) {
+      setSlotsLoading(true);
+      setSlotsError("");
+    }
 
     getAppointmentSlots({
       clinicUid: selectedSalon.clinicUid,
@@ -194,12 +211,14 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       })
       .catch((err: unknown) => {
         if (cancelled) return;
-        setSlotsError(
-          getUserFacingError(
-            err,
-            "Не удалось загрузить свободное время. Попробуйте ещё раз или позвоните в салон.",
-          ),
-        );
+        if (!isBackgroundRefresh) {
+          setSlotsError(
+            getUserFacingError(
+              err,
+              "Не удалось загрузить свободное время. Попробуйте ещё раз или позвоните в салон.",
+            ),
+          );
+        }
       })
       .finally(() => {
         if (!cancelled) {
@@ -210,7 +229,31 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [ageType, open, selectedSalon.clinicUid, service]);
+  }, [ageType, open, selectedSalon.clinicUid, service, slotsRefreshSequence, step]);
+
+  useEffect(() => {
+    if (!open || step !== 2) {
+      return;
+    }
+
+    let lastRefreshAt = 0;
+    const refreshVisibleSlots = () => {
+      const now = Date.now();
+      if (document.visibilityState !== "visible" || now - lastRefreshAt < 1_000) return;
+      lastRefreshAt = now;
+      setSlotsRefreshSequence((current) => current + 1);
+    };
+    const timerId = window.setInterval(refreshVisibleSlots, 60_000);
+
+    window.addEventListener("focus", refreshVisibleSlots);
+    document.addEventListener("visibilitychange", refreshVisibleSlots);
+
+    return () => {
+      window.clearInterval(timerId);
+      window.removeEventListener("focus", refreshVisibleSlots);
+      document.removeEventListener("visibilitychange", refreshVisibleSlots);
+    };
+  }, [open, step]);
 
   function reset() {
     setStep(1);

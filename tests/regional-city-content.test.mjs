@@ -94,8 +94,14 @@ test("shared pages derive regional text and links from the selected city", async
   assert.match(productInfo, /Доставка по Новокузнецку/);
   assert.match(appointment, /salon\.city === "nk"/);
   assert.match(appointment, /availableSalons\.map/);
-  assert.match(appointment, /if \(!open\) \{/);
-  assert.doesNotMatch(appointment, /if \(!open \|\| step !== 2\)/);
+  assert.match(appointment, /if \(!open \|\| \(step !== 1 && step !== 2\)\) \{/);
+  assert.match(appointment, /slotsRefreshSequence/);
+  assert.match(appointment, /window\.addEventListener\("focus", refreshVisibleSlots\)/);
+  assert.match(
+    appointment,
+    /document\.addEventListener\("visibilitychange", refreshVisibleSlots\)/,
+  );
+  assert.match(appointment, /window\.setInterval\(refreshVisibleSlots, 60_000\)/);
   assert.match(appointment, /h-\[calc\(100dvh-32px\)\].*w-full min-w-0/);
   assert.match(appointment, /parseAppointmentLocalDate/);
   assert.match(appointment, /Показываем только дни, где есть свободное время/);
