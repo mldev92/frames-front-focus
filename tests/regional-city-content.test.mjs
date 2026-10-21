@@ -102,6 +102,8 @@ test("shared pages derive regional text and links from the selected city", async
     /document\.addEventListener\("visibilitychange", refreshVisibleSlots\)/,
   );
   assert.match(appointment, /window\.setInterval\(refreshVisibleSlots, 60_000\)/);
+  assert.match(appointment, /const mostAvailableGroup = groupedSlots\.reduce/);
+  assert.match(appointment, /: mostAvailableGroup\.dateKey/);
   assert.match(appointment, /h-\[calc\(100dvh-32px\)\].*w-full min-w-0/);
   assert.match(appointment, /parseAppointmentLocalDate/);
   assert.match(appointment, /Показываем только дни, где есть свободное время/);

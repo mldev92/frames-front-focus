@@ -166,10 +166,13 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       return;
     }
 
+    const mostAvailableGroup = groupedSlots.reduce((best, group) =>
+      group.slots.length > best.slots.length ? group : best,
+    );
     setSelectedDateKey((current) =>
       current && groupedSlots.some((group) => group.dateKey === current)
         ? current
-        : groupedSlots[0].dateKey,
+        : mostAvailableGroup.dateKey,
     );
   }, [groupedSlots]);
 

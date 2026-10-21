@@ -16,7 +16,13 @@ import { VIRTUAL_TRY_ON_ENABLED } from "@/lib/runtime";
 import { TBankWidget } from "@/components/TBankWidget";
 import { cn } from "@/lib/utils";
 import type { EyePrescription, Prescription } from "@/lib/store/cart";
-import { prescriptionComplete } from "@/components/PrescriptionInput";
+import {
+  defaultLensEye,
+  defaultLensPrescription,
+  eyesEqual,
+  lensPurchaseComplete,
+  lensPurchaseFields,
+} from "@/lib/contact-lens-purchase";
 import { useCityStore, type CityCode } from "@/lib/store/city";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
 import { catalogSeoForSection } from "@/data/catalog-seo";
@@ -147,7 +153,7 @@ export function ProductPage({
   const [activeImg, setActiveImg] = useState(0);
   const [lensModal, setLensModal] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
-  const [prescription, setPrescription] = useState<Prescription>({ right: {}, left: {} });
+  const [prescription, setPrescription] = useState<Prescription>(() => defaultLensPrescription(product));
   const [lensEyeMode, setLensEyeMode] = useState<"same" | "different">("same");
   const vtoSku = product.vtoSku ?? "rayban_wayfarer_havane_marron";
   const selectedColor = product.colors?.find((item) => item.name === color);
@@ -515,47 +521,6 @@ export function ProductPage({
         <VirtualTryOnModal open={vtoOpen} onClose={() => setVtoOpen(false)} vtoSku={vtoSku} />
       )}
     </div>
-  );
-}
-
-const LENS_OPTION_FIELDS: Array<{
-  key: Exclude<keyof NonNullable<Product["lensOptions"]>, "eyeModes" | "colors">;
-  prescriptionKey: keyof EyePrescription;
-}> = [
-  { key: "sphere", prescriptionKey: "sphere" },
-  { key: "cylinder", prescriptionKey: "cylinder" },
-  { key: "axis", prescriptionKey: "axis" },
-  { key: "addition", prescriptionKey: "addition" },
-  { key: "curvatureRadius", prescriptionKey: "bc" },
-  { key: "diameter", prescriptionKey: "diameter" },
-];
-
-function lensPurchaseFields(product: Product) {
-  return LENS_OPTION_FIELDS.filter(({ key }) => {
-    const options = product.lensOptions?.[key]?.options;
-    return Array.isArray(options) && options.length > 0;
-  });
-}
-
-function defaultLensEye(product: Product, current: EyePrescription): EyePrescription {
-  const next = { ...current };
-  for (const { key, prescriptionKey } of lensPurchaseFields(product)) {
-    if (!next[prescriptionKey]) {
-      next[prescriptionKey] = product.lensOptions?.[key]?.options[0]?.label;
-    }
-  }
-  return next;
-}
-
-function eyesEqual(a: EyePrescription, b: EyePrescription): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
-function lensPurchaseComplete(product: Product, value: Prescription): boolean {
-  const fields = lensPurchaseFields(product);
-  if (!fields.length) return prescriptionComplete(product, value);
-  return fields.every(({ prescriptionKey }) =>
-    Boolean(value.right[prescriptionKey]) && Boolean(value.left[prescriptionKey]),
   );
 }
 

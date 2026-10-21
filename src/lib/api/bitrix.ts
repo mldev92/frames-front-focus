@@ -25,17 +25,14 @@ const ALLOW_FIXTURES = import.meta.env.DEV && import.meta.env.VITE_ALLOW_FIXTURE
 
 const url = (path: string) => `${BASE}/api/store/${path}`;
 const productGalleryCache = new Map<string, Promise<string[]>>();
-const regionalProductCache = new Map<string, Product>();
+// Здесь храним только полные ответы product.php. Каталожные методы намеренно
+// возвращают облегчённые карточки без lensOptions, описаний и других данных ПДП.
+// Если принять такую карточку за полный товар, контактные линзы нельзя настроить
+// и добавить в корзину.
+const productDetailCache = new Map<string, Product>();
 
 function productCacheKey(city: "spb" | "nvk", slug: string): string {
   return `${city}:${slug}`;
-}
-
-function cacheProducts(products: Product[], city: "spb" | "nvk"): Product[] {
-  for (const product of products) {
-    regionalProductCache.set(productCacheKey(city, product.slug), product);
-  }
-  return products;
 }
 
 async function hydrateProductGalleries(
@@ -61,12 +58,12 @@ async function hydrateProductGalleries(
       );
     }));
     const galleries = Object.assign({}, ...responses.map((data) => data.galleries));
-    return cacheProducts(products.map((product) => {
+    return products.map((product) => {
       const gallery = galleries[product.slug];
       if (!gallery?.length) return product;
       productGalleryCache.set(productCacheKey(city, product.slug), Promise.resolve(gallery));
       return { ...product, images: gallery };
-    }), city);
+    });
   } catch (error) {
     console.error("[bitrix] gallery batch unavailable:", error);
     return products;
@@ -169,7 +166,7 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
     for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== "") params.set(k, String(v));
     const data = await fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
     return hydrateProductGalleries(
-      cacheProducts(data.products.map(normalizeProduct), q.city ?? "spb"),
+      data.products.map(normalizeProduct),
       q.city ?? "spb",
     );
   } catch (e) {
@@ -206,8 +203,8 @@ export async function getHomepageData(city: "spb" | "nvk" = "spb"): Promise<Home
   try {
     const data = await fetchJson<HomepageResponse>("homepage.php");
     return {
-      popularModels: cacheProducts(data.popularModels.map(normalizeProduct), "spb"),
-      contactLensProducts: cacheProducts(data.contactLensProducts.map(normalizeProduct), "spb"),
+      popularModels: data.popularModels.map(normalizeProduct),
+      contactLensProducts: data.contactLensProducts.map(normalizeProduct),
       lensPromo: data.lensPromo,
     };
   } catch (error) {
@@ -237,7 +234,7 @@ export async function getProductsPage(categoryOrSegment: string, q: ProductQuery
   const data = await fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
   return {
     ...data,
-    products: cacheProducts(data.products.map(normalizeProduct), q.city ?? "spb"),
+    products: data.products.map(normalizeProduct),
   };
 }
 
@@ -256,7 +253,7 @@ export async function getProduct(
     return product ? fixtureProducts([product])[0] : null;
   }
   if (!BASE) throw new Error("VITE_BITRIX_API is required");
-  const cached = regionalProductCache.get(productCacheKey(city, slug));
+  const cached = productDetailCache.get(productCacheKey(city, slug));
   if (cached) return cached;
 
   try {
@@ -266,7 +263,7 @@ export async function getProduct(
     const data = (await res.json()) as Product | { error: string };
     if ("error" in data) return null;
     const product = normalizeProduct(data);
-    regionalProductCache.set(productCacheKey(city, slug), product);
+    productDetailCache.set(productCacheKey(city, slug), product);
     return product;
   } catch (e) {
     console.error("[bitrix] getProduct:", e);
@@ -384,7 +381,7 @@ export async function getCatalogPage(
   if (!res.ok) throw new Error(`Bitrix API ${res.status} for catalog page`);
   const data = (await res.json()) as Partial<CatalogPage> & Pick<CatalogPage, "products" | "total" | "page" | "pages" | "source">;
   const products = await hydrateProductGalleries(
-    cacheProducts(data.products.map(normalizeProduct), q.city ?? "spb"),
+    data.products.map(normalizeProduct),
     q.city ?? "spb",
   );
   const prices = products.map((product) => product.price).filter((price) => Number.isFinite(price));
