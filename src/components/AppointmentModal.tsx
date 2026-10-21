@@ -7,8 +7,10 @@ import {
   type ReactNode,
 } from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { SALONS as salons, type VerifiedSalon } from "@/data/contact";
 import { cn } from "@/lib/utils";
+import { ru } from "date-fns/locale";
 import {
   getAppointmentSlots,
   sendAppointmentConfirmationCode,
@@ -138,6 +140,11 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const groupedSlots = groupSlotsByDay(slots);
   const selectedGroup =
     groupedSlots.find((group) => group.dateKey === selectedDateKey) ?? groupedSlots[0] ?? null;
+  const availableDateKeys = new Set(groupedSlots.map((group) => group.dateKey));
+  const availableDates = groupedSlots.map((group) => parseAppointmentLocalDate(group.dateKey));
+  const firstAvailableDate = availableDates[0];
+  const lastAvailableDate = availableDates[availableDates.length - 1];
+  const selectedDate = selectedGroup ? parseAppointmentLocalDate(selectedGroup.dateKey) : undefined;
   const selectedSlot = slots.find((slot) => slot.id === selectedSlotId) ?? null;
   const birthDateMax = new Date().toISOString().slice(0, 10);
   const confirmationSecondsLeft =
@@ -166,13 +173,10 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       return;
     }
 
-    const mostAvailableGroup = groupedSlots.reduce((best, group) =>
-      group.slots.length > best.slots.length ? group : best,
-    );
     setSelectedDateKey((current) =>
       current && groupedSlots.some((group) => group.dateKey === current)
         ? current
-        : mostAvailableGroup.dateKey,
+        : groupedSlots[0].dateKey,
     );
   }, [groupedSlots]);
 
@@ -646,90 +650,89 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
 
                         {!slotsLoading && !slotsError && slots.length > 0 && (
                           <div className="space-y-4">
-                            {groupedSlots.length > 1 && (
-                              <div className="space-y-3">
-                                <FieldLabel>Ближайшие доступные даты</FieldLabel>
-                                <p className="text-[11px] leading-relaxed text-foreground/45">
-                                  Показываем только дни, где есть свободное время.
-                                </p>
-                                <div className="-mx-1 overflow-x-auto px-1 pb-1">
-                                  <div className="flex min-w-max gap-2">
-                                    {groupedSlots.map((group) => {
-                                      const selected = group.dateKey === selectedGroup?.dateKey;
+                            <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.15fr)] lg:items-start">
+                              <div className="min-w-0 space-y-3">
+                                <div>
+                                  <FieldLabel>Выберите дату</FieldLabel>
+                                  <p className="text-[11px] leading-relaxed text-foreground/45">
+                                    Доступные дни выделены. Между месяцами можно переключаться
+                                    стрелками.
+                                  </p>
+                                </div>
+                                <DateCalendar
+                                  mode="single"
+                                  locale={ru}
+                                  selected={selectedDate}
+                                  defaultMonth={selectedDate ?? firstAvailableDate}
+                                  startMonth={firstAvailableDate}
+                                  endMonth={lastAvailableDate}
+                                  disabled={(date) =>
+                                    !availableDateKeys.has(formatAppointmentDateKey(date))
+                                  }
+                                  modifiers={{ available: availableDates }}
+                                  modifiersClassNames={{
+                                    available:
+                                      "[&_button]:font-semibold [&_button]:text-foreground [&_button]:ring-1 [&_button]:ring-brand/25 [&_button]:bg-brand/5",
+                                  }}
+                                  onSelect={(date) => {
+                                    if (!date) return;
+                                    setSelectedDateKey(formatAppointmentDateKey(date));
+                                    setSelectedSlotId("");
+                                  }}
+                                  className="w-full rounded-[1.5rem] border border-border bg-background p-3 [--cell-size:2.35rem]"
+                                  classNames={{
+                                    root: "w-full",
+                                    months: "relative flex w-full flex-col gap-4",
+                                    month: "flex w-full flex-col gap-4",
+                                  }}
+                                />
+                              </div>
+
+                              {selectedGroup && (
+                                <div className="min-w-0 rounded-[1.5rem] border border-border bg-background p-4">
+                                  <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold text-foreground/65">
+                                    <CalendarDays className="h-4 w-4 text-brand" />
+                                    <span>{selectedGroup.label}</span>
+                                  </div>
+                                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                                    {selectedGroup.slots.map((slot) => {
+                                      const selected = slot.id === selectedSlotId;
                                       return (
                                         <button
-                                          key={group.dateKey}
+                                          key={slot.id}
                                           type="button"
-                                          onClick={() => {
-                                            setSelectedDateKey(group.dateKey);
-                                            setSelectedSlotId("");
-                                          }}
+                                          onClick={() => setSelectedSlotId(slot.id)}
                                           className={cn(
-                                            "flex min-w-[124px] flex-col rounded-2xl border px-4 py-3 text-left transition-all",
+                                            "rounded-2xl border px-4 py-3 text-left transition-all",
                                             selected
                                               ? "border-brand bg-brand/8 shadow-sm"
-                                              : "border-border bg-background hover:border-brand/35 hover:bg-muted/50",
+                                              : "border-border hover:border-brand/35 hover:bg-muted/50",
                                           )}
                                         >
-                                          <span className="text-[13px] font-semibold text-foreground">
-                                            {formatSlotDayShort(group.dateKey)}
-                                          </span>
-                                          <span className="mt-1 text-[11px] text-foreground/45">
-                                            {group.slots.length}{" "}
-                                            {pluralizeSlots(group.slots.length)}
-                                          </span>
+                                          <div className="flex items-center justify-between gap-3">
+                                            <div className="flex items-center gap-2 text-[15px] font-semibold text-foreground">
+                                              <Clock3 className="h-4 w-4 text-brand" />
+                                              <span>{formatSlotTime(slot.timeBegin)}</span>
+                                            </div>
+                                            {selected && (
+                                              <Check className="h-4 w-4 shrink-0 text-brand" />
+                                            )}
+                                          </div>
+                                          <div className="mt-1 text-[12px] text-foreground/55">
+                                            {slot.doctorName}
+                                          </div>
+                                          <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-foreground/35">
+                                            {slot.servicePrice !== null
+                                              ? formatPrice(slot.servicePrice)
+                                              : "Запись"}
+                                          </div>
                                         </button>
                                       );
                                     })}
                                   </div>
                                 </div>
-                              </div>
-                            )}
-
-                            {selectedGroup && (
-                              <div className="rounded-[1.5rem] border border-border bg-background p-4">
-                                <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold text-foreground/65">
-                                  <CalendarDays className="h-4 w-4 text-brand" />
-                                  <span>{selectedGroup.label}</span>
-                                </div>
-                                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                  {selectedGroup.slots.map((slot) => {
-                                    const selected = slot.id === selectedSlotId;
-                                    return (
-                                      <button
-                                        key={slot.id}
-                                        type="button"
-                                        onClick={() => setSelectedSlotId(slot.id)}
-                                        className={cn(
-                                          "rounded-2xl border px-4 py-3 text-left transition-all",
-                                          selected
-                                            ? "border-brand bg-brand/8 shadow-sm"
-                                            : "border-border hover:border-brand/35 hover:bg-muted/50",
-                                        )}
-                                      >
-                                        <div className="flex items-center justify-between gap-3">
-                                          <div className="flex items-center gap-2 text-[15px] font-semibold text-foreground">
-                                            <Clock3 className="h-4 w-4 text-brand" />
-                                            <span>{formatSlotTime(slot.timeBegin)}</span>
-                                          </div>
-                                          {selected && (
-                                            <Check className="h-4 w-4 shrink-0 text-brand" />
-                                          )}
-                                        </div>
-                                        <div className="mt-1 text-[12px] text-foreground/55">
-                                          {slot.doctorName}
-                                        </div>
-                                        <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-foreground/35">
-                                          {slot.servicePrice !== null
-                                            ? formatPrice(slot.servicePrice)
-                                            : "Запись"}
-                                        </div>
-                                      </button>
-                                    );
-                                  })}
-                                </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
                           </div>
                         )}
                       </div>
@@ -1040,14 +1043,6 @@ function formatSlotTime(isoDate: string): string {
   }).format(parseAppointmentLocalDate(isoDate));
 }
 
-function formatSlotDayShort(isoDate: string): string {
-  return new Intl.DateTimeFormat("ru-RU", {
-    day: "numeric",
-    month: "short",
-    weekday: "short",
-  }).format(parseAppointmentLocalDate(isoDate));
-}
-
 function parseAppointmentLocalDate(value: string): Date {
   const match = /^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(value);
   if (!match) return new Date(Number.NaN);
@@ -1062,6 +1057,14 @@ function parseAppointmentLocalDate(value: string): Date {
   );
 }
 
+function formatAppointmentDateKey(date: Date): string {
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, "0"),
+    String(date.getDate()).padStart(2, "0"),
+  ].join("-");
+}
+
 function formatPrice(value: number): string {
   if (value <= 0) return "Бесплатно";
   return `${new Intl.NumberFormat("ru-RU").format(value)} ₽`;
@@ -1071,14 +1074,6 @@ function formatConfirmationTimer(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
-}
-
-function pluralizeSlots(count: number): string {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod10 === 1 && mod100 !== 11) return "слот";
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "слота";
-  return "слотов";
 }
 
 function getUserFacingError(error: unknown, fallback: string): string {

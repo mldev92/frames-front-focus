@@ -43,7 +43,10 @@ test("shared navigation suppresses SPb-only links and contacts for Novokuznetsk"
   assert.match(header, /setTimeout\(\(\) => window\.location\.assign\(nextHref\), 0\)/);
   assert.match(header, /item\.label !== "Линзы для очков"/);
   assert.match(header, /cityCode !== "nvk" && \(/);
-  assert.match(header, /NVK_PROMOS = \[\{ text: "АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА", href: "\/#promotions" \}\]/);
+  assert.match(
+    header,
+    /NVK_PROMOS = \[\{ text: "АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА", href: "\/#promotions" \}\]/,
+  );
   assert.match(header, /href=\{regionalHref\("\/#promotions"\)\}/);
   assert.match(megaMenu, /Контактные линзы в Новокузнецке/);
   assert.match(megaMenu, /Доставка и самовывоз/);
@@ -104,11 +107,20 @@ test("shared pages derive regional text and links from the selected city", async
     /document\.addEventListener\("visibilitychange", refreshVisibleSlots\)/,
   );
   assert.match(appointment, /window\.setInterval\(refreshVisibleSlots, 60_000\)/);
-  assert.match(appointment, /const mostAvailableGroup = groupedSlots\.reduce/);
-  assert.match(appointment, /: mostAvailableGroup\.dateKey/);
+  assert.match(
+    appointment,
+    /import \{ Calendar as DateCalendar \} from "@\/components\/ui\/calendar"/,
+  );
+  assert.match(appointment, /: groupedSlots\[0\]\.dateKey/);
+  assert.match(
+    appointment,
+    /disabled=\{\(date\) =>\s*!availableDateKeys\.has\(formatAppointmentDateKey\(date\)\)/,
+  );
+  assert.match(appointment, /startMonth=\{firstAvailableDate\}/);
+  assert.match(appointment, /endMonth=\{lastAvailableDate\}/);
   assert.match(appointment, /h-\[calc\(100dvh-32px\)\].*w-full min-w-0/);
   assert.match(appointment, /parseAppointmentLocalDate/);
-  assert.match(appointment, /Показываем только дни, где есть свободное время/);
+  assert.match(appointment, /Доступные дни выделены\. Между месяцами можно переключаться/);
   assert.match(checkout, /regionalCity === "nvk" \? "Новокузнецк" : "Санкт-Петербург"/);
 });
 
