@@ -32,7 +32,7 @@ const PROMOS = [
   },
 ];
 
-const NVK_PROMOS = [{ text: "АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА", href: "/contacts/" }];
+const NVK_PROMOS = [{ text: "АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА", href: "/#promotions" }];
 
 type FacetLoadState =
   | { status: "loading" }
@@ -268,7 +268,7 @@ export function Header() {
           </div>
 
           <a
-            href={regionalHref(cityCode === "nvk" ? "/contacts/" : "/#promotions")}
+            href={regionalHref("/#promotions")}
             className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 font-semibold text-primary-foreground no-underline transition-colors hover:border-white/35 hover:bg-white/15 sm:px-3"
             aria-label="Все Акции"
           >

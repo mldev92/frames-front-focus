@@ -43,6 +43,8 @@ test("shared navigation suppresses SPb-only links and contacts for Novokuznetsk"
   assert.match(header, /setTimeout\(\(\) => window\.location\.assign\(nextHref\), 0\)/);
   assert.match(header, /item\.label !== "Линзы для очков"/);
   assert.match(header, /cityCode !== "nvk" && \(/);
+  assert.match(header, /NVK_PROMOS = \[\{ text: "АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА", href: "\/#promotions" \}\]/);
+  assert.match(header, /href=\{regionalHref\("\/#promotions"\)\}/);
   assert.match(megaMenu, /Контактные линзы в Новокузнецке/);
   assert.match(megaMenu, /Доставка и самовывоз/);
 });
@@ -84,6 +86,9 @@ test("shared pages derive regional text and links from the selected city", async
 
   assert.match(homepage, /Салоны в Новокузнецке/);
   assert.match(homepage, /catalogHref\("opravy", city\)/);
+  assert.match(homepage, /\.o100-bts-content\{/);
+  assert.match(homepage, /\.o100-bts-actions\{/);
+  assert.match(homepage, /\.o100-bts-quiz\{/);
   assert.match(repair, /city === "nvk" \? NK_SALONS\[0\] : SPB_SALONS\[0\]/);
   assert.match(productInfo, /serviceHref\("diagnostika", city\)/);
   assert.match(productInfo, /Доставка по Новокузнецку/);

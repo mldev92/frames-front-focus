@@ -1283,14 +1283,70 @@ function MainV2BuyTogetherBanner() {
           animation:_btsLight 8s ease-in-out infinite;
         }
         @media (max-width:767px){
+          .o100-bts-img{
+            background-position:62% center!important;
+          }
           .o100-bts-wash{
             background:linear-gradient(
               180deg,
-              rgba(246, 240, 233, 0.86) 0%,
-              rgba(246, 240, 233, 0.66) 38%,
-              rgba(246, 240, 233, 0.26) 72%,
-              rgba(246, 240, 233, 0.08) 100%
+              rgba(246, 240, 233, 0.72) 0%,
+              rgba(246, 240, 233, 0.48) 48%,
+              rgba(246, 240, 233, 0.30) 100%
             );
+          }
+          .o100-bts-content{
+            max-width:none!important;
+            padding:24px 20px;
+            border:1px solid rgba(61, 52, 45, 0.12);
+            border-radius:24px;
+            background:rgba(246, 240, 233, 0.94);
+            box-shadow:0 18px 48px rgba(52, 40, 31, 0.16);
+            backdrop-filter:blur(12px);
+          }
+          .o100-bts-heading{
+            font-size:clamp(32px, 10vw, 40px)!important;
+            line-height:1.02!important;
+          }
+          .o100-bts-actions{
+            display:grid!important;
+            grid-template-columns:1fr;
+            gap:10px!important;
+          }
+          .o100-bts-btn{
+            width:100%;
+            min-height:52px;
+            justify-content:center;
+            padding:14px 18px;
+            text-align:center;
+            line-height:1.25;
+          }
+          .o100-bts-quiz{
+            align-items:flex-start!important;
+            gap:6px!important;
+            padding:16px 18px;
+            border:1px solid rgba(61, 52, 45, 0.10);
+            border-radius:16px;
+            background:rgba(255, 255, 255, 0.76);
+            line-height:1.45;
+          }
+          .o100-bts-quiz-link{
+            display:inline-flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+            width:100%;
+            min-height:28px;
+          }
+          .o100-bts-quiz-link span{
+            flex-shrink:0;
+          }
+        }
+        @media (max-width:359px){
+          .o100-bts-content{
+            padding:22px 16px;
+          }
+          .o100-bts-heading{
+            font-size:31px!important;
           }
         }
         .o100-bts-sun{
@@ -1379,7 +1435,7 @@ function MainV2BuyTogetherBanner() {
         }}
       >
         <Reveal>
-          <div style={{ maxWidth: 520 }}>
+          <div className="o100-bts-content" style={{ maxWidth: 520 }}>
             <div
               className="text-[11px] uppercase tracking-[0.22em] mb-3"
               style={{ color: "var(--brand)", fontFamily: "var(--font-sans)", fontWeight: 600 }}
@@ -1387,7 +1443,7 @@ function MainV2BuyTogetherBanner() {
               Семейная выгода
             </div>
             <h2
-              className="font-serif text-foreground"
+              className="o100-bts-heading font-serif text-foreground"
               style={{
                 fontSize: "clamp(36px, 4.4vw, 56px)",
                 lineHeight: 1.04,
@@ -1431,7 +1487,7 @@ function MainV2BuyTogetherBanner() {
             >
               Действуют ограничения. Подробности у&nbsp;консультанта в&nbsp;салоне.
             </p>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="o100-bts-actions flex flex-wrap items-center gap-3">
               <a href={catalogHref("opravy", city)} className="o100-bts-btn o100-bts-btn-primary">
                 Купить оправу
               </a>
@@ -1443,7 +1499,7 @@ function MainV2BuyTogetherBanner() {
               </a>
             </div>
             <div
-              className="flex flex-wrap items-center gap-2"
+              className="o100-bts-quiz flex flex-wrap items-center gap-2"
               style={{
                 marginTop: 22,
                 fontFamily: "var(--font-sans)",
