@@ -171,7 +171,9 @@ export function ProductPage({
     VIRTUAL_TRY_ON_ENABLED && product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
   const isMisight = product.slug.toLowerCase().includes("misight");
   const showInstallment =
-    (isFrameLike && product.price > 3500) || (product.category === "kontaktnye-linzy" && isMisight);
+    city === "spb" &&
+    ((isFrameLike && product.price > 3500) ||
+      (product.category === "kontaktnye-linzy" && isMisight));
   const lensQty = isLens && lensEyeMode === "different" ? 2 : 1;
   const lensTotal = product.price * lensQty;
 

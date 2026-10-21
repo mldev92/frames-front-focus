@@ -55,6 +55,7 @@ test("Novokuznetsk uses its verified contacts and disables unavailable actions",
   const checkout = await read("../src/routes/checkout.tsx");
   const homepage = await read("../src/routes/index.tsx");
   const installment = await read("../src/routes/tinkoff.tsx");
+  const product = await read("../src/routes/catalog_s.$category.$slug.tsx");
 
   assert.match(contacts, /label: "sale@optika100\.com"/);
   assert.match(contacts, /domain=optica_100/);
@@ -64,6 +65,7 @@ test("Novokuznetsk uses its verified contacts and disables unavailable actions",
   assert.match(checkout, /option\.code !== "t_installment" \|\| city !== "Новокузнецк"/);
   assert.match(homepage, /city !== "nvk" && \(/);
   assert.match(installment, /if \(city === "nvk"\) return <Navigate to="\/" replace \/>/);
+  assert.match(product, /const showInstallment =\s*city === "spb" &&/);
 });
 
 test("region selector restores All Russia while retaining the SPb catalog contract", async () => {
