@@ -111,7 +111,9 @@ test("shared pages derive regional text and links from the selected city", async
     appointment,
     /import \{ Calendar as DateCalendar \} from "@\/components\/ui\/calendar"/,
   );
-  assert.match(appointment, /: groupedSlots\[0\]\.dateKey/);
+  assert.match(appointment, /setAvailableDateKeyList\(availability\.availableDates\)/);
+  assert.match(appointment, /compact: true/);
+  assert.match(appointment, /date: selectedDateKey \|\| undefined/);
   assert.match(
     appointment,
     /disabled=\{\(date\) =>\s*!availableDateKeys\.has\(formatAppointmentDateKey\(date\)\)/,

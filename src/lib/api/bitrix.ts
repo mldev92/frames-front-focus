@@ -542,10 +542,14 @@ export interface AppointmentSlotsRequest {
   clinicUid: string;
   ageType: "adult" | "child";
   serviceCode: "glasses" | "contacts";
+  date?: string;
+  compact?: boolean;
 }
 
 export interface AppointmentSlotsResponse {
   status: "ok";
+  availableDates: string[];
+  selectedDate: string;
   slots: AppointmentSlot[];
 }
 
@@ -575,9 +579,8 @@ export async function verifyAppointmentConfirmationCode(
 
 export async function getAppointmentSlots(
   input: AppointmentSlotsRequest,
-): Promise<AppointmentSlot[]> {
-  const response = await postJson<AppointmentSlotsResponse>("appointment_slots.php", input);
-  return response.slots;
+): Promise<AppointmentSlotsResponse> {
+  return postJson<AppointmentSlotsResponse>("appointment_slots.php", input);
 }
 
 /** Name/article substring search. */

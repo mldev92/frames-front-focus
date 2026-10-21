@@ -117,6 +117,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
   const slotsRef = useRef<AppointmentSlot[]>([]);
   const [slotsRefreshSequence, setSlotsRefreshSequence] = useState(0);
+  const [availableDateKeyList, setAvailableDateKeyList] = useState<string[]>([]);
   const [selectedDateKey, setSelectedDateKey] = useState("");
   const [selectedSlotId, setSelectedSlotId] = useState("");
 
@@ -140,11 +141,11 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const groupedSlots = groupSlotsByDay(slots);
   const selectedGroup =
     groupedSlots.find((group) => group.dateKey === selectedDateKey) ?? groupedSlots[0] ?? null;
-  const availableDateKeys = new Set(groupedSlots.map((group) => group.dateKey));
-  const availableDates = groupedSlots.map((group) => parseAppointmentLocalDate(group.dateKey));
+  const availableDateKeys = new Set(availableDateKeyList);
+  const availableDates = availableDateKeyList.map(parseAppointmentLocalDate);
   const firstAvailableDate = availableDates[0];
   const lastAvailableDate = availableDates[availableDates.length - 1];
-  const selectedDate = selectedGroup ? parseAppointmentLocalDate(selectedGroup.dateKey) : undefined;
+  const selectedDate = selectedDateKey ? parseAppointmentLocalDate(selectedDateKey) : undefined;
   const selectedSlot = slots.find((slot) => slot.id === selectedSlotId) ?? null;
   const birthDateMax = new Date().toISOString().slice(0, 10);
   const confirmationSecondsLeft =
@@ -153,6 +154,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   useEffect(() => {
     slotsRef.current = [];
     setSlots([]);
+    setAvailableDateKeyList([]);
     setSelectedDateKey("");
     setSelectedSlotId("");
   }, [salonId, ageType, service]);
@@ -166,19 +168,6 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       setSalonId(defaultSalon.id);
     }
   }, [availableSalons, defaultSalon.id, salonId]);
-
-  useEffect(() => {
-    if (groupedSlots.length === 0) {
-      setSelectedDateKey("");
-      return;
-    }
-
-    setSelectedDateKey((current) =>
-      current && groupedSlots.some((group) => group.dateKey === current)
-        ? current
-        : groupedSlots[0].dateKey,
-    );
-  }, [groupedSlots]);
 
   useEffect(() => {
     if (!open || step !== 4 || confirmationExpiresAt <= 0) {
@@ -211,10 +200,14 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       clinicUid: selectedSalon.clinicUid,
       ageType,
       serviceCode: service,
+      date: selectedDateKey || undefined,
+      compact: true,
     })
-      .then((nextSlots) => {
+      .then((availability) => {
         if (cancelled) return;
-        setSlots(nextSlots);
+        setAvailableDateKeyList(availability.availableDates);
+        setSelectedDateKey(availability.selectedDate);
+        setSlots(availability.slots);
       })
       .catch((err: unknown) => {
         if (cancelled) return;
@@ -236,7 +229,15 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [ageType, open, selectedSalon.clinicUid, service, slotsRefreshSequence, step]);
+  }, [
+    ageType,
+    open,
+    selectedDateKey,
+    selectedSalon.clinicUid,
+    service,
+    slotsRefreshSequence,
+    step,
+  ]);
 
   useEffect(() => {
     if (!open || step !== 2) {
@@ -271,7 +272,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     setService("glasses");
     setSlotsLoading(false);
     setSlotsError("");
+    slotsRef.current = [];
     setSlots([]);
+    setAvailableDateKeyList([]);
     setSelectedDateKey("");
     setSelectedSlotId("");
     setLastName("");
@@ -676,6 +679,8 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                                   }}
                                   onSelect={(date) => {
                                     if (!date) return;
+                                    slotsRef.current = [];
+                                    setSlots([]);
                                     setSelectedDateKey(formatAppointmentDateKey(date));
                                     setSelectedSlotId("");
                                   }}
