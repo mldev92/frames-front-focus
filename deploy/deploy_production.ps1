@@ -331,7 +331,11 @@ function Build-ProductionArtifact {
 
 function Write-BackendManifestFile([string]$Path, [string]$BackendSha, [System.Collections.Specialized.OrderedDictionary]$Files) {
     $obj = [ordered]@{ sha = $BackendSha; files = $Files }
-    ($obj | ConvertTo-Json -Depth 5) | Set-Content -LiteralPath $Path -Encoding UTF8 -NoNewline
+    $json = $obj | ConvertTo-Json -Depth 5
+    # Windows PowerShell 5.1's -Encoding UTF8 writes a BOM, which Node's
+    # JSON.parse does not strip -- package-production.mjs would fail with
+    # "Unexpected token" on the very first character.
+    [IO.File]::WriteAllText($Path, $json, (New-Object Text.UTF8Encoding $false))
 }
 
 function Package-Release([string]$FullSha, [string]$RoutingBaseline, [string]$BackendManifestPath) {
