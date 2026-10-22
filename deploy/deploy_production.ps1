@@ -290,11 +290,12 @@ function Get-LiveBackendManifest {
     $fileList = ($BackendFileList | ForEach-Object { "'$_'" }) -join ' '
     $output = Invoke-Ssh "cd '$DocRoot' && sha256sum $fileList"
     $files = [ordered]@{}
-    foreach ($line in ($output -split "`n")) {
-        if (-not $line.Trim()) { continue }
+    foreach ($rawLine in ($output -split "`n")) {
+        $line = $rawLine.Trim("`r", ' ')
+        if (-not $line) { continue }
         $parts = $line -split '\s+', 2
         $hash = $parts[0].ToLowerInvariant()
-        $path = $parts[1].TrimStart('*')
+        $path = $parts[1].TrimStart('*').Trim("`r")
         if ($hash -notmatch '^[0-9a-f]{64}$') { throw "Bad hash line from server: $line" }
         $files[$path] = $hash
     }
