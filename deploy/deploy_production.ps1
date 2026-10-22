@@ -51,7 +51,7 @@ param(
     [string]$Sha,
     [switch]$Execute,
     [switch]$Rollback,
-    [string]$FrontendRepo = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path,
+    [string]$FrontendRepo,
     [string]$KeyPath = "$env:USERPROFILE\.ssh\optika_beget",
     [string]$SshUser = 'tretya9f_stan',
     [string]$SshHost = 'tretya9f.beget.tech',
@@ -64,6 +64,10 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+if (-not $FrontendRepo) {
+    $scriptDir = Split-Path -Parent $PSCommandPath
+    $FrontendRepo = Split-Path -Parent $scriptDir
+}
 $FrontendRepo = (Resolve-Path $FrontendRepo).Path
 $SshExe = Join-Path $env:WINDIR 'System32\OpenSSH\ssh.exe'
 $ScpExe = Join-Path $env:WINDIR 'System32\OpenSSH\scp.exe'
