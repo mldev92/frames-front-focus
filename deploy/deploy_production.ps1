@@ -473,7 +473,10 @@ try {
         $toolBytes[$file] = Get-GitBlobBytes "HEAD:deploy/$file"
     }
     $manifestPath = Join-Path $client 'release-manifest.json'
-    $manifestObj = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    # Explicit UTF-8: Windows PowerShell 5.1 otherwise reads the file as ANSI and
+    # double-encodes Cyrillic asset names (images/article/БЛИЗОРУКОСТЬ ИТОГ.jpg),
+    # so verify-release.php on the server fails with "Artifact hash mismatch".
+    $manifestObj = Get-Content -LiteralPath $manifestPath -Raw -Encoding UTF8 | ConvertFrom-Json
     $templateFiles = [ordered]@{}
     foreach ($file in $DeployToolFiles) {
         $templateFiles["deploy/$file"] = Get-Sha256Hex $toolBytes[$file]
