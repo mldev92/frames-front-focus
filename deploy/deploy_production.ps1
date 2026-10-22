@@ -459,6 +459,30 @@ try {
     $releaseSha = (Get-Content (Join-Path $client '.release-sha')).Trim()
     if ($releaseSha -ne $fullSha) { throw ".release-sha ($releaseSha) does not match the requested commit ($fullSha)." }
 
+    # package-production.mjs hashes deploy/* from the Windows WORKING TREE,
+    # which core.autocrlf checks out with CRLF line endings. The actual files
+    # we upload (below) are read as raw git blobs instead (LF, see
+    # Get-GitBlobBytes) specifically so release.sh's `set -Eeuo pipefail`
+    # never breaks on a stray \r again. Those two byte streams differ, so the
+    # manifest's own templateFiles hashes -- which verify-release.php checks
+    # the uploaded tools against -- must be recomputed from the same blob
+    # bytes we're actually going to upload, or the server rejects its own
+    # just-built release as tampered.
+    $toolBytes = @{}
+    foreach ($file in $DeployToolFiles) {
+        $toolBytes[$file] = Get-GitBlobBytes "HEAD:deploy/$file"
+    }
+    $manifestPath = Join-Path $client 'release-manifest.json'
+    $manifestObj = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $templateFiles = [ordered]@{}
+    foreach ($file in $DeployToolFiles) {
+        $templateFiles["deploy/$file"] = Get-Sha256Hex $toolBytes[$file]
+    }
+    $manifestObj | Add-Member -NotePropertyName templateFiles -NotePropertyValue $templateFiles -Force
+    $manifestJson = $manifestObj | ConvertTo-Json -Depth 10
+    [IO.File]::WriteAllText($manifestPath, $manifestJson, (New-Object Text.UTF8Encoding $false))
+    Write-Host 'Repointed release-manifest.json templateFiles at the clean git-blob hashes that will actually be uploaded.'
+
     $archive = Join-Path $work "production-release-$fullSha.tgz"
     $archiveTarPath = $archive.Replace('\', '/')
     $clientTarPath = $client.Replace('\', '/')
@@ -474,9 +498,8 @@ try {
     }
 
     foreach ($file in $DeployToolFiles) {
-        $bytes = Get-GitBlobBytes "HEAD:deploy/$file"
         $tmp = Join-Path $work $file
-        [IO.File]::WriteAllBytes($tmp, $bytes)
+        [IO.File]::WriteAllBytes($tmp, $toolBytes[$file])
     }
     Invoke-Ssh "mkdir -p '$DeployToolsDir'" | Out-Null
     foreach ($file in $DeployToolFiles) {
