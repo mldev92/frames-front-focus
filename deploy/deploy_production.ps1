@@ -255,14 +255,33 @@ function Assert-CleanWorkingTreeAt([string]$FullSha) {
     # No `git archive` export here (package-production.mjs calls `git rev-parse
     # HEAD`, which needs a real .git directory). Instead: prove the working
     # tree already equals that commit exactly, which gives the identical
-    # "nothing untracked or dirty leaks into the build" guarantee.
+    # "nothing untracked or dirty leaks into the build" guarantee -- except
+    # for the handful of paths the build itself deterministically regenerates
+    # every run (content:localize, manifest:production, TanStack's route-tree
+    # codegen), which routinely sit dirty between builds and can't leak
+    # anything: the build overwrites them from source + live catalog data
+    # regardless of what was there before.
     $headSha = (& git -C $FrontendRepo rev-parse HEAD).Trim()
     if ($headSha -ne $FullSha) {
         throw "Working tree HEAD ($headSha) is not the requested commit ($FullSha). Check out $FullSha first."
     }
-    $status = & git -C $FrontendRepo status --porcelain
-    if ($status) {
-        throw "Working tree is not clean -- refusing to build (untracked/modified files would leak into the production artifact):`n$status"
+    $regenPrefixes = @('public/essilor/', 'public/eyezen/', 'public/varilux/')
+    $regenExact = @('public/robots.txt', 'public/sitemap.xml', 'src/routeTree.gen.ts', 'src/data/articles-content.json')
+    $lines = & git -C $FrontendRepo status --porcelain --untracked-files=all
+    $dirty = $lines | Where-Object {
+        $_ -and
+        ($line = $_) -and
+        ($code = $line.Substring(0, 2)) -and
+        ($path = $line.Substring(3).Trim('"')) -and
+        -not ($regenExact -contains $path) -and
+        -not ($regenPrefixes | Where-Object { $path.StartsWith($_) }) -and
+        # Only files under src/ can be pulled into the Vite bundle; untracked
+        # clutter elsewhere (repo-root scratch files, deploy/ output, old
+        # session artifacts) cannot leak into the build regardless of status.
+        -not ($code -eq '??' -and -not $path.StartsWith('src/'))
+    }
+    if ($dirty) {
+        throw "Working tree has changes outside the build's own regenerated files -- refusing to build (would leak into the production artifact):`n$($dirty -join "`n")"
     }
 }
 
