@@ -15,6 +15,7 @@ import {
   Shield,
   Phone,
   Check,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart, formatPrice } from "@/lib/store/cart";
@@ -1059,7 +1060,15 @@ function Checkout() {
               <SummaryRow label="Товаров на" value={formatPrice(review?.quote.itemsTotal ?? serverItemsTotal ?? subtotal)} />
               <SummaryRow
                 label="Доставка"
-                value={deliveryPrice === null ? "Уточняется менеджером" : formatPrice(deliveryPrice)}
+                value={
+                  deliveryLoading && deliveryPrice === null ? (
+                    <DeliveryCalculating label="Считаем доставку..." />
+                  ) : deliveryPrice === null ? (
+                    "Уточняется менеджером"
+                  ) : (
+                    formatPrice(deliveryPrice)
+                  )
+                }
                 valueStyle={isFree ? { color: "var(--success)", fontWeight: 500 } : undefined}
               />
               <SummaryRow label="Скидка" value="—" />
@@ -1077,7 +1086,13 @@ function Checkout() {
             >
               <span style={{ fontWeight: 500 }}>Итого:</span>
               <span className="font-serif" style={{ fontSize: "22px", fontWeight: 700 }}>
-                {deliveryPrice === null ? "Уточняется" : formatPrice(orderTotal)}
+                {deliveryLoading && deliveryPrice === null ? (
+                  <DeliveryCalculating label="Считаем..." size={16} />
+                ) : deliveryPrice === null ? (
+                  "Уточняется"
+                ) : (
+                  formatPrice(orderTotal)
+                )}
               </span>
             </div>
 
@@ -1684,7 +1699,7 @@ function SummaryRow({
   valueStyle,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
   valueStyle?: CSSProperties;
 }) {
   return (
@@ -1694,6 +1709,18 @@ function SummaryRow({
         {value}
       </span>
     </div>
+  );
+}
+
+function DeliveryCalculating({ label, size = 13 }: { label: string; size?: number }) {
+  return (
+    <span
+      className="text-muted-foreground"
+      style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontWeight: 500 }}
+    >
+      <Loader2 size={size} className="animate-spin" />
+      {label}
+    </span>
   );
 }
 
