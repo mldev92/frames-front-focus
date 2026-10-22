@@ -234,7 +234,7 @@ function Checkout() {
     setPickupPoint(null);
     if (!lines.length) return;
     setDeliveryLoading(true);
-    getOrderDeliveryOptions({ city, lines })
+    getOrderDeliveryOptions({ city, lines, deliveryCode: delivery })
       .then((result) => {
         if (!cancelled) { setQuotedDeliveryOptions(result.options); setServerItemsTotal(result.itemsTotal); }
       })
@@ -248,7 +248,7 @@ function Checkout() {
     return () => {
       cancelled = true;
     };
-  }, [city, lines]);
+  }, [city, lines, delivery]);
 
   useEffect(() => {
     if (!deliveryOptions.some((option) => option.code === delivery)) {

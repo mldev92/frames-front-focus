@@ -661,7 +661,7 @@ export interface DeliveryQuoteResult {
 }
 
 export async function getOrderDeliveryOptions(
-  input: Pick<CreateOrderInput, "city" | "lines">,
+  input: Pick<CreateOrderInput, "city" | "lines"> & { deliveryCode?: CreateOrderInput["deliveryCode"] },
 ): Promise<DeliveryQuoteResult> {
   return securePost<DeliveryQuoteResult>("order_delivery.php", input);
 }
