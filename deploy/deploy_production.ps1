@@ -338,15 +338,23 @@ function Write-BackendManifestFile([string]$Path, [string]$BackendSha, [System.C
     [IO.File]::WriteAllText($Path, $json, (New-Object Text.UTF8Encoding $false))
 }
 
-function Package-Release([string]$FullSha, [string]$RoutingBaseline, [string]$BackendManifestPath) {
+function Get-BackendReferenceSha {
+    # Informational label only -- verify-release.php never checks this against
+    # anything; the `files` hashes (always re-measured live, see
+    # Get-LiveBackendManifest) are what actually gates the deploy.
+    $sha = & git -C (Join-Path $FrontendRepo '..\cutover-backend') rev-parse HEAD 2>$null
+    if (-not $sha) { return '0' * 40 }
+    return $sha.Trim()
+}
+
+function Package-Release([string]$FullSha, [string]$RoutingBaseline, [string]$BackendSha, [string]$BackendManifestPath) {
     Push-Location $FrontendRepo
     try {
         $oldBackendSha = $env:O100_BACKEND_SHA
         $oldBaseline = $env:O100_ROUTING_SHA256
         $oldManifest = $env:O100_BACKEND_MANIFEST
         try {
-            $env:O100_BACKEND_SHA = (& git -C (Join-Path $FrontendRepo '..\cutover-backend') rev-parse HEAD 2>$null)
-            if (-not $env:O100_BACKEND_SHA) { $env:O100_BACKEND_SHA = '0' * 40 }
+            $env:O100_BACKEND_SHA = $BackendSha
             $env:O100_ROUTING_SHA256 = $RoutingBaseline
             $env:O100_BACKEND_MANIFEST = $BackendManifestPath
             Write-Host 'node scripts/package-production.mjs...'
@@ -439,11 +447,13 @@ try {
     $live = Get-LiveBackendManifest
     Write-Host "Routing baseline: $($live.RoutingBaseline)"
 
+    $backendSha = Get-BackendReferenceSha
+
     Build-ProductionArtifact
 
     $manifestInput = Join-Path $work 'backend-manifest.json'
-    Write-BackendManifestFile $manifestInput $env:O100_BACKEND_SHA $live.Files
-    Package-Release $fullSha $live.RoutingBaseline $manifestInput
+    Write-BackendManifestFile $manifestInput $backendSha $live.Files
+    Package-Release $fullSha $live.RoutingBaseline $backendSha $manifestInput
 
     $client = Join-Path $FrontendRepo 'dist\client'
     $releaseSha = (Get-Content (Join-Path $client '.release-sha')).Trim()
