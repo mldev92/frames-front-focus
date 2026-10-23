@@ -22,6 +22,7 @@ import { useCart, formatPrice } from "@/lib/store/cart";
 import { useCityStore } from "@/lib/store/city";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CONTACT } from "@/data/contact";
+import { getMe } from "@/lib/api/account";
 import { createOrder, getOrderDeliveryOptions, getStoreApiUrl, quoteOrder } from "@/lib/api/bitrix";
 import type { DeliveryQuoteOption, PickupPointOption, CreateOrderInput, OrderQuote } from "@/lib/api/bitrix";
 
@@ -545,6 +546,23 @@ function Checkout() {
     } catch (error) { toast.error(error instanceof Error ? error.message : "Не удалось прочитать попытку"); }
   }, []);
 
+  // Prefill buyer data from the logged-in account (the native Bitrix form did this).
+  // Only empty fields are filled, so typed or recovered-attempt values always win.
+  useEffect(() => {
+    let alive = true;
+    getMe()
+      .then((me) => {
+        if (!alive || !me.authorized) return;
+        setFullName((prev) => prev || me.fullName || "");
+        setPhone((prev) => prev || me.phone || "");
+        setEmail((prev) => prev || me.email || "");
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const recover = async () => {
     setSubmitting(true);
     try {
@@ -786,6 +804,8 @@ function Checkout() {
                 label="Ф.И.О."
                 placeholder="Иванов Иван Иванович"
                 required
+                name="name"
+                autoComplete="name"
                 value={fullName}
                 onChange={setFullName}
               />
@@ -794,6 +814,8 @@ function Checkout() {
                 type="email"
                 placeholder="example@mail.ru"
                 required
+                name="email"
+                autoComplete="email"
                 value={email}
                 onChange={setEmail}
               />
@@ -811,6 +833,8 @@ function Checkout() {
                 type="tel"
                 placeholder="+7 (___) ___-__-__"
                 required
+                name="phone"
+                autoComplete="tel"
                 value={phone}
                 onChange={setPhone}
               />
@@ -827,6 +851,8 @@ function Checkout() {
                   label="Адрес доставки"
                   placeholder="Город, улица, дом, квартира"
                   required
+                  name="address"
+                  autoComplete="street-address"
                   value={address}
                   onChange={setAddress}
                 />
@@ -1731,6 +1757,8 @@ function Field({
   required,
   value,
   onChange,
+  name,
+  autoComplete,
 }: {
   label: string;
   type?: string;
@@ -1738,6 +1766,8 @@ function Field({
   required?: boolean;
   value?: string;
   onChange?: (v: string) => void;
+  name?: string;
+  autoComplete?: string;
 }) {
   return (
     <label style={{ display: "block" }}>
@@ -1749,6 +1779,8 @@ function Field({
         type={type}
         placeholder={placeholder}
         required={required}
+        name={name}
+        autoComplete={autoComplete}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         className="w-full bg-background border border-border"
