@@ -612,13 +612,14 @@ export interface CreateOrderInput {
   customer: { fullName: string; phone: string; email: string };
   lines: import("@/lib/store/cart").CartLine[];
   city: string;
+  /** Код местоположения Bitrix из поиска города; для быстрых городов-кнопок не нужен. */
+  locationCode?: string;
   deliveryCode: "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
   paymentCode: "cash_on_pickup" | "yookassa_card" | "t_installment";
   delivery: string;
   payment: string;
   address?: string;
   pickupPoint?: { id: string; address: string; name?: string };
-  trackNumber?: string;
   comment?: string;
 }
 
@@ -661,9 +662,26 @@ export interface DeliveryQuoteResult {
 }
 
 export async function getOrderDeliveryOptions(
-  input: Pick<CreateOrderInput, "city" | "lines"> & { deliveryCode?: CreateOrderInput["deliveryCode"] },
+  input: Pick<CreateOrderInput, "city" | "locationCode" | "lines"> & { deliveryCode?: CreateOrderInput["deliveryCode"] },
 ): Promise<DeliveryQuoteResult> {
   return securePost<DeliveryQuoteResult>("order_delivery.php", input);
+}
+
+export interface LocationSuggestion {
+  code: string;
+  name: string;
+  /** «Город, Область, Округ, Россия» — как в подсказках старого оформления. */
+  label: string;
+}
+
+export async function searchLocations(q: string, signal?: AbortSignal): Promise<LocationSuggestion[]> {
+  const result = await securePost<{ ok: true; items: LocationSuggestion[] }>(
+    "location_search.php",
+    { q },
+    {},
+    signal,
+  );
+  return result.items;
 }
 
 export interface PickupPointOption {

@@ -123,7 +123,7 @@ test("shared pages derive regional text and links from the selected city", async
   assert.match(appointment, /h-\[calc\(100dvh-32px\)\].*w-full min-w-0/);
   assert.match(appointment, /parseAppointmentLocalDate/);
   assert.match(appointment, /Доступные дни выделены\. Между месяцами можно переключаться/);
-  assert.match(checkout, /regionalCity === "nvk" \? "Новокузнецк" : "Санкт-Петербург"/);
+  assert.match(checkout, /regionalCity === "nvk" \? "Новокузнецк" : SPB_CITY/);
 });
 
 test("Novokuznetsk search filters SPb-only pages and regionalizes result links", async () => {

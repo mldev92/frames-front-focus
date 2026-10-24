@@ -206,9 +206,19 @@ export function ProductPage({
         qty: lensQty,
         city,
       });
-      toast.success(`«${product.name}» добавлен в корзину`);
+      // Корзина сама выезжает справа и подтверждает добавление; тост поверх неё
+      // закрывал кнопку «Оформить заказ».
     }
   };
+
+  // Метка для плавающей кнопки мессенджера: на карточке товара её поднимает
+  // над липкой панелью «В корзину».
+  useEffect(() => {
+    document.body.dataset.productPage = "1";
+    return () => {
+      delete document.body.dataset.productPage;
+    };
+  }, []);
 
   return (
     <div className="product-detail-page px-4 pb-28 pt-8 lg:px-10 lg:pb-8">

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { useRouterState } from "@tanstack/react-router";
 import { X, MessageCircle, Phone, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { contactForCity, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
 import { useCityStore } from "@/lib/store/city";
+import { useCart } from "@/lib/store/cart";
 import { CallbackModal } from "./CallbackModal";
 
 const channelsFor = (contact: ReturnType<typeof contactForCity>) =>
@@ -40,7 +40,7 @@ export function MessengerFAB() {
   const [open, setOpen] = useState(false);
   const [callbackOpen, setCallbackOpen] = useState(false);
   const [callbackSubject, setCallbackSubject] = useState<string | undefined>();
-  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const cartOpen = useCart((state) => state.isOpen);
 
   useEffect(() => {
     const handler = (event: Event) => {
@@ -57,15 +57,15 @@ export function MessengerFAB() {
     if (city === "nvk") setCallbackOpen(false);
   }, [city]);
 
-  const isProductPage = /^\/catalog_[sn]\/[^/]+\/[^/]+\/?$/.test(pathname);
-
   return (
     <>
       {/* FAB */}
       <div
         className={cn(
-          "fixed right-6 z-50 flex flex-col items-end gap-3 transition-[bottom]",
-          isProductPage ? "bottom-24 lg:bottom-6" : "bottom-6",
+          "fixed right-6 z-40 flex flex-col items-end gap-3 transition-[bottom]",
+          "bottom-6 [body[data-product-page]_&]:bottom-24 lg:[body[data-product-page]_&]:bottom-6",
+          // Корзина открыта — кнопка не должна перекрывать «Оформить заказ».
+          cartOpen && "hidden",
         )}
       >
         {/* Panel */}

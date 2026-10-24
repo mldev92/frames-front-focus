@@ -107,6 +107,7 @@ export async function securePost<T>(
   path: string,
   body: unknown,
   extraHeaders: Record<string, string> = {},
+  signal?: AbortSignal,
 ): Promise<T> {
   const serializedBody = JSON.stringify(body);
   return csrfPost<T>(path, (csrfToken) => ({
@@ -118,6 +119,7 @@ export async function securePost<T>(
       ...extraHeaders,
     },
     body: serializedBody,
+    signal,
   }));
 }
 
