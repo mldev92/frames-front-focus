@@ -1041,7 +1041,7 @@ function Checkout() {
                     key={line.lineId}
                     style={{
                       display: "flex",
-                      alignItems: "center",
+                      alignItems: "flex-start",
                       gap: "12px",
                       padding: "12px",
                       backgroundColor: "var(--surface)",
@@ -1087,22 +1087,33 @@ function Checkout() {
                           Назначение: {line.parameters.purpose}
                         </div>
                       )}
-                    </div>
-                    <QtyControl
-                      qty={line.qty}
-                      onDec={() => setQty(line.lineId, line.qty - 1)}
-                      onInc={() => setQty(line.lineId, line.qty + 1)}
-                    />
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        fontSize: "15px",
-                        minWidth: "72px",
-                        textAlign: "right",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {formatPrice(line.price * line.qty)}
+                      {/* Количество и сумма — отдельной строкой под описанием: рядом с ним
+                          на телефоне оставалось ~80px и текст ломался по буквам. */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: "12px",
+                          marginTop: "10px",
+                        }}
+                      >
+                        <QtyControl
+                          qty={line.qty}
+                          onDec={() => setQty(line.lineId, line.qty - 1)}
+                          onInc={() => setQty(line.lineId, line.qty + 1)}
+                        />
+                        <div
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "15px",
+                            textAlign: "right",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {formatPrice(line.price * line.qty)}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}

@@ -214,15 +214,25 @@ export function ProductPage({
 
   // Метка для плавающей кнопки мессенджера: на карточке товара её поднимает
   // над липкой панелью «В корзину».
+  // У контактных линз цена и «В корзину» уже стоят под фото рядом с параметрами,
+  // поэтому липкая панель их дублировала и позволяла купить, не увидев параметры.
+  const showStickyBuyBar = !isLens;
+
   useEffect(() => {
+    if (!showStickyBuyBar) return;
     document.body.dataset.productPage = "1";
     return () => {
       delete document.body.dataset.productPage;
     };
-  }, []);
+  }, [showStickyBuyBar]);
 
   return (
-    <div className="product-detail-page px-4 pb-28 pt-8 lg:px-10 lg:pb-8">
+    <div
+      className={cn(
+        "product-detail-page px-4 pt-8 lg:px-10 lg:pb-8",
+        showStickyBuyBar ? "pb-28" : "pb-10",
+      )}
+    >
       {/* Breadcrumbs */}
       <nav className="text-xs text-muted-foreground mb-6 flex items-center gap-1">
         <Link to="/" className="hover:text-foreground">
@@ -237,18 +247,69 @@ export function ProductPage({
       </nav>
 
       <div className="grid lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-10 lg:gap-14 items-start">
-        {/* LEFT: gallery + long content */}
-        <div className="min-w-0">
-          {/* Gallery with vertical thumb rail */}
-          <div className="flex gap-3">
-            <div className="hidden sm:flex flex-col gap-2 shrink-0">
+        {/* LEFT: gallery + long content. На телефоне колонка «раскрыта» (contents), чтобы
+            порядок был: фото → покупка (параметры и «В корзину») → характеристики → описание. */}
+        <div className="min-w-0 max-lg:contents">
+          <div className="min-w-0 max-lg:order-1">
+            {/* Gallery with vertical thumb rail */}
+            <div className="flex gap-3">
+              <div className="hidden sm:flex flex-col gap-2 shrink-0">
+                {galleryImages.map((img, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImg(i)}
+                    className={cn(
+                      "w-16 h-16 bg-surface rounded-sm overflow-hidden border-2 flex items-center justify-center",
+                      activeImg === i ? "border-brand" : "border-transparent hover:border-border",
+                    )}
+                  >
+                    <img
+                      src={img}
+                      alt=""
+                      referrerPolicy="no-referrer"
+                      className="max-w-full max-h-full object-contain mix-blend-multiply"
+                    />
+                  </button>
+                ))}
+                {showTryOn && (
+                  <button
+                    onClick={() => setVtoOpen(true)}
+                    className="w-16 h-16 rounded-sm overflow-hidden border-2 border-transparent flex items-center justify-center bg-surface hover:border-brand transition-colors"
+                    aria-label="Примерить онлайн"
+                  >
+                    <TryOnIcon className="h-6 w-6" />
+                  </button>
+                )}
+              </div>
+
+              <div className="group relative flex min-h-[340px] flex-1 sm:min-h-[420px] items-center justify-center overflow-hidden rounded-xl bg-surface lg:min-h-[560px]">
+                <img
+                  key={currentImage}
+                  src={currentImage}
+                  alt={product.name}
+                  referrerPolicy="no-referrer"
+                  className="product-gallery-image max-h-[80%] max-w-[80%] object-contain mix-blend-multiply"
+                />
+                {showTryOn && (
+                  <TryOnBadge
+                    variant="pill"
+                    label="Примерить"
+                    className="absolute top-4 right-4"
+                    onClick={() => setVtoOpen(true)}
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Mobile thumb strip */}
+            <div className="sm:hidden mt-3 grid grid-cols-5 gap-2">
               {galleryImages.map((img, i) => (
                 <button
                   key={i}
                   onClick={() => setActiveImg(i)}
                   className={cn(
-                    "w-16 h-16 bg-surface rounded-sm overflow-hidden border-2 flex items-center justify-center",
-                    activeImg === i ? "border-brand" : "border-transparent hover:border-border",
+                    "aspect-square bg-surface rounded-sm overflow-hidden border-2 flex items-center justify-center",
+                    activeImg === i ? "border-brand" : "border-transparent",
                   )}
                 >
                   <img
@@ -259,68 +320,23 @@ export function ProductPage({
                   />
                 </button>
               ))}
-              {showTryOn && (
-                <button
-                  onClick={() => setVtoOpen(true)}
-                  className="w-16 h-16 rounded-sm overflow-hidden border-2 border-transparent flex items-center justify-center bg-surface hover:border-brand transition-colors"
-                  aria-label="Примерить онлайн"
-                >
-                  <TryOnIcon className="h-6 w-6" />
-                </button>
-              )}
             </div>
 
-            <div className="group relative flex min-h-[420px] flex-1 items-center justify-center overflow-hidden rounded-xl bg-surface lg:min-h-[560px]">
-              <img
-                key={currentImage}
-                src={currentImage}
-                alt={product.name}
-                referrerPolicy="no-referrer"
-                className="product-gallery-image max-h-[80%] max-w-[80%] object-contain mix-blend-multiply"
-              />
-              {showTryOn && (
-                <TryOnBadge
-                  variant="pill"
-                  label="Примерить"
-                  className="absolute top-4 right-4"
-                  onClick={() => setVtoOpen(true)}
-                />
-              )}
-            </div>
           </div>
 
-          {/* Mobile thumb strip */}
-          <div className="sm:hidden mt-3 grid grid-cols-5 gap-2">
-            {galleryImages.map((img, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveImg(i)}
-                className={cn(
-                  "aspect-square bg-surface rounded-sm overflow-hidden border-2 flex items-center justify-center",
-                  activeImg === i ? "border-brand" : "border-transparent",
-                )}
-              >
-                <img
-                  src={img}
-                  alt=""
-                  referrerPolicy="no-referrer"
-                  className="max-w-full max-h-full object-contain mix-blend-multiply"
-                />
-              </button>
-            ))}
+          <div className="min-w-0 max-lg:order-3 max-lg:[&>div]:mt-0">
+            <ProductInfoSections
+              product={product}
+              showPrescription={!isLens && isFrameLike}
+              prescriptionVariant={isLens ? "contacts" : "frames"}
+              prescription={prescription}
+              onPrescriptionChange={setPrescription}
+            />
           </div>
-
-          <ProductInfoSections
-            product={product}
-            showPrescription={!isLens && isFrameLike}
-            prescriptionVariant={isLens ? "contacts" : "frames"}
-            prescription={prescription}
-            onPrescriptionChange={setPrescription}
-          />
         </div>
 
         {/* RIGHT: sticky purchase card */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+        <aside className="max-lg:order-2 lg:sticky lg:top-24 lg:self-start">
           <div className="relative rounded-xl border border-border bg-card p-6 shadow-sm">
             <button
               onClick={() => toggleSaved(product.slug)}
@@ -490,38 +506,37 @@ export function ProductPage({
         </section>
       )}
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
-        <div className="mx-auto flex max-w-xl items-center gap-3">
-          <div className="min-w-0 flex-1">
-            <div className="truncate text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-              {selectedColor ? `Цвет: ${selectedColor.name}` : displayBrand}
+      {showStickyBuyBar && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                {selectedColor ? `Цвет: ${selectedColor.name}` : displayBrand}
+              </div>
+              <div className="font-serif text-xl leading-tight">{formatPrice(product.price)}</div>
+              <PriceSavings
+                oldPrice={product.oldPrice}
+                price={product.price}
+                discountPercent={product.discountPercent}
+                className="text-[11px]"
+              />
             </div>
-            <div className="font-serif text-xl leading-tight">{formatPrice(product.price)}</div>
-            <PriceSavings
-              oldPrice={product.oldPrice}
-              price={product.price}
-              discountPercent={product.discountPercent}
-              className="text-[11px]"
-            />
-            {isLens && lensQty > 1 && (
-              <div className="text-[11px] text-muted-foreground">Итого: {formatPrice(lensTotal)}</div>
-            )}
+            <button
+              onClick={handlePrimaryCta}
+              className="shrink-0 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:opacity-90"
+            >
+              {isFrameLike ? (
+                <>
+                  <span className="sm:hidden">Подобрать</span>
+                  <span className="hidden sm:inline">Подобрать линзы</span>
+                </>
+              ) : (
+                "В корзину"
+              )}
+            </button>
           </div>
-          <button
-            onClick={handlePrimaryCta}
-            className="shrink-0 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:opacity-90"
-          >
-            {isFrameLike ? (
-              <>
-                <span className="sm:hidden">Подобрать</span>
-                <span className="hidden sm:inline">Подобрать линзы</span>
-              </>
-            ) : (
-              "В корзину"
-            )}
-          </button>
         </div>
-      </div>
+      )}
 
       <LensWizard
         open={lensModal}

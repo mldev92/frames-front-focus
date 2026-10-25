@@ -26,7 +26,6 @@ import {
   ArrowRight,
   ArrowLeft,
   CalendarDays,
-  Clock3,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCityStore } from "@/lib/store/city";
@@ -42,9 +41,9 @@ const STEPS = [
   { label: "Подтверждение", img: "/services1_online_appointment_doctor.webp" },
 ];
 
-const SERVICES: { id: ServiceType; label: string; sub: string }[] = [
-  { id: "glasses", label: "Подбор очков", sub: "подтверждаем через ANZ" },
-  { id: "contacts", label: "Подбор МКЛ", sub: "подтверждаем через ANZ" },
+const SERVICES: { id: ServiceType; label: string }[] = [
+  { id: "glasses", label: "Подбор очков" },
+  { id: "contacts", label: "Подбор МКЛ" },
 ];
 
 const APPOINTMENT_CLINICS = [
@@ -116,6 +115,8 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const [slotsError, setSlotsError] = useState("");
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
   const slotsRef = useRef<AppointmentSlot[]>([]);
+  const slotsPanelRef = useRef<HTMLDivElement>(null);
+  const scrollToSlotsRef = useRef(false);
   const [slotsRefreshSequence, setSlotsRefreshSequence] = useState(0);
   const [availableDateKeyList, setAvailableDateKeyList] = useState<string[]>([]);
   const [selectedDateKey, setSelectedDateKey] = useState("");
@@ -141,6 +142,13 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const groupedSlots = groupSlotsByDay(slots);
   const selectedGroup =
     groupedSlots.find((group) => group.dateKey === selectedDateKey) ?? groupedSlots[0] ?? null;
+  const hasAvailableDates = availableDateKeyList.length > 0;
+  // Два врача на одно время: только тогда на кнопке времени нужна подпись с врачом.
+  const sharedSlotTimes = new Set(
+    (selectedGroup?.slots ?? [])
+      .map((slot) => slot.timeBegin)
+      .filter((time, index, all) => all.indexOf(time) !== index),
+  );
   const availableDateKeys = new Set(availableDateKeyList);
   const availableDates = availableDateKeyList.map(parseAppointmentLocalDate);
   const firstAvailableDate = availableDates[0];
@@ -161,6 +169,13 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
 
   useEffect(() => {
     slotsRef.current = slots;
+  }, [slots]);
+
+  // После выбора даты на телефоне время появляется под календарём — подводим к нему.
+  useEffect(() => {
+    if (!scrollToSlotsRef.current || slots.length === 0) return;
+    scrollToSlotsRef.current = false;
+    slotsPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [slots]);
 
   useEffect(() => {
@@ -603,7 +618,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                 <div
                   key="step-2"
                   className={cn(
-                    "flex min-h-full w-full min-w-0 flex-col px-4 py-6 sm:px-6 sm:py-8 md:p-10",
+                    "flex h-full min-h-0 w-full min-w-0 flex-col px-4 pb-4 pt-4 sm:px-6 sm:py-8 md:p-10",
                     slideIn,
                   )}
                 >
@@ -611,13 +626,12 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                     <div className="mx-auto flex w-full max-w-[720px] flex-col gap-6 pb-2">
                       <div className="space-y-3">
                         <FieldLabel>Выберите услугу</FieldLabel>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div className="grid grid-cols-2 gap-3">
                           {SERVICES.map((item) => (
                             <ChoiceCard
                               key={item.id}
                               selected={service === item.id}
                               onClick={() => setService(item.id)}
-                              eyebrow={item.sub}
                               title={item.label}
                             />
                           ))}
@@ -625,33 +639,28 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                       </div>
 
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-3">
-                          <FieldLabel>Свободное время</FieldLabel>
-                          <span className="shrink-0 text-[11px] text-right text-foreground/45">
-                            Слоты загружаются из ANZ
-                          </span>
-                        </div>
+                        <FieldLabel>Свободное время</FieldLabel>
 
-                        {slotsLoading && (
+                        {slotsLoading && !hasAvailableDates && (
                           <div className="rounded-2xl border border-border bg-background p-5 text-sm text-foreground/60">
                             Загружаем доступное время...
                           </div>
                         )}
 
-                        {!slotsLoading && slotsError && (
+                        {!slotsLoading && slotsError && !hasAvailableDates && (
                           <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-5 text-sm text-destructive">
                             {slotsError}
                           </div>
                         )}
 
-                        {!slotsLoading && !slotsError && slots.length === 0 && (
+                        {!slotsLoading && !slotsError && !hasAvailableDates && (
                           <div className="rounded-2xl border border-border bg-background p-5 text-sm text-foreground/60">
                             Для выбранного филиала и типа записи пока нет свободных слотов.
                             Попробуйте другой филиал или позвоните нам.
                           </div>
                         )}
 
-                        {!slotsLoading && !slotsError && slots.length > 0 && (
+                        {hasAvailableDates && (
                           <div className="space-y-4">
                             <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(280px,0.85fr)_minmax(0,1.15fr)] lg:items-start">
                               <div className="min-w-0 space-y-3">
@@ -683,6 +692,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                                     setSlots([]);
                                     setSelectedDateKey(formatAppointmentDateKey(date));
                                     setSelectedSlotId("");
+                                    scrollToSlotsRef.current = true;
                                   }}
                                   className="w-full rounded-[1.5rem] border border-border bg-background p-3 [--cell-size:2.35rem]"
                                   classNames={{
@@ -693,50 +703,70 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                                 />
                               </div>
 
-                              {selectedGroup && (
-                                <div className="min-w-0 rounded-[1.5rem] border border-border bg-background p-4">
-                                  <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold text-foreground/65">
-                                    <CalendarDays className="h-4 w-4 text-brand" />
-                                    <span>{selectedGroup.label}</span>
-                                  </div>
-                                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                                    {selectedGroup.slots.map((slot) => {
-                                      const selected = slot.id === selectedSlotId;
-                                      return (
-                                        <button
-                                          key={slot.id}
-                                          type="button"
-                                          onClick={() => setSelectedSlotId(slot.id)}
-                                          className={cn(
-                                            "rounded-2xl border px-4 py-3 text-left transition-all",
-                                            selected
-                                              ? "border-brand bg-brand/8 shadow-sm"
-                                              : "border-border hover:border-brand/35 hover:bg-muted/50",
-                                          )}
-                                        >
-                                          <div className="flex items-center justify-between gap-3">
-                                            <div className="flex items-center gap-2 text-[15px] font-semibold text-foreground">
-                                              <Clock3 className="h-4 w-4 text-brand" />
-                                              <span>{formatSlotTime(slot.timeBegin)}</span>
-                                            </div>
-                                            {selected && (
-                                              <Check className="h-4 w-4 shrink-0 text-brand" />
-                                            )}
-                                          </div>
-                                          <div className="mt-1 text-[12px] text-foreground/55">
-                                            {slot.doctorName}
-                                          </div>
-                                          <div className="mt-2 text-[11px] uppercase tracking-[0.16em] text-foreground/35">
-                                            {slot.servicePrice !== null
-                                              ? formatPrice(slot.servicePrice)
-                                              : "Запись"}
-                                          </div>
-                                        </button>
-                                      );
-                                    })}
-                                  </div>
+                              <div
+                                ref={slotsPanelRef}
+                                className="min-w-0 scroll-mt-1 rounded-[1.5rem] border border-border bg-background p-4"
+                              >
+                                <div className="mb-3 flex items-center gap-2 text-[12px] font-semibold text-foreground/65">
+                                  <CalendarDays className="h-4 w-4 text-brand" />
+                                  <span>
+                                    {selectedGroup?.label ??
+                                      (selectedDate ? formatSlotDay(selectedDateKey) : "Время приёма")}
+                                  </span>
                                 </div>
-                              )}
+
+                                {slotsLoading && !selectedGroup && (
+                                  <div className="text-sm text-foreground/60">
+                                    Загружаем время...
+                                  </div>
+                                )}
+
+                                {!slotsLoading && slotsError && !selectedGroup && (
+                                  <div className="text-sm text-destructive">{slotsError}</div>
+                                )}
+
+                                {selectedGroup && (
+                                  <>
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {selectedGroup.slots.map((slot) => {
+                                        const selected = slot.id === selectedSlotId;
+                                        const sharedTime = sharedSlotTimes.has(slot.timeBegin);
+                                        return (
+                                          <button
+                                            key={slot.id}
+                                            type="button"
+                                            onClick={() => setSelectedSlotId(slot.id)}
+                                            aria-pressed={selected}
+                                            className={cn(
+                                              "min-w-0 rounded-xl border px-1 py-2.5 text-center text-[15px] font-semibold tabular-nums transition-colors",
+                                              selected
+                                                ? "border-brand bg-brand text-brand-foreground shadow-sm"
+                                                : "border-border text-foreground hover:border-brand/35 hover:bg-muted/50",
+                                            )}
+                                          >
+                                            {formatSlotTime(slot.timeBegin)}
+                                            {sharedTime && (
+                                              <span className="mt-0.5 block truncate text-[10px] font-normal opacity-70">
+                                                {slot.doctorName}
+                                              </span>
+                                            )}
+                                          </button>
+                                        );
+                                      })}
+                                    </div>
+                                    {selectedSlot && selectedGroup.slots.includes(selectedSlot) && (
+                                      <div className="mt-3 text-[12px] text-foreground/60">
+                                        {formatSlotTime(selectedSlot.timeBegin)} ·{" "}
+                                        {selectedSlot.doctorName}
+                                        {" · "}
+                                        {selectedSlot.servicePrice !== null
+                                          ? formatPrice(selectedSlot.servicePrice)
+                                          : "Запись"}
+                                      </div>
+                                    )}
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
                         )}
@@ -744,7 +774,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                     </div>
                   </div>
 
-                  <Footer className="border-t border-black/5 bg-cream pt-4">
+                  <Footer className="mt-3 shrink-0 border-t border-black/5 bg-cream pt-3 md:mt-4 md:pt-4">
                     <SecondaryButton onClick={() => go(1)}>
                       <ArrowLeft className="h-4 w-4" /> Назад
                     </SecondaryButton>
@@ -1156,7 +1186,7 @@ function ChoiceCard({
 }: {
   selected: boolean;
   onClick: () => void;
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
 }) {
   return (
@@ -1170,14 +1200,16 @@ function ChoiceCard({
           : "bg-background border border-border hover:border-brand/30 hover:shadow-sm",
       )}
     >
-      <div
-        className={cn(
-          "text-[10px] uppercase tracking-[0.18em] font-semibold mb-1.5",
-          selected ? "text-white/55" : "text-foreground/45",
-        )}
-      >
-        {eyebrow}
-      </div>
+      {eyebrow && (
+        <div
+          className={cn(
+            "text-[10px] uppercase tracking-[0.18em] font-semibold mb-1.5",
+            selected ? "text-white/55" : "text-foreground/45",
+          )}
+        >
+          {eyebrow}
+        </div>
+      )}
       <div
         className={cn(
           "text-[14px] font-medium leading-snug",
