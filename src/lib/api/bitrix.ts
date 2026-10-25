@@ -614,7 +614,7 @@ export interface CreateOrderInput {
   city: string;
   /** Код местоположения Bitrix из поиска города; для быстрых городов-кнопок не нужен. */
   locationCode?: string;
-  deliveryCode: "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
+  deliveryCode: string;
   paymentCode: "cash_on_pickup" | "yookassa_card" | "t_installment";
   delivery: string;
   payment: string;
@@ -649,6 +649,12 @@ export interface DeliveryQuoteOption {
   priceFormatted: string;
   period?: string | null;
   logo?: string | null;
+  /** Ставка НДС, % — уже входит в цену. */
+  vatRate?: number;
+  /** Сумма НДС, ₽: считается сервером от нерокруглённой цены. */
+  vatAmount?: number;
+  /** Служба доставки Bitrix. */
+  serviceId?: number | null;
   requiresAddress: boolean;
   requiresPickupPoint: boolean;
   errors: string[];

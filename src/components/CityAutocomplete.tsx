@@ -13,11 +13,14 @@ export const CITY_SEARCH_DEBOUNCE_MS = 300;
  */
 export function CityAutocomplete({
   selectedLabel,
+  hasSelection,
   onSelect,
   onClear,
 }: {
-  /** Подпись выбранного города; пустая — город не выбран. */
+  /** Подпись города, выбранного из подсказок; пустая — поле остаётся пустым (город мог быть выбран кнопкой). */
   selectedLabel: string;
+  /** Город выбран (кнопкой или из подсказок): начало набора текста сбрасывает выбор. */
+  hasSelection: boolean;
   onSelect: (location: LocationSuggestion) => void;
   onClear: () => void;
 }) {
@@ -32,7 +35,7 @@ export function CityAutocomplete({
   const typing = useRef(false);
   const wrapper = useRef<HTMLDivElement>(null);
 
-  // Город выбран снаружи (кнопки Москва/СПб/…): показываем его в поле.
+  // Поле по умолчанию пустое: выбранный кнопкой город видно по кнопке, а не по тексту в поиске.
   useEffect(() => {
     if (!selectedLabel && typing.current) return;
     typing.current = false;
@@ -124,7 +127,7 @@ export function CityAutocomplete({
           typing.current = true;
           setText(event.target.value);
           setOpen(true);
-          if (selectedLabel) onClear();
+          if (hasSelection) onClear();
         }}
         onFocus={() => setOpen(true)}
         onKeyDown={(event) => {

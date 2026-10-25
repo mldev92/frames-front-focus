@@ -15,6 +15,7 @@ export const PROGRESS_INDEX: Record<CheckoutStep, number> = {
 
 export interface StepState {
   hasLocation: boolean;
+  hasDelivery: boolean;
   deliveryLoading: boolean;
   deliveryRequiresPickupPoint: boolean;
   deliveryRequiresAddress: boolean;
@@ -33,6 +34,7 @@ export function stepProblem(step: CheckoutStep, state: StepState): string | null
     case "region":
       return state.hasLocation ? null : "Выберите город из списка";
     case "delivery":
+      if (!state.hasDelivery) return state.deliveryLoading ? "Считаем стоимость доставки…" : "Выберите способ доставки";
       if (state.deliveryLoading) return "Считаем стоимость доставки…";
       if (state.deliveryRequiresPickupPoint && !state.hasPickupPoint) return "Выберите пункт самовывоза СДЭК";
       if (state.deliveryRequiresAddress && !state.address.trim()) return "Укажите адрес доставки";

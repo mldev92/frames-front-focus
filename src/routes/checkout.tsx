@@ -60,7 +60,8 @@ const isSpbLocation = (location: CheckoutLocation | null) =>
   location?.name === SPB_CITY || location?.code === SPB_LOCATION_CODE;
 
 const quickLocation = (name: string): CheckoutLocation => ({ name, label: name });
-type DeliveryCode = "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
+/** Код способа доставки: salon_pickup_spb, spb_courier, sdek_courier, sdek_pickup, salon_pickup_nvk_<id>. */
+type DeliveryCode = string;
 type PaymentCode = "cash_on_pickup" | "yookassa_card" | "t_installment";
 
 interface DeliveryOption {
@@ -75,6 +76,11 @@ interface DeliveryOption {
   requiresAddress?: boolean;
   requiresPickupPoint?: boolean;
   errors?: string[];
+  /** Ставка НДС, % — входит в цену доставки. */
+  vatRate?: number;
+  vatAmount?: number;
+  /** Служба доставки Bitrix (для виджета пунктов выдачи СДЭК). */
+  serviceId?: number | null;
 }
 
 interface PickupPoint extends PickupPointOption {
@@ -99,6 +105,15 @@ const SPB_DELIVERY_OPTIONS: DeliveryOption[] = [
     free: false,
     requiresAddress: true,
   },
+  {
+    code: "sdek_pickup",
+    label: "Самовывоз из пункта выдачи СДЭК",
+    description: "Доставка заказа в один из пунктов самовывоза компании СДЭК",
+    price: null,
+    priceFormatted: "по тарифу",
+    free: false,
+    requiresPickupPoint: true,
+  },
 ];
 
 const CDEK_DELIVERY_OPTIONS: DeliveryOption[] = [
@@ -122,7 +137,16 @@ const CDEK_DELIVERY_OPTIONS: DeliveryOption[] = [
   },
 ];
 
+/** Способы, цену которых считает СДЭК: каждый запрашивается отдельно. Салоны всегда бесплатны. */
 const CDEK_CODES: DeliveryCode[] = ["sdek_courier", "sdek_pickup"];
+const SPB_CDEK_CODES: DeliveryCode[] = ["spb_courier", "sdek_pickup"];
+const isSalonPickup = (code: DeliveryCode | undefined) => Boolean(code?.startsWith("salon_pickup_"));
+
+/** НДС, уже включённый в цену доставки (как в старом оформлении). */
+const includedVat = (price: number | null | undefined, rate: number | undefined) =>
+  price && rate ? Math.round(((price * rate) / (100 + rate)) * 100) / 100 : 0;
+const formatVat = (value: number) =>
+  `${value.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽`;
 
 const getDeliveryOptions = (isSpb: boolean): DeliveryOption[] =>
   isSpb ? SPB_DELIVERY_OPTIONS : CDEK_DELIVERY_OPTIONS;
@@ -170,9 +194,8 @@ function Checkout() {
   );
   const city = location?.name ?? "";
   const isSpb = isSpbLocation(location);
-  const [delivery, setDelivery] = useState<DeliveryCode>(() =>
-    regionalCity === "nvk" ? "sdek_courier" : "salon_pickup_spb",
-  );
+  // Способ доставки не выбран заранее: покупатель выбирает сам, и только тогда доставка попадает в заказ.
+  const [delivery, setDelivery] = useState<DeliveryCode | null>(null);
   const [address, setAddress] = useState("");
   const [payment, setPayment] = useState<PaymentCode>("cash_on_pickup");
   const [review, setReview] = useState<{ input: CreateOrderInput; quote: OrderQuote; fingerprint: string } | null>(null);
@@ -201,7 +224,7 @@ function Checkout() {
     if (!regionalCityHydrated) return;
     const nextCity = regionalCity === "nvk" ? "Новокузнецк" : SPB_CITY;
     setLocation(quickLocation(nextCity));
-    setDelivery(nextCity === SPB_CITY ? "salon_pickup_spb" : "sdek_courier");
+    setDelivery(null);
   }, [regionalCity, regionalCityHydrated]);
 
   const fallbackDeliveryOptions = useMemo(() => getDeliveryOptions(isSpb), [isSpb]);
@@ -219,24 +242,29 @@ function Checkout() {
       requiresAddress: option.requiresAddress,
       requiresPickupPoint: option.requiresPickupPoint,
       errors: option.errors,
+      vatRate: option.vatRate,
+      vatAmount: option.vatAmount,
+      serviceId: option.serviceId,
     }));
   }, [fallbackDeliveryOptions, quotedDeliveryOptions]);
-  const selectedDelivery =
-    deliveryOptions.find((option) => option.code === delivery) ?? deliveryOptions[0];
+  const selectedDelivery = deliveryOptions.find((option) => option.code === delivery) ?? null;
   const paymentOptions = useMemo(
     () =>
       PAYMENT_OPTIONS.filter(
         (option) =>
-          (option.code !== "cash_on_pickup" || selectedDelivery.code === "salon_pickup_spb") &&
+          (option.code !== "cash_on_pickup" || isSalonPickup(selectedDelivery?.code)) &&
           (option.code !== "t_installment" || city !== "Новокузнецк"),
       ),
-    [city, selectedDelivery.code],
+    [city, selectedDelivery?.code],
   );
   const selectedPayment =
     paymentOptions.find((option) => option.code === payment) ?? paymentOptions[0];
-  const deliveryPrice = review ? review.quote.deliveryPrice : selectedDelivery.price;
+  const deliveryChosen = selectedDelivery !== null;
+  const deliveryPrice = review ? review.quote.deliveryPrice : (selectedDelivery?.price ?? null);
   const orderTotal = review?.quote.total ?? (serverItemsTotal ?? subtotal) + (deliveryPrice ?? 0);
   const isFree = deliveryPrice === 0;
+  const deliveryVatRate = selectedDelivery?.vatRate ?? 0;
+  const deliveryVat = selectedDelivery?.vatAmount || includedVat(deliveryPrice, deliveryVatRate);
   const storeApiBase =
     (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ??
     "https://optika100.com";
@@ -250,11 +278,14 @@ function Checkout() {
   const pickupWidgetUrl = useMemo(() => {
     const widgetUrl = new URL(getSameOriginStoreApiUrl("sdek_widget_frame.php"));
     widgetUrl.searchParams.set("city", city);
-    widgetUrl.searchParams.set("deliveryId", "55");
+    widgetUrl.searchParams.set(
+      "deliveryId",
+      String(deliveryOptions.find((option) => option.code === "sdek_pickup")?.serviceId ?? 55),
+    );
     widgetUrl.searchParams.set("orderPrice", String(orderTotal));
     widgetUrl.searchParams.set("weight", "1000");
     return widgetUrl.toString();
-  }, [city, orderTotal]);
+  }, [city, orderTotal, deliveryOptions]);
   const pickupWidgetAjaxUrl = useMemo(() => getSdekWidgetUrl("sdek_ajax_proxy.php"), []);
   const pickupWidgetAssetProxyUrl = useMemo(() => getSdekWidgetUrl("sdek_asset_proxy.php"), []);
   const pickupWidgetAssetOrigin = useMemo(
@@ -272,7 +303,7 @@ function Checkout() {
     setDeliveryError(null);
     if (!lines.length || !location) return;
     setDeliveryLoading(true);
-    const codes: Array<DeliveryCode | undefined> = isSpb ? [undefined] : CDEK_CODES;
+    const codes: Array<DeliveryCode | undefined> = isSpb ? SPB_CDEK_CODES : CDEK_CODES;
     Promise.allSettled(
       codes.map((deliveryCode) =>
         getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode }),
@@ -309,8 +340,8 @@ function Checkout() {
   }, [city, location, isSpb, lines, deliveryRetry]);
 
   useEffect(() => {
-    if (!deliveryOptions.some((option) => option.code === delivery)) {
-      setDelivery(deliveryOptions[0].code);
+    if (delivery !== null && !deliveryOptions.some((option) => option.code === delivery)) {
+      setDelivery(null);
       setAddress("");
       setPickupPoint(null);
     }
@@ -625,8 +656,9 @@ function Checkout() {
   const stepState: StepState = {
     hasLocation: Boolean(location),
     deliveryLoading,
-    deliveryRequiresPickupPoint: Boolean(selectedDelivery.requiresPickupPoint),
-    deliveryRequiresAddress: Boolean(selectedDelivery.requiresAddress),
+    hasDelivery: deliveryChosen,
+    deliveryRequiresPickupPoint: Boolean(selectedDelivery?.requiresPickupPoint),
+    deliveryRequiresAddress: Boolean(selectedDelivery?.requiresAddress),
     hasPickupPoint: Boolean(pickupPoint),
     address,
     hasPayment: Boolean(selectedPayment),
@@ -678,6 +710,7 @@ function Checkout() {
     if (submitting) return;
     if (!agreed) { toast.error("Необходимо согласиться с условиями"); return; }
     if (!lines.length) { toast.error("Корзина пуста"); return; }
+    if (!selectedDelivery) { goToStep("delivery"); toast.error("Выберите способ доставки"); return; }
     const brokenStep = firstProblemStep(stepState);
     if (brokenStep) {
       goToStep(brokenStep);
@@ -807,7 +840,8 @@ function Checkout() {
               ))}
             </div>
             <CityAutocomplete
-              selectedLabel={location?.label ?? ""}
+              hasSelection={Boolean(location)}
+              selectedLabel={location?.code ? location.label : ""}
               onSelect={(item) =>
                 setLocation({ name: item.name, code: item.code, label: item.label })
               }
@@ -822,7 +856,7 @@ function Checkout() {
             id="delivery"
             icon={<Truck size={18} />}
             title="Доставка"
-            subtitle={selectedDelivery.label}
+            subtitle={selectedDelivery?.label ?? "Выберите способ доставки"}
             isOpen={step === "delivery"}
             locked={!canOpenStep("delivery")}
             onToggle={() => goToStep("delivery")}
@@ -880,7 +914,7 @@ function Checkout() {
                 />
               ))}
             </div>
-            {selectedDelivery.requiresAddress && (
+            {selectedDelivery?.requiresAddress && (
               <div style={{ marginTop: "16px" }}>
                 <Field
                   label="Адрес доставки"
@@ -1208,7 +1242,9 @@ function Checkout() {
               <SummaryRow
                 label="Доставка"
                 value={
-                  deliveryLoading && deliveryPrice === null ? (
+                  !deliveryChosen ? (
+                    "Не выбрана"
+                  ) : deliveryLoading && deliveryPrice === null ? (
                     <DeliveryCalculating label="Считаем доставку..." />
                   ) : deliveryPrice === null ? (
                     "Уточняется менеджером"
@@ -1218,6 +1254,12 @@ function Checkout() {
                 }
                 valueStyle={isFree ? { color: "var(--success)", fontWeight: 500 } : undefined}
               />
+              {deliveryVat > 0 && (
+                <SummaryRow
+                  label={`НДС ${deliveryVatRate}%, включён в доставку`}
+                  value={formatVat(deliveryVat)}
+                />
+              )}
               <SummaryRow label="Скидка" value="—" />
             </div>
 
@@ -1231,9 +1273,18 @@ function Checkout() {
                 marginBottom: "20px",
               }}
             >
-              <span style={{ fontWeight: 500 }}>Итого:</span>
+              <span style={{ fontWeight: 500 }}>
+                Итого:
+                {!deliveryChosen && (
+                  <span className="text-muted-foreground" style={{ display: "block", fontSize: "11px", fontWeight: 400 }}>
+                    без доставки
+                  </span>
+                )}
+              </span>
               <span className="font-serif" style={{ fontSize: "22px", fontWeight: 700 }}>
-                {deliveryLoading && deliveryPrice === null ? (
+                {!deliveryChosen ? (
+                  formatPrice(orderTotal)
+                ) : deliveryLoading && deliveryPrice === null ? (
                   <DeliveryCalculating label="Считаем..." size={16} />
                 ) : deliveryPrice === null ? (
                   "Уточняется"

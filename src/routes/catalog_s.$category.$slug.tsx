@@ -22,6 +22,7 @@ import {
   eyesEqual,
   lensPurchaseComplete,
   lensPurchaseFields,
+  orderedLensOptions,
 } from "@/lib/contact-lens-purchase";
 import { useCityStore, type CityCode } from "@/lib/store/city";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
@@ -625,7 +626,7 @@ function LensPurchaseOptions({
                       onChange={(event) => updateEye(eye, prescriptionKey, event.target.value)}
                       className="w-full rounded-lg border border-border bg-card px-3 py-2 text-sm"
                     >
-                      {field.options.map((option) => (
+                      {orderedLensOptions(key, field.options).map((option) => (
                         <option key={option.id} value={option.label}>{option.label}</option>
                       ))}
                     </select>

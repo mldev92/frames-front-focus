@@ -45,3 +45,16 @@ test("the cart toast no longer covers the drawer button and the messenger hides 
   assert.doesNotMatch(product, /toast\.success\(`«\$\{product\.name\}» добавлен в корзину`\)/);
   assert.match(messenger, /useCart\(\(state\) => state\.isOpen\)/);
 });
+
+test("the city search starts empty and delivery is not preselected", async () => {
+  const checkout = await read("../src/routes/checkout.tsx");
+  assert.match(checkout, /selectedLabel=\{location\?\.code \? location\.label : ""\}/);
+  assert.match(checkout, /useState<DeliveryCode \| null>\(null\)/);
+  assert.match(checkout, /Не выбрана/);
+});
+
+test("the delivery price shows the VAT that is already included", async () => {
+  const checkout = await read("../src/routes/checkout.tsx");
+  assert.match(checkout, /включён в доставку/);
+  assert.match(checkout, /\(price \* rate\) \/ \(100 \+ rate\)/);
+});

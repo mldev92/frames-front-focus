@@ -4,6 +4,7 @@ import { firstProblemStep, stepProblem } from "../../src/lib/checkout-steps.ts";
 
 const ready = {
   hasLocation: true,
+  hasDelivery: true,
   deliveryLoading: false,
   deliveryRequiresPickupPoint: false,
   deliveryRequiresAddress: false,
@@ -30,6 +31,11 @@ test("delivery step waits for the quote, a pickup point or an address", () => {
   assert.equal(stepProblem("delivery", { ...ready, deliveryRequiresPickupPoint: true, hasPickupPoint: true }), null);
   assert.match(stepProblem("delivery", { ...ready, deliveryRequiresAddress: true, address: "  " }), /адрес/);
   assert.equal(stepProblem("delivery", { ...ready, deliveryRequiresAddress: true, address: "ул. Ленина, 1" }), null);
+});
+
+test("delivery is never preselected: the step asks the buyer to choose one", () => {
+  assert.match(stepProblem("delivery", { ...ready, hasDelivery: false }), /способ доставки/);
+  assert.equal(firstProblemStep({ ...ready, hasDelivery: false }), "delivery");
 });
 
 test("buyer step validates name, e-mail and the full phone", () => {
