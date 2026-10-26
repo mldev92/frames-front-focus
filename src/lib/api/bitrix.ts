@@ -131,6 +131,12 @@ export interface HomepageLensPromo {
   discountLabel: string | null;
 }
 
+/** Ответ другого города (например, старый бэкенд без `city`) не показываем. */
+function productsMatchCity(products: Product[], city: "spb" | "nvk"): boolean {
+  const prefix = city === "nvk" ? "/catalog_n/" : "/catalog_s/";
+  return products.every((product) => !product.canonicalPath || product.canonicalPath.startsWith(prefix));
+}
+
 interface HomepageResponse {
   popularModels: Product[];
   contactLensProducts: Product[];
@@ -181,6 +187,19 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
  */
 export async function getHomepageData(city: "spb" | "nvk" = "spb"): Promise<HomepageResponse> {
   if (city === "nvk") {
+    // Списки Новокузнецка задаются в админке отдельно; без них или при сбое берём первые товары каталога.
+    if (BASE) {
+      try {
+        const data = await fetchJson<HomepageResponse>("homepage.php?city=nvk");
+        const popularModels = data.popularModels.map(normalizeProduct);
+        const contactLensProducts = data.contactLensProducts.map(normalizeProduct);
+        if (productsMatchCity([...popularModels, ...contactLensProducts], "nvk")) {
+          return { popularModels, contactLensProducts, lensPromo: null };
+        }
+      } catch (error) {
+        console.error("[bitrix] getHomepageData nvk:", error);
+      }
+    }
     const [popularModels, contactLensProducts] = await Promise.all([
       getProducts("opravy", { limit: 8, city }),
       getProducts("kontaktnye_linzy", { limit: 4, city }),
@@ -226,11 +245,14 @@ export async function getHomepageData(city: "spb" | "nvk" = "spb"): Promise<Home
  * Stellest landing. Empty list means nothing is configured (or the API is down),
  * so the page keeps its static cards.
  */
-export async function getStellestLensProducts(): Promise<Product[]> {
+export async function getStellestLensProducts(city: "spb" | "nvk" = "spb"): Promise<Product[]> {
   if (!BASE) return [];
   try {
-    const data = await fetchJson<{ stellestLensProducts?: Product[] }>("homepage.php?block=stellest");
-    return (data.stellestLensProducts ?? []).map(normalizeProduct);
+    const data = await fetchJson<{ stellestLensProducts?: Product[] }>(
+      `homepage.php?block=stellest${city === "nvk" ? "&city=nvk" : ""}`,
+    );
+    const products = (data.stellestLensProducts ?? []).map(normalizeProduct);
+    return productsMatchCity(products, city) ? products : [];
   } catch (error) {
     console.error("[bitrix] getStellestLensProducts:", error);
     return [];
