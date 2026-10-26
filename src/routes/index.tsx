@@ -67,7 +67,7 @@ const TRUST_REASONS = [
   },
   {
     Icon: ShieldCheck,
-    title: "Гарантия 12 месяцев",
+    title: "Гарантия 6 месяцев",
     text: "Только оригинальные линзы и оправы. Бесплатная замена при браке.",
   },
   {
@@ -429,7 +429,7 @@ function MainV2Page() {
                 className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
                 style={{ color: "var(--brand)" }}
               >
-                Новая коллекция · Лето 2026
+                Новая коллекция · Осень 2026
               </span>
               <h1
                 className="font-serif font-bold tracking-[-0.02em] text-foreground"
@@ -1473,8 +1473,7 @@ function MainV2BuyTogetherBanner() {
                 marginBottom: 22,
               }}
             >
-              Купите одну пару — и&nbsp;получите −20% на&nbsp;каждую следующую. Включая детские
-              оправы и&nbsp;солнцезащитные очки.
+              Купите одну пару очков — и&nbsp;получите −20% на&nbsp;каждый следующий заказ
             </p>
             <p
               className="text-muted-foreground"
