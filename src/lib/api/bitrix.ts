@@ -221,6 +221,22 @@ export async function getHomepageData(city: "spb" | "nvk" = "spb"): Promise<Home
   }
 }
 
+/**
+ * Contact lenses chosen in the admin page «Главная страница нового сайта» for the
+ * Stellest landing. Empty list means nothing is configured (or the API is down),
+ * so the page keeps its static cards.
+ */
+export async function getStellestLensProducts(): Promise<Product[]> {
+  if (!BASE) return [];
+  try {
+    const data = await fetchJson<{ stellestLensProducts?: Product[] }>("homepage.php?block=stellest");
+    return (data.stellestLensProducts ?? []).map(normalizeProduct);
+  } catch (error) {
+    console.error("[bitrix] getStellestLensProducts:", error);
+    return [];
+  }
+}
+
 /** Full paginated response (real total/pages from the endpoint). */
 export async function getProductsPage(categoryOrSegment: string, q: ProductQuery = {}): Promise<ProductsResponse> {
   if (!BASE && ALLOW_FIXTURES) {
