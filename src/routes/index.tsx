@@ -278,12 +278,15 @@ function MainV2Page() {
   const [aptOpen, setAptOpen] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
   const city = useCityStore((state) => state.city);
+  const region = useCityStore((state) => state.region);
   const contact = contactForCity(city);
 
   const { data: { popularModels, contactLensProducts, lensPromo } = { popularModels: [], contactLensProducts: [], lensPromo: null } } = useQuery({
-    queryKey: ["homepage", city],
-    queryFn: () => getHomepageData(city),
-    initialData: city === "spb" ? initialHomepageData : undefined,
+    queryKey: ["homepage", city, region],
+    queryFn: () => getHomepageData(city, region),
+    initialData: region === "spb" ? initialHomepageData : undefined,
+    // «Вся Россия» по умолчанию совпадает со списками Санкт-Петербурга: не мигаем пустым блоком, пока грузятся свои.
+    placeholderData: region === "all" ? (previous) => previous : undefined,
   });
 
   return (

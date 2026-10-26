@@ -39,11 +39,13 @@ function StellestCatalogPage() {
   const [catalogTarget, setCatalogTarget] = useState<HTMLElement | null>(null);
   const [liveLensTarget, setLiveLensTarget] = useState<HTMLElement | null>(null);
   const city = useCityStore((state) => state.city);
+  const region = useCityStore((state) => state.region);
   const loaderLenses = Route.useLoaderData();
   const { data: lensProducts = [] } = useQuery({
-    queryKey: ["stellest-contact-lenses", city],
-    queryFn: () => getStellestLensProducts(city),
-    initialData: city === "spb" ? loaderLenses : undefined,
+    queryKey: ["stellest-contact-lenses", city, region],
+    queryFn: () => getStellestLensProducts(city, region),
+    initialData: region === "spb" ? loaderLenses : undefined,
+    placeholderData: region === "all" ? (previous) => previous : undefined,
   });
   // Если в админке для города ничего не выбрано, остаются статичные карточки из HTML.
   const showLiveLenses = lensProducts.length > 0 && liveLensTarget !== null;

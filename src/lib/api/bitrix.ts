@@ -185,7 +185,11 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
  * Homepage payload: featured frames, featured contact lenses, and optional
  * admin-managed promo copy for the lens promo block.
  */
-export async function getHomepageData(city: "spb" | "nvk" = "spb"): Promise<HomepageResponse> {
+/** «Вся Россия» (region all) использует каталог Санкт-Петербурга, но списки товаров задаются в админке отдельно. */
+export async function getHomepageData(
+  city: "spb" | "nvk" = "spb",
+  region: "spb" | "nvk" | "all" = city,
+): Promise<HomepageResponse> {
   if (city === "nvk") {
     // Списки Новокузнецка задаются в админке отдельно; без них или при сбое берём первые товары каталога.
     if (BASE) {
@@ -220,7 +224,7 @@ export async function getHomepageData(city: "spb" | "nvk" = "spb"): Promise<Home
   if (!BASE) throw new Error("VITE_BITRIX_API is required");
 
   try {
-    const data = await fetchJson<HomepageResponse>("homepage.php");
+    const data = await fetchJson<HomepageResponse>(region === "all" ? "homepage.php?region=all" : "homepage.php");
     return {
       popularModels: data.popularModels.map(normalizeProduct),
       contactLensProducts: data.contactLensProducts.map(normalizeProduct),
@@ -245,11 +249,14 @@ export async function getHomepageData(city: "spb" | "nvk" = "spb"): Promise<Home
  * Stellest landing. Empty list means nothing is configured (or the API is down),
  * so the page keeps its static cards.
  */
-export async function getStellestLensProducts(city: "spb" | "nvk" = "spb"): Promise<Product[]> {
+export async function getStellestLensProducts(
+  city: "spb" | "nvk" = "spb",
+  region: "spb" | "nvk" | "all" = city,
+): Promise<Product[]> {
   if (!BASE) return [];
   try {
     const data = await fetchJson<{ stellestLensProducts?: Product[] }>(
-      `homepage.php?block=stellest${city === "nvk" ? "&city=nvk" : ""}`,
+      `homepage.php?block=stellest${city === "nvk" ? "&city=nvk" : region === "all" ? "&region=all" : ""}`,
     );
     const products = (data.stellestLensProducts ?? []).map(normalizeProduct);
     return productsMatchCity(products, city) ? products : [];
