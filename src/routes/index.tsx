@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
@@ -23,9 +23,16 @@ import { Calendar, Users, Award, Phone, Send } from "lucide-react";
 import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
-import { CONTACT, contactForCity, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
+import {
+  CONTACT,
+  contactForCity,
+  META_EXTREMIST_NOTE,
+  NK_SALONS,
+  NVK_CONTACT,
+  PRIMARY_SALON,
+} from "@/data/contact";
 import { useCityStore } from "@/lib/store/city";
-import { getHomepageData, getProductGallery } from "@/lib/api/bitrix";
+import { getHomepageData, getProductGallery, type HomepageLensPromo } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -213,13 +220,25 @@ const DEFAULT_LENS_PROMO = {
   endsAt: null as string | null,
 };
 
+/** Дата из админки — последний день акции (YYYY-MM-DD), по времени салонов (Москва). */
+function promoEndDate(endsAt: string): Date {
+  return new Date(/^\d{4}-\d{2}-\d{2}$/.test(endsAt) ? `${endsAt}T23:59:59+03:00` : endsAt);
+}
+
+function isPromoExpired(endsAt: string | null): boolean {
+  if (!endsAt) return false;
+  const end = promoEndDate(endsAt).getTime();
+  return !Number.isNaN(end) && Date.now() > end;
+}
+
 function formatPromoEyebrow(endsAt: string | null): string {
   if (!endsAt) return "Акция";
-  const date = new Date(endsAt);
+  const date = promoEndDate(endsAt);
   if (Number.isNaN(date.getTime())) return "Акция";
   return `Акция · до ${new Intl.DateTimeFormat("ru-RU", {
     day: "numeric",
     month: "long",
+    timeZone: "Europe/Moscow",
   }).format(date)}`;
 }
 
@@ -1209,15 +1228,42 @@ function MainV2Page() {
               <p className="text-sm text-muted-foreground" style={{ marginBottom: 18 }}>
                 Публикуем актуальные предложения в наших официальных каналах.
               </p>
-              {/* Канала в MAX у салонов нет: в обоих городах ведём в Telegram своего города. */}
-              <a
-                href={contact.telegram.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
-              >
-                <Send className="h-4 w-4" /> Читать в Telegram
-              </a>
+              {/* Новостного канала в MAX нет (мессенджер MAX остаётся в контактах).
+                  СПб публикует новости в Telegram, Новокузнецк — во ВКонтакте и Instagram. */}
+              {city === "nvk" ? (
+                <div className="mt-auto">
+                  <div className="flex gap-2">
+                    <a
+                      href={NVK_CONTACT.vk.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex flex-1 items-center justify-center rounded-full bg-brand px-4 py-3 text-sm font-semibold text-white"
+                    >
+                      {NVK_CONTACT.vk.label}
+                    </a>
+                    <a
+                      href={NVK_CONTACT.instagram.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex flex-1 items-center justify-center rounded-full border border-brand px-4 py-3 text-sm font-semibold text-brand"
+                    >
+                      {NVK_CONTACT.instagram.label}*
+                    </a>
+                  </div>
+                  <p className="mt-2 text-[10px] leading-snug text-muted-foreground">
+                    {META_EXTREMIST_NOTE}
+                  </p>
+                </div>
+              ) : (
+                <a
+                  href={contact.telegram.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
+                >
+                  <Send className="h-4 w-4" /> Читать в Telegram
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -1776,18 +1822,16 @@ function MainV2ContactLensCarousel({
   promo,
 }: {
   products: Product[];
-  promo: {
-    title: string;
-    description: string;
-    href: string;
-    endsAt: string | null;
-    discountPercent: number | null;
-    discountLabel: string | null;
-  } | null;
+  promo: HomepageLensPromo | null;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const city = useCityStore((state) => state.city);
-  const lensPromo = promo ?? DEFAULT_LENS_PROMO;
+  // Главная пререндерится при деплое, поэтому срок акции проверяем и в браузере:
+  // после даты окончания блок сам возвращается к обычной подборке.
+  const [promoExpired, setPromoExpired] = useState(false);
+  useEffect(() => setPromoExpired(isPromoExpired(promo?.endsAt ?? null)), [promo?.endsAt]);
+  const activePromo = promo && !promoExpired ? promo : null;
+  const lensPromo = activePromo ?? DEFAULT_LENS_PROMO;
   const scrollBy = (dir: 1 | -1) => {
     const el = scroller.current;
     if (!el) return;
@@ -1839,7 +1883,7 @@ function MainV2ContactLensCarousel({
             className="text-[11px] uppercase tracking-[0.22em] mb-3"
             style={{ color: "var(--brand)" }}
           >
-            {promo ? formatPromoEyebrow(promo.endsAt) : "Контактные линзы"}
+            {activePromo ? formatPromoEyebrow(activePromo.endsAt) : "Контактные линзы"}
           </div>
           <h2
             className="font-serif text-foreground"
@@ -1858,6 +1902,24 @@ function MainV2ContactLensCarousel({
             >
               {lensPromo.description}
             </p>
+          )}
+          {activePromo?.ctaLabel && activePromo.ctaHref && (
+            <div className="mt-5 max-w-[36rem]">
+              <a
+                href={activePromo.ctaHref}
+                {...(/^https?:\/\//.test(activePromo.ctaHref)
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
+                className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                {activePromo.ctaLabel} <ArrowRight className="h-4 w-4" />
+              </a>
+              {activePromo.ctaNote && (
+                <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground">
+                  {activePromo.ctaNote}
+                </p>
+              )}
+            </div>
           )}
         </div>
         <div className="flex items-center gap-4">

@@ -38,7 +38,7 @@ export const MISIGHT_PROMO = {
     "Мы активируем для Вас персональный купон на скидку к заказу.",
 } as const;
 
-/** MiSight 1 day по 90 шт. — в обоих каталогах (СПб: misight_1_day_90sht_, НВК: misight_1_day_90sht_8359). */
+/** MiSight 1 day по 90 шт. (СПб: misight_1_day_90sht_, НВК: misight_1_day_90sht_8359); акция — только СПб. */
 export function isMisightPromoProduct(product: { slug: string; name: string }): boolean {
   const slug = product.slug.toLowerCase();
   return slug.includes("misight") && /(^|[^0-9])90\s*(шт|sht)/i.test(`${slug} ${product.name}`);

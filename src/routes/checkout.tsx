@@ -32,8 +32,8 @@ import {
 } from "@/lib/checkout-steps";
 import type { CheckoutStep, StepState } from "@/lib/checkout-steps";
 import { getMe } from "@/lib/api/account";
-import { createOrder, getOrderDeliveryOptions, getStoreApiUrl, quoteOrder } from "@/lib/api/bitrix";
-import type { DeliveryQuoteOption, PickupPointOption, CreateOrderInput, OrderQuote } from "@/lib/api/bitrix";
+import { checkCoupon, createOrder, getOrderDeliveryOptions, getStoreApiUrl, quoteOrder } from "@/lib/api/bitrix";
+import type { CouponResult, DeliveryQuoteOption, PickupPointOption, CreateOrderInput, OrderQuote } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -202,6 +202,10 @@ function Checkout() {
   const [acceptPending, setAcceptPending] = useState(false);
   const [hasAttempt, setHasAttempt] = useState(false);
   const [serverItemsTotal, setServerItemsTotal] = useState<number | null>(null);
+  // Применённый промокод. Состав корзины изменился — код проверяем заново.
+  const [coupon, setCoupon] = useState<CouponResult | null>(null);
+  const linesKey = JSON.stringify(lines);
+  useEffect(() => setCoupon(null), [linesKey]);
   const [agreed, setAgreed] = useState(false);
   const [comment, setComment] = useState("");
   const [fullName, setFullName] = useState("");
@@ -261,7 +265,12 @@ function Checkout() {
     paymentOptions.find((option) => option.code === payment) ?? paymentOptions[0];
   const deliveryChosen = selectedDelivery !== null;
   const deliveryPrice = review ? review.quote.deliveryPrice : (selectedDelivery?.price ?? null);
-  const orderTotal = review?.quote.total ?? (serverItemsTotal ?? subtotal) + (deliveryPrice ?? 0);
+  // В котировке itemsTotal уже со скидкой по промокоду; до котировки вычитаем проверенную скидку.
+  const couponDiscount = review ? (review.quote.coupon?.discount ?? 0) : (coupon?.discount ?? 0);
+  const itemsBeforeCoupon = review
+    ? review.quote.itemsTotal + couponDiscount
+    : (serverItemsTotal ?? subtotal);
+  const orderTotal = review?.quote.total ?? itemsBeforeCoupon - couponDiscount + (deliveryPrice ?? 0);
   const isFree = deliveryPrice === 0;
   const deliveryVatRate = selectedDelivery?.vatRate ?? 0;
   const deliveryVat = selectedDelivery?.vatAmount || includedVat(deliveryPrice, deliveryVatRate);
@@ -725,6 +734,7 @@ function Checkout() {
       address: pickupPoint?.rawAddress ?? pickupPoint?.address ?? (address.trim() || undefined),
       pickupPoint: pickupPoint ? { id: pickupPoint.id, address: pickupPoint.rawAddress ?? pickupPoint.address } : undefined,
       comment: comment.trim() || undefined,
+      coupon: coupon?.code,
     };
     setSubmitting(true);
     try {
@@ -1249,7 +1259,12 @@ function Checkout() {
                 gap: "8px",
               }}
             >
-              <SummaryRow label="Товаров на" value={formatPrice(review?.quote.itemsTotal ?? serverItemsTotal ?? subtotal)} />
+              <CouponField
+                lines={lines}
+                applied={coupon}
+                onApplied={(result) => { setCoupon(result); setReview(null); }}
+              />
+              <SummaryRow label="Товаров на" value={formatPrice(itemsBeforeCoupon)} />
               <SummaryRow
                 label="Доставка"
                 value={
@@ -1271,7 +1286,11 @@ function Checkout() {
                   value={formatVat(deliveryVat)}
                 />
               )}
-              <SummaryRow label="Скидка" value="—" />
+              <SummaryRow
+                label={couponDiscount > 0 ? "Скидка по промокоду" : "Скидка"}
+                value={couponDiscount > 0 ? `−${formatPrice(couponDiscount)}` : "—"}
+                valueStyle={couponDiscount > 0 ? { color: "var(--success)" } : undefined}
+              />
             </div>
 
             <div
@@ -1312,6 +1331,9 @@ function Checkout() {
               <strong>Расчёт магазина</strong>
               {review.quote.lines.map((line) => <p key={line.lineId}>{lines.find((item) => item.lineId === line.lineId)?.name}: {line.qty} × {formatPrice(line.price)}</p>)}
               <p>Товары: {formatPrice(review.quote.itemsTotal)}</p>
+              {review.quote.coupon && (review.quote.coupon.applied
+                ? <p>Скидка по промокоду {review.quote.coupon.code}: −{formatPrice(review.quote.coupon.discount)} (уже в сумме товаров)</p>
+                : <p className="text-destructive">Промокод {review.quote.coupon.code} не применён: {review.quote.coupon.message}</p>)}
               <p>Доставка: {review.quote.deliveryPrice === null ? "уточняется менеджером" : formatPrice(review.quote.deliveryPrice)}</p>
               <p>Итого: {review.quote.total === null ? "после согласования доставки" : formatPrice(review.quote.total)}</p>
               {review.quote.deliveryStatus === "pending_confirmation" && <label className="mt-2 flex gap-2">
@@ -1905,6 +1927,92 @@ function TrustBadge({ icon, text }: { icon: ReactNode; text: string }) {
       <span className="text-muted-foreground" style={{ fontSize: "12px", lineHeight: "1.4" }}>
         {text}
       </span>
+    </div>
+  );
+}
+
+/**
+ * Промокод: сервер проверяет код на текущей корзине по правилам Bitrix (те же, что в заказе).
+ * В заказ уходит только применённый код; неподходящий показываем с причиной.
+ */
+function CouponField({
+  lines,
+  applied,
+  onApplied,
+}: {
+  lines: CreateOrderInput["lines"];
+  applied: CouponResult | null;
+  onApplied: (result: CouponResult | null) => void;
+}) {
+  const [value, setValue] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (applied) {
+    return (
+      <div className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-sm">
+        <span>
+          Промокод <strong>{applied.code}</strong> применён
+        </span>
+        <button
+          type="button"
+          onClick={() => { onApplied(null); setValue(""); }}
+          className="text-xs text-muted-foreground underline hover:text-foreground"
+        >
+          Убрать
+        </button>
+      </div>
+    );
+  }
+
+  const apply = async () => {
+    const code = value.trim();
+    if (!code || checking) return;
+    setChecking(true);
+    setError(null);
+    try {
+      const result = await checkCoupon({ lines, coupon: code });
+      if (result.applied) {
+        onApplied({ code: result.code, applied: true, discount: result.discount, message: result.message });
+        toast.success(`Промокод применён: −${formatPrice(result.discount)}`);
+      } else {
+        setError(result.message);
+      }
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Не удалось проверить промокод. Попробуйте ещё раз.");
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <div>
+      <form
+        onSubmit={(event) => { event.preventDefault(); void apply(); }}
+        className="flex gap-2"
+      >
+        <input
+          value={value}
+          onChange={(event) => { setValue(event.target.value); setError(null); }}
+          placeholder="Промокод"
+          aria-label="Промокод"
+          autoComplete="off"
+          maxLength={64}
+          className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
+        />
+        <button
+          type="submit"
+          disabled={!value.trim() || checking}
+          className="shrink-0 rounded-lg border border-foreground px-3 py-2 text-sm font-medium transition-opacity disabled:opacity-40"
+        >
+          {checking ? "Проверяем…" : "Применить"}
+        </button>
+      </form>
+      {error && (
+        <p className="mt-1.5 text-xs text-destructive" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

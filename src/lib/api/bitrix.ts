@@ -126,9 +126,12 @@ export interface HomepageLensPromo {
   description: string;
   image: string | null;
   href: string;
+  /** Последний день акции, YYYY-MM-DD (включительно). */
   endsAt: string | null;
-  discountPercent: number | null;
-  discountLabel: string | null;
+  /** Кнопка акции из админки (например, «Участвовать в акции» → страница производителя). */
+  ctaLabel?: string | null;
+  ctaHref?: string | null;
+  ctaNote?: string | null;
 }
 
 /** Ответ другого города (например, старый бэкенд без `city`) не показываем. */
@@ -666,6 +669,22 @@ export interface CreateOrderInput {
   address?: string;
   pickupPoint?: { id: string; address: string; name?: string };
   comment?: string;
+  /** Промокод (купон правила корзины Bitrix); передаём только применённый код. */
+  coupon?: string;
+}
+
+/** Итог промокода: сервер считает корзину с кодом и без, скидка — их разница. */
+export interface CouponResult {
+  code: string;
+  applied: boolean;
+  discount: number;
+  message: string;
+}
+
+export function checkCoupon(
+  input: Pick<CreateOrderInput, "lines" | "coupon">,
+): Promise<CouponResult & { ok: true; itemsTotal: number }> {
+  return securePost("order_coupon.php", input);
 }
 
 export interface CreateOrderResult {
@@ -771,6 +790,8 @@ export interface OrderQuote {
   deliveryPrice: number | null;
   deliveryStatus: "priced" | "pending_confirmation";
   total: number | null;
+  /** Есть, только если в заказе был промокод; itemsTotal уже со скидкой. */
+  coupon?: CouponResult | null;
 }
 export function quoteOrder(input: CreateOrderInput): Promise<OrderQuote> {
   return securePost<OrderQuote>("order_quote.php", input);

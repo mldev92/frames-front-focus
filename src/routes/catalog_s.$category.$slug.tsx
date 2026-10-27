@@ -172,7 +172,9 @@ export function ProductPage({
   const showTryOn =
     VIRTUAL_TRY_ON_ENABLED && product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
   const isMisight = product.slug.toLowerCase().includes("misight");
-  const isMisightPromo = isLens && isMisightPromoProduct(product);
+  // Ссылка CooperVision — с идентификатором салона СПб, поэтому кнопка только в каталоге СПб
+  // (его же видит регион «Вся Россия»).
+  const isMisightPromo = isLens && city === "spb" && isMisightPromoProduct(product);
   const showInstallment =
     city === "spb" &&
     ((isFrameLike && product.price > 3500) ||
