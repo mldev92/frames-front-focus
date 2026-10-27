@@ -48,6 +48,11 @@ test("shared navigation suppresses SPb-only links and contacts for Novokuznetsk"
     /NVK_PROMOS = \[\{ text: "АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА", href: "\/#promotions" \}\]/,
   );
   assert.match(header, /href=\{regionalHref\("\/#promotions"\)\}/);
+  // В Новокузнецке блока акций Санкт-Петербурга нет: «Все Акции» ведёт к блоку контактных линз.
+  const routing = await read("../src/lib/city-routing.ts");
+  const homepageRoute = await read("../src/routes/index.tsx");
+  assert.match(routing, /\["\/#promotions", "\/#lens-promo"\]/);
+  assert.match(homepageRoute, /id="lens-promo"/);
   assert.match(megaMenu, /Контактные линзы в Новокузнецке/);
   assert.match(megaMenu, /Доставка и самовывоз/);
 });
