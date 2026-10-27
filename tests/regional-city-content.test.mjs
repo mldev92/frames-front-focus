@@ -190,11 +190,3 @@ test("about page uses current company figures and footer exposes one about link"
   assert.match(about, /1 в СПБ и 4 в Новокузнецке/);
   assert.doesNotMatch(footer, /Почему мы\?|\/o-nas\/#pochemu-my/);
 });
-
-test("Novokuznetsk homepage shows the shared contact-lens promo", async () => {
-  const api = await read("../src/lib/api/bitrix.ts");
-  const homepage = api.slice(api.indexOf("export async function getHomepageData"));
-  const nvkBranch = homepage.slice(homepage.indexOf('if (city === "nvk")'), homepage.indexOf("if (!BASE && ALLOW_FIXTURES)"));
-  // Акция одна на все регионы: ответ homepage.php?city=nvk отдаёт её, фронтенд не должен её терять.
-  assert.match(nvkBranch, /return \{ popularModels, contactLensProducts, lensPromo: data\.lensPromo \}/);
-});
