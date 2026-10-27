@@ -201,7 +201,8 @@ export async function getHomepageData(
         const popularModels = data.popularModels.map(normalizeProduct);
         const contactLensProducts = data.contactLensProducts.map(normalizeProduct);
         if (productsMatchCity([...popularModels, ...contactLensProducts], "nvk")) {
-          return { popularModels, contactLensProducts, lensPromo: null };
+          // Акция на контактные линзы одна на все регионы — Новокузнецк показывает ту же, что СПб.
+          return { popularModels, contactLensProducts, lensPromo: data.lensPromo };
         }
       } catch (error) {
         console.error("[bitrix] getHomepageData nvk:", error);
