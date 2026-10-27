@@ -32,8 +32,6 @@ const PROMOS = [
   },
 ];
 
-const NVK_PROMOS = [{ text: "АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА", href: "/#promotions" }];
-
 type FacetLoadState =
   | { status: "loading" }
   | { status: "ready"; summary: CatalogFacetSummary }
@@ -109,7 +107,8 @@ export function Header() {
   const [promoIdx, setPromoIdx] = useState(0);
   const [promoVisible, setPromoVisible] = useState(true);
   const contact = contactForCity(cityCode);
-  const cityPromos = cityCode === "nvk" ? NVK_PROMOS : PROMOS;
+  // Акции в шапке одинаковые во всех регионах и ведут туда же, что в Санкт-Петербурге.
+  const cityPromos = PROMOS;
   const currentPromo = cityPromos[promoIdx % cityPromos.length];
   const navigationItems = HEADER_NAV_ITEMS.filter(
     (item) => cityCode !== "nvk" || item.label !== "Линзы для очков",
@@ -250,7 +249,7 @@ export function Header() {
             <span className="opacity-40">·</span>
 
             <a
-              href={regionalHref(currentPromo.href)}
+              href={currentPromo.href}
               className="truncate uppercase tracking-wide transition-colors hover:opacity-100"
               style={{
                 opacity: promoVisible ? 0.75 : 0,

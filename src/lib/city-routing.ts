@@ -16,9 +16,6 @@ const NVK_ROUTE_FALLBACKS = new Map<string, string>([
   ["/tsvetnye-linzy-s-dioptriyami/", "/catalog_n/kontaktnye_linzy/tsvetnye/"],
   ["/biometriya-glaza", "/kabinet-diagnostiki-nk/"],
   ["/biometriya-glaza/", "/kabinet-diagnostiki-nk/"],
-  // Блок «Специальные предложения» на главной — акции Санкт-Петербурга и в Новокузнецке не выводится;
-  // там акция — блок контактных линз, к нему и ведут ссылки «Все Акции».
-  ["/#promotions", "/#lens-promo"],
 ]);
 
 export function regionalSiteHref(href: string, city: CityCode) {

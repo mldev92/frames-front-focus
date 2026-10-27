@@ -43,16 +43,16 @@ test("shared navigation suppresses SPb-only links and contacts for Novokuznetsk"
   assert.match(header, /setTimeout\(\(\) => window\.location\.assign\(nextHref\), 0\)/);
   assert.match(header, /item\.label !== "Линзы для очков"/);
   assert.match(header, /cityCode !== "nvk" && \(/);
-  assert.match(
-    header,
-    /NVK_PROMOS = \[\{ text: "АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА", href: "\/#promotions" \}\]/,
-  );
   assert.match(header, /href=\{regionalHref\("\/#promotions"\)\}/);
-  // В Новокузнецке блока акций Санкт-Петербурга нет: «Все Акции» ведёт к блоку контактных линз.
+  // Акции одинаковые во всех регионах: та же лента в шапке, «Все Акции» ведёт к тому же блоку.
   const routing = await read("../src/lib/city-routing.ts");
   const homepageRoute = await read("../src/routes/index.tsx");
-  assert.match(routing, /\["\/#promotions", "\/#lens-promo"\]/);
-  assert.match(homepageRoute, /id="lens-promo"/);
+  assert.doesNotMatch(header, /NVK_PROMOS/);
+  assert.match(header, /const cityPromos = PROMOS;/);
+  assert.match(header, /href=\{currentPromo\.href\}/);
+  assert.doesNotMatch(routing, /"\/#promotions"/);
+  const promoBlock = homepageRoute.slice(homepageRoute.indexOf("function MainV2PromoBlock"));
+  assert.doesNotMatch(promoBlock.slice(0, promoBlock.indexOf("return (")), /return null/);
   assert.match(megaMenu, /Контактные линзы в Новокузнецке/);
   assert.match(megaMenu, /Доставка и самовывоз/);
 });
@@ -84,7 +84,7 @@ test("region selector restores All Russia while retaining the SPb catalog contra
   assert.match(store, /all: "Вся Россия"/);
   assert.match(store, /region === "nvk" \? "nvk" : "spb"/);
   assert.match(header, /\{ code: "all", label: "Вся Россия" \}/);
-  assert.match(header, /АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА/);
+  assert.doesNotMatch(header, /АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА/);
 });
 
 test("shared pages derive regional text and links from the selected city", async () => {

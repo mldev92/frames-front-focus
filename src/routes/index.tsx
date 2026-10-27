@@ -2248,9 +2248,7 @@ function CategoryTile({ cell }: { cell: (typeof CAT_CELLS)[number] }) {
 }
 
 function MainV2PromoBlock() {
-  const city = useCityStore((state) => state.city);
-  if (city !== "spb") return null;
-
+  // «Все Акции» во всех регионах ведёт сюда — блок показывается всем, как в Санкт-Петербурге.
   return (
     <div className="h-full flex flex-col gap-3">
       <div className="mb-2">
