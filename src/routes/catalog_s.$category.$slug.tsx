@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { CircleAlert, Heart, ChevronRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { catalogSectionTitle, productCatalogHref } from "@/data/categories";
+import { isMisightPromoProduct, MISIGHT_PROMO } from "@/data/promotions";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { ProductCard } from "@/components/ProductCard";
@@ -171,6 +172,7 @@ export function ProductPage({
   const showTryOn =
     VIRTUAL_TRY_ON_ENABLED && product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
   const isMisight = product.slug.toLowerCase().includes("misight");
+  const isMisightPromo = isLens && isMisightPromoProduct(product);
   const showInstallment =
     city === "spb" &&
     ((isFrameLike && product.price > 3500) ||
@@ -475,6 +477,24 @@ export function ProductPage({
                 </button>
               )}
             </div>
+
+            {/* Компактно: колонка покупки липкая, и на экране 900 px блок должен
+                помещаться под «В корзину», а не уезжать за нижний край. */}
+            {isMisightPromo && (
+              <div className="mt-2.5">
+                <a
+                  href={MISIGHT_PROMO.ctaHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full rounded-full border border-brand py-2.5 text-center text-sm font-medium text-brand transition-colors hover:bg-brand hover:text-brand-foreground"
+                >
+                  {MISIGHT_PROMO.ctaLabel}
+                </a>
+                <p className="mt-2 px-1 text-[11px] leading-snug text-muted-foreground">
+                  {MISIGHT_PROMO.note}
+                </p>
+              </div>
+            )}
 
             <div className="mt-6 pt-5 border-t border-border grid grid-cols-3 gap-2 text-[11px] text-muted-foreground">
               <div className="flex flex-col items-center text-center gap-1">

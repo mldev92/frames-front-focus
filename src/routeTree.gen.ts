@@ -40,6 +40,7 @@ import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as UslugiSlugRouteImport } from './routes/uslugi.$slug'
 import { Route as PersonalPrivateRouteImport } from './routes/personal_.private'
 import { Route as PersonalOrdersRouteImport } from './routes/personal_.orders'
+import { Route as PersonalFavoritesRouteImport } from './routes/personal_.favorites'
 import { Route as Catalog_sCategoryRouteImport } from './routes/catalog_s.$category'
 import { Route as Catalog_sSplatRouteImport } from './routes/catalog_s.$'
 import { Route as Catalog_nCategoryRouteImport } from './routes/catalog_n.$category'
@@ -213,6 +214,11 @@ const PersonalOrdersRoute = PersonalOrdersRouteImport.update({
   path: '/personal/orders',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PersonalFavoritesRoute = PersonalFavoritesRouteImport.update({
+  id: '/personal_/favorites',
+  path: '/personal/favorites',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const Catalog_sCategoryRoute = Catalog_sCategoryRouteImport.update({
   id: '/catalog_s/$category',
   path: '/catalog_s/$category',
@@ -328,6 +334,7 @@ export interface FileRoutesByFullPath {
   '/catalog_n/$category': typeof Catalog_nCategoryRouteWithChildren
   '/catalog_s/$': typeof Catalog_sSplatRoute
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
+  '/personal/favorites': typeof PersonalFavoritesRoute
   '/personal/orders': typeof PersonalOrdersRoute
   '/personal/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
@@ -372,6 +379,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/catalog_n/$': typeof Catalog_nSplatRoute
   '/catalog_s/$': typeof Catalog_sSplatRoute
+  '/personal/favorites': typeof PersonalFavoritesRoute
   '/personal/orders': typeof PersonalOrdersRoute
   '/personal/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
@@ -421,6 +429,7 @@ export interface FileRoutesById {
   '/catalog_n/$category': typeof Catalog_nCategoryRouteWithChildren
   '/catalog_s/$': typeof Catalog_sSplatRoute
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
+  '/personal_/favorites': typeof PersonalFavoritesRoute
   '/personal_/orders': typeof PersonalOrdersRoute
   '/personal_/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
@@ -471,6 +480,7 @@ export interface FileRouteTypes {
     | '/catalog_n/$category'
     | '/catalog_s/$'
     | '/catalog_s/$category'
+    | '/personal/favorites'
     | '/personal/orders'
     | '/personal/private'
     | '/uslugi/$slug'
@@ -515,6 +525,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/catalog_n/$'
     | '/catalog_s/$'
+    | '/personal/favorites'
     | '/personal/orders'
     | '/personal/private'
     | '/uslugi/$slug'
@@ -563,6 +574,7 @@ export interface FileRouteTypes {
     | '/catalog_n/$category'
     | '/catalog_s/$'
     | '/catalog_s/$category'
+    | '/personal_/favorites'
     | '/personal_/orders'
     | '/personal_/private'
     | '/uslugi/$slug'
@@ -611,6 +623,7 @@ export interface RootRouteChildren {
   Catalog_nCategoryRoute: typeof Catalog_nCategoryRouteWithChildren
   Catalog_sSplatRoute: typeof Catalog_sSplatRoute
   Catalog_sCategoryRoute: typeof Catalog_sCategoryRouteWithChildren
+  PersonalFavoritesRoute: typeof PersonalFavoritesRoute
   PersonalOrdersRoute: typeof PersonalOrdersRoute
   PersonalPrivateRoute: typeof PersonalPrivateRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -835,6 +848,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PersonalOrdersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/personal_/favorites': {
+      id: '/personal_/favorites'
+      path: '/personal/favorites'
+      fullPath: '/personal/favorites'
+      preLoaderRoute: typeof PersonalFavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/catalog_s/$category': {
       id: '/catalog_s/$category'
       path: '/catalog_s/$category'
@@ -1044,6 +1064,7 @@ const rootRouteChildren: RootRouteChildren = {
   Catalog_nCategoryRoute: Catalog_nCategoryRouteWithChildren,
   Catalog_sSplatRoute: Catalog_sSplatRoute,
   Catalog_sCategoryRoute: Catalog_sCategoryRouteWithChildren,
+  PersonalFavoritesRoute: PersonalFavoritesRoute,
   PersonalOrdersRoute: PersonalOrdersRoute,
   PersonalPrivateRoute: PersonalPrivateRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,

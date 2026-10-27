@@ -397,9 +397,10 @@ export function Header() {
                 <User className="h-5 w-5" />
               </Link>
 
-              <button
+              <Link
+                to="/personal/favorites"
                 className="relative p-2 transition-colors hover:text-brand"
-                aria-label="Отложенные"
+                aria-label="Избранное"
               >
                 <Heart className="h-5 w-5" />
                 {mounted && saved.length > 0 && (
@@ -407,7 +408,7 @@ export function Header() {
                     {saved.length}
                   </span>
                 )}
-              </button>
+              </Link>
 
               <button
                 onClick={openCart}

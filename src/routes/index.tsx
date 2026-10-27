@@ -204,13 +204,13 @@ const LENS_PROMO_PILL_BY_SLUG: Record<string, string> = {
   "air-optix-toric": "для астигматизма",
 };
 
+// Без настроенной акции блок — просто подборка линз: никаких выдуманных скидок,
+// на карточке только цены каталога (старая цена — если она есть в каталоге).
 const DEFAULT_LENS_PROMO = {
-  title: "−10% на контактные линзы",
+  title: "Популярные контактные линзы",
   description: "",
   href: catalogHref("kontaktnye-linzy"),
   endsAt: null as string | null,
-  discountPercent: 10,
-  discountLabel: "−10%",
 };
 
 function formatPromoEyebrow(endsAt: string | null): string {
@@ -1209,25 +1209,15 @@ function MainV2Page() {
               <p className="text-sm text-muted-foreground" style={{ marginBottom: 18 }}>
                 Публикуем актуальные предложения в наших официальных каналах.
               </p>
-              {city === "spb" ? (
-                <a
-                  href={contact.telegram.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
-                >
-                  <Send className="h-4 w-4" /> Читать в Telegram
-                </a>
-              ) : (
-                <a
-                  href={contact.max.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
-                >
-                  Читать в MAX
-                </a>
-              )}
+              {/* Канала в MAX у салонов нет: в обоих городах ведём в Telegram своего города. */}
+              <a
+                href={contact.telegram.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
+              >
+                <Send className="h-4 w-4" /> Читать в Telegram
+              </a>
             </div>
           </div>
         </div>
@@ -1798,7 +1788,6 @@ function MainV2ContactLensCarousel({
   const scroller = useRef<HTMLDivElement>(null);
   const city = useCityStore((state) => state.city);
   const lensPromo = promo ?? DEFAULT_LENS_PROMO;
-  const discountPercent = lensPromo.discountPercent ?? DEFAULT_LENS_PROMO.discountPercent;
   const scrollBy = (dir: 1 | -1) => {
     const el = scroller.current;
     if (!el) return;
@@ -1850,7 +1839,7 @@ function MainV2ContactLensCarousel({
             className="text-[11px] uppercase tracking-[0.22em] mb-3"
             style={{ color: "var(--brand)" }}
           >
-            {formatPromoEyebrow(lensPromo.endsAt)}
+            {promo ? formatPromoEyebrow(promo.endsAt) : "Контактные линзы"}
           </div>
           <h2
             className="font-serif text-foreground"
@@ -1921,11 +1910,7 @@ function MainV2ContactLensCarousel({
               key={product.slug}
               className="snap-start shrink-0 w-[72%] first:ml-2 last:mr-2 sm:w-[44%] md:w-[31%] lg:w-[23.5%] lg:first:ml-6 lg:last:mr-6"
             >
-              <MainV2ContactLensCard
-                product={product}
-                discountPercent={discountPercent}
-                discountLabel={lensPromo.discountLabel ?? DEFAULT_LENS_PROMO.discountLabel}
-              />
+              <MainV2ContactLensCard product={product} />
             </div>
           ))}
         </div>
@@ -1943,15 +1928,7 @@ function MainV2ContactLensCarousel({
   );
 }
 
-function MainV2ContactLensCard({
-  product,
-  discountPercent,
-  discountLabel,
-}: {
-  product: Product;
-  discountPercent: number;
-  discountLabel: string;
-}) {
+function MainV2ContactLensCard({ product }: { product: Product }) {
   const { toggleSaved, saved } = useCart();
   const city = useCityStore((state) => state.city);
   const productRoute = productCardHref(product, city);
@@ -1971,10 +1948,10 @@ function MainV2ContactLensCard({
         ? "Для астигматизма"
         : (product.wearMode ?? "Контактные линзы");
   const pillLabel = LENS_PROMO_PILL_BY_SLUG[product.slug] ?? fallbackPill;
-  const safeDiscountPercent = Math.min(95, Math.max(0, discountPercent));
-  const strike =
-    product.oldPrice && product.oldPrice > product.price ? product.oldPrice : product.price;
-  const discounted = Math.round(strike * (1 - safeDiscountPercent / 100));
+  // Скидку показываем только настоящую — ту, что придёт и в корзину.
+  const oldPrice =
+    product.oldPrice && product.oldPrice > product.price ? product.oldPrice : null;
+  const discountPercent = oldPrice ? Math.round((1 - product.price / oldPrice) * 100) : 0;
 
   return (
     <div
@@ -2094,15 +2071,18 @@ function MainV2ContactLensCard({
         </div>
         <div className="flex items-baseline gap-2.5" style={{ marginTop: 8 }}>
           <span className="text-foreground" style={{ fontSize: 18, fontWeight: 600 }}>
-            {formatPrice(discounted)}
+            {formatPrice(product.price)}
           </span>
-          <span
-            className="text-muted-foreground"
-            style={{ fontSize: 13, textDecoration: "line-through" }}
-          >
-            {formatPrice(strike)}
-          </span>
+          {oldPrice && (
+            <span
+              className="text-muted-foreground"
+              style={{ fontSize: 13, textDecoration: "line-through" }}
+            >
+              {formatPrice(oldPrice)}
+            </span>
+          )}
         </div>
+        {discountPercent > 0 && (
         <div className="flex items-center gap-2" style={{ marginTop: 10 }}>
           <span
             style={{
@@ -2115,7 +2095,7 @@ function MainV2ContactLensCard({
               letterSpacing: "0.04em",
             }}
           >
-            {discountLabel}
+            −{discountPercent}%
           </span>
           <span
             style={{
@@ -2131,6 +2111,7 @@ function MainV2ContactLensCard({
             Sale
           </span>
         </div>
+        )}
       </div>
     </div>
   );

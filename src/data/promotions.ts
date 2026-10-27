@@ -24,6 +24,26 @@ export interface PromoBannerData {
   endsAt: Date;
 }
 
+/**
+ * Акция CooperVision «100 дней ношения» для MiSight 1 day (90 шт.): клиент открывает
+ * страницу производителя, получает персональный QR-код и присылает его менеджеру,
+ * а салон активирует купон на скидку. Кнопка была на старом сайте в карточке
+ * misight_1_day_90sht_; ссылка — с идентификатором салона у CooperVision.
+ */
+export const MISIGHT_PROMO = {
+  ctaLabel: "Участвовать в акции",
+  ctaHref: "https://bts90.coopervision-pro.ru/?id=4ddc2edc-afa3-40d3-aeb5-f3f736a33524",
+  note:
+    "Перейдите по ссылке, сфотографируйте QR-код и отправьте фото нашему менеджеру в мессенджер. " +
+    "Мы активируем для Вас персональный купон на скидку к заказу.",
+} as const;
+
+/** MiSight 1 day по 90 шт. — в обоих каталогах (СПб: misight_1_day_90sht_, НВК: misight_1_day_90sht_8359). */
+export function isMisightPromoProduct(product: { slug: string; name: string }): boolean {
+  const slug = product.slug.toLowerCase();
+  return slug.includes("misight") && /(^|[^0-9])90\s*(шт|sht)/i.test(`${slug} ${product.name}`);
+}
+
 export const promotions: Promotion[] = [
   {
     id: "progressive-spb",
