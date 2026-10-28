@@ -58,3 +58,10 @@ test("the delivery price shows the VAT that is already included", async () => {
   assert.match(checkout, /включён в доставку/);
   assert.match(checkout, /\(price \* rate\) \/ \(100 \+ rate\)/);
 });
+
+test("the CDEK pickup map opens in every city, St. Petersburg included", async () => {
+  const checkout = await read("../src/routes/checkout.tsx");
+  const body = checkout.slice(checkout.indexOf("const openCdekPickupMap"));
+  const head = body.slice(0, body.indexOf("setPickupWidgetLoading(true)"));
+  assert.doesNotMatch(head, /isSpb/);
+});

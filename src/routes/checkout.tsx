@@ -572,7 +572,6 @@ function Checkout() {
   };
 
   const openCdekPickupMap = async () => {
-    if (isSpb) return;
     setPickupWidgetLoading(true);
     try {
       cleanupInjectedWidget();
