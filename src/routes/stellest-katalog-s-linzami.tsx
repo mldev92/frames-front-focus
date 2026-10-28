@@ -10,7 +10,7 @@ import { fetchLensSearch, type LensRecommendCard } from "@/lib/api/lens-recommen
 import { formatPrice, useCart } from "@/lib/store/cart";
 import { CONTACT } from "@/data/contact";
 import { PriceSavings } from "@/components/PriceSavings";
-import { useCityStore } from "@/lib/store/city";
+import { DEFAULT_REGION, useCityStore } from "@/lib/store/city";
 
 import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
 import stellestHtml from "@/content/stellest-katalog-s-linzami.html?raw";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/stellest-katalog-s-linzami")({
       { property: "og:image", content: "/stellest/hero-child-stellest.webp" },
     ],
   }),
-  loader: () => getStellestLensProducts(),
+  loader: () => getStellestLensProducts("spb", DEFAULT_REGION),
   component: StellestCatalogPage,
 });
 
@@ -44,8 +44,8 @@ function StellestCatalogPage() {
   const { data: lensProducts = [] } = useQuery({
     queryKey: ["stellest-contact-lenses", city, region],
     queryFn: () => getStellestLensProducts(city, region),
-    initialData: region === "spb" ? loaderLenses : undefined,
-    placeholderData: region === "all" ? (previous) => previous : undefined,
+    initialData: region === DEFAULT_REGION ? loaderLenses : undefined,
+    placeholderData: region === "spb" ? () => loaderLenses : undefined,
   });
   // Если в админке для города ничего не выбрано, остаются статичные карточки из HTML.
   const showLiveLenses = lensProducts.length > 0 && liveLensTarget !== null;

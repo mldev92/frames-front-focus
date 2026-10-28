@@ -31,7 +31,7 @@ import {
   NVK_CONTACT,
   PRIMARY_SALON,
 } from "@/data/contact";
-import { useCityStore } from "@/lib/store/city";
+import { DEFAULT_REGION, useCityStore } from "@/lib/store/city";
 import { getHomepageData, getProductGallery, type HomepageLensPromo } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/")({
@@ -56,7 +56,7 @@ export const Route = createFileRoute("/")({
     ],
   }),
   loader: async () => {
-    return getHomepageData();
+    return getHomepageData("spb", DEFAULT_REGION);
   },
   component: MainV2Page,
 });
@@ -303,9 +303,9 @@ function MainV2Page() {
   const { data: { popularModels, contactLensProducts, lensPromo } = { popularModels: [], contactLensProducts: [], lensPromo: null } } = useQuery({
     queryKey: ["homepage", city, region],
     queryFn: () => getHomepageData(city, region),
-    initialData: region === "spb" ? initialHomepageData : undefined,
-    // «Вся Россия» по умолчанию совпадает со списками Санкт-Петербурга: не мигаем пустым блоком, пока грузятся свои.
-    placeholderData: region === "all" ? (previous) => previous : undefined,
+    initialData: region === DEFAULT_REGION ? initialHomepageData : undefined,
+    // Списки Санкт-Петербурга по умолчанию совпадают со списками «Вся Россия»: не мигаем пустым блоком, пока грузятся свои.
+    placeholderData: region === "spb" ? () => initialHomepageData : undefined,
   });
 
   return (
