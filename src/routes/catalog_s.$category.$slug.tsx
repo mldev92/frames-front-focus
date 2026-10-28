@@ -216,6 +216,12 @@ export function ProductPage({
     }
   };
 
+  /** Оправа в корзину без линз — тот же вариант, что и в основном блоке, и в липкой панели. */
+  const addFrameWithoutLenses = () => {
+    add(product, { color, openDrawer: false, image: currentImage, city });
+    toast.success(`«${product.name}» (без линз) добавлен в корзину`);
+  };
+
   // Метка для плавающей кнопки мессенджера: на карточке товара её поднимает
   // над липкой панелью «В корзину».
   // У контактных линз цена и «В корзину» уже стоят под фото рядом с параметрами,
@@ -463,17 +469,15 @@ export function ProductPage({
             <div className="mt-6 space-y-2.5">
               <button
                 onClick={handlePrimaryCta}
-                className="w-full bg-brand text-brand-foreground py-3.5 rounded-full hover:opacity-90 font-medium transition-opacity"
+                className="w-full border border-brand bg-brand text-brand-foreground py-3.5 rounded-full hover:opacity-90 font-medium transition-opacity"
               >
                 {isFrameLike ? "Подобрать линзы и купить" : "В корзину"}
               </button>
               {isFrameLike && (
+                // Тот же размер и вес, что у кнопки с линзами: покупатель сразу видит оба варианта.
                 <button
-                  onClick={() => {
-                    add(product, { color, openDrawer: false, image: currentImage, city });
-                    toast.success(`«${product.name}» (без линз) добавлен в корзину`);
-                  }}
-                  className="w-full text-sm text-muted-foreground border border-border rounded-full py-3 hover:text-foreground hover:border-foreground transition-colors"
+                  onClick={addFrameWithoutLenses}
+                  className="w-full border border-foreground text-foreground py-3.5 rounded-full font-medium transition-colors hover:bg-foreground hover:text-background"
                 >
                   Купить оправу без линз
                 </button>
@@ -540,22 +544,37 @@ export function ProductPage({
                 oldPrice={product.oldPrice}
                 price={product.price}
                 discountPercent={product.discountPercent}
-                className="text-[11px]"
+                // У оправы рядом две кнопки: строка скидки на узком экране переносилась и раздувала панель
+                // выше отступа плавающей кнопки чата; скидка видна в основном блоке.
+                className={cn("text-[11px]", isFrameLike && "hidden sm:block")}
               />
             </div>
-            <button
-              onClick={handlePrimaryCta}
-              className="shrink-0 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:opacity-90"
-            >
-              {isFrameLike ? (
-                <>
-                  <span className="sm:hidden">Подобрать</span>
+            {isFrameLike ? (
+              // Оба варианта покупки оправы всегда на виду, одного размера: без линз и с линзами.
+              <div className="flex shrink-0 gap-2">
+                <button
+                  onClick={addFrameWithoutLenses}
+                  className="rounded-full border border-foreground px-4 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-foreground hover:text-background"
+                >
+                  <span className="sm:hidden">Без линз</span>
+                  <span className="hidden sm:inline">Купить без линз</span>
+                </button>
+                <button
+                  onClick={handlePrimaryCta}
+                  className="rounded-full bg-brand px-4 py-3 text-sm font-semibold text-brand-foreground hover:opacity-90"
+                >
+                  <span className="sm:hidden">С линзами</span>
                   <span className="hidden sm:inline">Подобрать линзы</span>
-                </>
-              ) : (
-                "В корзину"
-              )}
-            </button>
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handlePrimaryCta}
+                className="shrink-0 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-brand-foreground hover:opacity-90"
+              >
+                В корзину
+              </button>
+            )}
           </div>
         </div>
       )}

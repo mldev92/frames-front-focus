@@ -65,3 +65,13 @@ test("the CDEK pickup map opens in every city, St. Petersburg included", async (
   const head = body.slice(0, body.indexOf("setPickupWidgetLoading(true)"));
   assert.doesNotMatch(head, /isSpb/);
 });
+
+test("a frame always offers both purchase options side by side: with and without lenses", async () => {
+  const page = await read("../src/routes/catalog_s.$category.$slug.tsx");
+  const bar = page.slice(page.indexOf("showStickyBuyBar && ("));
+  // Липкая панель оправы: обе кнопки (без линз / с линзами), а не одно голое «Подобрать».
+  assert.match(bar, /addFrameWithoutLenses/);
+  assert.match(bar, /Без линз/);
+  assert.match(bar, /С линзами/);
+  assert.doesNotMatch(bar, />Подобрать</);
+});
