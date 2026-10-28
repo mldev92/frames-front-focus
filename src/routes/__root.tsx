@@ -19,6 +19,7 @@ import { MessengerFAB } from "@/components/MessengerFAB";
 import { installClientErrorReporting } from "@/lib/monitoring";
 import { useEffect } from "react";
 import { useCityStore } from "@/lib/store/city";
+import { GOOGLE_ANALYTICS_BOOTSTRAP } from "@/lib/google-analytics";
 
 function NotFoundComponent() {
   return (
@@ -131,6 +132,9 @@ function RootShell({ children }: { children: React.ReactNode }) {
     <html lang="ru">
       <head>
         <HeadContent />
+        {import.meta.env.VITE_PRIVATE_BETA === "false" && (
+          <script dangerouslySetInnerHTML={{ __html: GOOGLE_ANALYTICS_BOOTSTRAP }} />
+        )}
         {!hasCanonical && <link rel="canonical" href={`https://optika100.com${canonicalPath}`} />}
         {privatePage && <meta name="robots" content="noindex, follow" />}
       </head>
