@@ -4,7 +4,7 @@ import { productCardHref } from "@/data/categories";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { Product } from "@/data/types";
-import type { CityCode } from "@/lib/store/city";
+import { useCityStore, type CityCode } from "@/lib/store/city";
 import type { LensRecommendCard } from "@/lib/api/lens-recommend";
 
 export interface LensCartSelection {
@@ -66,6 +66,8 @@ interface CartState {
   lines: CartLine[];
   lensSelections: LensCartSelection[];
   saved: string[];
+  /** Город каталога, в котором товар отложен: у СПб и Новокузнецка разные карточки. */
+  savedCities: Record<string, CityCode>;
   isOpen: boolean;
   open: () => void;
   close: () => void;
@@ -118,6 +120,7 @@ export const useCart = create<CartState>()(
       lines: [],
       lensSelections: [],
       saved: [],
+      savedCities: {},
       isOpen: false,
       open: () => set({ isOpen: true }),
       close: () => set({ isOpen: false }),
@@ -212,12 +215,18 @@ export const useCart = create<CartState>()(
           ),
         }),
       clear: () => set({ lines: [] }),
-      toggleSaved: (slug) =>
+      toggleSaved: (slug) => {
+        const { saved, savedCities = {} } = get();
+        if (saved.includes(slug)) {
+          const { [slug]: _removed, ...rest } = savedCities;
+          set({ saved: saved.filter((savedSlug) => savedSlug !== slug), savedCities: rest });
+          return;
+        }
         set({
-          saved: get().saved.includes(slug)
-            ? get().saved.filter((savedSlug) => savedSlug !== slug)
-            : [...get().saved, slug],
-        }),
+          saved: [...saved, slug],
+          savedCities: { ...savedCities, [slug]: useCityStore.getState().city },
+        });
+      },
       totals: () => {
         const lines = get().lines;
         const lensSelections = get().lensSelections;

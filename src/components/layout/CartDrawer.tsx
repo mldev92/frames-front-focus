@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { PriceSavings } from "@/components/PriceSavings";
+import { CartPrescription } from "@/components/CartPrescription";
 
 export function CartDrawer() {
   const { isOpen, close, lines, lensSelections, setQty, remove, removeLens, totals } = useCart();
@@ -46,7 +47,7 @@ export function CartDrawer() {
                   />
                   <div className="flex-1 min-w-0">
                     <div className="text-xs text-muted-foreground">{l.brand}</div>
-                    <div className="font-medium truncate">{l.name}</div>
+                    <div className="font-medium break-words">{l.name}</div>
                     {l.parameters.color && (
                       <div className="text-xs text-muted-foreground mt-0.5">
                         Цвет: {l.parameters.color}
@@ -57,33 +58,12 @@ export function CartDrawer() {
                         Назначение: {l.parameters.purpose}
                       </div>
                     )}
-                    {l.legacyDescription && <p className="mt-1 text-xs text-muted-foreground">Сохранённые параметры: {l.legacyDescription}</p>}
                     {l.parameters.lensEyeMode && (
                       <div className="text-xs text-muted-foreground mt-0.5">
                         Глаза: {l.parameters.lensEyeMode === "different" ? "разные параметры" : "одинаковые параметры"}
                       </div>
                     )}
-                    {l.parameters.prescription && (
-                      <div className="mt-1 space-y-0.5 text-xs text-muted-foreground">
-                        {(["right", "left"] as const).map((eye) => {
-                          const values = l.parameters.prescription?.[eye];
-                          if (!values) return null;
-                          const text = [
-                            values.sphere && `SPH ${values.sphere}`,
-                            values.cylinder && `CYL ${values.cylinder}`,
-                            values.axis && `AX ${values.axis}`,
-                            values.addition && `ADD ${values.addition}`,
-                            values.bc && `BC ${values.bc}`,
-                            values.diameter && `DIA ${values.diameter}`,
-                          ].filter(Boolean).join(", ");
-                          return text ? (
-                            <div key={eye}>
-                              {eye === "right" ? "OD" : "OS"}: {text}
-                            </div>
-                          ) : null;
-                        })}
-                      </div>
-                    )}
+                    <CartPrescription line={l} />
                     <div className="mt-2 flex items-center justify-between">
                       <div className="flex items-center border border-border rounded-sm">
                         <button

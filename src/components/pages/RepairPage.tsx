@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
-import { CONTACT, NK_SALONS, SPB_SALONS } from "@/data/contact";
+import { CONTACT, contactForCity, NK_SALONS, SPB_SALONS } from "@/data/contact";
 import { REPAIR_PRICES_DATE, repairPriceColumns } from "@/data/repair-prices";
 import { useCityStore } from "@/lib/store/city";
 
@@ -98,6 +98,7 @@ const secondaryButton =
   "inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-medium transition-colors hover:border-foreground hover:bg-foreground hover:text-primary-foreground";
 export function RepairPage() {
   const city = useCityStore((state) => state.city);
+  const contact = contactForCity(city);
   const localSalon = city === "nvk" ? NK_SALONS[0] : SPB_SALONS[0];
   const cityInPrepositional = city === "nvk" ? "Новокузнецке" : "Санкт-Петербурге";
   const priceColumns = repairPriceColumns(city);
@@ -295,7 +296,7 @@ export function RepairPage() {
               Приходите в удобный вам салон или пришлите фото в мессенджер для уточнения возможности
               ремонта
             </p>
-            <a href={CONTACT.max.href} className={primaryButton} target="_blank" rel="noreferrer">
+            <a href={contact.max.href} className={primaryButton} target="_blank" rel="noreferrer">
               <MessageCircle className="mr-2 h-4 w-4" />
               Написать в MAX
             </a>

@@ -36,13 +36,55 @@ test("shared navigation suppresses SPb-only links and contacts for Novokuznetsk"
   for (const href of ["/linzy-spb/", "/biometriya-glaza/", "/optika-spb/"]) {
     assert.ok(footer.includes(href));
   }
-  assert.match(footer, /city === "spb" \|\| !\[/);
+  assert.match(footer, /city === "spb"\s*\|\|\s*!\[/);
   assert.match(footer, /city === "spb" \?/);
   assert.match(header, /cityCode === "nvk" \? NK_SALONS\[0\] : PRIMARY_SALON/);
   assert.match(header, /if \(!mounted \|\| !cityHydrated\) return/);
   assert.match(header, /setTimeout\(\(\) => window\.location\.assign\(nextHref\), 0\)/);
+  assert.match(header, /item\.label !== "Линзы для очков"/);
+  assert.match(header, /cityCode !== "nvk" && \(/);
+  assert.match(header, /href=\{regionalHref\("\/#promotions"\)\}/);
+  // Акции одинаковые во всех регионах: та же лента в шапке, «Все Акции» ведёт к тому же блоку.
+  const routing = await read("../src/lib/city-routing.ts");
+  const homepageRoute = await read("../src/routes/index.tsx");
+  assert.doesNotMatch(header, /NVK_PROMOS/);
+  assert.match(header, /const cityPromos = PROMOS;/);
+  assert.match(header, /href=\{currentPromo\.href\}/);
+  assert.doesNotMatch(routing, /"\/#promotions"/);
+  const promoBlock = homepageRoute.slice(homepageRoute.indexOf("function MainV2PromoBlock"));
+  assert.doesNotMatch(promoBlock.slice(0, promoBlock.indexOf("return (")), /return null/);
   assert.match(megaMenu, /Контактные линзы в Новокузнецке/);
   assert.match(megaMenu, /Доставка и самовывоз/);
+});
+
+test("Novokuznetsk uses its verified contacts and disables unavailable actions", async () => {
+  const contacts = await read("../src/data/contact.ts");
+  const messenger = await read("../src/components/MessengerFAB.tsx");
+  const checkout = await read("../src/routes/checkout.tsx");
+  const homepage = await read("../src/routes/index.tsx");
+  const installment = await read("../src/routes/tinkoff.tsx");
+  const product = await read("../src/routes/catalog_s.$category.$slug.tsx");
+
+  assert.match(contacts, /label: "sale@optika100\.com"/);
+  assert.match(contacts, /domain=optica_100/);
+  assert.match(contacts, /f9LHodD0cOI9mxgb1lKx2s5xbbX2Psd4fGNop-GbIAElZQq-ARajInTU6GA/);
+  assert.match(messenger, /if \(city === "nvk"\) return/);
+  assert.match(messenger, /city !== "nvk" && \(/);
+  assert.match(checkout, /option\.code !== "t_installment" \|\| city !== "Новокузнецк"/);
+  assert.match(homepage, /city !== "nvk" && \(/);
+  assert.match(installment, /if \(city === "nvk"\) return <Navigate to="\/" replace \/>/);
+  assert.match(product, /const showInstallment =\s*city === "spb" &&/);
+});
+
+test("region selector restores All Russia while retaining the SPb catalog contract", async () => {
+  const store = await read("../src/lib/store/city.ts");
+  const header = await read("../src/components/layout/Header.tsx");
+
+  assert.match(store, /export type RegionCode = CityCode \| "all"/);
+  assert.match(store, /all: "Вся Россия"/);
+  assert.match(store, /region === "nvk" \? "nvk" : "spb"/);
+  assert.match(header, /\{ code: "all", label: "Вся Россия" \}/);
+  assert.doesNotMatch(header, /АКЦИИ В САЛОНАХ НОВОКУЗНЕЦКА/);
 });
 
 test("shared pages derive regional text and links from the selected city", async () => {
@@ -54,12 +96,39 @@ test("shared pages derive regional text and links from the selected city", async
 
   assert.match(homepage, /Салоны в Новокузнецке/);
   assert.match(homepage, /catalogHref\("opravy", city\)/);
+  assert.match(homepage, /\.o100-bts-content\{/);
+  assert.match(homepage, /\.o100-bts-actions\{/);
+  assert.match(homepage, /\.o100-bts-quiz\{/);
   assert.match(repair, /city === "nvk" \? NK_SALONS\[0\] : SPB_SALONS\[0\]/);
   assert.match(productInfo, /serviceHref\("diagnostika", city\)/);
   assert.match(productInfo, /Доставка по Новокузнецку/);
   assert.match(appointment, /salon\.city === "nk"/);
   assert.match(appointment, /availableSalons\.map/);
-  assert.match(checkout, /regionalCity === "nvk" \? "Новокузнецк" : "Санкт-Петербург"/);
+  assert.match(appointment, /if \(!open \|\| \(step !== 1 && step !== 2\)\) \{/);
+  assert.match(appointment, /slotsRefreshSequence/);
+  assert.match(appointment, /window\.addEventListener\("focus", refreshVisibleSlots\)/);
+  assert.match(
+    appointment,
+    /document\.addEventListener\("visibilitychange", refreshVisibleSlots\)/,
+  );
+  assert.match(appointment, /window\.setInterval\(refreshVisibleSlots, 60_000\)/);
+  assert.match(
+    appointment,
+    /import \{ Calendar as DateCalendar \} from "@\/components\/ui\/calendar"/,
+  );
+  assert.match(appointment, /setAvailableDateKeyList\(availability\.availableDates\)/);
+  assert.match(appointment, /compact: true/);
+  assert.match(appointment, /date: selectedDateKey \|\| undefined/);
+  assert.match(
+    appointment,
+    /disabled=\{\(date\) =>\s*!availableDateKeys\.has\(formatAppointmentDateKey\(date\)\)/,
+  );
+  assert.match(appointment, /startMonth=\{firstAvailableDate\}/);
+  assert.match(appointment, /endMonth=\{lastAvailableDate\}/);
+  assert.match(appointment, /h-\[calc\(100dvh-32px\)\].*w-full min-w-0/);
+  assert.match(appointment, /parseAppointmentLocalDate/);
+  assert.match(appointment, /Доступные дни выделены\. Между месяцами можно переключаться/);
+  assert.match(checkout, /regionalCity === "nvk" \? "Новокузнецк" : SPB_CITY/);
 });
 
 test("Novokuznetsk search filters SPb-only pages and regionalizes result links", async () => {
@@ -94,19 +163,13 @@ test("catalog banners regionalize their catalog and service links", async () => 
 test("frame-lens menu links installation into an existing frame to services", async () => {
   const source = await read("../src/components/layout/HeaderMegaMenu.tsx");
 
-  assert.match(
-    source,
-    /label: "Установка линз в свою оправу",\s+href: "\/#services"/,
-  );
+  assert.match(source, /label: "Установка линз в свою оправу",\s+href: "\/#services"/);
 });
 
 test("frame-lens production-time utility has no destination", async () => {
   const source = await read("../src/components/layout/HeaderMegaMenu.tsx");
 
-  assert.match(
-    source,
-    /label: "Срок изготовления от 1 часа",\s+icon:/,
-  );
+  assert.match(source, /label: "Срок изготовления от 1 часа",\s+icon:/);
 });
 
 test("contact-lens menu hides subscription promo and links its guide to the lens landing", async () => {

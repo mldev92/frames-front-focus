@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/tinkoff")({
@@ -25,8 +25,10 @@ const BULLETS = [
 
 function TinkoffPage() {
   const city = useCityStore((state) => state.city);
+  if (city === "nvk") return <Navigate to="/" replace />;
+
   const steps = [
-    `Выберите оправы или линзы в каталоге ${city === "nvk" ? "Новокузнецка" : "Санкт-Петербурга"}`,
+    "Выберите оправы или линзы в каталоге Санкт-Петербурга",
     "Нажмите кнопку «Забронировать» или «в Корзину» на странице товара",
     "Заполните форму — мы свяжемся с вами для подтверждения",
     "Получите товар в салоне и оформите рассрочку на месте",

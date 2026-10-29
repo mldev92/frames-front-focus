@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
@@ -23,9 +23,16 @@ import { Calendar, Users, Award, Phone, Send } from "lucide-react";
 import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
-import { CONTACT, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
-import { useCityStore } from "@/lib/store/city";
-import { getHomepageData, getProductGallery } from "@/lib/api/bitrix";
+import {
+  CONTACT,
+  contactForCity,
+  META_EXTREMIST_NOTE,
+  NK_SALONS,
+  NVK_CONTACT,
+  PRIMARY_SALON,
+} from "@/data/contact";
+import { DEFAULT_REGION, useCityStore } from "@/lib/store/city";
+import { getHomepageData, getProductGallery, type HomepageLensPromo } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -49,7 +56,7 @@ export const Route = createFileRoute("/")({
     ],
   }),
   loader: async () => {
-    return getHomepageData();
+    return getHomepageData("spb", DEFAULT_REGION);
   },
   component: MainV2Page,
 });
@@ -67,7 +74,7 @@ const TRUST_REASONS = [
   },
   {
     Icon: ShieldCheck,
-    title: "Гарантия 12 месяцев",
+    title: "Гарантия 6 месяцев",
     text: "Только оригинальные линзы и оправы. Бесплатная замена при браке.",
   },
   {
@@ -204,22 +211,34 @@ const LENS_PROMO_PILL_BY_SLUG: Record<string, string> = {
   "air-optix-toric": "для астигматизма",
 };
 
+// Без настроенной акции блок — просто подборка линз: никаких выдуманных скидок,
+// на карточке только цены каталога (старая цена — если она есть в каталоге).
 const DEFAULT_LENS_PROMO = {
-  title: "−10% на контактные линзы",
+  title: "Популярные контактные линзы",
   description: "",
   href: catalogHref("kontaktnye-linzy"),
   endsAt: null as string | null,
-  discountPercent: 10,
-  discountLabel: "−10%",
 };
+
+/** Дата из админки — последний день акции (YYYY-MM-DD), по времени салонов (Москва). */
+function promoEndDate(endsAt: string): Date {
+  return new Date(/^\d{4}-\d{2}-\d{2}$/.test(endsAt) ? `${endsAt}T23:59:59+03:00` : endsAt);
+}
+
+function isPromoExpired(endsAt: string | null): boolean {
+  if (!endsAt) return false;
+  const end = promoEndDate(endsAt).getTime();
+  return !Number.isNaN(end) && Date.now() > end;
+}
 
 function formatPromoEyebrow(endsAt: string | null): string {
   if (!endsAt) return "Акция";
-  const date = new Date(endsAt);
+  const date = promoEndDate(endsAt);
   if (Number.isNaN(date.getTime())) return "Акция";
   return `Акция · до ${new Intl.DateTimeFormat("ru-RU", {
     day: "numeric",
     month: "long",
+    timeZone: "Europe/Moscow",
   }).format(date)}`;
 }
 
@@ -278,11 +297,15 @@ function MainV2Page() {
   const [aptOpen, setAptOpen] = useState(false);
   const [vtoOpen, setVtoOpen] = useState(false);
   const city = useCityStore((state) => state.city);
+  const region = useCityStore((state) => state.region);
+  const contact = contactForCity(city);
 
   const { data: { popularModels, contactLensProducts, lensPromo } = { popularModels: [], contactLensProducts: [], lensPromo: null } } = useQuery({
-    queryKey: ["homepage", city],
-    queryFn: () => getHomepageData(city),
-    initialData: city === "spb" ? initialHomepageData : undefined,
+    queryKey: ["homepage", city, region],
+    queryFn: () => getHomepageData(city, region),
+    initialData: region === DEFAULT_REGION ? initialHomepageData : undefined,
+    // Списки Санкт-Петербурга по умолчанию совпадают со списками «Вся Россия»: не мигаем пустым блоком, пока грузятся свои.
+    placeholderData: region === "spb" ? () => initialHomepageData : undefined,
   });
 
   return (
@@ -428,7 +451,7 @@ function MainV2Page() {
                 className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
                 style={{ color: "var(--brand)" }}
               >
-                Новая коллекция · Лето 2026
+                Новая коллекция · Осень 2026
               </span>
               <h1
                 className="font-serif font-bold tracking-[-0.02em] text-foreground"
@@ -487,7 +510,7 @@ function MainV2Page() {
               </div>
 
               <div
-                className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6"
+                className={`mt-10 grid grid-cols-2 gap-4 sm:gap-6 ${city === "nvk" ? "sm:grid-cols-3" : "sm:grid-cols-4"}`}
                 style={{ maxWidth: 680 }}
               >
                 <div className="flex items-start gap-2.5">
@@ -504,28 +527,30 @@ function MainV2Page() {
                   </div>
                 </div>
 
-                <Link
-                  to="/tinkoff"
-                  aria-label="Рассрочка 0‑0‑3 от Т‑Банка, без переплат"
-                  className="group flex items-start gap-2.5 text-inherit no-underline transition-transform duration-200 hover:-translate-y-px"
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand/10 text-brand transition-colors duration-200 group-hover:bg-brand/15">
-                    <img
-                      src="/t_icon_red.webp"
-                      alt=""
-                      loading="lazy"
-                      className="h-5 w-4 object-contain"
-                    />
-                  </span>
-                  <div className="flex min-w-0 flex-col">
-                    <strong className="border-b border-dashed border-transparent font-serif text-[18px] leading-[1.1] text-foreground transition-colors group-hover:border-brand/40">
-                      0‑0‑3
-                    </strong>
-                    <span className="mt-0.5 text-[12px] leading-[1.35] text-muted-foreground">
-                      рассрочка от Т‑Банка
+                {city !== "nvk" && (
+                  <Link
+                    to="/tinkoff"
+                    aria-label="Рассрочка 0‑0‑3 от Т‑Банка, без переплат"
+                    className="group flex items-start gap-2.5 text-inherit no-underline transition-transform duration-200 hover:-translate-y-px"
+                  >
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand/10 text-brand transition-colors duration-200 group-hover:bg-brand/15">
+                      <img
+                        src="/t_icon_red.webp"
+                        alt=""
+                        loading="lazy"
+                        className="h-5 w-4 object-contain"
+                      />
                     </span>
-                  </div>
-                </Link>
+                    <div className="flex min-w-0 flex-col">
+                      <strong className="border-b border-dashed border-transparent font-serif text-[18px] leading-[1.1] text-foreground transition-colors group-hover:border-brand/40">
+                        0‑0‑3
+                      </strong>
+                      <span className="mt-0.5 text-[12px] leading-[1.35] text-muted-foreground">
+                        рассрочка от Т‑Банка
+                      </span>
+                    </div>
+                  </Link>
+                )}
 
                 <div className="flex items-start gap-2.5">
                   <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-brand">
@@ -956,7 +981,10 @@ function MainV2Page() {
           6a. CONTACT LENS CAROUSEL — real products from catalog data
          ───────────────────────────────────────────────────────────── */}
       {contactLensProducts.length > 0 && (
-        <section style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}>
+        <section
+          id="lens-promo"
+          style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
+        >
           <div className="mx-auto max-w-7xl px-4 lg:px-8">
             <MainV2ContactLensCarousel products={contactLensProducts} promo={lensPromo} />
           </div>
@@ -1167,11 +1195,15 @@ function MainV2Page() {
               </a>
               <div className="flex items-center gap-2 mt-auto">
                 {(city === "nvk"
-                  ? [{ name: "MAX", href: CONTACT.max.href }]
+                  ? [
+                      { name: "Email", href: contact.email.href },
+                      { name: "Telegram", href: contact.telegram.href },
+                      { name: "MAX", href: contact.max.href },
+                    ]
                   : [
-                      { name: "Email", href: CONTACT.email.href },
-                      { name: "Telegram", href: CONTACT.telegram.href },
-                      { name: "MAX", href: CONTACT.max.href },
+                      { name: "Email", href: contact.email.href },
+                      { name: "Telegram", href: contact.telegram.href },
+                      { name: "MAX", href: contact.max.href },
                     ]
                 ).map((m) => (
                   <a
@@ -1199,23 +1231,40 @@ function MainV2Page() {
               <p className="text-sm text-muted-foreground" style={{ marginBottom: 18 }}>
                 Публикуем актуальные предложения в наших официальных каналах.
               </p>
-              {city === "spb" ? (
+              {/* Новостного канала в MAX нет (мессенджер MAX остаётся в контактах).
+                  СПб публикует новости в Telegram, Новокузнецк — во ВКонтакте и Instagram. */}
+              {city === "nvk" ? (
+                <div className="mt-auto">
+                  <div className="flex gap-2">
+                    <a
+                      href={NVK_CONTACT.vk.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex flex-1 items-center justify-center rounded-full bg-brand px-4 py-3 text-sm font-semibold text-white"
+                    >
+                      {NVK_CONTACT.vk.label}
+                    </a>
+                    <a
+                      href={NVK_CONTACT.instagram.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex flex-1 items-center justify-center rounded-full border border-brand px-4 py-3 text-sm font-semibold text-brand"
+                    >
+                      {NVK_CONTACT.instagram.label}*
+                    </a>
+                  </div>
+                  <p className="mt-2 text-[10px] leading-snug text-muted-foreground">
+                    {META_EXTREMIST_NOTE}
+                  </p>
+                </div>
+              ) : (
                 <a
-                  href={CONTACT.telegram.href}
+                  href={contact.telegram.href}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
                 >
                   <Send className="h-4 w-4" /> Читать в Telegram
-                </a>
-              ) : (
-                <a
-                  href={CONTACT.max.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
-                >
-                  Читать в MAX
                 </a>
               )}
             </div>
@@ -1276,14 +1325,70 @@ function MainV2BuyTogetherBanner() {
           animation:_btsLight 8s ease-in-out infinite;
         }
         @media (max-width:767px){
+          .o100-bts-img{
+            background-position:62% center!important;
+          }
           .o100-bts-wash{
             background:linear-gradient(
               180deg,
-              rgba(246, 240, 233, 0.86) 0%,
-              rgba(246, 240, 233, 0.66) 38%,
-              rgba(246, 240, 233, 0.26) 72%,
-              rgba(246, 240, 233, 0.08) 100%
+              rgba(246, 240, 233, 0.72) 0%,
+              rgba(246, 240, 233, 0.48) 48%,
+              rgba(246, 240, 233, 0.30) 100%
             );
+          }
+          .o100-bts-content{
+            max-width:none!important;
+            padding:24px 20px;
+            border:1px solid rgba(61, 52, 45, 0.12);
+            border-radius:24px;
+            background:rgba(246, 240, 233, 0.94);
+            box-shadow:0 18px 48px rgba(52, 40, 31, 0.16);
+            backdrop-filter:blur(12px);
+          }
+          .o100-bts-heading{
+            font-size:clamp(32px, 10vw, 40px)!important;
+            line-height:1.02!important;
+          }
+          .o100-bts-actions{
+            display:grid!important;
+            grid-template-columns:1fr;
+            gap:10px!important;
+          }
+          .o100-bts-btn{
+            width:100%;
+            min-height:52px;
+            justify-content:center;
+            padding:14px 18px;
+            text-align:center;
+            line-height:1.25;
+          }
+          .o100-bts-quiz{
+            align-items:flex-start!important;
+            gap:6px!important;
+            padding:16px 18px;
+            border:1px solid rgba(61, 52, 45, 0.10);
+            border-radius:16px;
+            background:rgba(255, 255, 255, 0.76);
+            line-height:1.45;
+          }
+          .o100-bts-quiz-link{
+            display:inline-flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:8px;
+            width:100%;
+            min-height:28px;
+          }
+          .o100-bts-quiz-link span{
+            flex-shrink:0;
+          }
+        }
+        @media (max-width:359px){
+          .o100-bts-content{
+            padding:22px 16px;
+          }
+          .o100-bts-heading{
+            font-size:31px!important;
           }
         }
         .o100-bts-sun{
@@ -1372,7 +1477,7 @@ function MainV2BuyTogetherBanner() {
         }}
       >
         <Reveal>
-          <div style={{ maxWidth: 520 }}>
+          <div className="o100-bts-content" style={{ maxWidth: 520 }}>
             <div
               className="text-[11px] uppercase tracking-[0.22em] mb-3"
               style={{ color: "var(--brand)", fontFamily: "var(--font-sans)", fontWeight: 600 }}
@@ -1380,7 +1485,7 @@ function MainV2BuyTogetherBanner() {
               Семейная выгода
             </div>
             <h2
-              className="font-serif text-foreground"
+              className="o100-bts-heading font-serif text-foreground"
               style={{
                 fontSize: "clamp(36px, 4.4vw, 56px)",
                 lineHeight: 1.04,
@@ -1410,8 +1515,7 @@ function MainV2BuyTogetherBanner() {
                 marginBottom: 22,
               }}
             >
-              Купите одну пару — и&nbsp;получите −20% на&nbsp;каждую следующую. Включая детские
-              оправы и&nbsp;солнцезащитные очки.
+              Купите одну пару очков — и&nbsp;получите −20% на&nbsp;каждый следующий заказ
             </p>
             <p
               className="text-muted-foreground"
@@ -1424,7 +1528,7 @@ function MainV2BuyTogetherBanner() {
             >
               Действуют ограничения. Подробности у&nbsp;консультанта в&nbsp;салоне.
             </p>
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="o100-bts-actions flex flex-wrap items-center gap-3">
               <a href={catalogHref("opravy", city)} className="o100-bts-btn o100-bts-btn-primary">
                 Купить оправу
               </a>
@@ -1436,7 +1540,7 @@ function MainV2BuyTogetherBanner() {
               </a>
             </div>
             <div
-              className="flex flex-wrap items-center gap-2"
+              className="o100-bts-quiz flex flex-wrap items-center gap-2"
               style={{
                 marginTop: 22,
                 fontFamily: "var(--font-sans)",
@@ -1721,19 +1825,16 @@ function MainV2ContactLensCarousel({
   promo,
 }: {
   products: Product[];
-  promo: {
-    title: string;
-    description: string;
-    href: string;
-    endsAt: string | null;
-    discountPercent: number | null;
-    discountLabel: string | null;
-  } | null;
+  promo: HomepageLensPromo | null;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const city = useCityStore((state) => state.city);
-  const lensPromo = promo ?? DEFAULT_LENS_PROMO;
-  const discountPercent = lensPromo.discountPercent ?? DEFAULT_LENS_PROMO.discountPercent;
+  // Главная пререндерится при деплое, поэтому срок акции проверяем и в браузере:
+  // после даты окончания блок сам возвращается к обычной подборке.
+  const [promoExpired, setPromoExpired] = useState(false);
+  useEffect(() => setPromoExpired(isPromoExpired(promo?.endsAt ?? null)), [promo?.endsAt]);
+  const activePromo = promo && !promoExpired ? promo : null;
+  const lensPromo = activePromo ?? DEFAULT_LENS_PROMO;
   const scrollBy = (dir: 1 | -1) => {
     const el = scroller.current;
     if (!el) return;
@@ -1785,7 +1886,7 @@ function MainV2ContactLensCarousel({
             className="text-[11px] uppercase tracking-[0.22em] mb-3"
             style={{ color: "var(--brand)" }}
           >
-            {formatPromoEyebrow(lensPromo.endsAt)}
+            {activePromo ? formatPromoEyebrow(activePromo.endsAt) : "Контактные линзы"}
           </div>
           <h2
             className="font-serif text-foreground"
@@ -1804,6 +1905,24 @@ function MainV2ContactLensCarousel({
             >
               {lensPromo.description}
             </p>
+          )}
+          {activePromo?.ctaLabel && activePromo.ctaHref && (
+            <div className="mt-5 max-w-[36rem]">
+              <a
+                href={activePromo.ctaHref}
+                {...(/^https?:\/\//.test(activePromo.ctaHref)
+                  ? { target: "_blank", rel: "noopener noreferrer" }
+                  : {})}
+                className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              >
+                {activePromo.ctaLabel} <ArrowRight className="h-4 w-4" />
+              </a>
+              {activePromo.ctaNote && (
+                <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground">
+                  {activePromo.ctaNote}
+                </p>
+              )}
+            </div>
           )}
         </div>
         <div className="flex items-center gap-4">
@@ -1856,11 +1975,7 @@ function MainV2ContactLensCarousel({
               key={product.slug}
               className="snap-start shrink-0 w-[72%] first:ml-2 last:mr-2 sm:w-[44%] md:w-[31%] lg:w-[23.5%] lg:first:ml-6 lg:last:mr-6"
             >
-              <MainV2ContactLensCard
-                product={product}
-                discountPercent={discountPercent}
-                discountLabel={lensPromo.discountLabel ?? DEFAULT_LENS_PROMO.discountLabel}
-              />
+              <MainV2ContactLensCard product={product} />
             </div>
           ))}
         </div>
@@ -1878,15 +1993,7 @@ function MainV2ContactLensCarousel({
   );
 }
 
-function MainV2ContactLensCard({
-  product,
-  discountPercent,
-  discountLabel,
-}: {
-  product: Product;
-  discountPercent: number;
-  discountLabel: string;
-}) {
+function MainV2ContactLensCard({ product }: { product: Product }) {
   const { toggleSaved, saved } = useCart();
   const city = useCityStore((state) => state.city);
   const productRoute = productCardHref(product, city);
@@ -1906,10 +2013,10 @@ function MainV2ContactLensCard({
         ? "Для астигматизма"
         : (product.wearMode ?? "Контактные линзы");
   const pillLabel = LENS_PROMO_PILL_BY_SLUG[product.slug] ?? fallbackPill;
-  const safeDiscountPercent = Math.min(95, Math.max(0, discountPercent));
-  const strike =
-    product.oldPrice && product.oldPrice > product.price ? product.oldPrice : product.price;
-  const discounted = Math.round(strike * (1 - safeDiscountPercent / 100));
+  // Скидку показываем только настоящую — ту, что придёт и в корзину.
+  const oldPrice =
+    product.oldPrice && product.oldPrice > product.price ? product.oldPrice : null;
+  const discountPercent = oldPrice ? Math.round((1 - product.price / oldPrice) * 100) : 0;
 
   return (
     <div
@@ -2029,15 +2136,18 @@ function MainV2ContactLensCard({
         </div>
         <div className="flex items-baseline gap-2.5" style={{ marginTop: 8 }}>
           <span className="text-foreground" style={{ fontSize: 18, fontWeight: 600 }}>
-            {formatPrice(discounted)}
+            {formatPrice(product.price)}
           </span>
-          <span
-            className="text-muted-foreground"
-            style={{ fontSize: 13, textDecoration: "line-through" }}
-          >
-            {formatPrice(strike)}
-          </span>
+          {oldPrice && (
+            <span
+              className="text-muted-foreground"
+              style={{ fontSize: 13, textDecoration: "line-through" }}
+            >
+              {formatPrice(oldPrice)}
+            </span>
+          )}
         </div>
+        {discountPercent > 0 && (
         <div className="flex items-center gap-2" style={{ marginTop: 10 }}>
           <span
             style={{
@@ -2050,7 +2160,7 @@ function MainV2ContactLensCard({
               letterSpacing: "0.04em",
             }}
           >
-            {discountLabel}
+            −{discountPercent}%
           </span>
           <span
             style={{
@@ -2066,6 +2176,7 @@ function MainV2ContactLensCard({
             Sale
           </span>
         </div>
+        )}
       </div>
     </div>
   );
@@ -2137,9 +2248,7 @@ function CategoryTile({ cell }: { cell: (typeof CAT_CELLS)[number] }) {
 }
 
 function MainV2PromoBlock() {
-  const city = useCityStore((state) => state.city);
-  if (city !== "spb") return null;
-
+  // «Все Акции» во всех регионах ведёт сюда — блок показывается всем, как в Санкт-Петербурге.
   return (
     <div className="h-full flex flex-col gap-3">
       <div className="mb-2">

@@ -27,6 +27,7 @@ const staticRoutes = [
   "/payment/",
   "/personal/",
   "/personal/orders/",
+  "/personal/favorites/",
   "/personal/private/",
   "/podbor-ochkov/",
   "/podbor-linz/",

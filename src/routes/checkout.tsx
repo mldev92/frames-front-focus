@@ -11,18 +11,29 @@ import {
   CreditCard,
   User,
   ShoppingCart,
-  Search,
   Shield,
   Phone,
   Check,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { useCityStore } from "@/lib/store/city";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CONTACT } from "@/data/contact";
-import { createOrder, getOrderDeliveryOptions, getStoreApiUrl, quoteOrder } from "@/lib/api/bitrix";
-import type { DeliveryQuoteOption, PickupPointOption, CreateOrderInput, OrderQuote } from "@/lib/api/bitrix";
+import { CityAutocomplete } from "@/components/CityAutocomplete";
+import { formatPhone, isPhoneComplete } from "@/lib/checkout-phone";
+import {
+  CHECKOUT_STEPS,
+  PROGRESS_INDEX,
+  PROGRESS_LABELS,
+  firstProblemStep,
+  stepProblem,
+} from "@/lib/checkout-steps";
+import type { CheckoutStep, StepState } from "@/lib/checkout-steps";
+import { getMe } from "@/lib/api/account";
+import { checkCoupon, createOrder, getOrderDeliveryOptions, getStoreApiUrl, quoteOrder } from "@/lib/api/bitrix";
+import type { CouponResult, DeliveryQuoteOption, PickupPointOption, CreateOrderInput, OrderQuote } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({
@@ -34,10 +45,23 @@ export const Route = createFileRoute("/checkout")({
   component: Checkout,
 });
 
-const CITIES = ["Москва", "Санкт-Петербург", "Кемерово", "Новокузнецк"] as const;
+const QUICK_CITIES = ["Москва", "Санкт-Петербург", "Кемерово", "Новокузнецк"] as const;
+const SPB_CITY = "Санкт-Петербург";
+const SPB_LOCATION_CODE = "0000103664";
 
-type CheckoutCity = (typeof CITIES)[number];
-type DeliveryCode = "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
+/** Выбранный город: код местоположения есть у города из поиска, у быстрых кнопок его определяет сервер. */
+interface CheckoutLocation {
+  name: string;
+  code?: string;
+  label: string;
+}
+
+const isSpbLocation = (location: CheckoutLocation | null) =>
+  location?.name === SPB_CITY || location?.code === SPB_LOCATION_CODE;
+
+const quickLocation = (name: string): CheckoutLocation => ({ name, label: name });
+/** Код способа доставки: salon_pickup_spb, spb_courier, sdek_courier, sdek_pickup, salon_pickup_nvk_<id>. */
+type DeliveryCode = string;
 type PaymentCode = "cash_on_pickup" | "yookassa_card" | "t_installment";
 
 interface DeliveryOption {
@@ -52,6 +76,11 @@ interface DeliveryOption {
   requiresAddress?: boolean;
   requiresPickupPoint?: boolean;
   errors?: string[];
+  /** Ставка НДС, % — входит в цену доставки. */
+  vatRate?: number;
+  vatAmount?: number;
+  /** Служба доставки Bitrix (для виджета пунктов выдачи СДЭК). */
+  serviceId?: number | null;
 }
 
 interface PickupPoint extends PickupPointOption {
@@ -76,6 +105,15 @@ const SPB_DELIVERY_OPTIONS: DeliveryOption[] = [
     free: false,
     requiresAddress: true,
   },
+  {
+    code: "sdek_pickup",
+    label: "Самовывоз из пункта выдачи СДЭК",
+    description: "Доставка заказа в один из пунктов самовывоза компании СДЭК",
+    price: null,
+    priceFormatted: "по тарифу",
+    free: false,
+    requiresPickupPoint: true,
+  },
 ];
 
 const CDEK_DELIVERY_OPTIONS: DeliveryOption[] = [
@@ -84,8 +122,7 @@ const CDEK_DELIVERY_OPTIONS: DeliveryOption[] = [
     label: "СДЭК (Доставка курьером)",
     description: "Доставка заказа курьером компании СДЭК",
     price: null,
-    priceFormatted: "по тарифу",
-    period: "7-8 дней",
+    priceFormatted: "уточняется",
     free: false,
     requiresAddress: true,
   },
@@ -94,15 +131,37 @@ const CDEK_DELIVERY_OPTIONS: DeliveryOption[] = [
     label: "СДЭК (Самовывоз)",
     description: "Доставка заказа в один из пунктов самовывоза компании СДЭК",
     price: null,
-    priceFormatted: "по тарифу",
-    period: "7-8 дней",
+    priceFormatted: "уточняется",
     free: false,
     requiresPickupPoint: true,
   },
 ];
 
-const getDeliveryOptions = (city: CheckoutCity): DeliveryOption[] =>
-  city === "Санкт-Петербург" ? SPB_DELIVERY_OPTIONS : CDEK_DELIVERY_OPTIONS;
+/** Способы, цену которых считает СДЭК: каждый запрашивается отдельно. Салоны всегда бесплатны. */
+const CDEK_CODES: DeliveryCode[] = ["sdek_courier", "sdek_pickup"];
+const SPB_CDEK_CODES: DeliveryCode[] = ["spb_courier", "sdek_pickup"];
+const isSalonPickup = (code: DeliveryCode | undefined) => Boolean(code?.startsWith("salon_pickup_"));
+
+/** НДС, уже включённый в цену доставки (как в старом оформлении). */
+const includedVat = (price: number | null | undefined, rate: number | undefined) =>
+  price && rate ? Math.round(((price * rate) / (100 + rate)) * 100) / 100 : 0;
+const formatVat = (value: number) =>
+  `${value.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽`;
+
+const getDeliveryOptions = (isSpb: boolean): DeliveryOption[] =>
+  isSpb ? SPB_DELIVERY_OPTIONS : CDEK_DELIVERY_OPTIONS;
+
+/** Понятное покупателю объяснение, почему расчёт доставки не удался. */
+function describeDeliveryError(error: unknown): string {
+  const message = error instanceof Error ? error.message : "";
+  if (message.includes("рецепта")) {
+    return "Для контактных линз в корзине не указаны параметры (оптическая сила, радиус кривизны). Откройте корзину, удалите эту позицию и добавьте линзы заново, выбрав параметры на странице товара.";
+  }
+  if (message.includes("больше недоступен")) {
+    return "Один из товаров в корзине больше недоступен. Проверьте корзину.";
+  }
+  return message ? `Не удалось рассчитать доставку: ${message}` : "Не удалось рассчитать доставку.";
+}
 
 const PAYMENT_OPTIONS: Array<{ code: PaymentCode; label: string; sub: string }> = [
   {
@@ -129,32 +188,37 @@ function Checkout() {
   const { totals, lines, setQty, consume } = useCart();
   const { subtotal } = totals();
 
-  const [open, setOpen] = useState<string | null>("region");
-  const [city, setCity] = useState<CheckoutCity>(() =>
-    regionalCity === "nvk" ? "Новокузнецк" : "Санкт-Петербург",
+  const [step, setStep] = useState<CheckoutStep>("region");
+  const [location, setLocation] = useState<CheckoutLocation | null>(() =>
+    quickLocation(regionalCity === "nvk" ? "Новокузнецк" : SPB_CITY),
   );
-  const [citySearch, setCitySearch] = useState("");
-  const [delivery, setDelivery] = useState<DeliveryCode>(() =>
-    regionalCity === "nvk" ? "sdek_courier" : "salon_pickup_spb",
-  );
+  const city = location?.name ?? "";
+  const isSpb = isSpbLocation(location);
+  // Способ доставки не выбран заранее: покупатель выбирает сам, и только тогда доставка попадает в заказ.
+  const [delivery, setDelivery] = useState<DeliveryCode | null>(null);
   const [address, setAddress] = useState("");
   const [payment, setPayment] = useState<PaymentCode>("cash_on_pickup");
   const [review, setReview] = useState<{ input: CreateOrderInput; quote: OrderQuote; fingerprint: string } | null>(null);
   const [acceptPending, setAcceptPending] = useState(false);
   const [hasAttempt, setHasAttempt] = useState(false);
   const [serverItemsTotal, setServerItemsTotal] = useState<number | null>(null);
+  // Применённый промокод. Состав корзины изменился — код проверяем заново.
+  const [coupon, setCoupon] = useState<CouponResult | null>(null);
+  const linesKey = JSON.stringify(lines);
+  useEffect(() => setCoupon(null), [linesKey]);
   const [agreed, setAgreed] = useState(false);
   const [comment, setComment] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [trackNumber, setTrackNumber] = useState("");
   const [pickupPoint, setPickupPoint] = useState<PickupPoint | null>(null);
   const [pickupWidgetLoading, setPickupWidgetLoading] = useState(false);
   const [quotedDeliveryOptions, setQuotedDeliveryOptions] = useState<DeliveryQuoteOption[] | null>(
     null,
   );
   const [deliveryLoading, setDeliveryLoading] = useState(false);
+  const [deliveryError, setDeliveryError] = useState<string | null>(null);
+  const [deliveryRetry, setDeliveryRetry] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<string | null>(null);
   const pickupWidgetHostId = "optika100-sdek-widget-host";
@@ -162,13 +226,12 @@ function Checkout() {
 
   useEffect(() => {
     if (!regionalCityHydrated) return;
-    const nextCity = regionalCity === "nvk" ? "Новокузнецк" : "Санкт-Петербург";
-    setCity(nextCity);
-    setDelivery(nextCity === "Санкт-Петербург" ? "salon_pickup_spb" : "sdek_courier");
+    const nextCity = regionalCity === "nvk" ? "Новокузнецк" : SPB_CITY;
+    setLocation(quickLocation(nextCity));
+    setDelivery(null);
   }, [regionalCity, regionalCityHydrated]);
 
-  const toggle = (id: string) => setOpen((prev) => (prev === id ? null : id));
-  const fallbackDeliveryOptions = useMemo(() => getDeliveryOptions(city), [city]);
+  const fallbackDeliveryOptions = useMemo(() => getDeliveryOptions(isSpb), [isSpb]);
   const deliveryOptions = useMemo<DeliveryOption[]>(() => {
     if (!quotedDeliveryOptions?.length) return fallbackDeliveryOptions;
     return quotedDeliveryOptions.map((option) => ({
@@ -183,23 +246,34 @@ function Checkout() {
       requiresAddress: option.requiresAddress,
       requiresPickupPoint: option.requiresPickupPoint,
       errors: option.errors,
+      vatRate: option.vatRate,
+      vatAmount: option.vatAmount,
+      serviceId: option.serviceId,
     }));
   }, [fallbackDeliveryOptions, quotedDeliveryOptions]);
-  const selectedDelivery =
-    deliveryOptions.find((option) => option.code === delivery) ?? deliveryOptions[0];
+  const selectedDelivery = deliveryOptions.find((option) => option.code === delivery) ?? null;
   const paymentOptions = useMemo(
     () =>
       PAYMENT_OPTIONS.filter(
         (option) =>
-          option.code !== "cash_on_pickup" || selectedDelivery.code === "salon_pickup_spb",
+          (option.code !== "cash_on_pickup" || isSalonPickup(selectedDelivery?.code)) &&
+          (option.code !== "t_installment" || city !== "Новокузнецк"),
       ),
-    [selectedDelivery.code],
+    [city, selectedDelivery?.code],
   );
   const selectedPayment =
     paymentOptions.find((option) => option.code === payment) ?? paymentOptions[0];
-  const deliveryPrice = review ? review.quote.deliveryPrice : selectedDelivery.price;
-  const orderTotal = review?.quote.total ?? (serverItemsTotal ?? subtotal) + (deliveryPrice ?? 0);
+  const deliveryChosen = selectedDelivery !== null;
+  const deliveryPrice = review ? review.quote.deliveryPrice : (selectedDelivery?.price ?? null);
+  // В котировке itemsTotal уже со скидкой по промокоду; до котировки вычитаем проверенную скидку.
+  const couponDiscount = review ? (review.quote.coupon?.discount ?? 0) : (coupon?.discount ?? 0);
+  const itemsBeforeCoupon = review
+    ? review.quote.itemsTotal + couponDiscount
+    : (serverItemsTotal ?? subtotal);
+  const orderTotal = review?.quote.total ?? itemsBeforeCoupon - couponDiscount + (deliveryPrice ?? 0);
   const isFree = deliveryPrice === 0;
+  const deliveryVatRate = selectedDelivery?.vatRate ?? 0;
+  const deliveryVat = selectedDelivery?.vatAmount || includedVat(deliveryPrice, deliveryVatRate);
   const storeApiBase =
     (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ??
     "https://optika100.com";
@@ -213,11 +287,14 @@ function Checkout() {
   const pickupWidgetUrl = useMemo(() => {
     const widgetUrl = new URL(getSameOriginStoreApiUrl("sdek_widget_frame.php"));
     widgetUrl.searchParams.set("city", city);
-    widgetUrl.searchParams.set("deliveryId", "55");
+    widgetUrl.searchParams.set(
+      "deliveryId",
+      String(deliveryOptions.find((option) => option.code === "sdek_pickup")?.serviceId ?? 55),
+    );
     widgetUrl.searchParams.set("orderPrice", String(orderTotal));
     widgetUrl.searchParams.set("weight", "1000");
     return widgetUrl.toString();
-  }, [city, orderTotal]);
+  }, [city, orderTotal, deliveryOptions]);
   const pickupWidgetAjaxUrl = useMemo(() => getSdekWidgetUrl("sdek_ajax_proxy.php"), []);
   const pickupWidgetAssetProxyUrl = useMemo(() => getSdekWidgetUrl("sdek_asset_proxy.php"), []);
   const pickupWidgetAssetOrigin = useMemo(
@@ -225,20 +302,43 @@ function Checkout() {
     [],
   );
 
+  // Оба способа СДЭК считаем сразу, параллельными запросами: сервер живой расчёт делает
+  // только для одного способа за запрос, а покупателю нужны цены обоих до выбора.
   useEffect(() => {
     let cancelled = false;
     setQuotedDeliveryOptions(null);
     setServerItemsTotal(null);
     setPickupPoint(null);
-    if (!lines.length) return;
+    setDeliveryError(null);
+    if (!lines.length || !location) return;
     setDeliveryLoading(true);
-    getOrderDeliveryOptions({ city, lines })
-      .then((result) => {
-        if (!cancelled) { setQuotedDeliveryOptions(result.options); setServerItemsTotal(result.itemsTotal); }
-      })
-      .catch((error) => {
-        console.error("[checkout] delivery quote:", error);
-        if (!cancelled) toast.error("Не удалось рассчитать доставку, показаны базовые варианты");
+    const codes: Array<DeliveryCode | undefined> = isSpb ? SPB_CDEK_CODES : CDEK_CODES;
+    Promise.allSettled(
+      codes.map((deliveryCode) =>
+        getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode }),
+      ),
+    )
+      .then((results) => {
+        if (cancelled) return;
+        const firstOk = results.find((result) => result.status === "fulfilled");
+        if (!firstOk || firstOk.status !== "fulfilled") {
+          const reason = (results[0] as PromiseRejectedResult).reason;
+          console.error("[checkout] delivery quote:", reason);
+          setDeliveryError(describeDeliveryError(reason));
+          return;
+        }
+        const merged = firstOk.value.options.map((option) => {
+          const index = codes.indexOf(option.code);
+          const own = index >= 0 ? results[index] : undefined;
+          if (!own || own.status === "fulfilled") {
+            return own?.status === "fulfilled"
+              ? (own.value.options.find((item) => item.code === option.code) ?? option)
+              : option;
+          }
+          return { ...option, price: null, errors: [describeDeliveryError(own.reason)] };
+        });
+        setQuotedDeliveryOptions(merged);
+        setServerItemsTotal(firstOk.value.itemsTotal);
       })
       .finally(() => {
         if (!cancelled) setDeliveryLoading(false);
@@ -246,11 +346,11 @@ function Checkout() {
     return () => {
       cancelled = true;
     };
-  }, [city, lines]);
+  }, [city, location, isSpb, lines, deliveryRetry]);
 
   useEffect(() => {
-    if (!deliveryOptions.some((option) => option.code === delivery)) {
-      setDelivery(deliveryOptions[0].code);
+    if (delivery !== null && !deliveryOptions.some((option) => option.code === delivery)) {
+      setDelivery(null);
       setAddress("");
       setPickupPoint(null);
     }
@@ -472,7 +572,6 @@ function Checkout() {
   };
 
   const openCdekPickupMap = async () => {
-    if (city === "Санкт-Петербург") return;
     setPickupWidgetLoading(true);
     try {
       cleanupInjectedWidget();
@@ -528,7 +627,7 @@ function Checkout() {
   useEffect(() => {
     setReview(null);
     setAcceptPending(false);
-  }, [lines, city, delivery, payment, address, pickupPoint, fullName, phone, email, trackNumber, comment]);
+  }, [lines, city, location, delivery, payment, address, pickupPoint, fullName, phone, email, comment]);
 
   useEffect(() => {
     try {
@@ -536,12 +635,65 @@ function Checkout() {
       setHasAttempt(Boolean(attempt));
       if (!attempt) return;
       const input = attempt.input;
-      setFullName(input.customer.fullName); setPhone(input.customer.phone); setEmail(input.customer.email);
-      setCity(input.city as CheckoutCity); setDelivery(input.deliveryCode); setPayment(input.paymentCode);
-      setAddress(input.address ?? ""); setComment(input.comment ?? ""); setTrackNumber(input.trackNumber ?? "");
+      setFullName(input.customer.fullName); setPhone(formatPhone(input.customer.phone)); setEmail(input.customer.email);
+      setLocation({ name: input.city, code: input.locationCode, label: input.city });
+      setDelivery(input.deliveryCode); setPayment(input.paymentCode);
+      setAddress(input.address ?? ""); setComment(input.comment ?? "");
       if (input.pickupPoint) setPickupPoint(input.pickupPoint as PickupPoint);
     } catch (error) { toast.error(error instanceof Error ? error.message : "Не удалось прочитать попытку"); }
   }, []);
+
+  // Prefill buyer data from the logged-in account (the native Bitrix form did this).
+  // Only empty fields are filled, so typed or recovered-attempt values always win.
+  useEffect(() => {
+    let alive = true;
+    getMe()
+      .then((me) => {
+        if (!alive || !me.authorized) return;
+        setFullName((prev) => prev || me.fullName || "");
+        setPhone((prev) => prev || formatPhone(me.phone || ""));
+        setEmail((prev) => prev || me.email || "");
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const stepIndex = CHECKOUT_STEPS.indexOf(step);
+  const stepState: StepState = {
+    hasLocation: Boolean(location),
+    deliveryLoading,
+    hasDelivery: deliveryChosen,
+    deliveryRequiresPickupPoint: Boolean(selectedDelivery?.requiresPickupPoint),
+    deliveryRequiresAddress: Boolean(selectedDelivery?.requiresAddress),
+    hasPickupPoint: Boolean(pickupPoint),
+    address,
+    hasPayment: Boolean(selectedPayment),
+    fullName,
+    email,
+    phoneComplete: isPhoneComplete(phone),
+    hasLines: lines.length > 0,
+  };
+  const currentProblem = stepProblem(step, stepState);
+  const goToStep = (target: CheckoutStep) => setStep(target);
+  const goNext = () => {
+    if (currentProblem) { toast.error(currentProblem); return; }
+    const next = CHECKOUT_STEPS[stepIndex + 1];
+    if (next) goToStep(next);
+  };
+  const goBack = () => {
+    const previous = CHECKOUT_STEPS[stepIndex - 1];
+    if (previous) goToStep(previous);
+  };
+  /** Раздел открывается по клику на заголовок, только если все шаги перед ним пройдены. */
+  const canOpenStep = (target: CheckoutStep) =>
+    CHECKOUT_STEPS.slice(0, CHECKOUT_STEPS.indexOf(target)).every(
+      (earlier) => stepProblem(earlier, stepState) === null,
+    );
+  const isLastStep = stepIndex === CHECKOUT_STEPS.length - 1;
+  const sidebarDisabled =
+    submitting || lines.length === 0 || (!isLastStep && Boolean(currentProblem));
 
   const recover = async () => {
     setSubmitting(true);
@@ -566,18 +718,22 @@ function Checkout() {
     if (submitting) return;
     if (!agreed) { toast.error("Необходимо согласиться с условиями"); return; }
     if (!lines.length) { toast.error("Корзина пуста"); return; }
-    if (selectedDelivery.requiresPickupPoint && !pickupPoint) { setOpen("delivery"); toast.error("Выберите пункт самовывоза СДЭК"); return; }
-    if (!fullName.trim() || phone.replace(/\D/g, "").length < 10 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || (selectedDelivery.requiresAddress && !address.trim())) {
-      setOpen("buyer"); toast.error("Проверьте контактные данные"); return;
+    if (!selectedDelivery) { goToStep("delivery"); toast.error("Выберите способ доставки"); return; }
+    const brokenStep = firstProblemStep(stepState);
+    if (brokenStep) {
+      goToStep(brokenStep);
+      toast.error(stepProblem(brokenStep, stepState) ?? "Проверьте данные заказа");
+      return;
     }
     const input: CreateOrderInput = {
       checkoutVersion: 2,
       customer: { fullName: fullName.trim(), phone: phone.trim(), email: email.trim() },
-      lines, city, delivery: selectedDelivery.label, deliveryCode: selectedDelivery.code,
+      lines, city, locationCode: location?.code, delivery: selectedDelivery.label, deliveryCode: selectedDelivery.code,
       payment: selectedPayment.label, paymentCode: selectedPayment.code,
       address: pickupPoint?.rawAddress ?? pickupPoint?.address ?? (address.trim() || undefined),
       pickupPoint: pickupPoint ? { id: pickupPoint.id, address: pickupPoint.rawAddress ?? pickupPoint.address } : undefined,
-      trackNumber: trackNumber.trim() || undefined, comment: comment.trim() || undefined,
+      comment: comment.trim() || undefined,
+      coupon: coupon?.code,
     };
     setSubmitting(true);
     try {
@@ -657,7 +813,7 @@ function Checkout() {
         Оформление заказа
       </h1>
 
-      <ProgressSteps />
+      <ProgressSteps current={PROGRESS_INDEX[step]} />
 
       <div
         style={{
@@ -676,55 +832,80 @@ function Checkout() {
             id="region"
             icon={<MapPin size={18} />}
             title="Регион доставки"
-            subtitle={city}
-            isOpen={open === "region"}
-            onToggle={() => toggle("region")}
+            subtitle={location?.label ?? "Выберите город"}
+            isOpen={step === "region"}
+            locked={!canOpenStep("region")}
+            onToggle={() => goToStep("region")}
+            footer={<StepNav hint={currentProblem} onNext={goNext} nextDisabled={Boolean(currentProblem)} />}
           >
             <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "16px" }}>
-              {CITIES.map((c) => (
-                <CityChip key={c} label={c} selected={city === c} onClick={() => setCity(c)} />
+              {QUICK_CITIES.map((c) => (
+                <CityChip
+                  key={c}
+                  label={c}
+                  selected={city === c && !location?.code}
+                  onClick={() => setLocation(quickLocation(c))}
+                />
               ))}
             </div>
-            <div style={{ position: "relative" }}>
-              <Search
-                size={16}
-                style={{
-                  position: "absolute",
-                  left: "12px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "var(--muted-foreground)",
-                  pointerEvents: "none",
-                }}
-              />
-              <input
-                type="text"
-                placeholder="Поиск города..."
-                value={citySearch}
-                onChange={(e) => setCitySearch(e.target.value)}
-                className="w-full bg-background border border-border"
-                style={{
-                  borderRadius: "8px",
-                  padding: "10px 12px 10px 36px",
-                  fontSize: "15px",
-                  outline: "none",
-                }}
-              />
-            </div>
+            <CityAutocomplete
+              hasSelection={Boolean(location)}
+              selectedLabel={location?.code ? location.label : ""}
+              onSelect={(item) =>
+                setLocation({ name: item.name, code: item.code, label: item.label })
+              }
+              onClear={() => setLocation(null)}
+            />
+            <p className="text-muted-foreground" style={{ fontSize: "12px", margin: "8px 0 0" }}>
+              Выберите из списка название вашего города или введите его название.
+            </p>
           </SectionCard>
 
           <SectionCard
             id="delivery"
             icon={<Truck size={18} />}
             title="Доставка"
-            subtitle={selectedDelivery.label}
-            isOpen={open === "delivery"}
-            onToggle={() => toggle("delivery")}
+            subtitle={selectedDelivery?.label ?? "Выберите способ доставки"}
+            isOpen={step === "delivery"}
+            locked={!canOpenStep("delivery")}
+            onToggle={() => goToStep("delivery")}
+            footer={
+              <StepNav
+                hint={currentProblem}
+                onBack={goBack}
+                onNext={goNext}
+                nextDisabled={Boolean(currentProblem)}
+              />
+            }
           >
             {deliveryLoading && (
               <p className="text-muted-foreground text-sm" style={{ margin: "0 0 10px" }}>
                 Рассчитываем стоимость доставки...
               </p>
+            )}
+            {deliveryError && !deliveryLoading && (
+              <div
+                role="alert"
+                style={{
+                  margin: "0 0 12px",
+                  padding: "12px 14px",
+                  borderRadius: "10px",
+                  border: "1px solid oklch(0.85 0.08 60)",
+                  backgroundColor: "oklch(0.97 0.03 80)",
+                  fontSize: "13px",
+                  lineHeight: 1.5,
+                }}
+              >
+                {deliveryError}{" "}
+                <button
+                  type="button"
+                  onClick={() => setDeliveryRetry((n) => n + 1)}
+                  className="text-brand"
+                  style={{ textDecoration: "underline", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                >
+                  Повторить расчёт
+                </button>
+              </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {deliveryOptions.map((opt) => (
@@ -742,6 +923,19 @@ function Checkout() {
                 />
               ))}
             </div>
+            {selectedDelivery?.requiresAddress && (
+              <div style={{ marginTop: "16px" }}>
+                <Field
+                  label="Адрес доставки"
+                  placeholder="Улица, дом, квартира"
+                  required
+                  name="address"
+                  autoComplete="street-address"
+                  value={address}
+                  onChange={setAddress}
+                />
+              </div>
+            )}
           </SectionCard>
 
           <SectionCard
@@ -749,8 +943,10 @@ function Checkout() {
             icon={<CreditCard size={18} />}
             title="Оплата"
             subtitle={selectedPayment.label}
-            isOpen={open === "payment"}
-            onToggle={() => toggle("payment")}
+            isOpen={step === "payment"}
+            locked={!canOpenStep("payment")}
+            onToggle={() => goToStep("payment")}
+            footer={<StepNav hint={currentProblem} onBack={goBack} onNext={goNext} nextDisabled={Boolean(currentProblem)} />}
           >
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {paymentOptions.map((opt) => (
@@ -770,8 +966,10 @@ function Checkout() {
             icon={<User size={18} />}
             title="Покупатель"
             subtitle="Контактные данные"
-            isOpen={open === "buyer"}
-            onToggle={() => toggle("buyer")}
+            isOpen={step === "buyer"}
+            locked={!canOpenStep("buyer")}
+            onToggle={() => goToStep("buyer")}
+            footer={<StepNav hint={currentProblem} onBack={goBack} onNext={goNext} nextDisabled={Boolean(currentProblem)} />}
           >
             <div
               style={{
@@ -784,6 +982,8 @@ function Checkout() {
                 label="Ф.И.О."
                 placeholder="Иванов Иван Иванович"
                 required
+                name="name"
+                autoComplete="name"
                 value={fullName}
                 onChange={setFullName}
               />
@@ -792,6 +992,8 @@ function Checkout() {
                 type="email"
                 placeholder="example@mail.ru"
                 required
+                name="email"
+                autoComplete="email"
                 value={email}
                 onChange={setEmail}
               />
@@ -809,27 +1011,15 @@ function Checkout() {
                 type="tel"
                 placeholder="+7 (___) ___-__-__"
                 required
+                name="phone"
+                autoComplete="tel"
+                inputMode="tel"
+                maxLength={18}
                 value={phone}
-                onChange={setPhone}
-              />
-              <Field
-                label="Трек-номер СДЭК"
-                placeholder="Если уже есть"
-                value={trackNumber}
-                onChange={setTrackNumber}
+                onChange={(value) => setPhone(formatPhone(value))}
+                onFocus={() => setPhone((prev) => prev || "+7")}
               />
             </div>
-            {selectedDelivery.code !== "salon_pickup_spb" && (
-              <div style={{ marginTop: "12px" }}>
-                <Field
-                  label="Адрес доставки"
-                  placeholder="Город, улица, дом, квартира"
-                  required
-                  value={address}
-                  onChange={setAddress}
-                />
-              </div>
-            )}
           </SectionCard>
 
           <SectionCard
@@ -837,8 +1027,10 @@ function Checkout() {
             icon={<ShoppingCart size={18} />}
             title="Товары в заказе"
             subtitle={lines.length > 0 ? `${lines.length} товар(а)` : "Корзина пуста"}
-            isOpen={open === "items"}
-            onToggle={() => toggle("items")}
+            isOpen={step === "items"}
+            locked={!canOpenStep("items")}
+            onToggle={() => goToStep("items")}
+            footer={<StepNav hint={null} onBack={goBack} />}
           >
             {lines.length === 0 ? (
               <p className="text-muted-foreground text-sm">
@@ -858,7 +1050,7 @@ function Checkout() {
                     key={line.lineId}
                     style={{
                       display: "flex",
-                      alignItems: "center",
+                      alignItems: "flex-start",
                       gap: "12px",
                       padding: "12px",
                       backgroundColor: "var(--surface)",
@@ -904,22 +1096,33 @@ function Checkout() {
                           Назначение: {line.parameters.purpose}
                         </div>
                       )}
-                    </div>
-                    <QtyControl
-                      qty={line.qty}
-                      onDec={() => setQty(line.lineId, line.qty - 1)}
-                      onInc={() => setQty(line.lineId, line.qty + 1)}
-                    />
-                    <div
-                      style={{
-                        fontWeight: 600,
-                        fontSize: "15px",
-                        minWidth: "72px",
-                        textAlign: "right",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {formatPrice(line.price * line.qty)}
+                      {/* Количество и сумма — отдельной строкой под описанием: рядом с ним
+                          на телефоне оставалось ~80px и текст ломался по буквам. */}
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: "12px",
+                          marginTop: "10px",
+                        }}
+                      >
+                        <QtyControl
+                          qty={line.qty}
+                          onDec={() => setQty(line.lineId, line.qty - 1)}
+                          onInc={() => setQty(line.lineId, line.qty + 1)}
+                        />
+                        <div
+                          style={{
+                            fontWeight: 600,
+                            fontSize: "15px",
+                            textAlign: "right",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {formatPrice(line.price * line.qty)}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -1055,13 +1258,38 @@ function Checkout() {
                 gap: "8px",
               }}
             >
-              <SummaryRow label="Товаров на" value={formatPrice(review?.quote.itemsTotal ?? serverItemsTotal ?? subtotal)} />
+              <CouponField
+                lines={lines}
+                applied={coupon}
+                onApplied={(result) => { setCoupon(result); setReview(null); }}
+              />
+              <SummaryRow label="Товаров на" value={formatPrice(itemsBeforeCoupon)} />
               <SummaryRow
                 label="Доставка"
-                value={deliveryPrice === null ? "Уточняется менеджером" : formatPrice(deliveryPrice)}
+                value={
+                  !deliveryChosen ? (
+                    "Не выбрана"
+                  ) : deliveryLoading && deliveryPrice === null ? (
+                    <DeliveryCalculating label="Считаем доставку..." />
+                  ) : deliveryPrice === null ? (
+                    "Уточняется менеджером"
+                  ) : (
+                    formatPrice(deliveryPrice)
+                  )
+                }
                 valueStyle={isFree ? { color: "var(--success)", fontWeight: 500 } : undefined}
               />
-              <SummaryRow label="Скидка" value="—" />
+              {deliveryVat > 0 && (
+                <SummaryRow
+                  label={`НДС ${deliveryVatRate}%, включён в доставку`}
+                  value={formatVat(deliveryVat)}
+                />
+              )}
+              <SummaryRow
+                label={couponDiscount > 0 ? "Скидка по промокоду" : "Скидка"}
+                value={couponDiscount > 0 ? `−${formatPrice(couponDiscount)}` : "—"}
+                valueStyle={couponDiscount > 0 ? { color: "var(--success)" } : undefined}
+              />
             </div>
 
             <div
@@ -1074,9 +1302,24 @@ function Checkout() {
                 marginBottom: "20px",
               }}
             >
-              <span style={{ fontWeight: 500 }}>Итого:</span>
+              <span style={{ fontWeight: 500 }}>
+                Итого:
+                {!deliveryChosen && (
+                  <span className="text-muted-foreground" style={{ display: "block", fontSize: "11px", fontWeight: 400 }}>
+                    без доставки
+                  </span>
+                )}
+              </span>
               <span className="font-serif" style={{ fontSize: "22px", fontWeight: 700 }}>
-                {deliveryPrice === null ? "Уточняется" : formatPrice(orderTotal)}
+                {!deliveryChosen ? (
+                  formatPrice(orderTotal)
+                ) : deliveryLoading && deliveryPrice === null ? (
+                  <DeliveryCalculating label="Считаем..." size={16} />
+                ) : deliveryPrice === null ? (
+                  "Уточняется"
+                ) : (
+                  formatPrice(orderTotal)
+                )}
               </span>
             </div>
 
@@ -1087,6 +1330,9 @@ function Checkout() {
               <strong>Расчёт магазина</strong>
               {review.quote.lines.map((line) => <p key={line.lineId}>{lines.find((item) => item.lineId === line.lineId)?.name}: {line.qty} × {formatPrice(line.price)}</p>)}
               <p>Товары: {formatPrice(review.quote.itemsTotal)}</p>
+              {review.quote.coupon && (review.quote.coupon.applied
+                ? <p>Скидка по промокоду {review.quote.coupon.code}: −{formatPrice(review.quote.coupon.discount)} (уже в сумме товаров)</p>
+                : <p className="text-destructive">Промокод {review.quote.coupon.code} не применён: {review.quote.coupon.message}</p>)}
               <p>Доставка: {review.quote.deliveryPrice === null ? "уточняется менеджером" : formatPrice(review.quote.deliveryPrice)}</p>
               <p>Итого: {review.quote.total === null ? "после согласования доставки" : formatPrice(review.quote.total)}</p>
               {review.quote.deliveryStatus === "pending_confirmation" && <label className="mt-2 flex gap-2">
@@ -1143,8 +1389,8 @@ function Checkout() {
             {/* CTA */}
             <button
               type="button"
-              onClick={() => void submit()}
-              disabled={submitting || lines.length === 0}
+              onClick={() => (isLastStep ? void submit() : goNext())}
+              disabled={sidebarDisabled}
               style={{
                 width: "100%",
                 height: "52px",
@@ -1154,8 +1400,8 @@ function Checkout() {
                 borderRadius: "9999px",
                 fontSize: "15px",
                 fontWeight: 600,
-                cursor: submitting || lines.length === 0 ? "not-allowed" : "pointer",
-                opacity: submitting || lines.length === 0 ? 0.55 : 1,
+                cursor: sidebarDisabled ? "not-allowed" : "pointer",
+                opacity: sidebarDisabled ? 0.55 : 1,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -1164,7 +1410,7 @@ function Checkout() {
               onMouseOver={(e) => (e.currentTarget.style.opacity = "0.85")}
               onMouseOut={(e) => (e.currentTarget.style.opacity = "1")}
             >
-              {submitting ? "Проверяем заказ..." : review ? "Подтвердить заказ" : "Рассчитать и проверить заказ"}
+              {!isLastStep ? "Далее" : submitting ? "Проверяем заказ..." : review ? "Подтвердить заказ" : "Рассчитать и проверить заказ"}
             </button>
 
             {/* Trust badges */}
@@ -1190,8 +1436,8 @@ function Checkout() {
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function ProgressSteps() {
-  const steps = ["Доставка", "Оплата", "Подтверждение"];
+function ProgressSteps({ current }: { current: number }) {
+  const steps = PROGRESS_LABELS;
   return (
     <div
       style={{
@@ -1211,8 +1457,8 @@ function ProgressSteps() {
                 width: "28px",
                 height: "28px",
                 borderRadius: "50%",
-                backgroundColor: i === 0 ? "var(--brand)" : "var(--surface)",
-                color: i === 0 ? "var(--brand-foreground)" : "var(--muted-foreground)",
+                backgroundColor: i <= current ? "var(--brand)" : "var(--surface)",
+                color: i <= current ? "var(--brand-foreground)" : "var(--muted-foreground)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -1227,8 +1473,8 @@ function ProgressSteps() {
               className="hidden sm:inline"
               style={{
                 fontSize: "13px",
-                fontWeight: i === 0 ? 600 : 400,
-                color: i === 0 ? "var(--foreground)" : "var(--muted-foreground)",
+                fontWeight: i === current ? 600 : 400,
+                color: i <= current ? "var(--foreground)" : "var(--muted-foreground)",
                 minWidth: 0,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -1260,7 +1506,9 @@ function SectionCard({
   title,
   subtitle,
   isOpen,
+  locked,
   onToggle,
+  footer,
   children,
 }: {
   id: string;
@@ -1268,7 +1516,9 @@ function SectionCard({
   title: string;
   subtitle?: string;
   isOpen: boolean;
+  locked?: boolean;
   onToggle: () => void;
+  footer?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -1284,6 +1534,7 @@ function SectionCard({
       <button
         type="button"
         onClick={onToggle}
+        disabled={locked && !isOpen}
         style={{
           width: "100%",
           display: "flex",
@@ -1292,7 +1543,8 @@ function SectionCard({
           padding: "16px 20px",
           background: "none",
           border: "none",
-          cursor: "pointer",
+          cursor: locked && !isOpen ? "not-allowed" : "pointer",
+          opacity: locked && !isOpen ? 0.55 : 1,
           textAlign: "left",
         }}
       >
@@ -1341,6 +1593,7 @@ function SectionCard({
       {isOpen && (
         <div style={{ padding: "4px 20px 20px", borderTop: "1px solid var(--border)" }}>
           {children}
+          {footer}
         </div>
       )}
     </div>
@@ -1677,13 +1930,99 @@ function TrustBadge({ icon, text }: { icon: ReactNode; text: string }) {
   );
 }
 
+/**
+ * Промокод: сервер проверяет код на текущей корзине по правилам Bitrix (те же, что в заказе).
+ * В заказ уходит только применённый код; неподходящий показываем с причиной.
+ */
+function CouponField({
+  lines,
+  applied,
+  onApplied,
+}: {
+  lines: CreateOrderInput["lines"];
+  applied: CouponResult | null;
+  onApplied: (result: CouponResult | null) => void;
+}) {
+  const [value, setValue] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  if (applied) {
+    return (
+      <div className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2 text-sm">
+        <span>
+          Промокод <strong>{applied.code}</strong> применён
+        </span>
+        <button
+          type="button"
+          onClick={() => { onApplied(null); setValue(""); }}
+          className="text-xs text-muted-foreground underline hover:text-foreground"
+        >
+          Убрать
+        </button>
+      </div>
+    );
+  }
+
+  const apply = async () => {
+    const code = value.trim();
+    if (!code || checking) return;
+    setChecking(true);
+    setError(null);
+    try {
+      const result = await checkCoupon({ lines, coupon: code });
+      if (result.applied) {
+        onApplied({ code: result.code, applied: true, discount: result.discount, message: result.message });
+        toast.success(`Промокод применён: −${formatPrice(result.discount)}`);
+      } else {
+        setError(result.message);
+      }
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "Не удалось проверить промокод. Попробуйте ещё раз.");
+    } finally {
+      setChecking(false);
+    }
+  };
+
+  return (
+    <div>
+      <form
+        onSubmit={(event) => { event.preventDefault(); void apply(); }}
+        className="flex gap-2"
+      >
+        <input
+          value={value}
+          onChange={(event) => { setValue(event.target.value); setError(null); }}
+          placeholder="Промокод"
+          aria-label="Промокод"
+          autoComplete="off"
+          maxLength={64}
+          className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground"
+        />
+        <button
+          type="submit"
+          disabled={!value.trim() || checking}
+          className="shrink-0 rounded-lg border border-foreground px-3 py-2 text-sm font-medium transition-opacity disabled:opacity-40"
+        >
+          {checking ? "Проверяем…" : "Применить"}
+        </button>
+      </form>
+      {error && (
+        <p className="mt-1.5 text-xs text-destructive" role="alert">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 function SummaryRow({
   label,
   value,
   valueStyle,
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
   valueStyle?: CSSProperties;
 }) {
   return (
@@ -1696,6 +2035,81 @@ function SummaryRow({
   );
 }
 
+function StepNav({
+  hint,
+  onBack,
+  onNext,
+  nextDisabled,
+}: {
+  hint: string | null;
+  onBack?: () => void;
+  onNext?: () => void;
+  nextDisabled?: boolean;
+}) {
+  return (
+    <div style={{ marginTop: "20px" }}>
+      {hint && onNext && (
+        <p className="text-muted-foreground" style={{ fontSize: "12px", margin: "0 0 10px" }}>
+          {hint}
+        </p>
+      )}
+      <div style={{ display: "flex", justifyContent: "space-between", gap: "12px" }}>
+        {onBack ? (
+          <button
+            type="button"
+            onClick={onBack}
+            style={{
+              padding: "10px 22px",
+              borderRadius: "9999px",
+              border: "1px solid var(--border)",
+              background: "transparent",
+              fontSize: "14px",
+              fontWeight: 500,
+              cursor: "pointer",
+            }}
+          >
+            Назад
+          </button>
+        ) : (
+          <span />
+        )}
+        {onNext && (
+          <button
+            type="button"
+            onClick={onNext}
+            disabled={nextDisabled}
+            style={{
+              padding: "10px 28px",
+              borderRadius: "9999px",
+              border: "none",
+              backgroundColor: "var(--brand)",
+              color: "var(--brand-foreground)",
+              fontSize: "14px",
+              fontWeight: 600,
+              cursor: nextDisabled ? "not-allowed" : "pointer",
+              opacity: nextDisabled ? 0.5 : 1,
+            }}
+          >
+            Далее
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DeliveryCalculating({ label, size = 13 }: { label: string; size?: number }) {
+  return (
+    <span
+      className="text-muted-foreground"
+      style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontWeight: 500 }}
+    >
+      <Loader2 size={size} className="animate-spin" />
+      {label}
+    </span>
+  );
+}
+
 function Field({
   label,
   type = "text",
@@ -1703,6 +2117,11 @@ function Field({
   required,
   value,
   onChange,
+  name,
+  autoComplete,
+  inputMode,
+  maxLength,
+  onFocus,
 }: {
   label: string;
   type?: string;
@@ -1710,6 +2129,11 @@ function Field({
   required?: boolean;
   value?: string;
   onChange?: (v: string) => void;
+  name?: string;
+  autoComplete?: string;
+  inputMode?: "tel" | "email" | "text";
+  maxLength?: number;
+  onFocus?: () => void;
 }) {
   return (
     <label style={{ display: "block" }}>
@@ -1721,6 +2145,11 @@ function Field({
         type={type}
         placeholder={placeholder}
         required={required}
+        name={name}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
+        maxLength={maxLength}
+        onFocus={onFocus}
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         className="w-full bg-background border border-border"
