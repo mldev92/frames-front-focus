@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { CircleAlert, Heart, ChevronRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
-import { catalogSectionTitle, productCatalogHref } from "@/data/categories";
+import { catalogSectionTitle, categoryForCatalogPath, productCatalogHref } from "@/data/categories";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { ProductCard } from "@/components/ProductCard";
@@ -19,7 +19,9 @@ import type { EyePrescription, Prescription } from "@/lib/store/cart";
 import { prescriptionComplete } from "@/components/PrescriptionInput";
 import { useCityStore, type CityCode } from "@/lib/store/city";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
-import { catalogSeoForSection } from "@/data/catalog-seo";
+import { catalogSectionMetadata } from "@/data/catalog-seo";
+import { catalogConfig } from "@/routes/catalog_s.$category";
+import { productMetaDescription } from "@/lib/product-seo";
 import {
   applyCatalogState,
   catalogSearchSchema,
@@ -44,13 +46,16 @@ export const Route = createFileRoute("/catalog_s/$category/$slug")({
   head: ({ loaderData, params }) => {
     if (!loaderData) return { meta: [{ title: "Товар · ОПТИКА 100%" }] };
     if (loaderData.kind === "catalog") {
-      const sectionSeo = catalogSeoForSection(loaderData.sectionPath);
+      const category = categoryForCatalogPath(loaderData.sectionPath);
+      const sectionSeo = catalogSectionMetadata(loaderData.sectionPath, category ? catalogConfig[category] : {
+        title: "Каталог", metaTitle: "Каталог · ОПТИКА 100%", metaDescription: "Каталог ОПТИКА 100%.",
+      });
       return {
         meta: [
-          { title: sectionSeo?.metaTitle ?? "Каталог · ОПТИКА 100%" },
-          { name: "description", content: sectionSeo?.metaDescription ?? "" },
-          { property: "og:title", content: sectionSeo?.metaTitle ?? "Каталог · ОПТИКА 100%" },
-          { property: "og:description", content: sectionSeo?.metaDescription ?? "" },
+          { title: sectionSeo.metaTitle },
+          { name: "description", content: sectionSeo.metaDescription },
+          { property: "og:title", content: sectionSeo.metaTitle },
+          { property: "og:description", content: sectionSeo.metaDescription },
         ],
         links: [{
           rel: "canonical",
@@ -59,12 +64,13 @@ export const Route = createFileRoute("/catalog_s/$category/$slug")({
       };
     }
     const p = loaderData.data.product;
+    const description = productMetaDescription(p);
     return {
       meta: [
         { title: `${p.brand} ${p.name} — купить · ОПТИКА 100%` },
-        { name: "description", content: p.description },
+        { name: "description", content: description },
         { property: "og:title", content: `${p.brand} ${p.name}` },
-        { property: "og:description", content: p.description },
+        { property: "og:description", content: description },
         { property: "og:image", content: p.images[0] },
         { property: "og:type", content: "product" },
       ],

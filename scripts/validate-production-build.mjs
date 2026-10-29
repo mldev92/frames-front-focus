@@ -3,6 +3,7 @@ if (process.env.VITE_VIRTUAL_TRY_ON === "true" || process.env.VITE_ALLOW_FIXTURE
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { catalogLinks, redirectPaths } from "./catalog-link-check.mjs";
+import { catalogHtmlProblems } from "./catalog-html-validation.mjs";
 
 const manifest = JSON.parse(
   await readFile(new URL("../generated/production-routes.json", import.meta.url), "utf8"),
@@ -46,6 +47,9 @@ const brokenCatalogLinks = new Map();
 for (const route of routes) {
   const relative = route === "/" ? "index.html" : `${route.replace(/^\/|\/$/g, "")}/index.html`;
   const html = await readFile(new URL(relative, clientDir), "utf8");
+  if (/^\/catalog_[sn]\//.test(route)) {
+    for (const problem of catalogHtmlProblems(html)) invalid.push(`${route}: ${problem}`);
+  }
   for (const href of catalogLinks(html)) {
     if (!knownCatalogPaths.has(href) && !brokenCatalogLinks.has(href)) brokenCatalogLinks.set(href, route);
   }
