@@ -3,6 +3,7 @@ import {
   getCatalogPage,
   getProduct,
   getRelated,
+  isKnownCatalogSection,
   IndexNotReadyError,
   type CatalogPage as CatalogPageData,
   type CatalogQuery,
@@ -248,12 +249,15 @@ export async function resolveCatalogRoute(
   }
 
   const section = sectionSegments.at(-1) ?? "";
+  const sectionPath = sectionSegments.join("/");
+  const result = await loadCatalogPage(section, search, city, signal);
+  if (result.state === "ok" && result.data.total === 0 && !await isKnownCatalogSection(sectionPath, city)) return null;
   return {
     kind: "catalog",
-    sectionPath: sectionSegments.join("/"),
+    sectionPath,
     section,
     legacyFilterPath,
-    result: await loadCatalogPage(section, search, city, signal),
+    result,
   };
 }
 

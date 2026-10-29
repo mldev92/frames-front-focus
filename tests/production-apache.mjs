@@ -74,10 +74,12 @@ const spaceTarget = "/catalog_s/linzy_dlya_ochkov/VX%20Start_orma_crizal_prevenc
 const spaced = await fetch(origin + spaceSource + "?cutover_probe=1", { redirect: "manual" });
 if (spaced.status !== 301 || spaced.headers.get("location") !== "https://optika100.com" + spaceTarget + "?cutover_probe=1") failures.push("Space redirect did not preserve encoding and query");
 redirectCount++;
-for (const route of ["/o100_frontend_current/index.html", "/%6f100_frontend_current/index.html", "/o100_frontend_releases/private/index.html", "/cutover-unknown-page/", "/catalog_s/opravy/cutover-unknown-product/", "/main-v2/", "/loyalty/", ...(routeManifest.retiredRedirectTargets || [])]) {
+const retiredPaths = [...(routeManifest.retiredProductPaths || []), ...(routeManifest.retiredSectionPaths || [])];
+for (const route of ["/o100_frontend_current/index.html", "/%6f100_frontend_current/index.html", "/o100_frontend_releases/private/index.html", "/cutover-unknown-page/", "/catalog_s/opravy/cutover-unknown-product/", "/main-v2/", "/loyalty/", ...(routeManifest.retiredRedirectTargets || []), ...retiredPaths]) {
   const response = await fetch(origin + route, {redirect:"manual"});
   if (response.status !== 404) failures.push(`${route}: expected 404, got ${response.status}`);
 }
 if (failures.length) throw new Error(`${failures.length} Apache failures:\n${failures.slice(0, 50).join("\n")}`);
 console.log(`PASS: Apache served all ${routes.length} manifest routes byte-for-byte; ${redirectCount} exact redirects preserved targets and queries; private and unknown paths returned 404.`);
 console.log(`PASS: followed ${navigationLinks.size} catalog links from rendered pages, including redirect chains.`);
+console.log(`PASS: ${retiredPaths.length} retired catalog URLs returned 404.`);

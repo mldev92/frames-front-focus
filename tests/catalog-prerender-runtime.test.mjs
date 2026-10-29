@@ -40,6 +40,20 @@ test("браузер сохраняет сообщение о временно �
   assert.deepEqual(await route.loadCatalogPage("opravy", {}, "spb"), { state: "index_not_ready" });
 });
 
+test("пустой существующий раздел сохраняется, отсутствующий товар не становится каталогом", async () => {
+  const api = {
+    getProduct: async () => null,
+    getCatalogPage: async () => ({ total: 0, products: [] }),
+    isKnownCatalogSection: async (section, city) => city === "nvk" && section === "solntsezashchitnye_ochki/detskie_1/dlya_malchikov_1",
+  };
+  const route = await loadModule("../src/lib/catalog-route.ts", { "@/lib/api/bitrix": api },
+    { SSR: true, VITE_PRERENDER_BUILD: "true" });
+  assert.equal((await route.resolveCatalogRoute("solntsezashchitnye_ochki/detskie_1/dlya_malchikov_1", {}, "nvk")).kind, "catalog");
+  assert.equal(await route.resolveCatalogRoute("soputstvuyushchie_tovary/renu_multiplus_8_ml", {}, "nvk"), null);
+  api.isKnownCatalogSection = async () => { throw unavailable; };
+  await assert.rejects(route.resolveCatalogRoute("opravy/unknown", {}, "spb"), unavailable);
+});
+
 test("переход из списка загружает полное описание и не теряет его после повторного списка", async () => {
   const summary = { id: 1, slug: "stellest", name: "Stellest", images: [], description: "" };
   let detailRequests = 0;

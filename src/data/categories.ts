@@ -141,6 +141,7 @@ export function catalogSectionTitle(path: string, fallback: string): string {
       zhenskie_: "Женские солнцезащитные очки", zhenskie_1: "Женские солнцезащитные очки",
       detskie_: "Детские солнцезащитные очки", detskie_1: "Детские солнцезащитные очки",
       dlya_malchikov_: "Солнцезащитные очки для мальчиков", dlya_devochek_: "Солнцезащитные очки для девочек",
+      dlya_malchikov_1: "Солнцезащитные очки для мальчиков", dlya_devochek_1: "Солнцезащитные очки для девочек",
     },
     "linzy-dlya-ochkov": {
       detskie: "Детские линзы для очков", odnofokalnye: "Однофокальные линзы для очков",

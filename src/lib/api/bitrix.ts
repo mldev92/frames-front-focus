@@ -92,7 +92,7 @@ function fixtureProducts(products: Product[]): Product[] {
 const prerenderResponses = new Map<string, Promise<unknown>>();
 async function fetchJson<T>(path: string): Promise<T> {
   const cacheable = import.meta.env.SSR && import.meta.env.VITE_PRERENDER_BUILD === "true"
-    && /^(?:homepage|products|galleries|menu_counts)\.php(?:\?|$)/.test(path);
+    && /^(?:homepage|products|galleries|menu_counts|catalog_sections)\.php(?:\?|$)/.test(path);
   const read = async (): Promise<T> => {
     const res = await apiFetch(url(path));
     if (!res.ok) throw new Error(`Bitrix API ${res.status} for ${path}`);
@@ -350,6 +350,16 @@ export type CatalogFacetSummary = Pick<CatalogPage, "total" | "facets">;
 /** Thrown when the server has no valid catalog index (HTTP 503 index_not_ready). */
 export class IndexNotReadyError extends Error {
   constructor() { super("catalog index not ready"); this.name = "IndexNotReadyError"; }
+}
+
+// Нулевой остаток не отличает существующий раздел от неизвестного URL.
+export async function isKnownCatalogSection(sectionPath: string, city: "spb" | "nvk"): Promise<boolean> {
+  const data = await fetchJson<{ city: string; sections: Array<{ path: string }> }>(`catalog_sections.php?city=${city}`);
+  if (data.city !== city || !data.sections?.length) throw new Error(`Invalid catalog sections for ${city}`);
+  const section = sectionPath.replace(/^\/+|\/+$/g, "");
+  const prefix = city === "nvk" ? "catalog_n" : "catalog_s";
+  return data.sections.some(({ path }) => path === `/${prefix}/${section}/`
+    || (!section.includes("/") && path.endsWith(`/${section}/`)));
 }
 
 /**

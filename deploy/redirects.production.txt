@@ -545,3 +545,6 @@ RedirectMatch 301 ^/catalog_s/soputstvuyushchie_tovary/renu_multiplus_120ml/?$ h
 RedirectMatch 301 ^/catalog_s/soputstvuyushchie_tovary/renu_multiplus_240ml/?$ https://optika100.com/catalog_s/rastvory/renu_multiplus_240ml/
 RedirectMatch 301 ^/catalog_s/soputstvuyushchie_tovary/renu_multiplus_360ml/?$ https://optika100.com/catalog_s/rastvory/renu_multiplus_360ml/
 # END o100 SEO product redirects
+
+# Устаревшая ветка ведёт на существующий раздел того же города.
+RedirectMatch 301 ^/catalog_s/solntsezashchitnye_ochki/detskie_1/dlya_malchikov_/?$ https://optika100.com/catalog_s/solntsezashchitnye_ochki/detskie_/dlya_malchikov_/

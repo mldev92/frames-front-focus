@@ -33,6 +33,7 @@ if (!shell.includes('id="$tsr-stream-barrier"')) throw new Error("Production SPA
 
 const home = await readFile(new URL("index.html", clientDir), "utf8");
 const robots = await readFile(new URL("robots.txt", clientDir), "utf8");
+if (robots !== await readFile(new URL("../deploy/robots.production.txt", import.meta.url), "utf8")) throw new Error("Production robots policy differs from reviewed baseline");
 if (/<meta[^>]+(?:noindex|nofollow)/i.test(home) || /Disallow:\s*\/\s*$/m.test(robots)) throw new Error("Production home or robots still blocks indexing");
 if (/beta\.optika100\.com/.test(await readFile(new URL("sitemap.xml", clientDir), "utf8"))) throw new Error("Beta URLs in production sitemap");
 

@@ -141,6 +141,7 @@ async function catalogPaths() {
       const path = normalizePath(section.path);
       if (!path?.startsWith(city === "nvk" ? "/catalog_n/" : "/catalog_s/")) throw new Error("Invalid regional section");
       paths.add(path);
+      regionalSectionPaths.add(path);
     }
   }
   // Общий подбор очковых линз доступен в обоих городах.
@@ -178,6 +179,7 @@ async function catalogPaths() {
 }
 
 const routeSet = new Set([...staticRoutes, ...articleRoutes]);
+const regionalSectionPaths = new Set();
 const legacyPaths = await sitemapPaths();
 console.log(`Read ${legacyPaths.size} paths from the live legacy sitemap.`);
 for (const path of legacyPaths) {
@@ -237,6 +239,10 @@ for (const path of seoRequired.paths) routeSet.add(path);
 const reviewedPaths = [...new Set([...reviewedRetired.paths, ...seoRequired.paths])];
 const retiredProductPaths = await reconcileRetiredProducts(routeSet, reviewedPaths, origin);
 console.log(`Rechecked ${reviewedPaths.length} audited products; ${retiredProductPaths.length} return 404 and are omitted.`);
+// Снятые разделы проверяем по дереву, а не по наличию товаров.
+const reviewedSections = JSON.parse(await readFile(new URL("../deploy/reviewed-retired-sections.json", import.meta.url), "utf8"));
+const retiredSectionPaths = reviewedSections.paths.filter((path) => !regionalSectionPaths.has(path));
+for (const path of retiredSectionPaths) routeSet.delete(path);
 const routes = [...routeSet].filter((path) => !redirectSources.has(path)).sort((a, b) => a.localeCompare(b, "ru"));
 const sitemapSeo = new Map([
   ["/linzy-spb/", { priority: "0.7", changefreq: "weekly" }],
@@ -245,7 +251,7 @@ const sitemapSeo = new Map([
   ["/biometriya-glaza/", { priority: "0.6", changefreq: "monthly" }],
 ]);
 const generatedAt = new Date().toISOString();
-const snapshot = { version: 1, generatedAt, origin, count: routes.length, routes, retiredRedirectTargets: retiredRedirectTargets.sort(), retiredProductPaths };
+const snapshot = { version: 1, generatedAt, origin, count: routes.length, routes, retiredRedirectTargets: retiredRedirectTargets.sort(), retiredProductPaths, retiredSectionPaths };
 
 await mkdir(outputDir, { recursive: true });
 await mkdir(publicDir, { recursive: true });
@@ -266,6 +272,6 @@ const sitemap = [
 await writeFile(new URL("sitemap.xml", publicDir), sitemap);
 await writeFile(
   new URL("robots.txt", publicDir),
-  `User-agent: *\nAllow: /\nDisallow: /basket/\nDisallow: /search/\nDisallow: /personal/\nDisallow: /checkout/\nSitemap: ${origin}/sitemap.xml\n`,
+  await readFile(new URL("../deploy/robots.production.txt", import.meta.url), "utf8"),
 );
 console.log(`Generated ${routes.length} production routes at ${generatedAt}`);

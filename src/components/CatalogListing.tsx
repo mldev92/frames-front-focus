@@ -2400,8 +2400,9 @@ export function CatalogListing({
                 </>
               ) : (
                 <>
-                  <div className="font-serif text-2xl text-foreground/60 mb-3">Раздел недоступен</div>
-                  <p className="text-sm text-muted-foreground">Этот раздел пока недоступен для выбранного города</p>
+                  <div className="font-serif text-2xl text-foreground/60 mb-3">В этом разделе пока нет товаров</div>
+                  <p className="text-sm text-muted-foreground">Посмотрите другие разделы каталога или обратитесь к нам за помощью в подборе.</p>
+                  {categoryKey && <a className="mt-5 inline-block underline underline-offset-4" href={catalogHref(categoryKey, city)}>Перейти к категории</a>}
                 </>
               )}
             </div>
