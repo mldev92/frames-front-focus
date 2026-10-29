@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { redirectTargets } from "./catalog-link-check.mjs";
+import { reconcileRetiredProducts } from "./reconcile-retired-products.mjs";
 
 const origin = (process.env.VITE_BITRIX_API || "https://optika100.com").replace(/\/$/, "");
 const outputDir = new URL("../generated/", import.meta.url);
@@ -229,6 +230,13 @@ async function validateRedirectTarget() {
 await Promise.all(Array.from({length: 4}, validateRedirectTarget));
 console.log(`Validated ${missingTargets.length - retiredRedirectTargets.length} additional SEO destinations; ${retiredRedirectTargets.length} confirmed inactive products retain 404.`);
 
+const reviewedRetired = JSON.parse(await readFile(new URL("../deploy/reviewed-retired-products.json", import.meta.url), "utf8"));
+const seoRequired = JSON.parse(await readFile(new URL("../deploy/seo-required-products.json", import.meta.url), "utf8"));
+// URL из GSC и внутренних ссылок проверяем отдельно от списков наличия.
+for (const path of seoRequired.paths) routeSet.add(path);
+const reviewedPaths = [...new Set([...reviewedRetired.paths, ...seoRequired.paths])];
+const retiredProductPaths = await reconcileRetiredProducts(routeSet, reviewedPaths, origin);
+console.log(`Rechecked ${reviewedPaths.length} audited products; ${retiredProductPaths.length} return 404 and are omitted.`);
 const routes = [...routeSet].filter((path) => !redirectSources.has(path)).sort((a, b) => a.localeCompare(b, "ru"));
 const sitemapSeo = new Map([
   ["/linzy-spb/", { priority: "0.7", changefreq: "weekly" }],
@@ -237,7 +245,7 @@ const sitemapSeo = new Map([
   ["/biometriya-glaza/", { priority: "0.6", changefreq: "monthly" }],
 ]);
 const generatedAt = new Date().toISOString();
-const snapshot = { version: 1, generatedAt, origin, count: routes.length, routes, retiredRedirectTargets: retiredRedirectTargets.sort() };
+const snapshot = { version: 1, generatedAt, origin, count: routes.length, routes, retiredRedirectTargets: retiredRedirectTargets.sort(), retiredProductPaths };
 
 await mkdir(outputDir, { recursive: true });
 await mkdir(publicDir, { recursive: true });

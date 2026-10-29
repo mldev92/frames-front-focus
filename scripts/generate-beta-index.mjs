@@ -82,6 +82,11 @@ await writeRoutePage("/biometriya-glaza/", [
 ]);
 console.log("Generated homepage, contact-lens category, and SEO landing HTML from SSR.");
 
+// Родительские каталоги стали реальными директориями из-за контрольных страниц.
+// Beta Apache пропускает существующие директории: без index.html они дают 403.
+await writeRoutePage("/catalog_s/opravy/", ["Оправы"]);
+await writeRoutePage("/catalog_s/linzy_dlya_ochkov/", ["Линзы для очков"]);
+
 for (const acceptance of seoAcceptanceCases) {
   const html = await renderPage(acceptance.path, []);
   const problems = catalogHtmlProblems(html);
