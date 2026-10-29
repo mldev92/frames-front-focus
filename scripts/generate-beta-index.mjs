@@ -86,6 +86,7 @@ console.log("Generated homepage, contact-lens category, and SEO landing HTML fro
 // Beta Apache пропускает существующие директории: без index.html они дают 403.
 await writeRoutePage("/catalog_s/opravy/", ["Оправы"]);
 await writeRoutePage("/catalog_s/linzy_dlya_ochkov/", ["Линзы для очков"]);
+await writeRoutePage("/catalog_n/kontaktnye_linzy/", ["Контактные линзы"]);
 
 for (const acceptance of seoAcceptanceCases) {
   const html = await renderPage(acceptance.path, []);

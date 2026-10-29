@@ -1,6 +1,10 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
 import { ProductPage } from "./catalog_s.$category.$slug";
+import { categoryForCatalogPath } from "@/data/categories";
+import { catalogConfig } from "@/routes/catalog_s.$category";
+import { catalogSectionMetadata } from "@/data/catalog-seo";
+import { productMetaDescription } from "@/lib/product-seo";
 import {
   applyCatalogState,
   catalogSearchSchema,
@@ -25,8 +29,17 @@ export const Route = createFileRoute("/catalog_n/$category/$slug")({
   head: ({ loaderData, params }) => {
     if (!loaderData) return { meta: [{ title: "Товар · ОПТИКА 100%" }] };
     if (loaderData.kind === "catalog") {
+      const category = categoryForCatalogPath(loaderData.sectionPath);
+      const sectionSeo = catalogSectionMetadata(loaderData.sectionPath, category ? catalogConfig[category] : {
+        title: "Каталог", metaTitle: "Каталог · ОПТИКА 100%", metaDescription: "Каталог ОПТИКА 100%.",
+      }, "nvk");
       return {
-        meta: [{ title: "Каталог · ОПТИКА 100%" }],
+        meta: [
+          { title: sectionSeo.metaTitle },
+          { name: "description", content: sectionSeo.metaDescription },
+          { property: "og:title", content: sectionSeo.metaTitle },
+          { property: "og:description", content: sectionSeo.metaDescription },
+        ],
         links: [
           {
             rel: "canonical",
@@ -36,12 +49,13 @@ export const Route = createFileRoute("/catalog_n/$category/$slug")({
       };
     }
     const product = loaderData.data.product;
+    const description = productMetaDescription(product);
     return {
       meta: [
         { title: `${product.brand} ${product.name} — купить · ОПТИКА 100%` },
-        { name: "description", content: product.description },
+        { name: "description", content: description },
         { property: "og:title", content: `${product.brand} ${product.name}` },
-        { property: "og:description", content: product.description },
+        { property: "og:description", content: description },
         { property: "og:image", content: product.images[0] },
         { property: "og:type", content: "product" },
       ],
