@@ -23,13 +23,23 @@ const git=(cwd,...argv)=>run('git',argv,{cwd});
 const gh=(...argv)=>run('gh',argv);
 const sshArgs=['-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=15','-i',config.identity];
 const ssh=(command,input)=>run('ssh',[...sshArgs,config.host,command],{input,timeout:900000});
+let readOnlyRetries=0;
+const readOnlySsh=input=>{
+  for(let attempt=0;attempt<3;attempt++) {
+    try {return ssh('php8.1',input);} catch(error) {
+      if(attempt===2 || !/Connection reset|Connection timed out|Connection closed|ETIMEDOUT|Broken pipe/i.test(String(error.stderr||'')+' '+error.message)) throw error;
+      readOnlyRetries++; console.error('Retrying interrupted read-only SSH check');
+      Atomics.wait(new Int32Array(new SharedArrayBuffer(4)),0,0,1000*(attempt+1));
+    }
+  }
+};
 const exportInventory=()=>{
   const php=readFileSync(path.join(source,'scripts/catalog-content-fingerprint.php'),'utf8')+'\n'+readFileSync(path.join(source,'scripts/export-seo-inventory.php'),'utf8').replace(/^<\?php/,'');
-  const inventory=validateInventory(JSON.parse(ssh('php8.1',php)));
+  const inventory=validateInventory(JSON.parse(readOnlySsh(php)));
   if (catalogFingerprint(inventory)!==inventory.fingerprint) throw Error('Export fingerprint mismatch');
   return inventory;
 };
-const inspect=()=>JSON.parse(ssh('php8.1',readFileSync(path.join(source,'scripts/catalog-refresh-state.php'),'utf8')));
+const inspect=()=>JSON.parse(readOnlySsh(readFileSync(path.join(source,'scripts/catalog-refresh-state.php'),'utf8')));
 let state=json(stateFile), result, acquired=false;
 const retain=(live)=>{
   for(const record of state.history||[]) {
@@ -154,5 +164,5 @@ try {
 } finally {
   if(existsSync(lock) && json(lock).pid===process.pid) unlinkSync(lock);
 }
-save(path.join(base,'last-result.json'),{...result,checkedAt:new Date().toISOString()});
+save(path.join(base,'last-result.json'),{...result,readOnlyRetries,checkedAt:new Date().toISOString()});
 console.log(JSON.stringify(result,null,2));
