@@ -3,6 +3,8 @@ import { CatalogRouteView } from "@/components/CatalogRouteView";
 import { categoryForCatalogPath } from "@/data/categories";
 import { ProductPage } from "@/routes/catalog_s.$category.$slug";
 import { catalogConfig } from "@/routes/catalog_s.$category";
+import { catalogSectionMetadata } from "@/data/catalog-seo";
+import { productMetaDescription, productCanonicalUrl } from "@/lib/product-seo";
 import {
   applyCatalogState,
   catalogSearchSchema,
@@ -24,22 +26,27 @@ export const Route = createFileRoute("/catalog_n/$")({
     const canonical = `https://optika100.com/catalog_n/${(params._splat ?? "").replace(/^\/|\/$/g, "")}/`;
     if (loaderData.kind === "product") {
       const product = loaderData.data.product;
+      const description = productMetaDescription(product);
       return {
         meta: [
           { title: `${product.brand} ${product.name} — купить · ОПТИКА 100%` },
-          { name: "description", content: product.description },
+          { name: "description", content: description },
+          { property: "og:description", content: description },
           { property: "og:title", content: `${product.brand} ${product.name}` },
           { property: "og:image", content: product.images[0] },
         ],
-        links: [{ rel: "canonical", href: canonical }],
+        links: [{ rel: "canonical", href: productCanonicalUrl(product, canonical) }],
       };
     }
     const category = categoryForCatalogPath(loaderData.sectionPath);
     const config = category ? catalogConfig[category] : undefined;
+    const sectionSeo = config && catalogSectionMetadata(loaderData.sectionPath, config, "nvk");
     return {
       meta: [
-        { title: config?.metaTitle ?? "Каталог · ОПТИКА 100%" },
-        { name: "description", content: config?.metaDescription ?? "" },
+        { title: sectionSeo?.metaTitle ?? "Каталог · ОПТИКА 100%" },
+        { name: "description", content: sectionSeo?.metaDescription ?? "" },
+        { property: "og:title", content: sectionSeo?.metaTitle ?? "Каталог · ОПТИКА 100%" },
+        { property: "og:description", content: sectionSeo?.metaDescription ?? "" },
       ],
       links: [{ rel: "canonical", href: canonical }],
     };
@@ -73,3 +80,4 @@ function CatalogNSplatPage() {
     />
   );
 }
+

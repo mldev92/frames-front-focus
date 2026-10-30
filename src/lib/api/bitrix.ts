@@ -25,17 +25,14 @@ const ALLOW_FIXTURES = import.meta.env.DEV && import.meta.env.VITE_ALLOW_FIXTURE
 
 const url = (path: string) => `${BASE}/api/store/${path}`;
 const productGalleryCache = new Map<string, Promise<string[]>>();
-const regionalProductCache = new Map<string, Product>();
+// Здесь храним только полные ответы product.php. Каталожные методы намеренно
+// возвращают облегчённые карточки без lensOptions, описаний и других данных ПДП.
+// Если принять такую карточку за полный товар, контактные линзы нельзя настроить
+// и добавить в корзину.
+const productDetailCache = new Map<string, Product>();
 
 function productCacheKey(city: "spb" | "nvk", slug: string): string {
   return `${city}:${slug}`;
-}
-
-function cacheProducts(products: Product[], city: "spb" | "nvk"): Product[] {
-  for (const product of products) {
-    regionalProductCache.set(productCacheKey(city, product.slug), product);
-  }
-  return products;
 }
 
 async function hydrateProductGalleries(
@@ -61,12 +58,12 @@ async function hydrateProductGalleries(
       );
     }));
     const galleries = Object.assign({}, ...responses.map((data) => data.galleries));
-    return cacheProducts(products.map((product) => {
+    return products.map((product) => {
       const gallery = galleries[product.slug];
       if (!gallery?.length) return product;
       productGalleryCache.set(productCacheKey(city, product.slug), Promise.resolve(gallery));
       return { ...product, images: gallery };
-    }), city);
+    });
   } catch (error) {
     console.error("[bitrix] gallery batch unavailable:", error);
     return products;
@@ -98,7 +95,7 @@ function fixtureProducts(products: Product[]): Product[] {
 const prerenderResponses = new Map<string, Promise<unknown>>();
 async function fetchJson<T>(path: string): Promise<T> {
   const cacheable = import.meta.env.SSR && import.meta.env.VITE_PRERENDER_BUILD === "true"
-    && /^(?:homepage|products|galleries|menu_counts)\.php(?:\?|$)/.test(path);
+    && /^(?:homepage|products|galleries|menu_counts|catalog_sections)\.php(?:\?|$)/.test(path);
   const read = async (): Promise<T> => {
     const res = await apiFetch(url(path));
     if (!res.ok) throw new Error(`Bitrix API ${res.status} for ${path}`);
@@ -129,9 +126,18 @@ export interface HomepageLensPromo {
   description: string;
   image: string | null;
   href: string;
+  /** Последний день акции, YYYY-MM-DD (включительно). */
   endsAt: string | null;
-  discountPercent: number | null;
-  discountLabel: string | null;
+  /** Кнопка акции из админки (например, «Участвовать в акции» → страница производителя). */
+  ctaLabel?: string | null;
+  ctaHref?: string | null;
+  ctaNote?: string | null;
+}
+
+/** Ответ другого города (например, старый бэкенд без `city`) не показываем. */
+function productsMatchCity(products: Product[], city: "spb" | "nvk"): boolean {
+  const prefix = city === "nvk" ? "/catalog_n/" : "/catalog_s/";
+  return products.every((product) => !product.canonicalPath || product.canonicalPath.startsWith(prefix));
 }
 
 interface HomepageResponse {
@@ -169,7 +175,7 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
     for (const [k, v] of Object.entries(q)) if (v !== undefined && v !== "") params.set(k, String(v));
     const data = await fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
     return hydrateProductGalleries(
-      cacheProducts(data.products.map(normalizeProduct), q.city ?? "spb"),
+      data.products.map(normalizeProduct),
       q.city ?? "spb",
     );
   } catch (e) {
@@ -182,8 +188,25 @@ export async function getProducts(categoryOrSegment: string, q: ProductQuery = {
  * Homepage payload: featured frames, featured contact lenses, and optional
  * admin-managed promo copy for the lens promo block.
  */
-export async function getHomepageData(city: "spb" | "nvk" = "spb"): Promise<HomepageResponse> {
+/** «Вся Россия» (region all) использует каталог Санкт-Петербурга, но списки товаров задаются в админке отдельно. */
+export async function getHomepageData(
+  city: "spb" | "nvk" = "spb",
+  region: "spb" | "nvk" | "all" = city,
+): Promise<HomepageResponse> {
   if (city === "nvk") {
+    // Списки Новокузнецка задаются в админке отдельно; без них или при сбое берём первые товары каталога.
+    if (BASE) {
+      try {
+        const data = await fetchJson<HomepageResponse>("homepage.php?city=nvk");
+        const popularModels = data.popularModels.map(normalizeProduct);
+        const contactLensProducts = data.contactLensProducts.map(normalizeProduct);
+        if (productsMatchCity([...popularModels, ...contactLensProducts], "nvk")) {
+          return { popularModels, contactLensProducts, lensPromo: null };
+        }
+      } catch (error) {
+        console.error("[bitrix] getHomepageData nvk:", error);
+      }
+    }
     const [popularModels, contactLensProducts] = await Promise.all([
       getProducts("opravy", { limit: 8, city }),
       getProducts("kontaktnye_linzy", { limit: 4, city }),
@@ -204,10 +227,10 @@ export async function getHomepageData(city: "spb" | "nvk" = "spb"): Promise<Home
   if (!BASE) throw new Error("VITE_BITRIX_API is required");
 
   try {
-    const data = await fetchJson<HomepageResponse>("homepage.php");
+    const data = await fetchJson<HomepageResponse>(region === "all" ? "homepage.php?region=all" : "homepage.php");
     return {
-      popularModels: cacheProducts(data.popularModels.map(normalizeProduct), "spb"),
-      contactLensProducts: cacheProducts(data.contactLensProducts.map(normalizeProduct), "spb"),
+      popularModels: data.popularModels.map(normalizeProduct),
+      contactLensProducts: data.contactLensProducts.map(normalizeProduct),
       lensPromo: data.lensPromo,
     };
   } catch (error) {
@@ -224,6 +247,28 @@ export async function getHomepageData(city: "spb" | "nvk" = "spb"): Promise<Home
   }
 }
 
+/**
+ * Contact lenses chosen in the admin page «Главная страница нового сайта» for the
+ * Stellest landing. Empty list means nothing is configured (or the API is down),
+ * so the page keeps its static cards.
+ */
+export async function getStellestLensProducts(
+  city: "spb" | "nvk" = "spb",
+  region: "spb" | "nvk" | "all" = city,
+): Promise<Product[]> {
+  if (!BASE) return [];
+  try {
+    const data = await fetchJson<{ stellestLensProducts?: Product[] }>(
+      `homepage.php?block=stellest${city === "nvk" ? "&city=nvk" : region === "all" ? "&region=all" : ""}`,
+    );
+    const products = (data.stellestLensProducts ?? []).map(normalizeProduct);
+    return productsMatchCity(products, city) ? products : [];
+  } catch (error) {
+    console.error("[bitrix] getStellestLensProducts:", error);
+    return [];
+  }
+}
+
 /** Full paginated response (real total/pages from the endpoint). */
 export async function getProductsPage(categoryOrSegment: string, q: ProductQuery = {}): Promise<ProductsResponse> {
   if (!BASE && ALLOW_FIXTURES) {
@@ -237,7 +282,7 @@ export async function getProductsPage(categoryOrSegment: string, q: ProductQuery
   const data = await fetchJson<ProductsResponse>(`products.php?${params.toString()}`);
   return {
     ...data,
-    products: cacheProducts(data.products.map(normalizeProduct), q.city ?? "spb"),
+    products: data.products.map(normalizeProduct),
   };
 }
 
@@ -256,7 +301,7 @@ export async function getProduct(
     return product ? fixtureProducts([product])[0] : null;
   }
   if (!BASE) throw new Error("VITE_BITRIX_API is required");
-  const cached = regionalProductCache.get(productCacheKey(city, slug));
+  const cached = productDetailCache.get(productCacheKey(city, slug));
   if (cached) return cached;
 
   try {
@@ -266,7 +311,7 @@ export async function getProduct(
     const data = (await res.json()) as Product | { error: string };
     if ("error" in data) return null;
     const product = normalizeProduct(data);
-    regionalProductCache.set(productCacheKey(city, slug), product);
+    productDetailCache.set(productCacheKey(city, slug), product);
     return product;
   } catch (e) {
     console.error("[bitrix] getProduct:", e);
@@ -358,6 +403,16 @@ export class IndexNotReadyError extends Error {
   constructor() { super("catalog index not ready"); this.name = "IndexNotReadyError"; }
 }
 
+// Нулевой остаток не отличает существующий раздел от неизвестного URL.
+export async function isKnownCatalogSection(sectionPath: string, city: "spb" | "nvk"): Promise<boolean> {
+  const data = await fetchJson<{ city: string; sections: Array<{ path: string }> }>(`catalog_sections.php?city=${city}`);
+  if (data.city !== city || !data.sections?.length) throw new Error(`Invalid catalog sections for ${city}`);
+  const section = sectionPath.replace(/^\/+|\/+$/g, "");
+  const prefix = city === "nvk" ? "catalog_n" : "catalog_s";
+  return data.sections.some(({ path }) => path === `/${prefix}/${section}/`
+    || (!section.includes("/") && path.endsWith(`/${section}/`)));
+}
+
 /**
  * One server-driven catalog page: products slice + totals + facet counts in a
  * single request. No mock fallback — the catalog page owns its error states.
@@ -384,7 +439,7 @@ export async function getCatalogPage(
   if (!res.ok) throw new Error(`Bitrix API ${res.status} for catalog page`);
   const data = (await res.json()) as Partial<CatalogPage> & Pick<CatalogPage, "products" | "total" | "page" | "pages" | "source">;
   const products = await hydrateProductGalleries(
-    cacheProducts(data.products.map(normalizeProduct), q.city ?? "spb"),
+    data.products.map(normalizeProduct),
     q.city ?? "spb",
   );
   const prices = products.map((product) => product.price).filter((price) => Number.isFinite(price));
@@ -545,10 +600,14 @@ export interface AppointmentSlotsRequest {
   clinicUid: string;
   ageType: "adult" | "child";
   serviceCode: "glasses" | "contacts";
+  date?: string;
+  compact?: boolean;
 }
 
 export interface AppointmentSlotsResponse {
   status: "ok";
+  availableDates: string[];
+  selectedDate: string;
   slots: AppointmentSlot[];
 }
 
@@ -578,9 +637,8 @@ export async function verifyAppointmentConfirmationCode(
 
 export async function getAppointmentSlots(
   input: AppointmentSlotsRequest,
-): Promise<AppointmentSlot[]> {
-  const response = await postJson<AppointmentSlotsResponse>("appointment_slots.php", input);
-  return response.slots;
+): Promise<AppointmentSlotsResponse> {
+  return postJson<AppointmentSlotsResponse>("appointment_slots.php", input);
 }
 
 /** Name/article substring search. */
@@ -612,14 +670,31 @@ export interface CreateOrderInput {
   customer: { fullName: string; phone: string; email: string };
   lines: import("@/lib/store/cart").CartLine[];
   city: string;
-  deliveryCode: "salon_pickup_spb" | "spb_courier" | "sdek_courier" | "sdek_pickup";
+  /** Код местоположения Bitrix из поиска города; для быстрых городов-кнопок не нужен. */
+  locationCode?: string;
+  deliveryCode: string;
   paymentCode: "cash_on_pickup" | "yookassa_card" | "t_installment";
   delivery: string;
   payment: string;
   address?: string;
   pickupPoint?: { id: string; address: string; name?: string };
-  trackNumber?: string;
   comment?: string;
+  /** Промокод (купон правила корзины Bitrix); передаём только применённый код. */
+  coupon?: string;
+}
+
+/** Итог промокода: сервер считает корзину с кодом и без, скидка — их разница. */
+export interface CouponResult {
+  code: string;
+  applied: boolean;
+  discount: number;
+  message: string;
+}
+
+export function checkCoupon(
+  input: Pick<CreateOrderInput, "lines" | "coupon">,
+): Promise<CouponResult & { ok: true; itemsTotal: number }> {
+  return securePost("order_coupon.php", input);
 }
 
 export interface CreateOrderResult {
@@ -648,6 +723,12 @@ export interface DeliveryQuoteOption {
   priceFormatted: string;
   period?: string | null;
   logo?: string | null;
+  /** Ставка НДС, % — уже входит в цену. */
+  vatRate?: number;
+  /** Сумма НДС, ₽: считается сервером от нерокруглённой цены. */
+  vatAmount?: number;
+  /** Служба доставки Bitrix. */
+  serviceId?: number | null;
   requiresAddress: boolean;
   requiresPickupPoint: boolean;
   errors: string[];
@@ -661,9 +742,26 @@ export interface DeliveryQuoteResult {
 }
 
 export async function getOrderDeliveryOptions(
-  input: Pick<CreateOrderInput, "city" | "lines">,
+  input: Pick<CreateOrderInput, "city" | "locationCode" | "lines"> & { deliveryCode?: CreateOrderInput["deliveryCode"] },
 ): Promise<DeliveryQuoteResult> {
   return securePost<DeliveryQuoteResult>("order_delivery.php", input);
+}
+
+export interface LocationSuggestion {
+  code: string;
+  name: string;
+  /** «Город, Область, Округ, Россия» — как в подсказках старого оформления. */
+  label: string;
+}
+
+export async function searchLocations(q: string, signal?: AbortSignal): Promise<LocationSuggestion[]> {
+  const result = await securePost<{ ok: true; items: LocationSuggestion[] }>(
+    "location_search.php",
+    { q },
+    {},
+    signal,
+  );
+  return result.items;
 }
 
 export interface PickupPointOption {
@@ -702,6 +800,8 @@ export interface OrderQuote {
   deliveryPrice: number | null;
   deliveryStatus: "priced" | "pending_confirmation";
   total: number | null;
+  /** Есть, только если в заказе был промокод; itemsTotal уже со скидкой. */
+  coupon?: CouponResult | null;
 }
 export function quoteOrder(input: CreateOrderInput): Promise<OrderQuote> {
   return securePost<OrderQuote>("order_quote.php", input);

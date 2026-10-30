@@ -669,7 +669,7 @@ function LensLineCardView({ card, onBook }: { card: LensLineCard; onBook: () => 
             </div>
           )}
           {offers && visibleOffers(offers).length > 0 && (
-            <ul className="divide-y divide-border rounded-xl border border-border bg-background">
+            <ul className="@container divide-y divide-border rounded-xl border border-border bg-background">
               {visibleOffers(offers).map((offer) => (
                 <LensSearchRow key={offer.id} offer={offer} onShowDetail={setDetailOffer} onBook={onBook} />
               ))}

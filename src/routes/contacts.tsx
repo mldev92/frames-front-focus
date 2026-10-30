@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { ContactActionButtons, yandexMapsSearchHref } from "@/components/ContactActionButtons";
 import { YandexMap } from "@/components/YandexMap";
-import { CONTACT, NK_SALONS, SPB_SALONS } from "@/data/contact";
+import { contactForCity, NK_SALONS, SPB_SALONS } from "@/data/contact";
 import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/contacts")({
@@ -303,8 +303,9 @@ function SalonCard({
 function ContactsPage() {
   const regionalCity = useCityStore((state) => state.city);
   const regionalCityHydrated = useCityStore((state) => state.hydrated);
-  const setRegionalCity = useCityStore((state) => state.setCity);
+  const setRegionalCity = useCityStore((state) => state.setRegion);
   const [city, setCity] = useState<"spb" | "nk">(() => (regionalCity === "nvk" ? "nk" : "spb"));
+  const contact = contactForCity(city === "nk" ? "nvk" : "spb");
 
   useEffect(() => {
     if (regionalCityHydrated) setCity(regionalCity === "nvk" ? "nk" : "spb");
@@ -395,7 +396,7 @@ function ContactsPage() {
           style={{ gap: 16, marginTop: -28, position: "relative", zIndex: 2 }}
         >
           <a
-            href={CONTACT.phone.href}
+            href={contact.phone.href}
             style={pillStyle}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLAnchorElement).style.boxShadow = "var(--shadow-sm)";
@@ -414,13 +415,13 @@ function ContactsPage() {
                 Бесплатный звонок
               </div>
               <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-0.01em" }}>
-                {CONTACT.phone.label}
+                {contact.phone.label}
               </div>
             </div>
           </a>
 
           <a
-            href={CONTACT.email.href}
+            href={contact.email.href}
             style={pillStyle}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLAnchorElement).style.boxShadow = "var(--shadow-sm)";
@@ -439,7 +440,7 @@ function ContactsPage() {
                 Электронная почта
               </div>
               <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-0.01em" }}>
-                {CONTACT.email.label}
+                {contact.email.label}
               </div>
             </div>
           </a>
@@ -508,8 +509,8 @@ function ContactsPage() {
               yandex="5.0"
               twoGis="5.0"
               routeHref={yandexMapsSearchHref(SPB_SALON.routeQuery)}
-              phoneHref={CONTACT.phone.href}
-              phoneLabel={CONTACT.phone.label}
+              phoneHref={contact.phone.href}
+              phoneLabel={contact.phone.label}
             />
           </div>
         )}
@@ -541,8 +542,8 @@ function ContactsPage() {
                   yandex="5.0"
                   twoGis={index === 1 ? "5.0" : "4.8"}
                   routeHref={yandexMapsSearchHref(salon.routeQuery)}
-                  phoneHref={CONTACT.phone.href}
-                  phoneLabel={CONTACT.phone.label}
+                  phoneHref={contact.phone.href}
+                  phoneLabel={contact.phone.label}
                 />
               ))}
             </div>
@@ -571,7 +572,7 @@ function ContactsPage() {
           </p>
           <div className="flex flex-wrap justify-center" style={{ gap: 12 }}>
             <a
-              href={CONTACT.phone.href}
+              href={contact.phone.href}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -586,7 +587,7 @@ function ContactsPage() {
               }}
             >
               <PhoneIcon />
-              {CONTACT.phone.label}
+              {contact.phone.label}
             </a>
             <button
               type="button"

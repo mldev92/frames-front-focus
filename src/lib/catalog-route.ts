@@ -3,6 +3,7 @@ import {
   getCatalogPage,
   getProduct,
   getRelated,
+  isKnownCatalogSection,
   IndexNotReadyError,
   type CatalogPage as CatalogPageData,
   type CatalogQuery,
@@ -193,6 +194,7 @@ export async function loadCatalogPage(
     const data = await getCatalogPage(section, query, signal);
     return { state: "ok", data };
   } catch (error) {
+    if (import.meta.env.SSR && import.meta.env.VITE_PRERENDER_BUILD === "true") throw error;
     if (error instanceof IndexNotReadyError) return { state: "index_not_ready" };
     if (error instanceof DOMException && error.name === "AbortError") throw error;
     return { state: "error", message: error instanceof Error ? error.message : String(error) };
@@ -240,18 +242,22 @@ export async function resolveCatalogRoute(
         };
       }
     } catch (error) {
+      if (import.meta.env.SSR && import.meta.env.VITE_PRERENDER_BUILD === "true") throw error;
       if (error instanceof DOMException && error.name === "AbortError") throw error;
       console.error("[catalog-route] product resolution failed:", error);
     }
   }
 
   const section = sectionSegments.at(-1) ?? "";
+  const sectionPath = sectionSegments.join("/");
+  const result = await loadCatalogPage(section, search, city, signal);
+  if (result.state === "ok" && result.data.total === 0 && !await isKnownCatalogSection(sectionPath, city)) return null;
   return {
     kind: "catalog",
-    sectionPath: sectionSegments.join("/"),
+    sectionPath,
     section,
     legacyFilterPath,
-    result: await loadCatalogPage(section, search, city, signal),
+    result,
   };
 }
 

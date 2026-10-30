@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CheckCircle2, LoaderCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getMe } from "@/lib/api/account";
 import {
   submitLensSelectionRequest,
   type LensSelectionRequestDraft,
@@ -26,6 +27,23 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState("");
   const [requestId, setRequestId] = useState("");
+
+  // Prefill the contact fields from the logged-in account. Only empty fields are
+  // filled, so anything the customer already typed is never overwritten.
+  useEffect(() => {
+    let alive = true;
+    getMe()
+      .then((me) => {
+        if (!alive || !me.authorized) return;
+        setName((prev) => prev || me.fullName || "");
+        setPhone((prev) => prev || me.phone || "");
+        setEmail((prev) => prev || me.email || "");
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   function clearFile() {
     setFile(null);

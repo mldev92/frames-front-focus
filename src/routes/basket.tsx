@@ -45,14 +45,14 @@ function CartPage() {
       {lines.length > 0 && <div className="grid lg:grid-cols-[1fr_360px] gap-12">
         <div className="divide-y divide-border border-y border-border">
           {lines.map((l) => (
-            <div key={l.lineId} className="flex gap-5 py-6">
+            <div key={l.lineId} className="flex gap-3 py-6 sm:gap-5">
               <img
                 src={l.image}
                 alt={l.name}
                 referrerPolicy="no-referrer"
-                className="w-28 h-28 object-cover bg-surface rounded-sm"
+                className="h-20 w-20 shrink-0 object-cover bg-surface rounded-sm sm:h-28 sm:w-28"
               />
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <div className="text-xs text-muted-foreground">{l.brand}</div>
                 <a href={l.canonicalPath} className="font-medium hover:text-brand">
                   {l.name}

@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { catalogHtmlProblems } from "./catalog-html-validation.mjs";
+import { seoAcceptanceCases } from "./seo-acceptance-cases.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, "..", "dist");
@@ -79,3 +81,24 @@ await writeRoutePage("/biometriya-glaza/", [
   "FAQPage",
 ]);
 console.log("Generated homepage, contact-lens category, and SEO landing HTML from SSR.");
+
+// Родительские каталоги стали реальными директориями из-за контрольных страниц.
+// Beta Apache пропускает существующие директории: без index.html они дают 403.
+await writeRoutePage("/catalog_s/opravy/", ["Оправы"]);
+await writeRoutePage("/catalog_s/linzy_dlya_ochkov/", ["Линзы для очков"]);
+await writeRoutePage("/catalog_n/kontaktnye_linzy/", ["Контактные линзы"]);
+
+for (const acceptance of seoAcceptanceCases) {
+  const html = await renderPage(acceptance.path, []);
+  const problems = catalogHtmlProblems(html);
+  const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i)?.[1]?.replace(/<[^>]*>/g, "").trim();
+  if (h1 !== acceptance.h1) problems.push(`unexpected H1: ${h1}`);
+  const description = [...html.matchAll(/<meta\b[^>]*>/gi)]
+    .find(([tag]) => /name="description"/i.test(tag))?.[0] ?? "";
+  if (acceptance.description && !description.includes(acceptance.description)) problems.push("description source mismatch");
+  if (problems.length) throw new Error(`${acceptance.path}: ${problems.join(", ")}`);
+  const destination = path.join(clientDir, acceptance.path.replace(/^\/+|\/+$/g, ""), "index.html");
+  await mkdir(path.dirname(destination), { recursive: true });
+  await writeFile(destination, html, "utf8");
+}
+console.log(`Validated and rendered ${seoAcceptanceCases.length} SEO regression pages for private beta.`);

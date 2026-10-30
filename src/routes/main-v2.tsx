@@ -133,7 +133,7 @@ function HomePage() {
 
         {/* Text content overlaid */}
         <div className="hero-content">
-          <span className="hero-eyebrow">Новая коллекция · Лето 2026</span>
+          <span className="hero-eyebrow">Новая коллекция · Осень 2026</span>
           <h1 className="hero-h1">
             Вижу мир на <span style={{ color: "var(--brand)" }}>100%</span>
           </h1>

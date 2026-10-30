@@ -152,6 +152,7 @@ test("beta and production builds include the contact-lens category prerender con
   const validator = await read("../scripts/validate-production-build.mjs");
   assert.ok(beta.includes('writeRoutePage("/catalog_s/kontaktnye_linzy_/"'));
   assert.ok(beta.includes('writeRoutePage("/catalog_n/kontaktnye_linzy_/"'));
-  assert.ok(manifest.includes('["spb", "catalog_s", "kontaktnye_linzy_"]'));
+  assert.ok(manifest.includes('for (const city of ["spb", "nvk"])'));
+  assert.ok(manifest.includes('catalog_sections.php?city=${city}'));
   assert.ok(validator.includes("O100_PRERENDER_ROUTES"));
 });

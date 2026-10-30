@@ -138,7 +138,7 @@ export function LensSearch() {
 
       {open && rows.length > 0 && (
         <>
-          <ul className="mt-4 divide-y divide-border rounded-xl border border-border bg-background">
+          <ul className="@container mt-4 divide-y divide-border rounded-xl border border-border bg-background">
             {rows.map((offer) => (
               <LensSearchRow key={offer.id} offer={offer} onShowDetail={setDetailOffer} onBook={() => setAppointmentOpen(true)} />
             ))}
@@ -188,7 +188,7 @@ export function LensSearchRow({
   const specs = offerSpecs(offer.coating, offer.treatment);
   const product = offerProductName(offer.supplier, offer.line);
   return (
-    <li className="flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+    <li className="flex flex-col gap-2 p-4 @2xl:flex-row @2xl:items-start @2xl:justify-between @2xl:gap-4">
       <div className="min-w-0">
         <div className="text-[10px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
           {brandDisplayLabel(offer.supplier)}
@@ -217,7 +217,7 @@ export function LensSearchRow({
           {badge.label}
         </div>
       </div>
-      <div className="shrink-0 sm:text-right">
+      <div className="shrink-0 @2xl:text-right">
         {offer.priceRub !== null ? (
           <>
             {/* Её 02.10: старую цену перечёркивать, скидочную — ярче. */}
@@ -249,7 +249,7 @@ export function LensSearchRow({
           <div className="text-sm text-muted-foreground">цена по запросу</div>
         )}
       </div>
-      <div className="flex flex-wrap gap-2 sm:w-[175px] sm:shrink-0">
+      <div className="flex flex-wrap gap-2 @2xl:w-[175px] @2xl:shrink-0">
         <button type="button" onClick={() => addLens(offer)} className="rounded-full bg-brand px-3 py-2 text-xs font-medium text-white">В корзину</button>
         <a href={CONTACT.phone.href} className="rounded-full border border-border px-3 py-2 text-xs">Позвонить</a>
         {onBook && <button type="button" onClick={onBook} className="rounded-full border border-border px-3 py-2 text-xs">Записаться к врачу</button>}

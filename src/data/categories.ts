@@ -128,7 +128,30 @@ export function categoryForCatalogPath(path: string): Category | undefined {
 
 export function catalogSectionTitle(path: string, fallback: string): string {
   const segments = path.split("/").filter(Boolean);
+  const category = categoryForCatalogPath(path);
+  // Один и тот же код detskie встречается в разных ветках Битрикса.
+  const contextualTitles: Partial<Record<Category, Record<string, string>>> = {
+    opravy: {
+      muzhskie: "Мужские оправы", zhenskie: "Женские оправы",
+      detskie: "Детские оправы", detskie_1: "Детские оправы",
+      dlya_malchikov: "Оправы для мальчиков", dlya_devochek: "Оправы для девочек",
+    },
+    solntsezashchitnye: {
+      muzhskie_: "Мужские солнцезащитные очки", muzhskie_1: "Мужские солнцезащитные очки",
+      zhenskie_: "Женские солнцезащитные очки", zhenskie_1: "Женские солнцезащитные очки",
+      detskie_: "Детские солнцезащитные очки", detskie_1: "Детские солнцезащитные очки",
+      dlya_malchikov_: "Солнцезащитные очки для мальчиков", dlya_devochek_: "Солнцезащитные очки для девочек",
+      dlya_malchikov_1: "Солнцезащитные очки для мальчиков", dlya_devochek_1: "Солнцезащитные очки для девочек",
+    },
+    "linzy-dlya-ochkov": {
+      detskie: "Детские линзы для очков", odnofokalnye: "Однофокальные линзы для очков",
+      progressivnye: "Прогрессивные линзы для очков", ofisnye: "Офисные линзы для очков",
+      bifokalnye: "Бифокальные линзы для очков", s_podderzhkoy_akkomodatsii: "Линзы с поддержкой аккомодации",
+    },
+  };
   for (let index = segments.length - 1; index >= 0; index -= 1) {
+    const contextual = category && contextualTitles[category]?.[segments[index]];
+    if (contextual) return contextual;
     const title = sectionTitles[segments[index]];
     if (title) return title;
   }

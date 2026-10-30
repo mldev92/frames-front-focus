@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { AppointmentModal } from "@/components/AppointmentModal";
+import { getStellestLensProducts } from "@/lib/api/bitrix";
+import { productCardHref } from "@/data/categories";
+import type { Product } from "@/data/types";
 import { fetchLensSearch, type LensRecommendCard } from "@/lib/api/lens-recommend";
 import { formatPrice, useCart } from "@/lib/store/cart";
 import { CONTACT } from "@/data/contact";
 import { PriceSavings } from "@/components/PriceSavings";
-import { useCityStore } from "@/lib/store/city";
+import { DEFAULT_REGION, useCityStore } from "@/lib/store/city";
 
 import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
 import stellestHtml from "@/content/stellest-katalog-s-linzami.html?raw";
@@ -26,18 +30,32 @@ export const Route = createFileRoute("/stellest-katalog-s-linzami")({
       { property: "og:image", content: "/stellest/hero-child-stellest.webp" },
     ],
   }),
+  loader: () => getStellestLensProducts("spb", DEFAULT_REGION),
   component: StellestCatalogPage,
 });
 
 function StellestCatalogPage() {
   const [aptOpen, setAptOpen] = useState(false);
   const [catalogTarget, setCatalogTarget] = useState<HTMLElement | null>(null);
+  const [liveLensTarget, setLiveLensTarget] = useState<HTMLElement | null>(null);
+  const city = useCityStore((state) => state.city);
+  const region = useCityStore((state) => state.region);
+  const loaderLenses = Route.useLoaderData();
+  const { data: lensProducts = [] } = useQuery({
+    queryKey: ["stellest-contact-lenses", city, region],
+    queryFn: () => getStellestLensProducts(city, region),
+    initialData: region === DEFAULT_REGION ? loaderLenses : undefined,
+    placeholderData: region === "spb" ? () => loaderLenses : undefined,
+  });
+  // Если в админке для города ничего не выбрано, остаются статичные карточки из HTML.
+  const showLiveLenses = lensProducts.length > 0 && liveLensTarget !== null;
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
     setCatalogTarget(root.querySelector<HTMLElement>("#stellest-lens-catalog"));
+    setLiveLensTarget(root.querySelector<HTMLElement>("#stellest-contact-lens-live"));
 
     const cleanups: Array<() => void> = [];
 
@@ -213,6 +231,11 @@ function StellestCatalogPage() {
     return () => cleanups.forEach((cleanup) => cleanup());
   }, []);
 
+  useEffect(() => {
+    const staticGrid = rootRef.current?.querySelector<HTMLElement>("#stellest-contact-lens-static");
+    if (staticGrid) staticGrid.style.display = showLiveLenses ? "none" : "";
+  }, [showLiveLenses]);
+
   return (
     <>
       <style>{stellestCss}</style>
@@ -225,8 +248,38 @@ function StellestCatalogPage() {
         <StellestLensCatalog onBook={() => setAptOpen(true)} />,
         catalogTarget,
       )}
+      {showLiveLenses && createPortal(
+        <StellestContactLenses products={lensProducts} />,
+        liveLensTarget,
+      )}
       <AppointmentModal open={aptOpen} onOpenChange={setAptOpen} />
     </>
+  );
+}
+
+function StellestContactLenses({ products }: { products: Product[] }) {
+  return (
+    <div className="prod-grid">
+      {products.map((product) => {
+        const href = productCardHref(product);
+        return (
+          <article className="prod-card" key={product.id ?? product.slug}>
+            <a className="prod-photo" href={href} tabIndex={-1} aria-hidden="true">
+              <img src={product.images[0] ?? "/no-product-image.svg"} alt="" loading="lazy" />
+            </a>
+            <div className="prod-info">
+              <div className="prod-brand">{product.brand}</div>
+              <a className="prod-name" href={href}>{product.name.trim()}</a>
+              {product.wearMode && <div className="prod-desc">Замена: {product.wearMode}</div>}
+              <div className="prod-foot">
+                <span className="prod-meta">{formatPrice(product.price)} / упак.</span>
+                <a href={href} className="prod-link">Подробнее</a>
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
   );
 }
 

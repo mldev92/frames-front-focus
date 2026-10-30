@@ -281,7 +281,7 @@ const SalonCard = ({
 
 export function SalonsSection() {
   const city = useCityStore((state) => state.city);
-  const setCity = useCityStore((state) => state.setCity);
+  const setCity = useCityStore((state) => state.setRegion);
 
   return (
     <>

@@ -16,6 +16,7 @@ dist-ssr
 .nitro
 *.local
 generated/
+deploy/catalog-export.php
 
 # Wrangler / Cloudflare
 .wrangler/

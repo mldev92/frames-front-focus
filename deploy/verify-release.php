@@ -17,6 +17,6 @@ foreach ($manifest['files'] as $path => $hash) {
 
 if (empty($manifest['templateFiles'])) throw new RuntimeException('Deployment tool checksums required');
 foreach ($manifest['templateFiles'] as $path => $hash) {
-    if (!in_array($path, ['deploy/production.htaccess', 'deploy/redirects.production.txt', 'deploy/release.sh', 'deploy/merge-routing.php', 'deploy/verify-release.php'], true)) throw new RuntimeException('Unexpected deployment tool');
+    if (!in_array($path, ['deploy/production.htaccess', 'deploy/redirects.production.txt', 'deploy/release.sh', 'deploy/merge-routing.php', 'deploy/verify-release.php', 'deploy/accept-catalog-release.php', 'deploy/catalog-export.php', 'deploy/link-unchanged.php'], true)) throw new RuntimeException('Unexpected deployment tool');
     if (!hash_equals($hash, hash_file('sha256', __DIR__ . '/' . basename($path)))) throw new RuntimeException('Deployment tools differ from approved artifact');
 }

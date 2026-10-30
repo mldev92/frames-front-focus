@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { categoryForCatalogPath } from "@/data/categories";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
 import { catalogConfig } from "./catalog_s.$category";
+import { catalogSectionMetadata } from "@/data/catalog-seo";
 import type { Category } from "@/data/types";
 import {
   applyCatalogState,
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/catalog_n/$category/")({
   head: ({ params }) => {
     const category = categoryForCatalogPath(params.category) as Category | undefined;
     if (!category) return { meta: [{ title: "Каталог · ОПТИКА 100%" }] };
-    const config = catalogConfig[category];
+    const config = catalogSectionMetadata(params.category, catalogConfig[category], "nvk");
     return {
       meta: [
         { title: config.metaTitle },

@@ -1,8 +1,19 @@
 # BEGIN O100 FRONTEND
 # После HTTPS/домена, до robots и маршрутизатора Битрикса.
 RewriteEngine On
+<IfModule mod_headers.c>
+  # HTML всегда перепроверяется: открытая вкладка не должна оставаться на старом релизе.
+  <FilesMatch "\.html$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires "0"
+  </FilesMatch>
+  # Имена сборочных ресурсов содержат хеш, поэтому их можно кешировать надолго.
+  <FilesMatch "\.(?:css|js|woff2?)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
 RewriteRule ^blog/pochemyMi\.php/?$ https://optika100.com/o-nas/?%{QUERY_STRING}#pochemu-my [R=301,NE,END]
-RewriteRule ^catalog_s/linzy_dlya_ochkov/ofisnye/VX\x20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/VX\%20Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/ [R=301,NE,END]
 RewriteRule .* - [E=REMOTE_USER:%{HTTP:Authorization}]
 RewriteRule ^o100_frontend_ - [R=404,END]
 RewriteRule ^(api|auth|bitrix|sale|upload|local|order)(/|$) - [L]
@@ -18,6 +29,40 @@ RewriteRule ^(.+)$ /o100_frontend_current/$1 [END]
 RewriteCond %{DOCUMENT_ROOT}/o100_frontend_current/$1/index.html -f
 RewriteRule ^(.+?)/?$ /o100_frontend_current/$1/index.html [END]
 RewriteRule ^$ /o100_frontend_current/index.html [END]
+# BEGIN O100 REVIEWED MISSING
+# Не отправляем снятый товар в общую категорию через старый обработчик Bitrix.
+RewriteRule ^catalog_s/kontaktnye_linzy_/prozrachnye/air_optix_aqua_6_sht/?$ - [R=404,END]
+RewriteRule ^catalog_s/kontaktnye_linzy_/prozrachnye/1_day_acuvue_moist_180_sht/?$ - [R=404,END]
+RewriteRule ^catalog_s/kontaktnye_linzy_/tsvetnye/freshlook_colorblends/?$ - [R=404,END]
+RewriteRule ^catalog_s/kontaktnye_linzy_/tsvetnye/freshlook_colors/?$ - [R=404,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/odnofokalnye/as_styles_crizal_easy_uv/?$ - [R=404,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/odnofokalnye/orma_transitions_vii_crizal_alize_uv/?$ - [R=404,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/odnofokalnye/orma_transitions_xtractive_crizal_alize_uv/?$ - [R=404,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/odnofokalnye/orma_transitions_xtractive_supra/?$ - [R=404,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/ofisnye/VX\x20Start_orma_crizal_easy_uv_ot_0_75_do_3_00/?$ - [R=404,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/prizmaticheskie/1_50_cr39_multi_coat/?$ - [R=404,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/progressivnye/essilor_x_ion_ormix_thin_crizal_alize_uv/?$ - [R=404,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/progressivnye/varilux_comfort_orma_thin_crizal_easy_uv/?$ - [R=404,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/progressivnye/varilux_comfort_orma_transitions_thin_crizal_easy_uv/?$ - [R=404,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/progressivnye/varilux_kh_orma_thin_crizal_sapphire_uv/?$ - [R=404,END]
+RewriteRule ^catalog_s/linzy_dlya_ochkov/progressivnye/varilux_physio_3_0_orma_thin_crizal_easy_uv/?$ - [R=404,END]
+RewriteRule ^catalog_s/ochki/ochki_oprava_tempo_2303_03_s_linzami_ecoplus_1_56_hmc/?$ - [R=404,END]
+RewriteRule ^catalog_s/ochki/ochki_oprava_tempo_3145_03_s_linzami_ecoplus_1_56_hm/?$ - [R=404,END]
+RewriteRule ^catalog_s/ochki/ochki_oprava_tempo_3173_01_s_linzami_ecoplus_1_56_hmc/?$ - [R=404,END]
+RewriteRule ^catalog_s/ochki/ochki_oprava_tempo_3211_03_s_linzami_ecoplus_1_56_hmc/?$ - [R=404,END]
+RewriteRule ^catalog_s/opravy/detskie_/dlya_devochek/oprava_a_matsony_d_511_51/?$ - [R=404,END]
+RewriteRule ^catalog_s/opravy/detskie_/dlya_devochek/oprava_vento_016_02/?$ - [R=404,END]
+RewriteRule ^catalog_s/opravy/detskie_/dlya_devochek/oprava_fantasy_1112_prozrachnaya/?$ - [R=404,END]
+RewriteRule ^catalog_s/opravy/detskie_/dlya_devochek/oprava_vento_908_11/?$ - [R=404,END]
+RewriteRule ^catalog_s/opravy/detskie_/dlya_malchikov/oprava_vento_908_13/?$ - [R=404,END]
+RewriteRule ^catalog_s/opravy/detskie_/dlya_malchikov/oprava_vento_924_12/?$ - [R=404,END]
+RewriteRule ^catalog_s/opravy/detskie_/dlya_malchikov/oprava_vento_925_12/?$ - [R=404,END]
+RewriteRule ^catalog_s/opravy/muzhskie/oprava_silhouette_sil_tma_must_5515_cl_9040/?$ - [R=404,END]
+RewriteRule ^catalog_s/opravy/zhenskie/oprava_la_strada_galleria_11050_16_3/?$ - [R=404,END]
+RewriteRule ^catalog_s/soputstvuyushchie_tovary/aksessuary/ochistiteli_i_kapli/renu_multiplus_8_ml/?$ - [R=404,END]
+RewriteRule ^catalog_s/opravy/detskie_1/dlya_devochek/oprava_fantasy_1112_prozrachnaya/?$ - [R=404,END]
+RewriteRule ^catalog_s/opravy/detskie_1/oprava_fantasy_1112_prozrachnaya/?$ - [R=404,END]
+# END O100 REVIEWED MISSING
 RewriteRule ^(basket|checkout|search)/?$ /o100_frontend_current/_shell.html [END]
 RewriteRule ^catalog_[sn]/[a-zA-Z0-9_/-]+/?$ /local/tools/o100-product-fallback.php [END]
 ErrorDocument 404 /local/tools/o100-frontend-404.php
