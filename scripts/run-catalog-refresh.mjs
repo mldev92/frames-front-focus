@@ -75,9 +75,11 @@ try {
       git(checkout,'fetch','origin',config.sourceSha);
       git(checkout,'checkout','-b',branch,config.sourceSha);
       writeFileSync(path.join(checkout,'deploy/seo-active-products.json.gz'),readFileSync(path.join(directory,'inventory.json.gz')));
+      writeFileSync(path.join(checkout,'deploy/seo-previous-products.json.gz'),readFileSync(state.inventoryPath));
+      writeFileSync(path.join(checkout,'deploy/seo-previous-routes.json.gz'),gzipSync(readFileSync(state.routesPath)));
       mkdirSync(path.join(checkout,'generated'),{recursive:true});
       run('node',['scripts/reconcile-canonical-redirects.mjs','--write'],{cwd:checkout});
-      git(checkout,'add','deploy/seo-active-products.json.gz','deploy/redirects.production.txt');
+      git(checkout,'add','deploy/seo-active-products.json.gz','deploy/seo-previous-products.json.gz','deploy/seo-previous-routes.json.gz','deploy/redirects.production.txt');
       git(checkout,'-c','user.name=Optika100 catalog automation','-c','user.email=catalog-automation@optika100.com','commit','--allow-empty','-m','Обновить снимок каталога Bitrix для проверенного выпуска');
       const sha=git(checkout,'rev-parse','HEAD');
       state.pending={directory,checkout,branch,sha,phase:'dispatch',startedAt:new Date().toISOString()}; save(stateFile,state);
@@ -136,7 +138,7 @@ try {
         save(path.join(job.directory,'production-audit.json'),live);
         const record={sha:job.sha,archive,archiveSha256:digest(readFileSync(archive)),manifestSha256:digest(execFileSync('tar',['-xOf',archive,'./release-manifest.json'],{maxBuffer:64*1024*1024})),directory:job.directory,runUrl:ci.url,deployedAt:new Date().toISOString()};
         state.history=[...(state.history||[]),record];
-        Object.assign(state,{frontendSha:job.sha,routingSha256:live.routingSha256,catalogFingerprint:catalogFingerprint(inventory),inventoryPath:path.join(job.directory,'inventory.json.gz'),lastDeployedAt:record.deployedAt,nextCheckAt:new Date(Date.now()+config.intervalHours*3600000).toISOString(),pending:null});
+        Object.assign(state,{frontendSha:job.sha,routingSha256:live.routingSha256,catalogFingerprint:catalogFingerprint(inventory),inventoryPath:path.join(job.directory,'inventory.json.gz'),routesPath:path.join(candidate,'generated/production-routes.json'),lastDeployedAt:record.deployedAt,nextCheckAt:new Date(Date.now()+config.intervalHours*3600000).toISOString(),pending:null});
         save(stateFile,state);
         save(path.join(job.directory,'receipt.json'),{status:'deployed_and_verified',...record,routingSha256:live.routingSha256,backendSha:live.backendSha,fileCount:live.fileCount,catalogFingerprint:state.catalogFingerprint});
         // Удаляем только избыточный upload; проверенный локальный архив сохранён.
