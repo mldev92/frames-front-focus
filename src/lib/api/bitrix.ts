@@ -29,10 +29,25 @@ const productGalleryCache = new Map<string, Promise<string[]>>();
 // возвращают облегчённые карточки без lensOptions, описаний и других данных ПДП.
 // Если принять такую карточку за полный товар, контактные линзы нельзя настроить
 // и добавить в корзину.
-const productDetailCache = new Map<string, Product>();
+const PRODUCT_CACHE_TTL_MS = 60_000;
+const productDetailCache = new Map<string, { product: Product; expiresAt: number }>();
 
 function productCacheKey(city: "spb" | "nvk", slug: string): string {
   return `${city}:${slug}`;
+}
+
+function getCachedProduct(city: "spb" | "nvk", slug: string): Product | undefined {
+  // SSR должен получать актуальную цену для каждого запроса, а не сохранять
+  // товар в памяти процесса между посетителями и релизами бэкенда.
+  if (import.meta.env.SSR) return undefined;
+  const key = productCacheKey(city, slug);
+  const cached = productDetailCache.get(key);
+  if (!cached) return undefined;
+  if (cached.expiresAt <= Date.now()) {
+    productDetailCache.delete(key);
+    return undefined;
+  }
+  return cached.product;
 }
 
 async function hydrateProductGalleries(
@@ -301,7 +316,7 @@ export async function getProduct(
     return product ? fixtureProducts([product])[0] : null;
   }
   if (!BASE) throw new Error("VITE_BITRIX_API is required");
-  const cached = productDetailCache.get(productCacheKey(city, slug));
+  const cached = getCachedProduct(city, slug);
   if (cached) return cached;
 
   try {
@@ -311,7 +326,12 @@ export async function getProduct(
     const data = (await res.json()) as Product | { error: string };
     if ("error" in data) return null;
     const product = normalizeProduct(data);
-    productDetailCache.set(productCacheKey(city, slug), product);
+    if (!import.meta.env.SSR) {
+      productDetailCache.set(productCacheKey(city, slug), {
+        product,
+        expiresAt: Date.now() + PRODUCT_CACHE_TTL_MS,
+      });
+    }
     return product;
   } catch (e) {
     console.error("[bitrix] getProduct:", e);
