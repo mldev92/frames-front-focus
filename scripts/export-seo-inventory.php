@@ -28,4 +28,10 @@ foreach ([7=>'spb', 2=>'nvk'] as $iblock=>$city) {
     if ($seen !== $count || !$count) throw new RuntimeException('Incomplete inventory: ' . $city);
     $out['counts'][$city] = $count;
 }
+if (function_exists('o100_catalog_content_fingerprint')) {
+    $out['content'] = o100_catalog_content_fingerprint();
+    $sorted = $out['products'];
+    usort($sorted, fn($a,$b)=>$a['id']<=>$b['id']);
+    $out['fingerprint'] = hash('sha256', json_encode(['products'=>$sorted,'content'=>$out['content']['sha256']], JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE|JSON_THROW_ON_ERROR));
+}
 echo json_encode($out, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR), "\n";

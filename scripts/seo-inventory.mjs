@@ -5,6 +5,7 @@ import { gunzipSync } from 'node:zlib';
 // Снимок снимается через SSH перед подготовкой выпуска; старый/неполный снимок блокирует сборку.
 export function validateInventory(data, now = Date.now()) {
   if (data.version !== 1 || data.origin !== 'https://optika100.com' || !Array.isArray(data.products)) throw Error('Invalid SEO inventory');
+  if (data.content && (data.content.version !== 1 || !/^[a-f0-9]{64}$/.test(data.content.sha256))) throw Error('Invalid catalog content fingerprint');
   const age = now - Date.parse(data.generatedAt);
   if (!Number.isFinite(age) || age < -300000 || age > 48 * 3600000) throw Error('SEO inventory expired; refresh with scripts/export-seo-inventory.php');
   const ids = new Set(), paths = new Set(), identities = new Set();

@@ -10,7 +10,9 @@ if (!options.includes('--host') || !options.includes('--identity')) throw Error(
 const host = value('--host'), identity = value('--identity');
 if (!/^[A-Za-z0-9_@.-]+$/.test(host) || host.startsWith('-') || !identity) throw Error('Invalid SSH arguments');
 const source = await readFile(new URL('export-seo-inventory.php', import.meta.url));
-const bytes = execFileSync('ssh', ['-o','BatchMode=yes','-o','ConnectTimeout=15','-i',identity,host,'php8.1'], {input:source, maxBuffer:32*1024*1024, timeout:180000});
+const fingerprint = await readFile(new URL('catalog-content-fingerprint.php', import.meta.url), 'utf8');
+const input = fingerprint + '\n' + source.toString('utf8').replace(/^<\?php/, '');
+const bytes = execFileSync('ssh', ['-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=15','-i',identity,host,'php8.1'], {input, maxBuffer:32*1024*1024, timeout:600000});
 const inventory = validateInventory(JSON.parse(bytes.toString('utf8')));
 const target = new URL('../deploy/seo-active-products.json.gz',import.meta.url);
 const temporary = new URL('../deploy/seo-active-products.json.gz.tmp',import.meta.url);

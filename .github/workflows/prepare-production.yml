@@ -37,6 +37,8 @@ jobs:
           node scripts/package-production.mjs
           tar -czf production-release.tgz -C dist/client .
           sha256sum production-release.tgz > production-release.tgz.sha256
+          tar -czf production-tools.tgz deploy
+          sha256sum production-tools.tgz > production-tools.tgz.sha256
       - name: Rehearse complete artifact on isolated Apache
         run: |
           set -Eeuo pipefail
@@ -52,6 +54,8 @@ jobs:
           path: |
             production-release.tgz
             production-release.tgz.sha256
+            production-tools.tgz
+            production-tools.tgz.sha256
             dist/client/release-manifest.json
             generated/production-routes.json
             generated/seo-coverage.json

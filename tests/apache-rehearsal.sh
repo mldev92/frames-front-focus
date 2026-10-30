@@ -146,3 +146,27 @@ if bash /frontend/deploy/release.sh deploy "$root" "$sha" "$baseline" "/evidence
 cmp /evidence/legacy.htaccess "$root/.htaccess"
 [[ ! -L "$root/o100_frontend_current" ]]
 echo 'PASS: broken Novokuznetsk card link automatically restores legacy'
+
+# Дополнительная приёмка выполняется до снятия защиты откатом.
+sed -i 's@/missing-product/@/deep-product/@g' /candidate/catalog_n/opravy/index.html
+printf '%s\n' '<?php throw new RuntimeException("injected acceptance failure");' > /tmp/fail-acceptance.php
+sha=6666666666666666666666666666666666666666
+make_archive "$sha"
+baseline=$(sha256sum "$root/.htaccess" | cut -d' ' -f1)
+if O100_ACCEPTANCE_SCRIPT=/tmp/fail-acceptance.php bash /frontend/deploy/release.sh deploy "$root" "$sha" "$baseline" "/evidence/$sha.tgz"; then exit 1; fi
+cmp /evidence/legacy.htaccess "$root/.htaccess"
+[[ ! -L "$root/o100_frontend_current" ]]
+echo 'PASS: extended acceptance failure automatically restores legacy'
+
+# Имитируем отдачу старого robots перед управляемым блоком.
+printf '%s\n' 'User-agent: *' 'Disallow: /catalog_n/' > "$root/shadow-robots.txt"
+sed -i '/RewriteEngine On/a RewriteRule ^robots.txt$ /shadow-robots.txt [END]' "$root/.htaccess"
+cp "$root/.htaccess" /evidence/shadow.htaccess
+sha=7777777777777777777777777777777777777777
+make_archive "$sha"
+baseline=$(sha256sum "$root/.htaccess" | cut -d' ' -f1)
+if bash /frontend/deploy/release.sh deploy "$root" "$sha" "$baseline" "/evidence/$sha.tgz"; then echo 'Shadow robots was accepted' >&2; exit 1; fi
+cmp /evidence/shadow.htaccess "$root/.htaccess"
+[[ ! -L "$root/o100_frontend_current" ]]
+cp /evidence/legacy.htaccess "$root/.htaccess"
+echo 'PASS: shadowing public robots automatically restores legacy'

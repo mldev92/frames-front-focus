@@ -15,12 +15,18 @@ origin=${O100_SMOKE_ORIGIN:?Set smoke origin}
 curl_args=(--max-time 30 --silent --show-error)
 if [[ -n "${O100_SMOKE_CURL_CONFIG:-}" ]]; then curl_args+=(--config "$O100_SMOKE_CURL_CONFIG"); fi
 smoke() {
-  local path status html links link
+  local path status html links link actual expected
   for path in / /catalog_s/opravy/ /catalog_n/opravy/ /basket/ /order/ /auth/ /api/store/csrf.php /sitemap.xml; do
     curl "${curl_args[@]}" --fail "$origin$path" >/dev/null || return 1
   done
   # Проверяем ссылки настоящих карточек: успешный ответ категории недостаточен.
   if [[ -L "$root/o100_frontend_current" ]]; then
+    # Nginx может отдать старый физический файл раньше правил Apache.
+    for path in robots.txt sitemap.xml; do
+      expected=$(sha256sum "$root/o100_frontend_current/$path" | cut -d' ' -f1)
+      actual=$(curl "${curl_args[@]}" --compressed --fail "$origin/$path" | sha256sum | cut -d' ' -f1) || return 1
+      [[ "$actual" == "$expected" ]] || { echo "Public $path differs from release" >&2; return 1; }
+    done
     for path in /catalog_s/opravy/ /catalog_n/opravy/; do
       html=$(curl "${curl_args[@]}" --fail "$origin$path") || return 1
       links=$(printf '%s' "$html" | "$php_bin" -r '
@@ -62,6 +68,9 @@ restore() {
   fi
 }
 if [[ "$action" == rollback ]]; then
+  if [[ -n "${O100_EXPECTED_FRONTEND:-}" ]]; then
+    [[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$O100_EXPECTED_FRONTEND" ]] || { echo 'Rollback refused: frontend changed' >&2; exit 3; }
+  fi
   transaction=$(cat "$state/active-transaction")
   [[ "$transaction" == "$state/transactions/"* ]] || exit 2
   restore "$transaction"
@@ -75,10 +84,15 @@ baseline=${4:?approved routing SHA256}
 archive=${5:?release archive}
 [[ "$sha" =~ ^[a-f0-9]{40}$ && "$baseline" =~ ^[a-f0-9]{64}$ ]] || exit 2
 [[ "$(sha256sum "$root/.htaccess" | cut -d' ' -f1)" == "$baseline" ]] || { echo 'Routing drift; deployment refused' >&2; exit 3; }
+if [[ -n "${O100_EXPECTED_FRONTEND:-}" ]]; then
+  [[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$O100_EXPECTED_FRONTEND" ]] || { echo 'Frontend drift; deployment refused' >&2; exit 3; }
+fi
 release="$root/o100_frontend_releases/$sha"
 [[ ! -e "$release" ]] || { echo 'Immutable release already exists' >&2; exit 3; }
 stage="$release.stage-$$"
 mkdir -p "$stage"
+# Не оставляем распакованный stage после ошибки квоты или проверки.
+trap 'if [[ -d "$stage" && ! -L "$stage" && "$stage" == "$root/o100_frontend_releases/$sha.stage-"* ]]; then rm -rf -- "$stage"; fi' EXIT
 tar -xzf "$archive" -C "$stage" --no-same-owner
 for file in index.html _shell.html 404.html sitemap.xml robots.txt release-manifest.json; do test -s "$stage/$file"; done
 [[ "$(cat "$stage/.release-sha")" == "$sha" ]]
@@ -119,6 +133,14 @@ cp "$transaction/next.htaccess" "$root/.htaccess.next"
 mv -f "$root/.htaccess.next" "$root/.htaccess"
 [[ "${O100_TEST_FAIL_AFTER_SWAP:-0}" != 1 ]]
 smoke
+acceptance_script=${O100_ACCEPTANCE_SCRIPT:-}
+if "$php_bin" -r '$m=json_decode(file_get_contents($argv[1]),true); exit(empty($m["catalogFingerprint"])?1:0);' "$release/release-manifest.json"; then
+  acceptance_script="$script_dir/accept-catalog-release.php"
+fi
+if [[ -n "$acceptance_script" ]]; then
+  [[ -f "$acceptance_script" ]] || { echo 'Acceptance script missing' >&2; false; }
+  "$php_bin" "$acceptance_script" "$root" "$release" "$origin"
+fi
 armed=0
 trap - ERR HUP INT TERM
 printf '%s\n' deployed > "$transaction/status"

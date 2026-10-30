@@ -140,6 +140,7 @@ async function catalogPaths() {
   }
   // Общий подбор очковых линз доступен в обоих городах.
   paths.add("/catalog_n/linzy_dlya_ochkov/");
+  regionalSectionPaths.add("/catalog_n/linzy_dlya_ochkov/");
   // Наличие в магазине не определяет существование индексируемой карточки.
   for (const product of inventory.products) {
     if (!product.sectionActive) continue;
@@ -151,6 +152,7 @@ async function catalogPaths() {
 
 const routeSet = new Set([...staticRoutes, ...articleRoutes]);
 const regionalSectionPaths = new Set();
+for (const path of await catalogPaths()) routeSet.add(path);
 const legacyPaths = await sitemapPaths();
 console.log(`Read ${legacyPaths.size} paths from the live legacy sitemap.`);
 for (const path of legacyPaths) {
@@ -162,8 +164,10 @@ for (const path of legacyPaths) {
   }
   throw new Error(`Legacy sitemap path has no React route or reviewed redirect: ${path}`);
 }
-for (const path of await catalogPaths()) routeSet.add(path);
 console.log(`Collected ${routeSet.size} sitemap, native section and current catalog paths.`);
+// Старый sitemap не должен удерживать снятые товары в новой статической сборке.
+const unknownLegacy = [...legacyPaths].filter(path=>/^\/catalog_[sn]\//.test(path) && !regionalSectionPaths.has(path) && !productForPath(path,productIndex));
+const newlyRetired = await reconcileRetiredProducts(routeSet, unknownLegacy, origin);
 
 // Старый sitemap не перечисляет все согласованные SEO-адреса. Без них полная
 // карточка может отвечать 301, а конечный короткий URL — 404 или циклом fallback.
@@ -208,7 +212,7 @@ const seoRequired = JSON.parse(await readFile(new URL("../deploy/seo-required-pr
 // URL из GSC и внутренних ссылок проверяем отдельно от списков наличия.
 for (const path of seoRequired.paths) routeSet.add(path);
 const reviewedPaths = [...new Set([...reviewedRetired.paths, ...seoRequired.paths])];
-const retiredProductPaths = await reconcileRetiredProducts(routeSet, reviewedPaths, origin);
+const retiredProductPaths = [...new Set([...newlyRetired, ...await reconcileRetiredProducts(routeSet, reviewedPaths, origin)])].sort();
 console.log(`Rechecked ${reviewedPaths.length} audited products; ${retiredProductPaths.length} return 404 and are omitted.`);
 // Снятые разделы проверяем по дереву, а не по наличию товаров.
 const reviewedSections = JSON.parse(await readFile(new URL("../deploy/reviewed-retired-sections.json", import.meta.url), "utf8"));
