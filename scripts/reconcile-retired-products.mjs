@@ -5,7 +5,6 @@ export async function reconcileRetiredProducts(routeSet, reviewedPaths, origin, 
   async function worker() {
     while (position < reviewedPaths.length) {
       const path = reviewedPaths[position++];
-      if (!routeSet.has(path)) continue;
       const parts = path.split('/').filter(Boolean);
       if (!/^catalog_[sn]$/.test(parts[0]) || parts.length < 3) throw new Error(`Invalid reviewed product: ${path}`);
       const slug = parts.at(-1);
@@ -18,6 +17,7 @@ export async function reconcileRetiredProducts(routeSet, reviewedPaths, origin, 
         if (!response.ok) throw new Error(`Reviewed product check failed: ${path} (${response.status})`);
         const product = await response.json();
         if (!product.id || product.slug !== slug) throw new Error(`Reviewed product identity mismatch: ${path}`);
+        routeSet.add(path);
       }
     }
   }

@@ -4,7 +4,7 @@ import { ProductPage } from "./catalog_s.$category.$slug";
 import { categoryForCatalogPath } from "@/data/categories";
 import { catalogConfig } from "@/routes/catalog_s.$category";
 import { catalogSectionMetadata } from "@/data/catalog-seo";
-import { productMetaDescription } from "@/lib/product-seo";
+import { productMetaDescription, productCanonicalUrl } from "@/lib/product-seo";
 import {
   applyCatalogState,
   catalogSearchSchema,
@@ -62,7 +62,7 @@ export const Route = createFileRoute("/catalog_n/$category/$slug")({
       links: [
         {
           rel: "canonical",
-          href: `https://optika100.com/catalog_n/${params.category}/${params.slug}/`,
+          href: productCanonicalUrl(product, `https://optika100.com/catalog_n/${params.category}/${params.slug}/`),
         },
       ],
     };
@@ -107,3 +107,4 @@ function ProductRoutePage() {
     <ProductPage data={resolved.data} city="nvk" catalogPath={`/catalog_n/${params.category}`} />
   );
 }
+

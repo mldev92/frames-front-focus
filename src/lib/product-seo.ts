@@ -1,6 +1,15 @@
 import { decodeHTML } from "entities";
 import type { Product } from "../data/types";
 
+// Канонический URL задаёт дерево товара в API, а не адрес открытого alias.
+export function productCanonicalUrl(product: Pick<Product, "canonicalPath">, fallback: string): string {
+  const path = product.canonicalPath;
+  if (path && /^\/catalog_[sn]\//.test(path) && !/[?#<>]/.test(path) && [...path].every(char => char.charCodeAt(0) >= 32)) {
+    return new URL(path, "https://optika100.com").href;
+  }
+  return new URL(fallback, "https://optika100.com").href;
+}
+
 // Только текст для React metadata; результат нельзя вставлять как HTML.
 export function descriptionTextFromHtml(html: string): string {
   return decodeHTML(html

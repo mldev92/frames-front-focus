@@ -4,11 +4,17 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { catalogLinks, redirectPaths } from "./catalog-link-check.mjs";
 import { catalogHtmlProblems } from "./catalog-html-validation.mjs";
+import { decodeHTML } from "entities";
+import { loadInventory, productForPath } from "./seo-inventory.mjs";
+import { validateSitemap } from "./sitemap-validation.mjs";
 
 const manifest = JSON.parse(
   await readFile(new URL("../generated/production-routes.json", import.meta.url), "utf8"),
 );
 const routes = manifest.routes;
+const inventory = await loadInventory();
+if (manifest.inventorySha256 !== inventory.sha256 || manifest.inventoryGeneratedAt !== inventory.generatedAt) throw new Error('Build inventory does not match source snapshot');
+const productIndex = new Map(inventory.products.map(p => [p.city + ':' + p.canonicalPath.split('/').at(-2), p]));
 const clientDir = new URL("../dist/client/", import.meta.url);
 for (const prototype of ["main-v2/index.html", "loyalty/index.html"]) {
   if (existsSync(new URL(prototype, clientDir))) throw new Error(`Prototype page in production artifact: ${prototype}`);
@@ -36,13 +42,13 @@ const robots = await readFile(new URL("robots.txt", clientDir), "utf8");
 if (robots !== await readFile(new URL("../deploy/robots.production.txt", import.meta.url), "utf8")) throw new Error("Production robots policy differs from reviewed baseline");
 if (/<meta[^>]+(?:noindex|nofollow)/i.test(home) || /Disallow:\s*\/\s*$/m.test(robots)) throw new Error("Production home or robots still blocks indexing");
 if (/beta\.optika100\.com/.test(await readFile(new URL("sitemap.xml", clientDir), "utf8"))) throw new Error("Beta URLs in production sitemap");
+const coverage = validateSitemap(await readFile(new URL('sitemap.xml', clientDir), 'utf8'), routes, inventory, robots);
+console.log(`Validated ${coverage.urlCount} sitemap URLs; all ${coverage.eligibleProducts} eligible active products are included.`);
 
 const invalid = [];
 const knownCatalogPaths = new Set([
   ...routes,
   ...redirectPaths(await readFile(new URL("../deploy/redirects.production.txt", import.meta.url), "utf8")),
-  // Этот точный редирект записан в mod_rewrite, чтобы сохранить пробел и query.
-  "/catalog_s/linzy_dlya_ochkov/ofisnye/VX Start_orma_crizal_prevencia_uv_rasshirenyy_diapazon_dioptriy/",
 ]);
 const brokenCatalogLinks = new Map();
 for (const route of routes) {
@@ -62,6 +68,13 @@ for (const route of routes) {
   if ((!privatePage && !legalPage && /<meta[^>]+noindex/i.test(html)) || /<meta[^>]+nofollow/i.test(html)) invalid.push(`${route}: blocked indexing`);
   const canonicals = [...html.matchAll(/<link\b[^>]*rel=["']canonical["'][^>]*>/gi)];
   if (canonicals.length !== 1 || !/href=["']https:\/\/optika100\.com\//.test(canonicals[0]?.[0] ?? "")) invalid.push(`${route}: canonical missing or ambiguous`);
+  const product = productForPath(route, productIndex);
+  if (product) {
+    const canonical = decodeHTML(canonicals[0]?.[0].match(/href=["']([^"']+)["']/)?.[1] ?? '');
+    if (canonical !== 'https://optika100.com' + encodeURI(product.canonicalPath)) invalid.push(`${route}: canonical differs from inventory`);
+    const id = html.match(/data-catalog-product-id=["'](\d+)["']/)?.[1];
+    if (Number(id) !== product.id) invalid.push(`${route}: rendered product identity differs from inventory (${id})`);
+  }
   if (/<h[12][^>]*>(?:Страница не найдена|Что-то пошло не так)<\/h[12]>/.test(html)) invalid.push(`${route}: rendered error page`);
 }
 if (brokenCatalogLinks.size) throw new Error(

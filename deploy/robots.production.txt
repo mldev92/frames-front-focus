@@ -46,7 +46,6 @@ Allow: /bitrix/cache/
 Allow: /bitrix/js/
 Allow: /bitrix/templates/
 Allow: /bitrix/panel/
-Disallow: /catalog_n/*
 Disallow: /order/*
 Disallow: /auth/*
 Disallow: /personal/*
@@ -108,7 +107,6 @@ Allow: /bitrix/cache/
 Allow: /bitrix/js/
 Allow: /bitrix/templates/
 Allow: /bitrix/panel/
-Disallow: /catalog_n/*
 Disallow: /order/*
 Disallow: /auth/*
 Disallow: /personal/*

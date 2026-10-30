@@ -54,5 +54,6 @@ jobs:
             production-release.tgz.sha256
             dist/client/release-manifest.json
             generated/production-routes.json
+            generated/seo-coverage.json
             apache-rollback.log
             apache-production.log

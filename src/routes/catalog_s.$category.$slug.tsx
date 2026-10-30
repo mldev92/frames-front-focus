@@ -29,7 +29,7 @@ import { useCityStore, type CityCode } from "@/lib/store/city";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
 import { catalogSectionMetadata } from "@/data/catalog-seo";
 import { catalogConfig } from "@/routes/catalog_s.$category";
-import { productMetaDescription } from "@/lib/product-seo";
+import { productMetaDescription, productCanonicalUrl } from "@/lib/product-seo";
 import {
   applyCatalogState,
   catalogSearchSchema,
@@ -85,7 +85,7 @@ export const Route = createFileRoute("/catalog_s/$category/$slug")({
       links: [
         {
           rel: "canonical",
-          href: `https://optika100.com/catalog_s/${params.category}/${params.slug}/`,
+          href: productCanonicalUrl(p, `https://optika100.com/catalog_s/${params.category}/${params.slug}/`),
         },
       ],
     };
@@ -244,6 +244,7 @@ export function ProductPage({
 
   return (
     <div
+      data-catalog-product-id={product.id}
       className={cn(
         "product-detail-page px-4 pt-8 lg:px-10 lg:pb-8",
         showStickyBuyBar ? "pb-28" : "pb-10",
@@ -753,3 +754,4 @@ function categoryName(c: string) {
       return c;
   }
 }
+

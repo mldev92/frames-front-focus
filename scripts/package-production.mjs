@@ -34,4 +34,5 @@ await walk(root);
 const routes = JSON.parse(await readFile("generated/production-routes.json", "utf8"));
 await writeFile(path.join(root, "release-manifest.json"), JSON.stringify({ version: 1, frontendSha: sha, backendSha,
   backendFiles: backend.files, templateFiles, runtime: process.version, apiOrigin: "https://optika100.com", routingBaseline: baseline, builtAt: new Date().toISOString(), routeCount: routes.count,
+  inventorySha256: routes.inventorySha256, inventoryGeneratedAt: routes.inventoryGeneratedAt,
   settings: { privateBeta: false, fixtures: false, virtualTryOn: false }, files }, null, 2) + "\n");

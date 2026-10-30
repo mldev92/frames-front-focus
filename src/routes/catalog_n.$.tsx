@@ -4,7 +4,7 @@ import { categoryForCatalogPath } from "@/data/categories";
 import { ProductPage } from "@/routes/catalog_s.$category.$slug";
 import { catalogConfig } from "@/routes/catalog_s.$category";
 import { catalogSectionMetadata } from "@/data/catalog-seo";
-import { productMetaDescription } from "@/lib/product-seo";
+import { productMetaDescription, productCanonicalUrl } from "@/lib/product-seo";
 import {
   applyCatalogState,
   catalogSearchSchema,
@@ -35,7 +35,7 @@ export const Route = createFileRoute("/catalog_n/$")({
           { property: "og:title", content: `${product.brand} ${product.name}` },
           { property: "og:image", content: product.images[0] },
         ],
-        links: [{ rel: "canonical", href: canonical }],
+        links: [{ rel: "canonical", href: productCanonicalUrl(product, canonical) }],
       };
     }
     const category = categoryForCatalogPath(loaderData.sectionPath);
@@ -80,3 +80,4 @@ function CatalogNSplatPage() {
     />
   );
 }
+
