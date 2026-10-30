@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 php /frontend/tests/catalog-fingerprint.php
+bash /frontend/tests/tar-staging.sh /frontend
 root=/var/www/html
 export O100_PHP=php O100_SMOKE_ORIGIN=http://127.0.0.1
 mkdir -p "$root/bitrix" "$root/basket" "$root/order" "$root/auth" "$root/api/store" "$root/local/tools" /evidence
@@ -54,7 +55,7 @@ foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator('/candidate
   $name=substr($file->getPathname(),11);
   if($file->isFile() && $name !== 'release-manifest.json') $files[$name]=hash_file('sha256',$file->getPathname());
 }
-$tools=[]; foreach(['production.htaccess','redirects.production.txt','release.sh','merge-routing.php','verify-release.php','link-unchanged.php'] as $name) $tools['deploy/'.$name]=hash_file('sha256','/frontend/deploy/'.$name);
+$tools=[]; foreach(['production.htaccess','redirects.production.txt','release.sh','merge-routing.php','verify-release.php','link-unchanged.php','tar-extract.sh'] as $name) $tools['deploy/'.$name]=hash_file('sha256','/frontend/deploy/'.$name);
 $manifest=['templateFiles'=>$tools,'frontendSha'=>trim(file_get_contents('/candidate/.release-sha')),'backendSha'=>str_repeat('b',40),'backendFiles'=>['api/store/csrf.php'=>hash_file('sha256','/var/www/html/api/store/csrf.php')], 'routingBaseline'=>hash_file('sha256','/var/www/html/.htaccess'),'settings'=>['privateBeta'=>false,'fixtures'=>false,'virtualTryOn'=>false],'files'=>$files];
 file_put_contents('/candidate/release-manifest.json',json_encode($manifest));
 PHP
@@ -112,6 +113,15 @@ bash /frontend/deploy/update-routing.sh "$root" "$sha" "$baseline" bbbbbbbbbbbbb
 [[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$sha" ]]
 echo 'PASS: 31 reviewed legacy paths return direct 404 with query/slash variants; restored static product returns 200; routing-only rollback and update preserve frontend'
 cp "$root/.htaccess" /evidence/react.htaccess
+# Несовместимый tar обязан остановить выпуск до staging, не меняя указатель и routing.
+mkdir /tmp/incompatible-tar
+printf '%s\n' '#!/usr/bin/env bash' 'echo "incompatible tar fixture" >&2; exit 2' > /tmp/incompatible-tar/tar
+chmod +x /tmp/incompatible-tar/tar
+if PATH="/tmp/incompatible-tar:$PATH" bash /frontend/deploy/release.sh deploy "$root" aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa "$(sha256sum "$root/.htaccess" | cut -d' ' -f1)" "/evidence/$sha.tgz"; then exit 1; fi
+[[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$sha" ]]
+[[ -z "$(find "$root/o100_frontend_releases" -maxdepth 1 -name 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa*' -print)" ]]
+cmp /evidence/react.htaccess "$root/.htaccess"
+echo 'PASS: incompatible tar rejected before staging; active release and routing unchanged'
 sha=3333333333333333333333333333333333333333
 make_archive "$sha"
 baseline=$(sha256sum "$root/.htaccess" | cut -d' ' -f1)

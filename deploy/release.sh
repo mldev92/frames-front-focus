@@ -89,13 +89,15 @@ if [[ -n "${O100_EXPECTED_FRONTEND:-}" ]]; then
 fi
 release="$root/o100_frontend_releases/$sha"
 [[ ! -e "$release" ]] || { echo 'Immutable release already exists' >&2; exit 3; }
+bash "$script_dir/tar-extract.sh" check
 stage="$release.stage-$$"
+extract_list="$stage.files"
 mkdir -p "$stage"
 # Не оставляем распакованный stage после ошибки квоты или проверки.
-trap 'if [[ -d "$stage" && ! -L "$stage" && "$stage" == "$root/o100_frontend_releases/$sha.stage-"* ]]; then rm -rf -- "$stage"; fi' EXIT
+trap 'if [[ "$stage" == "$root/o100_frontend_releases/$sha.stage-"* ]]; then if [[ -d "$stage" && ! -L "$stage" ]]; then rm -rf -- "$stage"; fi; rm -f -- "$extract_list"; fi' EXIT
 tar -xOf "$archive" ./release-manifest.json > "$stage/release-manifest.json"
-"$php_bin" "$script_dir/link-unchanged.php" "$stage" "$root/o100_frontend_current"
-tar -xzf "$archive" -C "$stage" --no-same-owner --skip-old-files
+"$php_bin" "$script_dir/link-unchanged.php" "$stage" "$root/o100_frontend_current" "$extract_list"
+bash "$script_dir/tar-extract.sh" extract "$archive" "$stage" "$extract_list"
 for file in index.html _shell.html 404.html sitemap.xml robots.txt release-manifest.json; do test -s "$stage/$file"; done
 [[ "$(cat "$stage/.release-sha")" == "$sha" ]]
 "$php_bin" "$script_dir/verify-release.php" "$stage" "$root"
