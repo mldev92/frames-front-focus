@@ -1,5 +1,11 @@
 <?php
 // Только хеши каталога: цены, остатки, свойства и справочники не экспортируются.
+function o100_catalog_row_signature(array $row, array $ignore=[]): string {
+    // 1С обновляет служебные даты даже при неизменных публичных значениях.
+    foreach (array_merge(['TIMESTAMP_X','DATE_CREATE','CREATED_BY','MODIFIED_BY','TMP_ID','SHOW_COUNTER','SHOW_COUNTER_START'],$ignore) as $column) unset($row[$column]);
+    ksort($row);
+    return hash('sha256', json_encode($row, JSON_THROW_ON_ERROR));
+}
 function o100_catalog_content_fingerprint(): array {
     global $DB;
     $tables = [];
@@ -7,9 +13,7 @@ function o100_catalog_content_fingerprint(): array {
         $rows = $DB->Query($sql);
         $hashes = [];
         while ($row = $rows->Fetch()) {
-            foreach ($ignore as $column) unset($row[$column]);
-            ksort($row);
-            $hashes[] = hash('sha256', json_encode($row, JSON_THROW_ON_ERROR));
+            $hashes[] = o100_catalog_row_signature($row,$ignore);
         }
         // Порядок SQL без ORDER BY не является частью содержимого.
         sort($hashes, SORT_STRING);
@@ -54,5 +58,5 @@ function o100_catalog_content_fingerprint(): array {
         $digest($table, "SELECT * FROM `$table`");
     }
     ksort($tables);
-    return ['version'=>1, 'sha256'=>hash('sha256', json_encode($tables, JSON_THROW_ON_ERROR)), 'sources'=>$tables];
+    return ['version'=>2, 'sha256'=>hash('sha256', json_encode($tables, JSON_THROW_ON_ERROR)), 'sources'=>$tables];
 }

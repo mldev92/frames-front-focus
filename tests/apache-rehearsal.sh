@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+php /frontend/tests/catalog-fingerprint.php
 root=/var/www/html
 export O100_PHP=php O100_SMOKE_ORIGIN=http://127.0.0.1
 mkdir -p "$root/bitrix" "$root/basket" "$root/order" "$root/auth" "$root/api/store" "$root/local/tools" /evidence
