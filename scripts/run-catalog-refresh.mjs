@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { validateInventory } from './seo-inventory.mjs';
-import { digest, catalogFingerprint, assertBaseline, assertCatalogChange, assertStableCatalog, candidateAction } from './catalog-refresh-policy.mjs';
+import { digest, catalogFingerprint, assertBaseline, assertCatalogChange, assertStableCatalog, candidateAction, samePublishedContent } from './catalog-refresh-policy.mjs';
 
 // Планировщик вызывает один короткий шаг; сборка продолжается в GitHub без SSH-ключа.
 const args=process.argv.slice(2), configFile=args[args.indexOf('--config')+1];
@@ -69,12 +69,9 @@ try {
     const inventory=exportInventory(), fingerprint=catalogFingerprint(inventory);
     const previous=JSON.parse(gunzipSync(readFileSync(state.inventoryPath)));
     assertCatalogChange(previous,inventory);
-    const unchanged=fingerprint===state.catalogFingerprint && Date.now()-Date.parse(state.lastDeployedAt)<24*3600000;
+    const unchanged=fingerprint===state.catalogFingerprint;
     if (!execute) result={status:'checked',changed:!unchanged,activeProducts:inventory.products.length,fingerprint,liveFrontendSha:live.frontendSha};
-    else if(unchanged) {
-      state.nextCheckAt=new Date(Date.now()+config.intervalHours*3600000).toISOString(); save(stateFile,state);
-      result={status:'unchanged',nextCheckAt:state.nextCheckAt};
-    } else {
+    else {
       const id=new Date().toISOString().replace(/[-:.TZ]/g,'');
       const directory=path.join(base,'runs',id), checkout=path.join(directory,'checkout'); mkdirSync(directory,{recursive:true});
       const branch='automation/catalog-refresh-'+id;
@@ -128,6 +125,18 @@ try {
           if(job.phase==='deploying') throw Error('Interrupted or rolled-back deployment; operator review required');
           assertBaseline(live,state);
           assertStableCatalog(inventory,exportInventory());
+          const previousRecord=state.history.find(record=>record.sha===live.frontendSha);
+          if(!previousRecord || digest(readFileSync(previousRecord.archive))!==previousRecord.archiveSha256) throw Error('Previous rollback archive is not verified');
+          const previousManifest=JSON.parse(run('tar',['-xOf',previousRecord.archive,'./release-manifest.json']));
+          if(samePublishedContent(previousManifest,manifest)) {
+            const receipt={status:'validated_no_change',sha:job.sha,liveFrontendSha:live.frontendSha,runUrl:ci.url,catalogFingerprint:catalogFingerprint(inventory),checkedAt:new Date().toISOString()};
+            save(path.join(job.directory,'receipt.json'),receipt);
+            Object.assign(state,{catalogFingerprint:receipt.catalogFingerprint,inventoryPath:path.join(job.directory,'inventory.json.gz'),routesPath:path.join(candidate,'generated/production-routes.json'),nextCheckAt:new Date(Date.now()+config.intervalHours*3600000).toISOString(),pending:null}); save(stateFile,state);
+            // Неизменённый пакет не является резервом опубликованного релиза.
+            unlinkSync(archive); unlinkSync(tools);
+            result=receipt;
+            throw Object.assign(new Error('Validated unchanged output'),{code:'VALIDATED_NO_CHANGE'});
+          }
           retain(live);
           const remote='/home/t/tretya9f/o100-upload-'+job.sha;
           ssh(`mkdir -p '${remote}'`);
@@ -160,7 +169,9 @@ try {
     }
   }
 } catch(error) {
-  if(execute && acquired && error.code==='CATALOG_CHANGED' && state.pending?.phase==='building' && !state.pending.uploaded) {
+  if(error.code==='VALIDATED_NO_CHANGE') {
+    // Результат и состояние уже сохранены; публикация не требуется.
+  } else if(execute && acquired && error.code==='CATALOG_CHANGED' && state.pending?.phase==='building' && !state.pending.uploaded) {
     save(path.join(state.pending.directory,'discarded.json'),{reason:error.message,checkedAt:new Date().toISOString()});
     state.pending=null; state.nextCheckAt=new Date(Date.now()+config.intervalHours*3600000).toISOString(); save(stateFile,state);
     result={status:'deferred_catalog_changed',nextCheckAt:state.nextCheckAt,productionChanged:false};

@@ -30,3 +30,7 @@ export function candidateAction(run, expectedSha) {
   if (run.conclusion !== 'success') throw Error('Candidate validation failed; production unchanged');
   return 'deploy';
 }
+export function samePublishedContent(previous, next) {
+  const normalized=m=>JSON.stringify({files:Object.entries(m.files).filter(([name])=>name!=='.release-sha').sort(([a],[b])=>a.localeCompare(b)),tools:Object.entries(m.templateFiles).sort(([a],[b])=>a.localeCompare(b)),backendSha:m.backendSha,settings:m.settings,routeCount:m.routeCount});
+  return normalized(previous)===normalized(next);
+}
