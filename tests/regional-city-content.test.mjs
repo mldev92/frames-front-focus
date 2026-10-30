@@ -28,6 +28,15 @@ test("regional routing preserves the explicit SPb lens landing", async () => {
   assert.match(root, /if\(target\)location\.replace/);
 });
 
+test("product prices are not retained across SSR requests and expire in the browser", async () => {
+  const api = await read("../src/lib/api/bitrix.ts");
+
+  assert.match(api, /const PRODUCT_CACHE_TTL_MS = 60_000/);
+  assert.match(api, /if \(import\.meta\.env\.SSR\) return undefined/);
+  assert.match(api, /cached\.expiresAt <= Date\.now\(\)/);
+  assert.match(api, /expiresAt: Date\.now\(\) \+ PRODUCT_CACHE_TTL_MS/);
+});
+
 test("shared navigation suppresses SPb-only links and contacts for Novokuznetsk", async () => {
   const footer = await read("../src/components/layout/Footer.tsx");
   const header = await read("../src/components/layout/Header.tsx");

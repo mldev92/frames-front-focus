@@ -25,15 +25,40 @@ const ALLOW_FIXTURES = import.meta.env.DEV && import.meta.env.VITE_ALLOW_FIXTURE
 
 const url = (path: string) => `${BASE}/api/store/${path}`;
 const productGalleryCache = new Map<string, Promise<string[]>>();
-const regionalProductCache = new Map<string, Product>();
+const PRODUCT_CACHE_TTL_MS = 60_000;
+const regionalProductCache = new Map<string, { product: Product; expiresAt: number }>();
 
 function productCacheKey(city: "spb" | "nvk", slug: string): string {
   return `${city}:${slug}`;
 }
 
+function getCachedProduct(city: "spb" | "nvk", slug: string): Product | undefined {
+  // SSR должен получать актуальную цену для каждого запроса, а не сохранять
+  // товар в памяти процесса между посетителями и релизами бэкенда.
+  if (import.meta.env.SSR) return undefined;
+  const key = productCacheKey(city, slug);
+  const cached = regionalProductCache.get(key);
+  if (!cached) return undefined;
+  if (cached.expiresAt <= Date.now()) {
+    regionalProductCache.delete(key);
+    return undefined;
+  }
+  return cached.product;
+}
+
+function cacheProduct(product: Product, city: "spb" | "nvk"): Product {
+  if (!import.meta.env.SSR) {
+    regionalProductCache.set(productCacheKey(city, product.slug), {
+      product,
+      expiresAt: Date.now() + PRODUCT_CACHE_TTL_MS,
+    });
+  }
+  return product;
+}
+
 function cacheProducts(products: Product[], city: "spb" | "nvk"): Product[] {
   for (const product of products) {
-    regionalProductCache.set(productCacheKey(city, product.slug), product);
+    cacheProduct(product, city);
   }
   return products;
 }
@@ -256,7 +281,7 @@ export async function getProduct(
     return product ? fixtureProducts([product])[0] : null;
   }
   if (!BASE) throw new Error("VITE_BITRIX_API is required");
-  const cached = regionalProductCache.get(productCacheKey(city, slug));
+  const cached = getCachedProduct(city, slug);
   if (cached) return cached;
 
   try {
@@ -266,8 +291,7 @@ export async function getProduct(
     const data = (await res.json()) as Product | { error: string };
     if ("error" in data) return null;
     const product = normalizeProduct(data);
-    regionalProductCache.set(productCacheKey(city, slug), product);
-    return product;
+    return cacheProduct(product, city);
   } catch (e) {
     console.error("[bitrix] getProduct:", e);
     throw e;
