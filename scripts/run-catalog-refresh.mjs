@@ -134,7 +134,7 @@ try {
           }
         }
         save(path.join(job.directory,'production-audit.json'),live);
-        const record={sha:job.sha,archive,archiveSha256:digest(readFileSync(archive)),manifestSha256:digest(execFileSync('tar',['-xOf',archive,'./release-manifest.json'])),directory:job.directory,runUrl:ci.url,deployedAt:new Date().toISOString()};
+        const record={sha:job.sha,archive,archiveSha256:digest(readFileSync(archive)),manifestSha256:digest(execFileSync('tar',['-xOf',archive,'./release-manifest.json'],{maxBuffer:64*1024*1024})),directory:job.directory,runUrl:ci.url,deployedAt:new Date().toISOString()};
         state.history=[...(state.history||[]),record];
         Object.assign(state,{frontendSha:job.sha,routingSha256:live.routingSha256,catalogFingerprint:catalogFingerprint(inventory),inventoryPath:path.join(job.directory,'inventory.json.gz'),lastDeployedAt:record.deployedAt,nextCheckAt:new Date(Date.now()+config.intervalHours*3600000).toISOString(),pending:null});
         save(stateFile,state);
