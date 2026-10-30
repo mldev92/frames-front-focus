@@ -6,7 +6,7 @@ test('content edits trigger refresh even with identical URLs; generation time do
   const a=snapshot(), b=snapshot(); b.generatedAt='2026-10-31T00:00:00Z'; b.products.reverse();
   assert.equal(catalogFingerprint(a),catalogFingerprint(b));
   b.content.sha256='b'.repeat(64); assert.notEqual(catalogFingerprint(a),catalogFingerprint(b));
-  assert.throws(()=>assertStableCatalog(a,b),/Bitrix changed/);
+  assert.throws(()=>assertStableCatalog(a,b),{code:'CATALOG_CHANGED'});
   assert.throws(()=>catalogFingerprint({products:[]}),/fingerprint/);
 });
 test('catalog shrink guard applies to each city and section visibility',()=>{

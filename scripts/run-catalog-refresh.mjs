@@ -132,6 +132,7 @@ try {
           const remote='/home/t/tretya9f/o100-upload-'+job.sha;
           ssh(`mkdir -p '${remote}'`);
           run('scp',[...sshArgs,archive,tools,config.host+':'+remote+'/'],{timeout:900000});
+          job.uploaded=true; save(stateFile,state);
           assertBaseline(inspect(),state);
           assertStableCatalog(inventory,exportInventory());
           const archiveHash=digest(readFileSync(archive)), toolsHash=digest(readFileSync(tools));
@@ -159,8 +160,14 @@ try {
     }
   }
 } catch(error) {
-  if(execute && acquired) {state.halted=true; state.lastError=error.message; save(stateFile,state);}
-  result={status:'failed',error:error.message,productionAutomaticallyRetried:false}; process.exitCode=1;
+  if(execute && acquired && error.code==='CATALOG_CHANGED' && state.pending?.phase==='building' && !state.pending.uploaded) {
+    save(path.join(state.pending.directory,'discarded.json'),{reason:error.message,checkedAt:new Date().toISOString()});
+    state.pending=null; state.nextCheckAt=new Date(Date.now()+config.intervalHours*3600000).toISOString(); save(stateFile,state);
+    result={status:'deferred_catalog_changed',nextCheckAt:state.nextCheckAt,productionChanged:false};
+  } else {
+    if(execute && acquired) {state.halted=true; state.lastError=error.message; save(stateFile,state);}
+    result={status:'failed',error:error.message,productionAutomaticallyRetried:false}; process.exitCode=1;
+  }
 } finally {
   if(existsSync(lock) && json(lock).pid===process.pid) unlinkSync(lock);
 }

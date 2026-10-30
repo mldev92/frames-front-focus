@@ -19,7 +19,10 @@ export function assertCatalogChange(previous, next) {
   }
 }
 export function assertStableCatalog(before, after) {
-  if (catalogFingerprint(before) !== catalogFingerprint(after)) throw Error('Bitrix changed while preparing the release; discard candidate and retry later');
+  if (catalogFingerprint(before) !== catalogFingerprint(after)) {
+    const error=Error('Bitrix changed while preparing the release; discard candidate and retry later');
+    error.code='CATALOG_CHANGED'; throw error;
+  }
 }
 export function candidateAction(run, expectedSha) {
   if (run.headSha !== expectedSha || run.event !== 'workflow_dispatch' || run.workflowName !== 'Prepare production candidate') throw Error('Untrusted candidate workflow');
