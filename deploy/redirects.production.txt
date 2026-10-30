@@ -153,7 +153,6 @@ RedirectMatch 301 ^/catalog_s/opravy/detskie_1/dlya_devochek/oprava_baniss_6832_
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/dlya_devochek/oprava_baniss_br5084_02/?$ https://optika100.com/catalog_s/opravy/oprava_baniss_br5084_02/
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/dlya_devochek/oprava_barbie_056_brw/?$ https://optika100.com/catalog_s/opravy/oprava_barbie_056_brw/
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/dlya_devochek/oprava_disney_frozen_aa122_07/?$ https://optika100.com/catalog_s/opravy/oprava_disney_frozen_aa122_07/
-RedirectMatch 301 ^/catalog_s/opravy/detskie_1/dlya_devochek/oprava_fantasy_1112_prozrachnaya/?$ https://optika100.com/catalog_s/opravy/oprava_fantasy_1112_prozrachnaya/
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/dlya_devochek/oprava_fisher_price_fpvn014_vlt/?$ https://optika100.com/catalog_s/opravy/oprava_fisher_price_fpvn014_vlt/
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/dlya_devochek/oprava_fisher_price_fpvn015_red/?$ https://optika100.com/catalog_s/opravy/oprava_fisher_price_fpvn015_red/
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/dlya_devochek/oprava_guess_8270_090_50/?$ https://optika100.com/catalog_s/opravy/detskie_1/oprava_guess_8270_090_50/
@@ -220,7 +219,6 @@ RedirectMatch 301 ^/catalog_s/opravy/detskie_1/oprava_ciao_ciao_385_bl/?$ https:
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/oprava_disney_frozen_aa122_07/?$ https://optika100.com/catalog_s/opravy/oprava_disney_frozen_aa122_07/
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/oprava_elevenparis_aa125_63/?$ https://optika100.com/catalog_s/opravy/oprava_elevenparis_aa125_63/
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/oprava_elevenparis_mm018_67/?$ https://optika100.com/catalog_s/opravy/oprava_elevenparis_mm018_67/
-RedirectMatch 301 ^/catalog_s/opravy/detskie_1/oprava_fantasy_1112_prozrachnaya/?$ https://optika100.com/catalog_s/opravy/oprava_fantasy_1112_prozrachnaya/
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/oprava_fisher_price_fpv37_580/?$ https://optika100.com/catalog_s/opravy/oprava_fisher_price_fpv37_580/
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/oprava_fisher_price_fpv39_581_46/?$ https://optika100.com/catalog_s/opravy/oprava_fisher_price_fpv39_581_46/
 RedirectMatch 301 ^/catalog_s/opravy/detskie_1/oprava_fisher_price_fpv40_wrt/?$ https://optika100.com/catalog_s/opravy/oprava_fisher_price_fpv40_wrt/

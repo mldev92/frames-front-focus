@@ -12,7 +12,14 @@ printf '%s\n' '<?php http_response_code(404); echo "LEGACY404";' > "$root/404.ph
 printf '%s\n' '<?php if(str_contains($_SERVER["REQUEST_URI"],"/opravy/")){echo "CATALOG";}else{http_response_code(404);echo "LEGACY404";}' > "$root/bitrix/urlrewrite.php"
 printf '%s\n' '<urlset />' > "$root/sitemap.xml"
 printf '%s\n' '<?php http_response_code(404); header("X-Robots-Tag: noindex"); $file=$_SERVER["DOCUMENT_ROOT"]."/o100_frontend_current/404.html"; if(is_file($file)) readfile($file); else echo "404";' > "$root/local/tools/o100-frontend-404.php"
-printf '%s\n' '<?php http_response_code(404); echo "UNKNOWN_PRODUCT";' > "$root/local/tools/o100-product-fallback.php"
+cat > "$root/local/tools/o100-product-fallback.php" <<'PHP'
+<?php
+// Воспроизводим старый Bitrix-handler: снятая карточка ошибочно уходит в категорию.
+$reviewed=json_decode(file_get_contents('/frontend/deploy/reviewed-legacy-redirects.json'),true);
+$path=rawurldecode(parse_url($_SERVER['REQUEST_URI'],PHP_URL_PATH));
+if(in_array(rtrim($path,'/').'/', $reviewed['paths'],true)) { header('Location: /catalog_s/opravy/',true,301); exit; }
+http_response_code(404); echo 'UNKNOWN_PRODUCT';
+PHP
 cat > "$root/.htaccess" <<'BASELINE'
 Options -Indexes
 DirectoryIndex index.php index.html
@@ -87,6 +94,24 @@ check 404 /%6f100_frontend_current/index.html
 check 404 /o100_frontend_assets/test-hash.js
 check 404 /unknown-path/
 check 404 /catalog_s/opravy/unknown-product/
+# Проверяем прежние ошибочные редиректы, query, отсутствие завершающего слеша и пробел.
+while IFS= read -r path; do
+  check 404 "$path"
+  check 404 "$path?routing_probe=1"
+  check 404 "${path%/}"
+done < <(php -r '$m=json_decode(file_get_contents("/frontend/deploy/reviewed-legacy-redirects.json"),true); foreach($m["paths"] as $p) echo str_replace(" ","%20",$p),"\n";')
+restored="$root/o100_frontend_current/catalog_s/kontaktnye_linzy_/prozrachnye/air_optix_aqua_6_sht"
+mkdir -p "$restored"
+printf '%s\n' 'RESTORED_PRODUCT' > "$restored/index.html"
+check 200 /catalog_s/kontaktnye_linzy_/prozrachnye/air_optix_aqua_6_sht/
+grep -q RESTORED_PRODUCT /tmp/response
+rm "$restored/index.html"
+baseline=$(sha256sum "$root/.htaccess" | cut -d' ' -f1)
+if O100_TEST_FAIL_AFTER_SWAP=1 bash /frontend/deploy/update-routing.sh "$root" "$sha" "$baseline" aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa; then exit 1; fi
+[[ "$(sha256sum "$root/.htaccess" | cut -d' ' -f1)" == "$baseline" ]]
+bash /frontend/deploy/update-routing.sh "$root" "$sha" "$baseline" bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+[[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$sha" ]]
+echo 'PASS: 31 reviewed legacy paths return direct 404 with query/slash variants; restored static product returns 200; routing-only rollback and update preserve frontend'
 cp "$root/.htaccess" /evidence/react.htaccess
 sha=3333333333333333333333333333333333333333
 make_archive "$sha"
