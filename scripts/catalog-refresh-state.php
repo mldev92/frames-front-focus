@@ -9,7 +9,7 @@ if (!preg_match('/^[a-f0-9]{40}$/D',$backendManifest['sha']) || empty($backendMa
 $frontend=[]; $backend=[];
 foreach ($m['files'] as $path=>$hash) if (!is_file($root.'/o100_frontend_current/'.$path) || hash_file('sha256',$root.'/o100_frontend_current/'.$path)!==$hash) $frontend[]=$path;
 foreach ($backendManifest['files'] as $path=>$hash) {
-    if (!str_starts_with($path,'api/store/') || str_contains($path,'..') || !preg_match('/^[a-f0-9]{64}$/D',$hash)) throw new RuntimeException('Unsafe backend manifest path');
+    if ((!array_key_exists($path,$m['backendFiles']) && !preg_match('~^api/store/[A-Za-z0-9_.-]+\.php$~D',$path)) || str_contains($path,'..') || !preg_match('/^[a-f0-9]{64}$/D',$hash)) throw new RuntimeException('Unsafe backend manifest path');
     if (!is_file($root.'/'.$path) || hash_file('sha256',$root.'/'.$path)!==$hash) $backend[]=$path;
 }
 $transaction=trim(file_get_contents($state.'/active-transaction'));
