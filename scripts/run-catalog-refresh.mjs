@@ -39,7 +39,12 @@ const exportInventory=()=>{
   if (catalogFingerprint(inventory)!==inventory.fingerprint) throw Error('Export fingerprint mismatch');
   return inventory;
 };
-const inspect=()=>JSON.parse(readOnlySsh(readFileSync(path.join(source,'scripts/catalog-refresh-state.php'),'utf8')));
+const inspect=()=>{
+  let php=readFileSync(path.join(source,'scripts/catalog-refresh-state.php'),'utf8');
+  if(config.backendManifest) php='<?php $approvedBackend=json_decode(base64_decode("'+Buffer.from(JSON.stringify(config.backendManifest)).toString('base64')+'"),true,512,JSON_THROW_ON_ERROR);\n'+php.replace(/^<\?php/,'');
+  return JSON.parse(readOnlySsh(php));
+};
+const nextDue=startedAt=>new Date(Math.max(Date.now(),Date.parse(startedAt)+config.intervalHours*3600000)).toISOString();
 let state=json(stateFile), result, acquired=false;
 const retain=(live)=>{
   for(const record of state.history||[]) {
@@ -105,6 +110,7 @@ try {
       const ci=runs[0]; job.runId=ci.databaseId;
       if(candidateAction(ci,job.sha)==='wait') {save(stateFile,state);result={status:'building',runUrl:ci.url};}
       else {
+        if(job.phase==='building' && !job.uploaded && Date.now()-Date.parse(job.startedAt)>config.intervalHours*3600000) throw Object.assign(new Error('Candidate expired while waiting; prepare a fresh snapshot'),{code:'CANDIDATE_EXPIRED'});
         const candidate=path.join(job.directory,'candidate');
         if(!existsSync(candidate)) {mkdirSync(candidate);gh('run','download',String(ci.databaseId),'--repo',config.repository,'--name','production-candidate','--dir',candidate);}
         const archive=path.join(candidate,'production-release.tgz'), tools=path.join(candidate,'production-tools.tgz');
@@ -131,7 +137,7 @@ try {
           if(samePublishedContent(previousManifest,manifest)) {
             const receipt={status:'validated_no_change',sha:job.sha,liveFrontendSha:live.frontendSha,runUrl:ci.url,catalogFingerprint:catalogFingerprint(inventory),checkedAt:new Date().toISOString()};
             save(path.join(job.directory,'receipt.json'),receipt);
-            Object.assign(state,{catalogFingerprint:receipt.catalogFingerprint,inventoryPath:path.join(job.directory,'inventory.json.gz'),routesPath:path.join(candidate,'generated/production-routes.json'),nextCheckAt:new Date(Date.now()+config.intervalHours*3600000).toISOString(),pending:null}); save(stateFile,state);
+            Object.assign(state,{catalogFingerprint:receipt.catalogFingerprint,inventoryPath:path.join(job.directory,'inventory.json.gz'),routesPath:path.join(candidate,'generated/production-routes.json'),nextCheckAt:nextDue(job.startedAt),pending:null}); save(stateFile,state);
             // Неизменённый пакет не является резервом опубликованного релиза.
             unlinkSync(archive); unlinkSync(tools);
             result=receipt;
@@ -158,7 +164,7 @@ try {
         save(path.join(job.directory,'production-audit.json'),live);
         const record={sha:job.sha,archive,archiveSha256:digest(readFileSync(archive)),manifestSha256:digest(execFileSync('tar',['-xOf',archive,'./release-manifest.json'],{maxBuffer:64*1024*1024})),directory:job.directory,runUrl:ci.url,deployedAt:new Date().toISOString()};
         state.history=[...(state.history||[]),record];
-        Object.assign(state,{frontendSha:job.sha,routingSha256:live.routingSha256,catalogFingerprint:catalogFingerprint(inventory),inventoryPath:path.join(job.directory,'inventory.json.gz'),routesPath:path.join(candidate,'generated/production-routes.json'),lastDeployedAt:record.deployedAt,nextCheckAt:new Date(Date.now()+config.intervalHours*3600000).toISOString(),pending:null});
+        Object.assign(state,{frontendSha:job.sha,routingSha256:live.routingSha256,catalogFingerprint:catalogFingerprint(inventory),inventoryPath:path.join(job.directory,'inventory.json.gz'),routesPath:path.join(candidate,'generated/production-routes.json'),lastDeployedAt:record.deployedAt,nextCheckAt:nextDue(job.startedAt),pending:null});
         save(stateFile,state);
         save(path.join(job.directory,'receipt.json'),{status:'deployed_and_verified',...record,routingSha256:live.routingSha256,backendSha:live.backendSha,fileCount:live.fileCount,catalogFingerprint:state.catalogFingerprint});
         // Удаляем только избыточный upload; проверенный локальный архив сохранён.
@@ -171,9 +177,9 @@ try {
 } catch(error) {
   if(error.code==='VALIDATED_NO_CHANGE') {
     // Результат и состояние уже сохранены; публикация не требуется.
-  } else if(execute && acquired && error.code==='CATALOG_CHANGED' && state.pending?.phase==='building' && !state.pending.uploaded) {
+  } else if(execute && acquired && ['CATALOG_CHANGED','CANDIDATE_EXPIRED'].includes(error.code) && state.pending?.phase==='building' && !state.pending.uploaded) {
     save(path.join(state.pending.directory,'discarded.json'),{reason:error.message,checkedAt:new Date().toISOString()});
-    state.pending=null; state.nextCheckAt=new Date(Date.now()+config.intervalHours*3600000).toISOString(); save(stateFile,state);
+    state.pending=null; state.nextCheckAt=new Date(Date.now()+(error.code==='CANDIDATE_EXPIRED'?0:config.intervalHours*3600000)).toISOString(); save(stateFile,state);
     result={status:'deferred_catalog_changed',nextCheckAt:state.nextCheckAt,productionChanged:false};
   } else {
     if(execute && acquired) {state.halted=true; state.lastError=error.message; save(stateFile,state);}
