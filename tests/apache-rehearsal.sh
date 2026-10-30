@@ -53,7 +53,7 @@ foreach(new RecursiveIteratorIterator(new RecursiveDirectoryIterator('/candidate
   $name=substr($file->getPathname(),11);
   if($file->isFile() && $name !== 'release-manifest.json') $files[$name]=hash_file('sha256',$file->getPathname());
 }
-$tools=[]; foreach(['production.htaccess','redirects.production.txt','release.sh','merge-routing.php','verify-release.php'] as $name) $tools['deploy/'.$name]=hash_file('sha256','/frontend/deploy/'.$name);
+$tools=[]; foreach(['production.htaccess','redirects.production.txt','release.sh','merge-routing.php','verify-release.php','link-unchanged.php'] as $name) $tools['deploy/'.$name]=hash_file('sha256','/frontend/deploy/'.$name);
 $manifest=['templateFiles'=>$tools,'frontendSha'=>trim(file_get_contents('/candidate/.release-sha')),'backendSha'=>str_repeat('b',40),'backendFiles'=>['api/store/csrf.php'=>hash_file('sha256','/var/www/html/api/store/csrf.php')], 'routingBaseline'=>hash_file('sha256','/var/www/html/.htaccess'),'settings'=>['privateBeta'=>false,'fixtures'=>false,'virtualTryOn'=>false],'files'=>$files];
 file_put_contents('/candidate/release-manifest.json',json_encode($manifest));
 PHP
@@ -124,6 +124,8 @@ sha=4444444444444444444444444444444444444444
 make_archive "$sha"
 baseline=$(sha256sum "$root/.htaccess" | cut -d' ' -f1)
 bash /frontend/deploy/release.sh deploy "$root" "$sha" "$baseline" "/evidence/$sha.tgz"
+[[ "$(stat -c %i "$root/o100_frontend_current/index.html")" == "$(stat -c %i "$root/o100_frontend_releases/2222222222222222222222222222222222222222/index.html")" ]]
+[[ "$(cat "$root/o100_frontend_releases/2222222222222222222222222222222222222222/.release-sha")" == 2222222222222222222222222222222222222222 ]]
 bash /frontend/deploy/release.sh rollback "$root"
 [[ "$(readlink "$root/o100_frontend_current")" == "$root/o100_frontend_releases/2222222222222222222222222222222222222222" ]]
 cmp /evidence/react.htaccess "$root/.htaccess"

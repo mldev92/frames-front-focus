@@ -17,7 +17,7 @@ if (backend.sha !== backendSha || !Object.keys(backend.files ?? {}).length) thro
 verifyCheckoutRuntime(backend.files);
 const templateFiles = {};
 await writeFile('deploy/catalog-export.php', (await readFile('scripts/catalog-content-fingerprint.php','utf8')) + '\n' + (await readFile('scripts/export-seo-inventory.php','utf8')).replace(/^<\?php/,''));
-for (const file of ["deploy/production.htaccess", "deploy/redirects.production.txt", "deploy/release.sh", "deploy/merge-routing.php", "deploy/verify-release.php", "deploy/accept-catalog-release.php", "deploy/catalog-export.php"]) {
+for (const file of ["deploy/production.htaccess", "deploy/redirects.production.txt", "deploy/release.sh", "deploy/merge-routing.php", "deploy/verify-release.php", "deploy/accept-catalog-release.php", "deploy/catalog-export.php", "deploy/link-unchanged.php"]) {
   templateFiles[file] = createHash("sha256").update(await readFile(file)).digest("hex");
 }
 const root = path.resolve("dist/client");
