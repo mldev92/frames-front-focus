@@ -1,6 +1,13 @@
 import { createHash } from 'node:crypto';
 
 export const digest = value => createHash('sha256').update(value).digest('hex');
+export function assertCandidateFresh(job, intervalHours, now = Date.now()) {
+  const started = Date.parse(job.startedAt), lifetime = intervalHours * 3600000;
+  if (!Number.isFinite(started) || !Number.isFinite(now) || !Number.isFinite(lifetime) || lifetime <= 0 || started > now) throw Error('Invalid candidate freshness window');
+  const remaining = started + lifetime - now;
+  if (remaining <= 0) throw Object.assign(new Error('Candidate expired; prepare a fresh snapshot'), { code: 'CANDIDATE_EXPIRED' });
+  return remaining;
+}
 export function catalogFingerprint(inventory) {
   if (!/^[a-f0-9]{64}$/.test(inventory.content?.sha256 ?? '')) throw Error('Complete content fingerprint required');
   return digest(JSON.stringify({products: [...inventory.products].sort((a,b)=>a.id-b.id), content:inventory.content.sha256}));

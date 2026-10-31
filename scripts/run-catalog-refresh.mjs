@@ -1,10 +1,11 @@
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, unlinkSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, unlinkSync, statSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gunzipSync, gzipSync } from 'node:zlib';
 import { validateInventory } from './seo-inventory.mjs';
-import { digest, catalogFingerprint, assertBaseline, assertCatalogChange, assertStableCatalog, candidateAction, samePublishedContent } from './catalog-refresh-policy.mjs';
+import { digest, catalogFingerprint, assertBaseline, assertCatalogChange, assertStableCatalog, candidateAction, samePublishedContent, assertCandidateFresh } from './catalog-refresh-policy.mjs';
+import { transferCatalogArtifacts } from './catalog-artifact-transfer.mjs';
 
 // Планировщик вызывает один короткий шаг; сборка продолжается в GitHub без SSH-ключа.
 const args=process.argv.slice(2), configFile=args[args.indexOf('--config')+1];
@@ -110,13 +111,15 @@ try {
       const ci=runs[0]; job.runId=ci.databaseId;
       if(candidateAction(ci,job.sha)==='wait') {save(stateFile,state);result={status:'building',runUrl:ci.url};}
       else {
-        if(job.phase==='building' && !job.uploaded && Date.now()-Date.parse(job.startedAt)>config.intervalHours*3600000) throw Object.assign(new Error('Candidate expired while waiting; prepare a fresh snapshot'),{code:'CANDIDATE_EXPIRED'});
+        if(job.phase==='building') assertCandidateFresh(job,config.intervalHours);
         const candidate=path.join(job.directory,'candidate');
         if(!existsSync(candidate)) {mkdirSync(candidate);gh('run','download',String(ci.databaseId),'--repo',config.repository,'--name','production-candidate','--dir',candidate);}
         const archive=path.join(candidate,'production-release.tgz'), tools=path.join(candidate,'production-tools.tgz');
+        const verifiedHashes=new Map();
         for(const file of [archive,tools]) {
           const expected=readFileSync(file+'.sha256','utf8').split(/\s/)[0];
           if(digest(readFileSync(file))!==expected) throw Error('Candidate archive checksum mismatch');
+          verifiedHashes.set(file,expected);
         }
         const manifest=JSON.parse(run('tar',['-xOf',archive,'./release-manifest.json']));
         if(manifest.frontendSha!==job.sha || manifest.backendSha!==state.backendSha || manifest.routingBaseline!==state.routingSha256) throw Error('Candidate does not match approved baseline');
@@ -146,11 +149,14 @@ try {
           retain(live);
           const remote='/home/t/tretya9f/o100-upload-'+job.sha;
           ssh(`mkdir -p '${remote}'`);
-          run('scp',[...sshArgs,archive,tools,config.host+':'+remote+'/'],{timeout:900000});
-          job.uploaded=true; save(stateFile,state);
-          assertBaseline(inspect(),state);
-          assertStableCatalog(inventory,exportInventory());
-          const archiveHash=digest(readFileSync(archive)), toolsHash=digest(readFileSync(tools));
+          const archiveHash=verifiedHashes.get(archive), toolsHash=verifiedHashes.get(tools);
+          transferCatalogArtifacts({job,intervalHours:config.intervalHours,
+            files:[{path:archive,bytes:statSync(archive).size,sha256:archiveHash},{path:tools,bytes:statSync(tools).size,sha256:toolsHash}],
+            host:config.host,sshArgs,run,
+            markUploaded:()=>{job.uploaded=true;save(stateFile,state);},
+            assertReady:()=>{assertBaseline(inspect(),state);assertStableCatalog(inventory,exportInventory());},
+            record:evidence=>save(path.join(job.directory,'transfer.json'),evidence)});
+          assertCandidateFresh(job,config.intervalHours);
           job.phase='deploying'; save(stateFile,state);
           const command=`set -eu; cd '${remote}'; test "$(sha256sum production-release.tgz | cut -d' ' -f1)" = '${archiveHash}'; test "$(sha256sum production-tools.tgz | cut -d' ' -f1)" = '${toolsHash}'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND=${state.frontendSha} O100_ACCEPTANCE_SCRIPT='${remote}/deploy/accept-catalog-release.php' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '${root}' '${job.sha}' '${state.routingSha256}' production-release.tgz`;
           try {writeFileSync(path.join(job.directory,'deployment.log'),ssh(command));}
