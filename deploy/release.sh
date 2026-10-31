@@ -28,7 +28,7 @@ smoke() {
       [[ "$actual" == "$expected" ]] || { echo "Public $path differs from release" >&2; return 1; }
     done
     for path in /catalog_s/opravy/ /catalog_n/opravy/; do
-      html=$(curl "${curl_args[@]}" --fail "$origin$path") || return 1
+      html=$(curl "${curl_args[@]}" --fail "$origin$path" | tr -d '\000') || return 1
       links=$(printf '%s' "$html" | "$php_bin" -r '
         preg_match_all("~<a\b[^>]*>~i", stream_get_contents(STDIN), $tags);
         $links=[];

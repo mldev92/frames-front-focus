@@ -112,7 +112,15 @@ $BackendFileList = @(
     'local/tools/o100-cart-recovery.php', 'local/tools/o100-product-fallback.php',
     'local/tools/o100-frontend-404.php', 'bitrix/templates/optica_aspro_next/header.php'
 )
-$DeployToolFiles = @('release.sh', 'merge-routing.php', 'verify-release.php', 'production.htaccess', 'redirects.production.txt')
+$TrackedDeployToolFiles = @(
+    'release.sh', 'merge-routing.php', 'verify-release.php', 'accept-catalog-release.php',
+    'link-unchanged.php', 'tar-extract.sh', 'production.htaccess', 'redirects.production.txt'
+)
+# package-production.mjs builds this deterministic helper from committed source
+# files after the production build. It is intentionally ignored by git, so it
+# must be read from the generated working-tree file rather than git cat-file.
+$GeneratedDeployToolFiles = @('catalog-export.php')
+$DeployToolFiles = @($TrackedDeployToolFiles) + @($GeneratedDeployToolFiles)
 
 function Invoke-Ssh([string]$Command) {
     $Command = $Command.Replace("`r`n", "`n").Replace("`r", "`n")
@@ -416,7 +424,7 @@ if ($Rollback) {
         Write-Host 'DRY-RUN: add -Execute to roll back.'
         return
     }
-    foreach ($file in $DeployToolFiles) {
+    foreach ($file in $TrackedDeployToolFiles) {
         $bytes = Get-GitBlobBytes "HEAD:deploy/$file"
         $tmp = [IO.Path]::GetTempFileName()
         try {
@@ -469,8 +477,15 @@ try {
     # bytes we're actually going to upload, or the server rejects its own
     # just-built release as tampered.
     $toolBytes = @{}
-    foreach ($file in $DeployToolFiles) {
+    foreach ($file in $TrackedDeployToolFiles) {
         $toolBytes[$file] = Get-GitBlobBytes "HEAD:deploy/$file"
+    }
+    foreach ($file in $GeneratedDeployToolFiles) {
+        $generatedPath = Join-Path $FrontendRepo "deploy\$file"
+        if (-not (Test-Path -LiteralPath $generatedPath)) {
+            throw "Generated deployment tool is missing: $generatedPath"
+        }
+        $toolBytes[$file] = [IO.File]::ReadAllBytes($generatedPath)
     }
     $manifestPath = Join-Path $client 'release-manifest.json'
     # Explicit UTF-8: Windows PowerShell 5.1 otherwise reads the file as ANSI and
