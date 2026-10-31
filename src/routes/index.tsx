@@ -19,7 +19,7 @@ import { Reveal } from "@/components/Reveal";
 import { catalogHref, categoryToSegment, regionalCatalogHref, productCardHref } from "@/data/categories";
 import { articles } from "@/data/articles";
 import { serviceHref } from "@/data/services";
-import { Calendar, Users, Award, Phone, Send } from "lucide-react";
+import { Calendar, Users, Award, Phone } from "lucide-react";
 import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
@@ -27,8 +27,8 @@ import {
   CONTACT,
   contactForCity,
   META_EXTREMIST_NOTE,
+  NEWS_CHANNELS,
   NK_SALONS,
-  NVK_CONTACT,
   PRIMARY_SALON,
 } from "@/data/contact";
 import { DEFAULT_REGION, useCityStore } from "@/lib/store/city";
@@ -648,12 +648,6 @@ function MainV2Page() {
             justify-content:center;
             background:color-mix(in oklab, var(--cream) 92%, white);
             color:var(--brand);
-            transition:background-color 260ms ease, color 260ms ease, transform 260ms ease;
-          }
-          .o100-service-strip-cell:hover .o100-service-strip-icon{
-            background:var(--brand);
-            color:#fff;
-            transform:translateY(-1px);
           }
           .o100-service-strip-eyebrow{
             margin-bottom:4px;
@@ -1231,42 +1225,29 @@ function MainV2Page() {
               <p className="text-sm text-muted-foreground" style={{ marginBottom: 18 }}>
                 Публикуем актуальные предложения в наших официальных каналах.
               </p>
-              {/* Новостного канала в MAX нет (мессенджер MAX остаётся в контактах).
-                  СПб публикует новости в Telegram, Новокузнецк — во ВКонтакте и Instagram. */}
-              {city === "nvk" ? (
-                <div className="mt-auto">
-                  <div className="flex gap-2">
-                    <a
-                      href={NVK_CONTACT.vk.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex flex-1 items-center justify-center rounded-full bg-brand px-4 py-3 text-sm font-semibold text-white"
-                    >
-                      {NVK_CONTACT.vk.label}
-                    </a>
-                    <a
-                      href={NVK_CONTACT.instagram.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex flex-1 items-center justify-center rounded-full border border-brand px-4 py-3 text-sm font-semibold text-brand"
-                    >
-                      {NVK_CONTACT.instagram.label}*
-                    </a>
-                  </div>
-                  <p className="mt-2 text-[10px] leading-snug text-muted-foreground">
-                    {META_EXTREMIST_NOTE}
-                  </p>
+              <div className="mt-auto">
+                <div className="flex gap-2">
+                  <a
+                    href={NEWS_CHANNELS.vk.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex flex-1 items-center justify-center rounded-full bg-brand px-4 py-3 text-sm font-semibold text-white"
+                  >
+                    {NEWS_CHANNELS.vk.label}
+                  </a>
+                  <a
+                    href={NEWS_CHANNELS.instagram.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex flex-1 items-center justify-center rounded-full border border-brand px-4 py-3 text-sm font-semibold text-brand"
+                  >
+                    {NEWS_CHANNELS.instagram.label}*
+                  </a>
                 </div>
-              ) : (
-                <a
-                  href={contact.telegram.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mt-auto inline-flex items-center justify-center gap-2 rounded-full bg-brand px-5 py-3 text-sm font-semibold text-white"
-                >
-                  <Send className="h-4 w-4" /> Читать в Telegram
-                </a>
-              )}
+                <p className="mt-2 text-[10px] leading-snug text-muted-foreground">
+                  {META_EXTREMIST_NOTE}
+                </p>
+              </div>
             </div>
           </div>
         </div>

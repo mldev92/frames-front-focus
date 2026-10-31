@@ -120,7 +120,7 @@ function CardIcon({ size = 14 }: { size?: number }) {
   );
 }
 
-function CurrencyIcon({ size = 14 }: { size?: number }) {
+function RubleIcon({ size = 14 }: { size?: number }) {
   return (
     <svg
       width={size}
@@ -132,8 +132,9 @@ function CurrencyIcon({ size = 14 }: { size?: number }) {
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <line x1="12" x2="12" y1="2" y2="22" />
-      <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      <path d="M8 20V4h6a4.5 4.5 0 0 1 0 9H8" />
+      <path d="M6 13h9" />
+      <path d="M6 17h7" />
     </svg>
   );
 }
@@ -206,7 +207,9 @@ const paymentBadges = (
   <div className="flex flex-wrap items-center gap-2 sm:flex-col sm:items-end">
     <PayBadge icon={<CardIcon />} label="Visa" />
     <PayBadge icon={<CardIcon />} label="MasterCard" />
-    <PayBadge icon={<CurrencyIcon />} label="Наличные" />
+    <PayBadge icon={<CardIcon />} label="Мир" />
+    <PayBadge icon={<CardIcon />} label="ЮKassa" />
+    <PayBadge icon={<RubleIcon />} label="Наличные" />
   </div>
 );
 

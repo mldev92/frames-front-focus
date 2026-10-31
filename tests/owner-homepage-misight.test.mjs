@@ -13,13 +13,13 @@ test("homepage lens block shows only catalogue prices, no invented −10%", asyn
   assert.doesNotMatch(home, /strike \* \(1 - /);
 });
 
-test("news card: SPb reads Telegram, Novokuznetsk VK + Instagram with the Meta note, no MAX", async () => {
+test("news card: both cities use VK and Instagram with the Meta note, no Telegram or MAX", async () => {
   const home = await read("../src/routes/index.tsx");
   const contact = await read("../src/data/contact.ts");
   assert.doesNotMatch(home, /Читать в MAX/);
-  assert.match(home, /Читать в Telegram/);
-  assert.match(home, /NVK_CONTACT\.vk\.href/);
-  assert.match(home, /NVK_CONTACT\.instagram\.href/);
+  assert.doesNotMatch(home, /Читать в Telegram/);
+  assert.match(home, /NEWS_CHANNELS\.vk\.href/);
+  assert.match(home, /NEWS_CHANNELS\.instagram\.href/);
   assert.match(home, /\{META_EXTREMIST_NOTE\}/);
   assert.match(contact, /https:\/\/vk\.ru\/optika100/);
   assert.match(contact, /https:\/\/www\.instagram\.com\/optika100ru\//);

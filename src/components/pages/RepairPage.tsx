@@ -17,8 +17,10 @@ import {
   Wrench,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { yandexMapsSearchHref } from "@/components/ContactActionButtons";
 import { Reveal } from "@/components/Reveal";
-import { CONTACT, contactForCity, NK_SALONS, SPB_SALONS } from "@/data/contact";
+import { YandexMap } from "@/components/YandexMap";
+import { contactForCity, NK_SALONS, SPB_SALONS } from "@/data/contact";
 import { REPAIR_PRICES_DATE, repairPriceColumns } from "@/data/repair-prices";
 import { useCityStore } from "@/lib/store/city";
 
@@ -226,9 +228,7 @@ export function RepairPage() {
         <div className="mt-8 grid gap-6 lg:grid-cols-2">
           <Reveal className="rounded-2xl border border-border bg-card p-7">
             <h3 className="text-lg font-semibold leading-snug text-foreground">
-              Салон оптики «Оптика 100%»
-              <br />
-              {localSalon.routeQuery}
+              {localSalon.address}
             </h3>
 
             <div className="mt-5 space-y-4 text-sm text-muted-foreground">
@@ -246,16 +246,21 @@ export function RepairPage() {
               </div>
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 shrink-0" />
-                <span>{CONTACT.phone.label}</span>
+                <span>{contact.phone.label}</span>
               </div>
             </div>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <a href="/contacts/" className={primaryButton}>
+              <a
+                href={yandexMapsSearchHref(localSalon.routeQuery)}
+                className={primaryButton}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Route className="mr-2 h-4 w-4" />
                 Построить маршрут
               </a>
-              <a href={CONTACT.phone.href} className={secondaryButton}>
+              <a href={contact.phone.href} className={secondaryButton}>
                 <Phone className="mr-2 h-4 w-4" />
                 Позвонить
               </a>
@@ -264,11 +269,16 @@ export function RepairPage() {
 
           <Reveal
             delay={100}
-            className="flex min-h-[320px] flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface text-muted-foreground"
+            className="min-h-[320px] overflow-hidden rounded-2xl border border-border bg-surface"
           >
-            <MapPin className="h-10 w-10" strokeWidth={1.5} />
-            <span className="text-sm">Яндекс Карта · {localSalon.cityLabel}</span>
-            <span className="text-xs opacity-60">Вставьте iframe Яндекс.Карт</span>
+            <YandexMap
+              address={localSalon.routeQuery}
+              markers={[localSalon.coordinates]}
+              center={localSalon.coordinates}
+              height={320}
+              zoom={16}
+              className="min-h-[320px]"
+            />
           </Reveal>
         </div>
       </section>

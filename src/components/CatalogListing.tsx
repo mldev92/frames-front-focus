@@ -12,6 +12,7 @@ import type { CatalogPage, CatalogQuery, FacetKey as ServerFacetKey } from "@/li
 import type { CityCode } from "@/lib/store/city";
 import { cn } from "@/lib/utils";
 import { GenderIcon, genderToIconKind } from "@/components/ui/GenderIcon";
+import { normalizePriceRangeDraft } from "@/lib/catalog-price-range";
 
 type FacetKey =
   | "shape"
@@ -1012,15 +1013,46 @@ export function CatalogListing({
     appliedPriceMin ?? priceBounds.min,
     appliedPriceMax ?? priceBounds.max,
   ]);
+  const [priceDraft, setPriceDraft] = useState<[string, string]>([
+    String(appliedPriceMin ?? priceBounds.min),
+    String(appliedPriceMax ?? priceBounds.max),
+  ]);
   // Track the applied range from the URL (slider edits stay local until commit).
   useEffect(() => {
-    setPrice([appliedPriceMin ?? priceBounds.min, appliedPriceMax ?? priceBounds.max]);
+    const next: [number, number] = [
+      appliedPriceMin ?? priceBounds.min,
+      appliedPriceMax ?? priceBounds.max,
+    ];
+    setPrice(next);
+    setPriceDraft([String(next[0]), String(next[1])]);
   }, [appliedPriceMin, appliedPriceMax, priceBounds.min, priceBounds.max]);
   const commitPrice = (v: [number, number]) => {
     onStateChange({
       priceMin: v[0] > priceBounds.min ? v[0] : undefined,
       priceMax: v[1] < priceBounds.max ? v[1] : undefined,
     });
+  };
+  const updatePriceDraft = (index: 0 | 1, raw: string) => {
+    setPriceDraft((current) => (index === 0 ? [raw, current[1]] : [current[0], raw]));
+    if (raw.trim() === "") return;
+    const value = Number(raw);
+    if (!Number.isFinite(value)) return;
+    setPrice((current) => (index === 0 ? [value, current[1]] : [current[0], value]));
+  };
+  const commitPriceDraft = () => {
+    const appliedRange: [number, number] = [
+      appliedPriceMin ?? priceBounds.min,
+      appliedPriceMax ?? priceBounds.max,
+    ];
+    const next = normalizePriceRangeDraft(priceDraft, priceBounds, appliedRange);
+    setPrice(next);
+    setPriceDraft([String(next[0]), String(next[1])]);
+    commitPrice(next);
+  };
+  const updatePriceFromSlider = (value: number[]) => {
+    const next: [number, number] = [value[0], value[1]];
+    setPrice(next);
+    setPriceDraft([String(next[0]), String(next[1])]);
   };
 
   // Width/temple ranges, free-text search, try-on, clip-on and style tags are
@@ -1300,6 +1332,12 @@ export function CatalogListing({
         (frameShapeCounts[s.key] ?? 0) > 0 || Boolean(active.shape?.has(s.key)),
       )
     : SHAPE_DEFS.filter((s) => facetCounts.shape?.[s.key]);
+  const visibleFrameAdultGenders = FRAME_GENDER_DEFS.slice(0, 3).filter(
+    (gender) => (frameGenderCounts[gender.key] ?? 0) > 0 || active.gender?.has(gender.key),
+  );
+  const visibleFrameChildGenders = FRAME_GENDER_DEFS.slice(3).filter(
+    (gender) => (frameGenderCounts[gender.key] ?? 0) > 0 || active.gender?.has(gender.key),
+  );
 
   const FilterContent = (
     <div className={cn("text-sm", isFramesCategory && "flex flex-col")}>
@@ -1499,9 +1537,9 @@ export function CatalogListing({
             <span className="text-muted-foreground text-xs">₽</span>
             <input
               type="number"
-              value={price[0]}
-              onChange={(e) => setPrice([Number(e.target.value) || 0, price[1]])}
-              onBlur={() => commitPrice(price)}
+              value={priceDraft[0]}
+              onChange={(e) => updatePriceDraft(0, e.target.value)}
+              onBlur={commitPriceDraft}
               className="w-full bg-transparent outline-none text-sm"
             />
           </label>
@@ -1509,9 +1547,9 @@ export function CatalogListing({
             <span className="text-muted-foreground text-xs">₽</span>
             <input
               type="number"
-              value={price[1]}
-              onChange={(e) => setPrice([price[0], Number(e.target.value) || 0])}
-              onBlur={() => commitPrice(price)}
+              value={priceDraft[1]}
+              onChange={(e) => updatePriceDraft(1, e.target.value)}
+              onBlur={commitPriceDraft}
               className="w-full bg-transparent outline-none text-sm"
             />
           </label>
@@ -1521,7 +1559,7 @@ export function CatalogListing({
           max={priceBounds.max}
           step={100}
           value={price}
-          onValueChange={(v) => setPrice([v[0], v[1]] as [number, number])}
+          onValueChange={updatePriceFromSlider}
           onValueCommit={(v) => commitPrice([v[0], v[1]] as [number, number])}
           className="mx-2 [&_[role=slider]]:border-ink [&_[role=slider]]:bg-background [&>span:first-child]:bg-ink/10 [&_[data-slot=slider-range]]:bg-ink"
         />
@@ -1738,7 +1776,7 @@ export function CatalogListing({
           {isFramesCategory ? (
             <div className="space-y-3">
               <div className="flex flex-wrap gap-2">
-                {FRAME_GENDER_DEFS.slice(0, 3).map((g) => {
+                {visibleFrameAdultGenders.map((g) => {
                   const checked = active.gender?.has(g.key) ?? false;
                   const ik = genderToIconKind(g.label);
                   return (
@@ -1771,43 +1809,45 @@ export function CatalogListing({
                   );
                 })}
               </div>
-              <div>
-                <div className="text-[11px] uppercase font-semibold tracking-[0.08em] text-foreground/70 mb-2">
-                  Детские
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {FRAME_GENDER_DEFS.slice(3).map((g) => {
-                    const checked = active.gender?.has(g.key) ?? false;
-                    return (
-                      <button
-                        key={g.key}
-                        type="button"
-                        onClick={() => toggle("gender", g.key)}
-                        className={cn(
-                          "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition-all",
-                          checked
-                            ? "border-ink bg-ink text-primary-foreground"
-                            : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
-                        )}
-                        style={{
-                          transitionDuration: "var(--duration-snap)",
-                          transitionTimingFunction: "var(--ease-editorial)",
-                        }}
-                      >
-                        <span>{g.label}</span>
-                        <span
+              {visibleFrameChildGenders.length > 0 && (
+                <div>
+                  <div className="text-[11px] uppercase font-semibold tracking-[0.08em] text-foreground/70 mb-2">
+                    Детские
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {visibleFrameChildGenders.map((g) => {
+                      const checked = active.gender?.has(g.key) ?? false;
+                      return (
+                        <button
+                          key={g.key}
+                          type="button"
+                          onClick={() => toggle("gender", g.key)}
                           className={cn(
-                            "text-[10px]",
-                            checked ? "opacity-80" : "text-muted-foreground",
+                            "inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs transition-all",
+                            checked
+                              ? "border-ink bg-ink text-primary-foreground"
+                              : "border-border bg-card hover:border-foreground/50 hover:bg-surface/50 hover:shadow-xs",
                           )}
+                          style={{
+                            transitionDuration: "var(--duration-snap)",
+                            transitionTimingFunction: "var(--ease-editorial)",
+                          }}
                         >
-                          ({frameGenderCounts[g.key] ?? 0})
-                        </span>
-                      </button>
-                    );
-                  })}
+                          <span>{g.label}</span>
+                          <span
+                            className={cn(
+                              "text-[10px]",
+                              checked ? "opacity-80" : "text-muted-foreground",
+                            )}
+                          >
+                            ({frameGenderCounts[g.key] ?? 0})
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">

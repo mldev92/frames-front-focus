@@ -19,6 +19,11 @@ export const CONTACT = {
   },
 } as const;
 
+export const NEWS_CHANNELS = {
+  vk: { label: "ВКонтакте", href: "https://vk.ru/optika100" },
+  instagram: { label: "Instagram", href: "https://www.instagram.com/optika100ru/" },
+} as const;
+
 export const NVK_CONTACT = {
   phone: {
     ...SHARED_PHONE,
@@ -35,9 +40,8 @@ export const NVK_CONTACT = {
     label: "MAX",
     href: "https://max.ru/u/f9LHodD0cOI9mxgb1lKx2s5xbbX2Psd4fGNop-GbIAElZQq-ARajInTU6GA",
   },
-  // Новости и акции Новокузнецк публикует во ВКонтакте и Instagram (ответ владельца, 27.10.2026).
-  vk: { label: "ВКонтакте", href: "https://vk.ru/optika100" },
-  instagram: { label: "Instagram", href: "https://www.instagram.com/optika100ru/" },
+  vk: NEWS_CHANNELS.vk,
+  instagram: NEWS_CHANNELS.instagram,
 } as const;
 
 /** Пометка о запрещённой организации — обязательна рядом с упоминанием Instagram на сайте в РФ. */
@@ -104,7 +108,8 @@ export const SALONS: VerifiedSalon[] = [
     city: "nk",
     cityLabel: "Новокузнецк",
     name: "Новобайдаевский район",
-    address: "Новобайдаевский район — Салон Оптика100% в Новокузнецке, пр. Шахтеров, 12",
+    address:
+      "Новобайдаевский район — Салон Оптика100% в Новокузнецке, пр. Шахтеров, 12 (ост. Проспект Шахтеров)",
     routeQuery: "Новокузнецк, пр. Шахтеров, 12",
     hours: "Ежедневно с 9:30 до 19:00",
     closesAt: "19:00",
