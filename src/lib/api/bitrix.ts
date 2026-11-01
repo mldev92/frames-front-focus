@@ -458,10 +458,10 @@ export async function getCatalogPage(
   if (res.status === 503) throw new IndexNotReadyError();
   if (!res.ok) throw new Error(`Bitrix API ${res.status} for catalog page`);
   const data = (await res.json()) as Partial<CatalogPage> & Pick<CatalogPage, "products" | "total" | "page" | "pages" | "source">;
-  const products = await hydrateProductGalleries(
-    data.products.map(normalizeProduct),
-    q.city ?? "spb",
-  );
+  // Список показывает основные фото сразу. Дополнительные фото карточка
+  // запрашивает при наведении, а страница товара получает полный товар отдельно.
+  // Ожидание галерей здесь задерживало каждую смену фильтра и сортировки.
+  const products = data.products.map(normalizeProduct);
   const prices = products.map((product) => product.price).filter((price) => Number.isFinite(price));
   return {
     ...data,
