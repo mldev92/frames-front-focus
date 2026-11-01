@@ -59,6 +59,7 @@ jobs:
           node -e 'const m=JSON.parse(require("fs").readFileSync("release-manifest.json")); if(m.backendSha!==process.env.O100_BACKEND_SHA || m.routingBaseline!==process.env.O100_ROUTING_SHA256) process.exit(1)'
           node -e 'const fs=require("fs"),m=JSON.parse(fs.readFileSync("release-manifest.json")),log=fs.readFileSync("apache-production.log","utf8"); if(!log.includes(`PASS: Apache served all ${m.routeCount} manifest routes byte-for-byte;`)) throw new Error("Full Apache acceptance evidence is missing")'
           printf '%s  production-release.tgz\n' "$ARTIFACT_SHA256" > production-release.tgz.sha256
+          node -e 'const fs=require("fs"); fs.writeFileSync("deploy/catalog-export.php", fs.readFileSync("scripts/catalog-content-fingerprint.php","utf8") + "\n" + fs.readFileSync("scripts/export-seo-inventory.php","utf8").replace(/^<\?php/,""))'
           tar -czf production-tools.tgz deploy
       - name: Configure verified SSH host keys
         env:
