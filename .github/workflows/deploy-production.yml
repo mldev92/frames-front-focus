@@ -72,6 +72,7 @@ jobs:
           chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
       - name: Upload candidate and execute guarded switch
         run: |
-          ssh -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
-          scp -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
-          ssh -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz"
+          ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
+          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
+          scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
+          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz"
