@@ -18,6 +18,7 @@ import { CONTACT } from "@/data/contact";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { PriceSavings } from "@/components/PriceSavings";
 import { useCityStore } from "@/lib/store/city";
+import { stellestTintCondition } from "@/lib/stellest-discount";
 import { cn } from "@/lib/utils";
 
 /**
@@ -244,6 +245,11 @@ export function LensSearchRow({
               quantity={2}
               className="mt-1"
             />
+            {stellestTintCondition(offer.line, offer.discountPercent) && (
+              <div className="mt-1 max-w-48 text-[11px] text-muted-foreground">
+                {stellestTintCondition(offer.line, offer.discountPercent)}
+              </div>
+            )}
           </>
         ) : (
           <div className="text-sm text-muted-foreground">цена по запросу</div>

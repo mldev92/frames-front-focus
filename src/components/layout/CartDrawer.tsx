@@ -104,6 +104,7 @@ export function CartDrawer() {
                     <div className="text-xs text-muted-foreground">{item.index && `Индекс ${item.index} · `}{[item.coating, item.treatment].filter(Boolean).join(" · ")} · {item.qty} пара</div>
                     <div className="mt-1 text-sm">{item.pricePerLens === null ? "Цена по запросу" : `Ориентир: ${formatPrice(item.pricePerLens * 2 * item.qty)}`}</div>
                     <PriceSavings oldPrice={item.priceBeforeDiscountPerLens ?? null} price={item.pricePerLens} discountPercent={item.discountPercent ?? null} quantity={2 * item.qty} className="mt-1" />
+                    {item.discountCondition && <div className="mt-1 text-xs text-muted-foreground">{item.discountCondition}</div>}
                   </div>
                   <button type="button" onClick={() => removeLens(item.id)} aria-label="Удалить линзы" className="text-muted-foreground hover:text-brand"><Trash2 className="h-4 w-4" /></button>
                 </div>

@@ -11,6 +11,7 @@ import { formatPrice, useCart } from "@/lib/store/cart";
 import { CONTACT } from "@/data/contact";
 import { PriceSavings } from "@/components/PriceSavings";
 import { DEFAULT_REGION, useCityStore } from "@/lib/store/city";
+import { stellestTintCondition } from "@/lib/stellest-discount";
 
 import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
 import stellestHtml from "@/content/stellest-katalog-s-linzami.html?raw";
@@ -315,7 +316,6 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
       {offers.map((offer) => {
         const plano = offer.line.toLowerCase().includes("plano");
         const tint = offer.line.toLowerCase().includes("tint");
-        const rock = offer.line === "AS Stellest Airwear" && offer.coating === "Crizal Rock";
         const title = plano
           ? "ESSILOR AS Stellest Airwear Plano Crizal Prevencia"
           : `ESSILOR ${offer.line} ${offer.coating}`;
@@ -334,11 +334,11 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
               <h3>{title}</h3>
               <p>{plano ? "Профилактика миопии · Sph 0,0 / Cyl 0,0" : tint
                 ? "Тонированные линзы Stellest" : "Очковые линзы для контроля миопии"}</p>
-              {city === "spb" && (plano || tint || rock) && (
+              {offer.discountPercent !== null && offer.discountPercent > 0 && (
                 <p className="stellest-offer-condition">
-                  {plano ? "Скидка 50%" : tint
-                    ? "Скидка 50% при покупке прозрачных линз Stellest"
-                    : "Скидка 20%"}
+                  {`Скидка ${offer.discountPercent}%`}
+                  {stellestTintCondition(offer.line, offer.discountPercent) &&
+                    " при покупке прозрачных линз Stellest"}
                 </p>
               )}
               <div className="coat-price-row">

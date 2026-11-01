@@ -2229,18 +2229,19 @@ function CategoryTile({ cell }: { cell: (typeof CAT_CELLS)[number] }) {
 }
 
 function MainV2PromoBlock() {
-  // «Все Акции» во всех регионах ведёт сюда — блок показывается всем, как в Санкт-Петербурге.
+  const city = useCityStore((state) => state.city);
+  const cityPromotions = promotions.filter((promo) => promo.location === city);
   return (
     <div className="h-full flex flex-col gap-3">
       <div className="mb-2">
         <div className="text-[11px] uppercase tracking-[0.2em] mb-2" style={{ color: "var(--brand)" }}>
-          Акции · Санкт-Петербург
+          Акции · {city === "nvk" ? "Новокузнецк" : "Санкт-Петербург"}
         </div>
         <h3 className="font-serif text-foreground" style={{ fontSize: 26, lineHeight: 1.15 }}>
           Специальные предложения
         </h3>
       </div>
-      {promotions.map((promo, index) => (
+      {cityPromotions.map((promo, index) => (
         <a
           key={promo.id}
           href={promo.href}

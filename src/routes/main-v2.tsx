@@ -259,9 +259,9 @@ function HomePage() {
             <h2 className="font-serif text-3xl lg:text-4xl">Специальные предложения</h2>
           </div>
         </Reveal>
-        {city === "spb" && (
+        {promotions.some((promo) => promo.location === city) && (
           <Reveal delay={100}>
-            <PromoCards promotions={promotions} />
+            <PromoCards promotions={promotions.filter((promo) => promo.location === city)} />
           </Reveal>
         )}
       </section>

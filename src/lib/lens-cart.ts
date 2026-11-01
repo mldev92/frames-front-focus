@@ -17,6 +17,7 @@ export function lensCartDraft(items: LensCartSelection[]): LensSelectionRequestD
         item.coating,
         item.treatment,
         item.pricePerLens === null ? "цена по запросу" : `${item.pricePerLens * 2} ₽ за пару`,
+        item.discountCondition ?? "",
       ].filter(Boolean).join(" · ")).join("; "),
     },
     prescription: null,

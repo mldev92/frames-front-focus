@@ -14,6 +14,7 @@ import {
 import type { Product } from "@/data/types";
 import { formatPrice } from "@/lib/store/cart";
 import { PriceSavings } from "@/components/PriceSavings";
+import { stellestTintCondition } from "@/lib/stellest-discount";
 import { cn } from "@/lib/utils";
 import {
   BRANDS,
@@ -2468,6 +2469,11 @@ export function LensDetailDialog({
                 quantity={2}
                 className="mt-1"
               />
+              {stellestTintCondition(offer.line, offer.discountPercent) && (
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {stellestTintCondition(offer.line, offer.discountPercent)}
+                </div>
+              )}
             </>
           ) : (
             <div className="text-sm font-medium text-brand">Цена по запросу</div>
@@ -2962,6 +2968,11 @@ function LensPriceCards({
                       quantity={2}
                       className="mt-1"
                     />
+                    {stellestTintCondition(card.line, card.discountPercent) && (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {stellestTintCondition(card.line, card.discountPercent)}
+                      </div>
+                    )}
                   </>
                 ) : (
                   <div className="text-sm font-medium text-brand">Цена по запросу</div>
@@ -3351,6 +3362,11 @@ function LensOfferRow({
                   quantity={2}
                   className="mt-1"
                 />
+                {stellestTintCondition(offer.line, offer.discountPercent) && (
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {stellestTintCondition(offer.line, offer.discountPercent)}
+                  </div>
+                )}
               </>
             ) : (
               <div className="text-sm font-medium text-brand">Цена по запросу</div>

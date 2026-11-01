@@ -6,6 +6,7 @@ import { persist } from "zustand/middleware";
 import type { Product } from "@/data/types";
 import { useCityStore, type CityCode } from "@/lib/store/city";
 import type { LensRecommendCard } from "@/lib/api/lens-recommend";
+import { stellestTintCondition } from "@/lib/stellest-discount";
 
 export interface LensCartSelection {
   id: string;
@@ -17,6 +18,7 @@ export interface LensCartSelection {
   pricePerLens: number | null;
   priceBeforeDiscountPerLens?: number | null;
   discountPercent?: number | null;
+  discountCondition?: string | null;
   qty: number;
 }
 
@@ -184,6 +186,7 @@ export const useCart = create<CartState>()(
                 pricePerLens: offer.priceRub,
                 priceBeforeDiscountPerLens: offer.priceBeforeDiscountRub,
                 discountPercent: offer.discountPercent,
+                discountCondition: stellestTintCondition(offer.line, offer.discountPercent),
               } : item)
             : [...state.lensSelections, {
                 id: offer.id,
@@ -195,6 +198,7 @@ export const useCart = create<CartState>()(
                 pricePerLens: offer.priceRub,
                 priceBeforeDiscountPerLens: offer.priceBeforeDiscountRub,
                 discountPercent: offer.discountPercent,
+                discountCondition: stellestTintCondition(offer.line, offer.discountPercent),
                 qty: 1,
               }],
           isOpen: true,

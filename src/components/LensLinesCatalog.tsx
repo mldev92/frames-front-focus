@@ -22,6 +22,7 @@ import { CONTACT } from "@/data/contact";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { PriceSavings } from "@/components/PriceSavings";
 import { useCityStore } from "@/lib/store/city";
+import { stellestTintCondition } from "@/lib/stellest-discount";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Slider } from "@/components/ui/slider";
@@ -638,6 +639,11 @@ function LensLineCardView({ card, onBook }: { card: LensLineCard; onBook: () => 
                 quantity={2}
                 className="mt-1"
               />
+              {stellestTintCondition(card.title, card.fromDiscountPercent) && (
+                <div className="mt-1 max-w-52 text-[11px] text-muted-foreground">
+                  {stellestTintCondition(card.title, card.fromDiscountPercent)}
+                </div>
+              )}
             </>
           ) : (
             <div className="text-sm text-muted-foreground">цена по запросу</div>

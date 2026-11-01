@@ -65,9 +65,21 @@ export const promotions: Promotion[] = [
     pct: "−50%",
     title: "До 50% на линзы Stellest",
     description:
-      "50% — Stellest Airwear Crizal Prevencia Plano\n20% — Stellest Airwear Crizal Rock\n50% — Stellest Airwear Tint и Stellest 2.0 Airwear Tint при покупке прозрачных линз Stellest",
+      "50% — Stellest Airwear Crizal Prevencia Plano\n20% — Stellest Airwear Crizal Rock\n10% — Stellest 2.0 Airwear Crizal Rock и Crizal Prevencia\n50% — Stellest Airwear Tint и Stellest 2.0 Airwear Tint при покупке прозрачных линз Stellest",
     href: "/stellest-katalog-s-linzami/",
     location: "spb",
+  },
+  {
+    id: "stellest-nvk",
+    badge: "Новокузнецк",
+    badgeVariant: "brand",
+    visual: "cream",
+    pct: "−50%",
+    title: "До 50% на линзы Stellest",
+    description:
+      "35% — Stellest Airwear и Stellest 2.0 Airwear с покрытиями Crizal Rock и Crizal Prevencia\n50% — Stellest Airwear Crizal Prevencia Plano\n50% — Stellest Airwear Tint и Stellest 2.0 Airwear Tint при покупке прозрачных линз Stellest",
+    href: "/stellest-katalog-s-linzami/",
+    location: "nvk",
   },
   {
     id: "sunglasses-spb",
