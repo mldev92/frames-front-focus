@@ -1,7 +1,7 @@
 // Реальные примеры аудита: разные глубины URL, города и товар вне наличия.
 export const seoAcceptanceCases = [
   { path: "/catalog_s/opravy/muzhskie/", h1: "Мужские оправы" },
-  { path: "/catalog_s/opravy/zhenskie/", h1: "Женские оправы" },
+  { path: "/catalog_s/opravy/zhenskie/", h1: "Женские оправы для очков" },
   { path: "/catalog_s/opravy/detskie_1/", h1: "Детские оправы" },
   { path: "/catalog_s/opravy/detskie_1/dlya_malchikov/", h1: "Оправы для мальчиков" },
   { path: "/catalog_s/linzy_dlya_ochkov/detskie/", h1: "Детские линзы для очков" },

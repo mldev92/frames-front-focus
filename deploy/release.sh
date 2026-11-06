@@ -99,6 +99,8 @@ tar -xzf "$archive" -C "$stage" --no-same-owner
 for file in index.html _shell.html 404.html sitemap.xml robots.txt release-manifest.json; do test -s "$stage/$file"; done
 [[ "$(cat "$stage/.release-sha")" == "$sha" ]]
 "$php_bin" "$script_dir/verify-release.php" "$stage" "$root"
+# Сохраняем общие inode без медленного сопоставления 25 тысяч имён в tar 1.26.
+"$php_bin" "$script_dir/link-unchanged.php" "$stage" "$root/o100_frontend_current" --relink-staged
 transaction="$state/transactions/$(date -u +%Y%m%dT%H%M%SZ)-$sha"
 mkdir -p "$transaction"
 cp "$root/.htaccess" "$transaction/htaccess"

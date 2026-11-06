@@ -40,6 +40,21 @@ done
 [[ "$(cat "$scratch/old/changed.txt")" == old ]]
 [[ "$(cat "$scratch/old/.release-sha")" == 'old revision' ]]
 cmp "$scratch/payload/release-manifest.json" "$scratch/stage/release-manifest.json"
+# Потоковая распаковка с последующей дедупликацией не меняет предыдущий релиз.
+mkdir "$scratch/streamed" "$scratch/corrupt"
+tar -xzf "$scratch/archive.tgz" -C "$scratch/streamed" --no-same-owner
+"$php_bin" "$source_root/deploy/link-unchanged.php" "$scratch/streamed" "$scratch/old" --relink-staged
+[[ "$scratch/old/shared.txt" -ef "$scratch/streamed/shared.txt" ]]
+[[ ! "$scratch/old/changed.txt" -ef "$scratch/streamed/changed.txt" ]]
+[[ ! "$scratch/old/.release-sha" -ef "$scratch/streamed/.release-sha" ]]
+[[ "$(cat "$scratch/old/shared.txt")" == same ]]
+[[ "$(cat "$scratch/old/.release-sha")" == 'old revision' ]]
+tar -xzf "$scratch/archive.tgz" -C "$scratch/corrupt" --no-same-owner
+printf 'staging drift\n' > "$scratch/corrupt/shared.txt"
+if "$php_bin" "$source_root/deploy/link-unchanged.php" "$scratch/corrupt" "$scratch/old" --relink-staged >"$scratch/corrupt.log" 2>&1; then exit 1; fi
+grep -q 'Staged release drift' "$scratch/corrupt.log"
+[[ "$(cat "$scratch/old/shared.txt")" == same ]]
+echo 'PASS: streaming extraction deduplicates verified files and rejects staging drift without changing previous inodes'
 # Изменённый исходный inode нельзя принять за проверенный неизменяемый файл.
 mkdir "$scratch/drift"
 cp "$scratch/payload/release-manifest.json" "$scratch/drift/release-manifest.json"
