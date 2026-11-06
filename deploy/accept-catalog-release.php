@@ -28,6 +28,10 @@ try {
         [$status,$body]=$request($path);
         if ($status!==404) throw new RuntimeException('Retired URL does not return 404: '.$path);
     }
+    foreach ($manifest['queryAcceptancePaths']??[] as $path) {
+        [$status,$body]=$request($path);
+        if ($status!==200 || hash('sha256',$body)!==($manifest['files']['_shell.html']??'')) throw new RuntimeException('Public search shell mismatch: '.$path);
+    }
     // Контроль источника после HTTP-проверок исключает публикацию устаревшего снимка.
     if (!empty($manifest['catalogFingerprint'])) {
         ob_start();

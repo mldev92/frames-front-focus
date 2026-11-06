@@ -39,10 +39,11 @@ const inventory = await loadInventory();
 const required = JSON.parse(await readFile('deploy/seo-required-products.json','utf8')).paths;
 const available = new Set(routes.routes);
 const samples = inventory.products.filter(p=>p.sectionActive).filter((p,i)=>i%150===0).map(p=>p.canonicalPath);
-const acceptancePaths = [...new Set(['/', '/catalog_s/opravy/', '/catalog_n/opravy/', ...required, ...samples])].filter(p=>available.has(p));
+const acceptancePaths = [...new Set(['/', '/catalog_s/opravy/', '/catalog_n/opravy/', '/catalog_s/opravy/zhenskie/', '/catalog_s/opravy/lions-heart/', ...required, ...samples])].filter(p=>available.has(p));
+const queryAcceptancePaths = ['/search/?q=GUESS&city=nvk', '/catalog_s/opravy/zhenskie/?brand=GUESS', '/catalog_s/opravy/lions-heart/?page=2', '/catalog_s/opravy/?brand=GUESS', '/catalog_s/linzy_dlya_ochkov/?lensQuery=Stellest'];
 await writeFile(path.join(root, "release-manifest.json"), JSON.stringify({ version: 1, frontendSha: sha, backendSha,
   backendFiles: backend.files, templateFiles, runtime: process.version, apiOrigin: "https://optika100.com", routingBaseline: baseline, builtAt: new Date().toISOString(), routeCount: routes.count,
   inventorySha256: routes.inventorySha256, inventoryGeneratedAt: routes.inventoryGeneratedAt,
-  catalogFingerprint: inventory.content ? catalogFingerprint(inventory) : null, acceptancePaths,
+  catalogFingerprint: inventory.content ? catalogFingerprint(inventory) : null, acceptancePaths, queryAcceptancePaths,
   retiredPaths: [...new Set([...routes.retiredProductPaths,...routes.retiredSectionPaths])],
   settings: { privateBeta: false, fixtures: false, virtualTryOn: false }, files }, null, 2) + "\n");
