@@ -1,36 +1,37 @@
-name: Quality
-
+name: Observe production release
 on:
   workflow_dispatch:
-  pull_request:
-  push:
-    branches: [main]
-
+permissions:
+  contents: read
 jobs:
-  checks:
+  preflight:
+    name: Check public access and approved HTML
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
-      - run: bunx tsc --noEmit
-      - run: bunx eslint src eslint.config.js vite.config.ts vite.config.beta.ts vite.config.production.ts
-      - run: bun run test
-      - run: bun run test:unit
-      - run: VITE_BITRIX_API=https://optika100.com bun run build:beta
-
-  apache:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Rehearse Apache routing and rollback
-        run: |
-          set -Eeuo pipefail
-          docker run -d --name cutover -v "$PWD:/frontend:ro" php:8.1-apache bash -c 'a2enmod rewrite && apache2-foreground'
-          for attempt in $(seq 1 30); do docker exec cutover curl -s http://127.0.0.1/ >/dev/null && break; sleep 1; done
-          docker exec cutover bash /frontend/tests/apache-rehearsal.sh | tee apache-rehearsal.log
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/observe-production.mjs --preflight
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: apache-rehearsal
-          path: apache-rehearsal.log
+          name: production-observation-preflight
+          path: production-observation.json
+  observe:
+    name: Observe approved production release for 60 minutes
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node scripts/observe-production.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: production-observation
+          path: production-observation.json

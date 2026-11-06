@@ -1,0 +1,80 @@
+{
+  "frontendSha": "a1c1a3d23deade7939362a0d47f047f7fd0c4064",
+  "targets": [
+    {
+      "path": "/",
+      "status": 200,
+      "sha256": "1e5efa5829620979fb680a221e551901a71bc033e2636e3e874748f17b86016a"
+    },
+    {
+      "path": "/catalog_s/opravy/zhenskie/",
+      "status": 200,
+      "sha256": "1d6d553e96c4e1b8f5476198378aecccf454b56d5bd9f7fd50d4d3dd1db255a2"
+    },
+    {
+      "path": "/catalog_s/opravy/lions-heart/",
+      "status": 200,
+      "sha256": "505fe8c0cedd0a84d2d37938d3ed83814f8531f264a79e8a50a674b31322c483"
+    },
+    {
+      "path": "/catalog_n/opravy/",
+      "status": 200,
+      "sha256": "bffd42b1f739dd48f74d6f08adccecbb708a48d736056cb0484d4223bf0607c6"
+    },
+    {
+      "path": "/search/?q=GUESS&city=nvk",
+      "status": 200,
+      "sha256": "9b14cc8cd1343fdc75b4e0151b11537cf51fde15bfb19f59642bbcca0f862cbc"
+    },
+    {
+      "path": "/catalog_s/opravy/lions-heart/?page=2",
+      "status": 200,
+      "sha256": "9b14cc8cd1343fdc75b4e0151b11537cf51fde15bfb19f59642bbcca0f862cbc"
+    },
+    {
+      "path": "/cutover-missing-route-9f381a/",
+      "status": 404,
+      "kind": "notFound"
+    },
+    {
+      "path": "/robots.txt",
+      "status": 200,
+      "sha256": "50eddfb33a1b7df44d3084a511ffbff81df36c4619e8447cfca2c595acb99903"
+    },
+    {
+      "path": "/sitemap.xml",
+      "status": 200,
+      "sha256": "09577ab6cff74d8a75acadc5db94e8b9a3697e61076fb87a264073e02a0e3db3"
+    },
+    {
+      "path": "/api/store/csrf.php",
+      "status": 200,
+      "kind": "csrf"
+    },
+    {
+      "path": "/api/store/products.php?category=opravy&v2=1&facets=1&limit=1&brand=LION%60S%20HEART",
+      "status": 200,
+      "kind": "products"
+    },
+    {
+      "path": "/api/store/search.php?q=GUESS&city=nvk&limit=1",
+      "status": 200,
+      "kind": "products"
+    },
+    {
+      "path": "/api/store/lens_search.php?q=Stellest&city=spb&limit=6",
+      "status": 200,
+      "kind": "lens"
+    },
+    {
+      "path": "/upload/iblock/4c9/kczgrsjbf3wdnpaa3c79025bdr81d6bp.jpeg",
+      "status": 200,
+      "kind": "image"
+    },
+    {
+      "path": "/catalog_n/kontaktnye_linzy/1_day_acuvue_oasys/",
+      "status": 404,
+      "sha256": "99416ef0a9364df876de701508b73d2ac021602dd1a1f48f279a84427ab9f01c"
+    }
+  ]
+}
