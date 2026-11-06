@@ -19,6 +19,7 @@ import {
 } from "@/data/products";
 import { categoryToSegment, segmentToCategory } from "@/data/categories";
 import { apiFetch, securePost } from "@/lib/api/security";
+import { canonicalSearchQuery } from "@/lib/search-query";
 
 const BASE = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ?? "";
 const ALLOW_FIXTURES = import.meta.env.DEV && import.meta.env.VITE_ALLOW_FIXTURES === "true";
@@ -108,11 +109,11 @@ function fixtureProducts(products: Product[]): Product[] {
 
 // Только при статической сборке: объединяем одинаковые публичные GET, без данных сессии.
 const prerenderResponses = new Map<string, Promise<unknown>>();
-async function fetchJson<T>(path: string): Promise<T> {
+async function fetchJson<T>(path: string, signal?: AbortSignal): Promise<T> {
   const cacheable = import.meta.env.SSR && import.meta.env.VITE_PRERENDER_BUILD === "true"
     && /^(?:homepage|products|galleries|menu_counts|catalog_sections)\.php(?:\?|$)/.test(path);
   const read = async (): Promise<T> => {
-    const res = await apiFetch(url(path));
+    const res = await apiFetch(url(path), { signal });
     if (!res.ok) throw new Error(`Bitrix API ${res.status} for ${path}`);
     return (await res.json()) as T;
   };
@@ -662,8 +663,8 @@ export async function getAppointmentSlots(
 }
 
 /** Name/article substring search. */
-export async function searchProducts(query: string, limit = 24, city: "spb" | "nvk" = "spb"): Promise<Product[]> {
-  const q = query.trim();
+export async function searchProducts(query: string, limit = 24, options: { city?: "spb" | "nvk"; signal?: AbortSignal } = {}): Promise<Product[]> {
+  const q = canonicalSearchQuery(query);
   if (q.length < 2) return [];
   if (!BASE && ALLOW_FIXTURES) {
     const t = q.toLowerCase();
@@ -674,11 +675,12 @@ export async function searchProducts(query: string, limit = 24, city: "spb" | "n
   if (!BASE) throw new Error("VITE_BITRIX_API is required");
   try {
     const data = await fetchJson<{ products: Product[]; total: number }>(
-      `search.php?q=${encodeURIComponent(q)}&limit=${limit}&city=${city}`,
+      `search.php?${new URLSearchParams({ q, limit: String(limit), city: options.city ?? "spb" })}`,
+      options.signal,
     );
     return data.products.map(normalizeProduct);
   } catch (e) {
-    console.error("[bitrix] searchProducts:", e);
+    if (!options.signal?.aborted) console.error("[bitrix] searchProducts:", e);
     throw e;
   }
 }

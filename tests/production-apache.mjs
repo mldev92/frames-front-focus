@@ -15,13 +15,29 @@ async function worker() {
     try {
       const response = await fetch(origin + route, { redirect: "manual", signal: AbortSignal.timeout(30000) });
       const body = Buffer.from(await response.arrayBuffer());
-      const expected = await readFile("dist/client/" + filename);
+      const expected = await readFile("dist/client/" + (route === "/search/" ? "_shell.html" : filename));
       for (const link of catalogLinks(expected.toString("utf8"))) navigationLinks.add(link);
       if (response.status !== 200 || hash(body) !== hash(expected)) failures.push(`${route}: status=${response.status}, content match=${hash(body) === hash(expected)}`);
     } catch (error) { failures.push(`${route}: ${error.message}`); }
   }
 }
 await Promise.all(Array.from({ length: 8 }, worker));
+// Параметры поиска и фильтров не должны гидратировать неподходящий статический снимок.
+const shell = await readFile("dist/client/_shell.html");
+for (const path of [
+  "/search/?q=GUESS&city=nvk",
+  "/catalog_s/opravy/zhenskie/?brand=GUESS",
+  "/catalog_s/opravy/lions-heart/?gender=Женские",
+  "/catalog_s/opravy/?brand=GUESS",
+  "/catalog_n/opravy/?brand=GUESS",
+  "/catalog_s/solntsezashchitnye_ochki/?brand=GUESS",
+  "/catalog_s/kontaktnye_linzy_/?brand=Alcon",
+  "/catalog_s/linzy_dlya_ochkov/?lensQuery=Stellest",
+  "/catalog_n/linzy_dlya_ochkov/?lensQuery=Stellest",
+]) {
+  const response = await fetch(origin + path, { redirect: "manual" });
+  if (response.status !== 200 || hash(Buffer.from(await response.arrayBuffer())) !== hash(shell)) failures.push(`Query shell: ${path}`);
+}
 // Проходим именно ссылки из страниц, включая полную цепочку старых редиректов.
 const pendingLinks = [...navigationLinks];
 let linkPosition = 0;

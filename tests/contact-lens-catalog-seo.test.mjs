@@ -40,12 +40,12 @@ test("contact-lens category is product-first while retaining navigation, image, 
     assert.ok(metadata.includes(`/catalog_s/kontaktnye_linzy_/${slug}/`));
   }
   assert.ok(!content.includes('href="#catalog-products"'));
-  assert.ok(view.includes('catalogId={isContactLensRoot ? "catalog-products"'));
+  assert.ok(view.includes('catalogId={isContactLensRoot || landing ? "catalog-products"'));
   assert.ok(listing.includes("id={catalogId}"));
   // The spectacle-lens section keeps its separate base-driven view, but its
   // curated catalogue now receives the URL filter/sort/price/page contract.
   // The contact-lens root stays product-first in CatalogListing.
-  assert.ok(!view.includes("headerAfterTitle="));
+  assert.match(view, /headerAfterTitle=\{\s*landing \? <FrameLandingIntro/);
   assert.ok(view.includes("if (isLensRoot)"));
   assert.ok(view.includes("initialFilters={appliedFilters}"));
   assert.ok(view.includes("appliedPriceMin={search.priceMin}"));

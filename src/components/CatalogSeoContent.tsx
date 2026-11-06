@@ -2,7 +2,7 @@ import { catalogSeoForSection } from "@/data/catalog-seo";
 
 export function CatalogSeoContent({ sectionPath }: { sectionPath: string }) {
   const entry = catalogSeoForSection(sectionPath);
-  if (!entry) return null;
+  if (!entry || (entry.content !== "colored" && entry.content !== "multifocal")) return null;
 
   return (
     <section className="mx-auto max-w-7xl px-4 pb-16 pt-10 lg:px-8" aria-label="Полезная информация о категории">

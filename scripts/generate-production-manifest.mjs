@@ -31,6 +31,7 @@ const excludedExact = new Set([
   "/robots.txt",
 ]);
 const staticRoutes = [
+  "/catalog_s/opravy/lions-heart/",
   "/",
   "/basket/",
   "/checkout/",

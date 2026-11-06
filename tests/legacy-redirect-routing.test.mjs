@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 test('снятые legacy URL имеют точные правила после статических страниц и до Bitrix', async () => {
-  const rules = await readFile('deploy/production.htaccess', 'utf8');
+  const rules = (await readFile('deploy/production.htaccess', 'utf8')).replace(/\r\n/g, '\n');
   const reviewed = JSON.parse(await readFile('deploy/reviewed-legacy-redirects.json', 'utf8'));
   const redirects = await readFile('deploy/redirects.production.txt', 'utf8');
   assert.equal(reviewed.paths.length, 31);

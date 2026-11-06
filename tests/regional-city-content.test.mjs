@@ -147,7 +147,8 @@ test("Novokuznetsk search filters SPb-only pages and regionalizes result links",
   assert.match(index, /region\?: "spb"/);
   assert.match(route, /city === "spb" \|\| page\.region !== "spb"/);
   assert.match(route, /regionalSiteHref\(page\.href, city\)/);
-  assert.match(route, /product=\{p\} city=\{city\}/);
+  assert.match(route, /product=\{p\}\s+city=\{city\}/);
+  assert.match(route, /productHref=\{searchProductHref\(p, city\)\}/);
 });
 
 test("shared route metadata stays city-neutral", async () => {

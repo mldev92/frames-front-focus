@@ -6,6 +6,11 @@ import ts from "typescript";
 
 const require = createRequire(import.meta.url);
 async function loadModule(path, mocks, env) {
+  mocks = {
+    "@/lib/frame-landing": { frameLanding: () => undefined, frameLandingQuery: (_path, query) => query },
+    "@/lib/search-query": { canonicalSearchQuery: (query) => query.trim() },
+    ...mocks,
+  };
   const source = (await readFile(new URL(path, import.meta.url), "utf8"))
     .replaceAll("import.meta.env", JSON.stringify(env));
   const { outputText } = ts.transpileModule(source, {

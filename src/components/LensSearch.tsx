@@ -32,8 +32,9 @@ import { cn } from "@/lib/utils";
 const PAGE = 20;
 const MIN_QUERY = 2;
 
-export function LensSearch() {
-  const [query, setQuery] = useState("");
+export function LensSearch({ initialQuery = "" }: { initialQuery?: string }) {
+  const [query, setQuery] = useState(initialQuery);
+  useEffect(() => { setQuery(initialQuery); }, [initialQuery]);
   const [result, setResult] = useState<LensSearchResponse | null>(null);
   const [rows, setRows] = useState<LensRecommendCard[]>([]);
   const [detailOffer, setDetailOffer] = useState<LensRecommendCard | null>(null);

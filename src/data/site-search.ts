@@ -1,4 +1,5 @@
 import { articleHref, articles } from "@/data/articles";
+import { canonicalSearchQuery } from "@/lib/search-query";
 
 export interface SiteSearchEntry {
   title: string;
@@ -10,6 +11,22 @@ export interface SiteSearchEntry {
 }
 
 const pageEntries: SiteSearchEntry[] = [
+  {
+    title: "Оправы LION’S HEART",
+    description: "Мужские и женские оправы LION’S HEART, цены, материалы и примерка в Санкт-Петербурге.",
+    href: "/catalog_s/opravy/lions-heart/",
+    type: "Категория",
+    region: "spb",
+    keywords: ["lion", "lions heart", "lion`s heart", "лайонс харт", "лионс харт"],
+  },
+  {
+    title: "Женские оправы для очков",
+    description: "Каталог женских оправ по брендам, форме, материалу и цене в Санкт-Петербурге.",
+    href: "/catalog_s/opravy/zhenskie/",
+    type: "Категория",
+    region: "spb",
+    keywords: ["женские оправы", "женские очки", "оправы для женщин"],
+  },
   {
     title: "Контроль миопии у детей",
     description:
@@ -116,7 +133,7 @@ function normalize(value: string) {
 }
 
 export function searchSiteContent(query: string, limit = 8): SiteSearchEntry[] {
-  const term = normalize(query);
+  const term = normalize(canonicalSearchQuery(query));
   if (term.length < 2) return [];
 
   return entries

@@ -395,11 +395,11 @@ export async function fetchLensLine(id: string, signal?: AbortSignal): Promise<L
 
 export async function fetchLensSearch(
   q: string,
-  opts: { offset?: number; limit?: number; sort?: LensListSort } = {},
+  opts: { offset?: number; limit?: number; sort?: LensListSort; city?: "spb" | "nvk" } = {},
   signal?: AbortSignal,
 ): Promise<LensSearchResponse> {
   const params = new URLSearchParams({ q });
-  params.set("city", useCityStore.getState().city);
+  params.set("city", opts.city ?? useCityStore.getState().city);
   if (opts.offset) params.set("offset", String(opts.offset));
   if (opts.limit) params.set("limit", String(opts.limit));
   if (opts.sort) params.set("sort", opts.sort);

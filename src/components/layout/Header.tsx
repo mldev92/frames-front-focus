@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { Search, User, Heart, ShoppingBag, Menu, X, ChevronDown } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { HeaderSearch } from "./HeaderSearch";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
 import { contactForCity, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
@@ -43,6 +44,12 @@ export function Header() {
   const { totals, open: openCart, saved } = useCart();
   const { count } = totals();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const searchTrigger = useRef<HTMLButtonElement>(null);
+  const closeSearch = useCallback((restoreFocus = false) => {
+    setSearchOpen(false);
+    if (restoreFocus) searchTrigger.current?.focus();
+  }, []);
   const [mounted, setMounted] = useState(false);
   const [openMegaHref, setOpenMegaHref] = useState<string | null>(null);
   const [appointmentOpen, setAppointmentOpen] = useState(false);
@@ -316,7 +323,7 @@ export function Header() {
           >
             <button
               className="-ml-2 p-2 xl:hidden"
-              onClick={() => setMobileOpen(true)}
+              onClick={() => { closeSearch(); setMobileOpen(true); }}
               aria-label="Меню"
             >
               <Menu className="h-5 w-5" />
@@ -334,10 +341,12 @@ export function Header() {
                     key={item.href}
                     className="flex shrink-0 items-stretch"
                     onMouseEnter={() => {
+                      closeSearch();
                       setOpenMegaHref(hasMega ? item.href : null);
                       loadMegaFacets(item);
                     }}
                     onFocusCapture={() => {
+                      closeSearch();
                       setOpenMegaHref(hasMega ? item.href : null);
                       loadMegaFacets(item);
                     }}
@@ -379,14 +388,17 @@ export function Header() {
             </nav>
 
             <div className="flex shrink-0 items-center gap-2">
-              <Link
-                to="/search"
-                search={{ q: "" }}
+              <button
+                ref={searchTrigger}
+                type="button"
+                onClick={() => { setSearchOpen((value) => !value); setOpenMegaHref(null); setMobileOpen(false); }}
                 className="p-2 transition-colors hover:text-brand"
                 aria-label="Поиск"
+                aria-expanded={searchOpen}
+                aria-controls={searchOpen ? "header-search" : undefined}
               >
                 <Search className="h-5 w-5" />
-              </Link>
+              </button>
 
               <Link
                 to="/personal"
@@ -447,6 +459,7 @@ export function Header() {
             )}
           </div>
         </div>
+        {searchOpen && <div id="header-search"><HeaderSearch onClose={closeSearch} trigger={searchTrigger.current} /></div>}
       </header>
 
       {mobileOpen && (

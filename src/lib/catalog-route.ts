@@ -12,6 +12,7 @@ import {
 import type { CityCode } from "@/lib/store/city";
 import type { Product } from "@/data/types";
 import type { CatalogStateChange } from "@/components/CatalogListing";
+import { frameLanding, frameLandingQuery } from "@/lib/frame-landing";
 
 const numOrStr = z
   .preprocess((value) => (typeof value === "number" ? String(value) : value), z.string())
@@ -87,6 +88,7 @@ export const EXPANDABLE_FACET_PARAMS = [
 ] as const;
 
 export const catalogSearchSchema = z.object({
+  lensQuery: z.string().max(120).optional(),
   page: z.coerce.number().int().min(1).optional(),
   sort: z.enum(["price_asc", "price_desc", "name"]).optional(),
   priceMin: z.coerce.number().int().min(0).optional(),
@@ -165,7 +167,7 @@ export function searchToFilters(search: CatalogSearch): Partial<Record<FacetKey,
 }
 
 export type LoaderResult =
-  | { state: "ok"; data: CatalogPageData }
+  | { state: "ok"; data: CatalogPageData; landingData?: CatalogPageData }
   | { state: "lens_lines" }
   | { state: "index_not_ready" }
   | { state: "error"; message: string };
@@ -191,8 +193,20 @@ export async function loadCatalogPage(
     filters: searchToFilters(search),
   };
   try {
-    const data = await getCatalogPage(section, query, signal);
-    return { state: "ok", data };
+    const landing = city === "spb" ? frameLanding(section) : undefined;
+    const apiSection = landing === "brand" ? "opravy" : landing === "women" ? "zhenskie" : section;
+    const appliedQuery = landing ? frameLandingQuery(section, query) : query;
+    const data = await getCatalogPage(apiSection, appliedQuery, signal);
+    if (!landing) return { state: "ok", data };
+    // Счётчики посадочной относятся ко всему разделу, а не к выбранным фильтрам.
+    const hasFilters =
+      Object.values(query.filters ?? {}).some((values) => values?.length) ||
+      query.priceMin !== undefined ||
+      query.priceMax !== undefined;
+    const landingData = hasFilters
+      ? await getCatalogPage(apiSection, frameLandingQuery(section, { limit: 1, city }), signal)
+      : data;
+    return { state: "ok", data, landingData };
   } catch (error) {
     if (import.meta.env.SSR && import.meta.env.VITE_PRERENDER_BUILD === "true") throw error;
     if (error instanceof IndexNotReadyError) return { state: "index_not_ready" };
@@ -227,6 +241,16 @@ export async function resolveCatalogRoute(
   const legacyFilterPath = filterIndex >= 0 ? segments.slice(filterIndex + 1).join("/") : undefined;
   if (sectionSegments.length === 0) return null;
 
+  const sectionPath = sectionSegments.join("/");
+  if (city === "spb" && !legacyFilterPath && frameLanding(sectionPath)) {
+    return {
+      kind: "catalog",
+      sectionPath,
+      section: sectionSegments.at(-1)!,
+      result: await loadCatalogPage(sectionPath, search, city, signal),
+    };
+  }
+
   if (!legacyFilterPath && sectionSegments.length >= 2) {
     const slug = sectionSegments.at(-1) ?? "";
     const parentSegments = sectionSegments.slice(0, -1);
@@ -249,7 +273,6 @@ export async function resolveCatalogRoute(
   }
 
   const section = sectionSegments.at(-1) ?? "";
-  const sectionPath = sectionSegments.join("/");
   const result = await loadCatalogPage(section, search, city, signal);
   if (result.state === "ok" && result.data.total === 0 && !await isKnownCatalogSection(sectionPath, city)) return null;
   return {

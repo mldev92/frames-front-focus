@@ -2,6 +2,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
 import { catalogSectionMetadata } from "@/data/catalog-seo";
 import { productMetaDescription, productCanonicalUrl } from "@/lib/product-seo";
+import { frameCatalogSchemas } from "@/data/frame-catalog-seo";
 import { categoryForCatalogPath } from "@/data/categories";
 import { ProductPage } from "@/routes/catalog_s.$category.$slug";
 import { catalogConfig } from "@/routes/catalog_s.$category";
@@ -42,6 +43,7 @@ export const Route = createFileRoute("/catalog_s/$")({
     const config = category ? catalogConfig[category] : undefined;
     const sectionSeo = config && catalogSectionMetadata(loaderData.sectionPath, config);
     return {
+      scripts: loaderData.result.state === "ok" ? frameCatalogSchemas(loaderData.sectionPath, loaderData.result.data) : [],
       meta: [
         { title: sectionSeo?.metaTitle ?? config?.metaTitle ?? "Каталог · ОПТИКА 100%" },
         { name: "description", content: sectionSeo?.metaDescription ?? config?.metaDescription ?? "" },

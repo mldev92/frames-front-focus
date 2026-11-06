@@ -9,6 +9,12 @@ import {
 } from "@/components/ContactLensCatalogSeo";
 import { LensLinesCatalog } from "@/components/LensLinesCatalog";
 import { LensSearch } from "@/components/LensSearch";
+import {
+  FrameLandingIntro,
+  FrameLandingFooter,
+  FrameLandingBreadcrumbs,
+} from "@/components/FrameCatalogLanding";
+import { frameLanding } from "@/lib/frame-landing";
 import { categoryForCatalogPath, catalogSectionTitle } from "@/data/categories";
 import { catalogConfig } from "@/routes/catalog_s.$category";
 import { searchToFilters, type CatalogSearch, type LoaderResult } from "@/lib/catalog-route";
@@ -91,7 +97,7 @@ export function CatalogRouteView({
               <p className="mt-3 text-muted-foreground max-w-2xl">{config.subtitle}</p>
             )}
           </div>
-          <LensSearch />
+          <LensSearch initialQuery={search.lensQuery} />
           <LensLinesCatalog
             initialFilters={appliedFilters}
             appliedSort={search.sort ?? "default"}
@@ -135,21 +141,37 @@ export function CatalogRouteView({
   }
 
   const supportsFacetFiltering = Object.keys(result.data.facets ?? {}).length > 0;
+  const landing = city === "spb" ? frameLanding(normalizedSectionPath) : undefined;
   const appliedFilters = supportsFacetFiltering ? searchToFilters(search) : {};
+  if (landing === "brand") delete appliedFilters.brand;
+  const landingData = result.landingData ?? result.data;
 
   return (
     <>
       <CatalogListing
         title={
-          isContactLensRoot
-            ? "Контактные линзы в Санкт-Петербурге"
-            : catalogSectionTitle(sectionPath, config.title)
+          landing === "women"
+            ? "Женские оправы для очков"
+            : landing === "brand"
+              ? "Оправы LION’S HEART в Санкт-Петербурге"
+              : isContactLensRoot
+                ? "Контактные линзы в Санкт-Петербурге"
+                : catalogSectionTitle(sectionPath, config.title)
         }
-        subtitle={isContactLensRoot ? undefined : config.subtitle}
-        headerBeforeTitle={isContactLensRoot ? <ContactLensCatalogNavigation /> : undefined}
-        catalogId={isContactLensRoot ? "catalog-products" : undefined}
+        subtitle={isContactLensRoot || landing ? undefined : config.subtitle}
+        headerAfterTitle={
+          landing ? <FrameLandingIntro kind={landing} data={landingData} /> : undefined
+        }
+        headerBeforeTitle={
+          landing ? (
+            <FrameLandingBreadcrumbs path={sectionPath} />
+          ) : isContactLensRoot ? (
+            <ContactLensCatalogNavigation />
+          ) : undefined
+        }
+        catalogId={isContactLensRoot || landing ? "catalog-products" : undefined}
         data={result.data}
-        facets={config.facets ?? []}
+        facets={(config.facets ?? []).filter((facet) => landing !== "brand" || facet !== "brand")}
         facetFilteringEnabled={supportsFacetFiltering}
         categoryKey={category}
         initialFilters={appliedFilters}
@@ -159,12 +181,13 @@ export function CatalogRouteView({
         appliedPriceMax={search.priceMax}
         page={search.page ?? 1}
         loading={mounted && pending}
-        productBasePath={catalogPath}
+        productBasePath={landing === "brand" ? "/catalog_s/opravy" : catalogPath}
         city={city}
         onStateChange={onStateChange}
       />
       {isContactLensRoot && <ContactLensCatalogGuide total={result.data.total} />}
       {isContactLensRoot && <ContactLensCatalogFooter />}
+      {landing && <FrameLandingFooter kind={landing} data={landingData} />}
       {city === "spb" && <CatalogSeoContent sectionPath={sectionPath} />}
     </>
   );

@@ -1,26 +1,43 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Search as SearchIcon } from "lucide-react";
-import { searchProducts } from "@/lib/api/bitrix";
+import { searchGlobalProducts } from "@/lib/api/global-search";
 import type { Product } from "@/data/types";
 import { ProductCard } from "@/components/ProductCard";
 import { searchSiteContent } from "@/data/site-search";
 import { useCityStore } from "@/lib/store/city";
 import { regionalSiteHref } from "@/lib/city-routing";
+import { searchProductHref, lensSearchHref } from "@/lib/search-query";
+import type { CityCode } from "@/lib/store/city";
 
 export const Route = createFileRoute("/search")({
-  validateSearch: (s: Record<string, unknown>): { q: string } => ({
-    q: typeof s.q === "string" ? s.q : "",
+  validateSearch: (s: Record<string, unknown>): { q: string; city: CityCode } => ({
+    q: typeof s.q === "string" ? s.q.slice(0, 120) : "",
+    city: s.city === "nvk" ? "nvk" : "spb",
   }),
-  loaderDeps: ({ search }) => ({ q: search.q }),
-  loader: async ({ deps }) => {
+  loaderDeps: ({ search }) => ({ q: search.q, city: search.city }),
+  loader: async ({ deps, abortController }) => {
     const pages = searchSiteContent(deps.q);
-    const products = await Promise.race([
-      searchProducts(deps.q).catch(() => []),
-      new Promise<Product[]>((resolve) => setTimeout(() => resolve([]), 4000)),
-    ]);
-    return { pages, products };
+    const timeout = new AbortController();
+    const timer = setTimeout(() => timeout.abort(), 4000);
+    try {
+      const result = await searchGlobalProducts(
+        deps.q,
+        deps.city,
+        24,
+        AbortSignal.any([timeout.signal, abortController.signal]),
+      );
+      return {
+        pages,
+        products: result.products,
+        lenses: result.lenses,
+        productError: result.partial,
+      };
+    } catch {
+      return { pages, products: [] as Product[], lenses: [], productError: true };
+    } finally {
+      clearTimeout(timer);
+    }
   },
   head: () => ({
     meta: [{ title: "Поиск · ОПТИКА 100%" }, { name: "robots", content: "noindex" }],
@@ -29,16 +46,20 @@ export const Route = createFileRoute("/search")({
 });
 
 function SearchPage() {
-  const { q } = Route.useSearch();
-  const { pages, products: initialProducts } = Route.useLoaderData();
+  const { q, city: searchCity } = Route.useSearch();
+  const { pages, products, lenses, productError } = Route.useLoaderData();
   const navigate = Route.useNavigate();
   const [query, setQuery] = useState(q);
   const city = useCityStore((state) => state.city);
-  const { data: products = [] } = useQuery({
-    queryKey: ["search-products", q, city],
-    queryFn: () => searchProducts(q, 24, city),
-    initialData: city === "spb" ? initialProducts : undefined,
-  });
+  const hydrated = useCityStore((state) => state.hydrated);
+  useEffect(() => {
+    setQuery(q);
+  }, [q]);
+  useEffect(() => {
+    if (hydrated && city !== searchCity) void navigate({ search: { q, city }, replace: true });
+  }, [city, searchCity, hydrated, q, navigate]);
+  const regionalProducts = city === searchCity ? products : [];
+  const regionalLenses = city === searchCity ? lenses : [];
   const regionalPages = pages.filter((page) => city === "spb" || page.region !== "spb");
 
   const term = q.trim();
@@ -50,7 +71,7 @@ function SearchPage() {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          navigate({ search: { q: query } });
+          navigate({ search: { q: query, city } });
         }}
         className="mt-6 flex items-center gap-2 max-w-xl border-b border-border pb-2"
       >
@@ -66,9 +87,11 @@ function SearchPage() {
 
       {term && (
         <p className="mt-6 text-sm text-muted-foreground">
-          {regionalPages.length + products.length > 0
-            ? `Найдено: ${regionalPages.length + products.length}`
-            : "Ничего не найдено. Попробуйте изменить запрос."}
+          {regionalPages.length + regionalProducts.length + regionalLenses.length > 0
+            ? `Показано результатов: ${regionalPages.length + regionalProducts.length + regionalLenses.length}`
+            : productError
+              ? "Не удалось загрузить товары. Попробуйте повторить поиск."
+              : "Ничего не найдено. Попробуйте изменить запрос."}
         </p>
       )}
 
@@ -97,12 +120,53 @@ function SearchPage() {
         </section>
       )}
 
-      {products.length > 0 && <h2 className="mt-10 font-serif text-2xl">Товары</h2>}
+      {productError &&
+        regionalPages.length + regionalProducts.length + regionalLenses.length > 0 && (
+          <p role="status" className="mt-4 text-sm text-muted-foreground">
+            Часть товарного поиска временно недоступна. Доступные результаты показаны ниже.
+          </p>
+        )}
+      {regionalProducts.length > 0 && <h2 className="mt-10 font-serif text-2xl">Товары</h2>}
       <div className="mt-5 grid grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-10">
-        {products.map((p: Product) => (
-          <ProductCard key={p.slug} product={p} city={city} />
+        {regionalProducts.map((p: Product) => (
+          <ProductCard
+            key={p.slug}
+            product={p}
+            city={city}
+            productHref={searchProductHref(p, city)}
+          />
         ))}
       </div>
+      {regionalLenses.length > 0 && (
+        <section className="mt-10" aria-labelledby="search-lenses">
+          <h2 id="search-lenses" className="font-serif text-2xl">
+            Линзы для очков
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Предложения из актуальной базы подборщика. Цена за одну линзу; совместимость с рецептом
+            проверяется при подборе.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2">
+            {regionalLenses.map((lens) => (
+              <a
+                key={lens.id}
+                href={lensSearchHref(q, city)}
+                className="rounded-2xl border border-border p-5 hover:border-brand/40"
+              >
+                <span className="block text-base font-medium">
+                  {[lens.line, lens.coating, lens.treatment].filter(Boolean).join(" · ")}
+                </span>
+                <span className="mt-2 block text-sm text-muted-foreground">
+                  {lens.supplier.toUpperCase()} ·{" "}
+                  {lens.priceRub && lens.priceRub > 0
+                    ? `${lens.priceRub.toLocaleString("ru-RU")} ₽ / линза`
+                    : "Стоимость уточняется"}
+                </span>
+              </a>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

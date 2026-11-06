@@ -4,10 +4,22 @@ import type { CityCode } from "../lib/store/city";
 export interface CatalogSeoEntry {
   metaTitle: string;
   metaDescription: string;
-  content: "colored" | "multifocal";
+  content: "colored" | "multifocal" | "women-frames" | "brand-frames";
 }
 
 const sectionSeo: Record<string, CatalogSeoEntry> = {
+  "opravy/zhenskie": {
+    metaTitle: "Женские оправы для очков в Санкт-Петербурге — Оптика 100%",
+    metaDescription:
+      "Женские оправы для очков в Санкт-Петербурге: кошачий глаз, бабочка, прямоугольные модели. Фильтры по бренду, форме, материалу и цене. Примерка на Кирочной, 17.",
+    content: "women-frames",
+  },
+  "opravy/lions-heart": {
+    metaTitle: "Оправы LION’S HEART в Санкт-Петербурге — Оптика 100%",
+    metaDescription:
+      "Мужские и женские оправы LION’S HEART в Санкт-Петербурге. Сравните цены, формы, материалы и размеры в каталоге. Примерка и подбор в салоне на Кирочной, 17.",
+    content: "brand-frames",
+  },
   "kontaktnye_linzy_/tsvetnye": {
     metaTitle: "Цветные контактные линзы — купить в Санкт-Петербурге | Оптика 100%",
     metaDescription:
