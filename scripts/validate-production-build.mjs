@@ -54,6 +54,10 @@ const brokenCatalogLinks = new Map();
 for (const route of routes) {
   const relative = route === "/" ? "index.html" : `${route.replace(/^\/|\/$/g, "")}/index.html`;
   const html = await readFile(new URL(relative, clientDir), "utf8");
+  if (["/catalog_s/opravy/zhenskie/", "/catalog_s/opravy/lions-heart/"].includes(route)
+    && /<img\b[^>]*\bsrc=["']https?:\/\/(?:optika(?:-new)?\.p2print\.site|beta\.optika100\.com)\/upload\//i.test(html)) {
+    invalid.push(`${route}: legacy upload origin in catalog images`);
+  }
   if (/^\/catalog_[sn]\//.test(route)) {
     for (const problem of catalogHtmlProblems(html)) invalid.push(`${route}: ${problem}`);
   }

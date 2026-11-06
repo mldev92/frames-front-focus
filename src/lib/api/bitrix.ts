@@ -20,6 +20,7 @@ import {
 import { categoryToSegment, segmentToCategory } from "@/data/categories";
 import { apiFetch, securePost } from "@/lib/api/security";
 import { canonicalSearchQuery } from "@/lib/search-query";
+import { storefrontUploadUrl } from "@/lib/storefront-media";
 
 const BASE = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ?? "";
 const ALLOW_FIXTURES = import.meta.env.DEV && import.meta.env.VITE_ALLOW_FIXTURES === "true";
@@ -75,7 +76,7 @@ async function hydrateProductGalleries(
     }));
     const galleries = Object.assign({}, ...responses.map((data) => data.galleries));
     return products.map((product) => {
-      const gallery = galleries[product.slug];
+      const gallery = galleries[product.slug]?.map((image: string) => storefrontUploadUrl(image, BASE));
       if (!gallery?.length) return product;
       productGalleryCache.set(productCacheKey(city, product.slug), Promise.resolve(gallery));
       return { ...product, images: gallery };
@@ -89,10 +90,13 @@ async function hydrateProductGalleries(
 function normalizeProduct(product: Product): Product {
   return {
     ...product,
+    images: product.images.map((image) => storefrontUploadUrl(image, BASE)),
     colors: product.colors?.map((color) => ({
       ...color,
       // Bitrix directory entries use 70x70 UF_FILE icons as swatches, not product photos.
-      image: color.image?.includes("/upload/uf/") ? undefined : color.image,
+      image: color.image?.includes("/upload/uf/")
+        ? undefined
+        : color.image ? storefrontUploadUrl(color.image, BASE) : undefined,
     })),
   };
 }
@@ -358,7 +362,7 @@ export function getProductGallery(
   const request = city === "nvk"
     ? fetchJson<{ galleries: Record<string, string[]> }>(
         `galleries.php?slugs=${encodeURIComponent(slug)}&city=nvk`,
-      ).then((data) => data.galleries[slug] ?? []).catch(() => [])
+      ).then((data) => (data.galleries[slug] ?? []).map((image) => storefrontUploadUrl(image, BASE))).catch(() => [])
     : getProduct(slug, city, section)
         .then((product) => product?.images ?? [])
         .catch(() => []);

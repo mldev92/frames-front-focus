@@ -9,6 +9,7 @@ async function loadModule(path, mocks, env) {
   mocks = {
     "@/lib/frame-landing": { frameLanding: () => undefined, frameLandingQuery: (_path, query) => query },
     "@/lib/search-query": { canonicalSearchQuery: (query) => query.trim() },
+    "@/lib/storefront-media": { storefrontUploadUrl: (value) => value },
     ...mocks,
   };
   const source = (await readFile(new URL(path, import.meta.url), "utf8"))
