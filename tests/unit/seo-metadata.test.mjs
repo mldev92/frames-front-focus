@@ -40,6 +40,7 @@ test("метаданные подраздела описывают раздел 
   const nvk = catalogSectionMetadata("opravy", fallback, "nvk");
   assert.match(nvk.metaDescription, /Новокузнецке/);
   assert.doesNotMatch(nvk.metaDescription, /Санкт-Петербурге/);
-  assert.equal(catalogSectionMetadata("opravy", fallback).metaDescription, fallback.metaDescription);
+  assert.match(catalogSectionMetadata("opravy", fallback).metaDescription, /Женские, мужские и детские/);
+  assert.equal(catalogSectionMetadata("solntsezashchitnye_ochki", fallback).metaDescription, fallback.metaDescription);
   assert.match(catalogSectionMetadata("kontaktnye_linzy_/tsvetnye", fallback).metaDescription, /оттеночные и непрозрачные/);
 });

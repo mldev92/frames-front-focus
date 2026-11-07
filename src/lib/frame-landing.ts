@@ -1,27 +1,39 @@
 import type { CatalogPage, CatalogQuery } from "./api/bitrix";
 import { matchesSearchBrand } from "./search-query.ts";
+import { frameBrandForName, frameBrandForPath } from "../data/frame-brand-landings.ts";
+import { frameCategoryForPath } from "../data/frame-category-landings.ts";
 
 export const WOMENS_FRAMES_PATH = "opravy/zhenskie";
-export const LIONS_HEART_PATH = "opravy/lions-heart";
-export const LIONS_HEART_BRAND = "LION`S HEART";
 
 export function frameLanding(path: string) {
   const normalized = path.replace(/^\/+|\/+$/g, "");
   if (normalized === WOMENS_FRAMES_PATH) return "women";
-  if (normalized === LIONS_HEART_PATH) return "brand";
+  if (frameBrandForPath(normalized)) return "brand";
+  if (frameCategoryForPath(normalized)) return "category";
   return undefined;
 }
 
 export function frameLandingQuery(path: string, query: CatalogQuery): CatalogQuery {
-  return frameLanding(path) === "brand"
-    ? { ...query, filters: { ...query.filters, brand: [LIONS_HEART_BRAND] } }
-    : query;
+  const brand = frameBrandForPath(path);
+  return brand ? { ...query, filters: { ...query.filters, brand: [brand.brand] } } : query;
 }
 
-export function frameBrandHref(brand: string) {
-  return brand === LIONS_HEART_BRAND
-    ? `/catalog_s/${LIONS_HEART_PATH}/`
-    : `/catalog_s/${WOMENS_FRAMES_PATH}/?brand=${encodeURIComponent(brand)}`;
+export function frameBrandHref(brand: string, sectionPath = WOMENS_FRAMES_PATH) {
+  const landing = frameBrandForName(brand);
+  return landing
+    ? `/catalog_s/opravy/${landing.slug}/`
+    : `/catalog_s/${sectionPath}/?brand=${encodeURIComponent(brand)}`;
+}
+
+export function frameLandingTitle(path: string) {
+  const brand = frameBrandForPath(path);
+  return brand
+    ? `Оправы ${brand.name} в Санкт-Петербурге`
+    : (frameCategoryForPath(path)?.title ?? "Женские оправы для очков");
+}
+
+export function frameApiSection(path: string) {
+  return frameBrandForPath(path) ? "opravy" : (frameCategoryForPath(path)?.section ?? "zhenskie");
 }
 
 export function matchesFrameBrand(brand: string, query: string) {

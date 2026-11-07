@@ -45,7 +45,7 @@ test("contact-lens category is product-first while retaining navigation, image, 
   // The spectacle-lens section keeps its separate base-driven view, but its
   // curated catalogue now receives the URL filter/sort/price/page contract.
   // The contact-lens root stays product-first in CatalogListing.
-  assert.match(view, /headerAfterTitle=\{\s*landing \? <FrameLandingIntro/);
+  assert.match(view, /headerAfterTitle=\{\s*landing\s*\?\s*\(?\s*<FrameLandingIntro/);
   assert.ok(view.includes("if (isLensRoot)"));
   assert.ok(view.includes("initialFilters={appliedFilters}"));
   assert.ok(view.includes("appliedPriceMin={search.priceMin}"));

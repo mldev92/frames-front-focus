@@ -1,10 +1,12 @@
 import { catalogSectionTitle } from "./categories.ts";
 import type { CityCode } from "../lib/store/city";
+import { frameBrandForPath } from "./frame-brand-landings.ts";
+import { frameCategoryForPath } from "./frame-category-landings.ts";
 
 export interface CatalogSeoEntry {
   metaTitle: string;
   metaDescription: string;
-  content: "colored" | "multifocal" | "women-frames" | "brand-frames";
+  content: "colored" | "multifocal" | "women-frames" | "brand-frames" | "frame-category";
 }
 
 const sectionSeo: Record<string, CatalogSeoEntry> = {
@@ -13,12 +15,6 @@ const sectionSeo: Record<string, CatalogSeoEntry> = {
     metaDescription:
       "Женские оправы для очков в Санкт-Петербурге: кошачий глаз, бабочка, прямоугольные модели. Фильтры по бренду, форме, материалу и цене. Примерка на Кирочной, 17.",
     content: "women-frames",
-  },
-  "opravy/lions-heart": {
-    metaTitle: "Оправы LION’S HEART в Санкт-Петербурге — Оптика 100%",
-    metaDescription:
-      "Мужские и женские оправы LION’S HEART в Санкт-Петербурге. Сравните цены, формы, материалы и размеры в каталоге. Примерка и подбор в салоне на Кирочной, 17.",
-    content: "brand-frames",
   },
   "kontaktnye_linzy_/tsvetnye": {
     metaTitle: "Цветные контактные линзы — купить в Санкт-Петербурге | Оптика 100%",
@@ -36,6 +32,20 @@ const sectionSeo: Record<string, CatalogSeoEntry> = {
 
 export function catalogSeoForSection(sectionPath: string) {
   const normalized = sectionPath.replace(/^\/+|\/+$/g, "");
+  const brand = frameBrandForPath(normalized);
+  if (brand)
+    return {
+      metaTitle: `Оправы ${brand.name} в Санкт-Петербурге — Оптика 100%`,
+      metaDescription: brand.description,
+      content: "brand-frames" as const,
+    };
+  const category = frameCategoryForPath(normalized);
+  if (category)
+    return {
+      metaTitle: `${category.title}${category.path === "opravy" ? "" : " для очков"} в Санкт-Петербурге — Оптика 100%`,
+      metaDescription: category.description,
+      content: "frame-category" as const,
+    };
   return sectionSeo[normalized];
 }
 
@@ -47,7 +57,8 @@ export function catalogSectionMetadata(
 ) {
   const normalized = sectionPath.replace(/^\/+|\/+$/g, "");
   const editorial = city === "spb" ? catalogSeoForSection(normalized) : undefined;
-  if (editorial) return { metaTitle: editorial.metaTitle, metaDescription: editorial.metaDescription };
+  if (editorial)
+    return { metaTitle: editorial.metaTitle, metaDescription: editorial.metaDescription };
   const title = catalogSectionTitle(normalized, fallback.title);
   if (!normalized.includes("/") && city === "spb") {
     return { metaTitle: fallback.metaTitle, metaDescription: fallback.metaDescription };

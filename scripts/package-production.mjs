@@ -6,6 +6,8 @@ import path from "node:path";
 import { verifyCheckoutRuntime } from "./checkout-runtime-manifest.mjs";
 import { loadInventory } from './seo-inventory.mjs';
 import { catalogFingerprint } from './catalog-refresh-policy.mjs';
+import { FRAME_BRAND_LANDINGS } from '../src/data/frame-brand-landings.ts';
+import { FRAME_CATEGORY_LANDINGS } from '../src/data/frame-category-landings.ts';
 
 if (process.env.O100_PRERENDER_LIMIT || process.env.O100_PRERENDER_ROUTES) throw new Error("Partial production builds cannot be packaged");
 const sha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
@@ -39,8 +41,9 @@ const inventory = await loadInventory();
 const required = JSON.parse(await readFile('deploy/seo-required-products.json','utf8')).paths;
 const available = new Set(routes.routes);
 const samples = inventory.products.filter(p=>p.sectionActive).filter((p,i)=>i%150===0).map(p=>p.canonicalPath);
-const acceptancePaths = [...new Set(['/', '/catalog_s/opravy/', '/catalog_n/opravy/', '/catalog_s/opravy/zhenskie/', '/catalog_s/opravy/lions-heart/', ...required, ...samples])].filter(p=>available.has(p));
-const queryAcceptancePaths = ['/search/?q=GUESS&city=nvk', '/catalog_s/opravy/zhenskie/?brand=GUESS', '/catalog_s/opravy/lions-heart/?page=2', '/catalog_s/opravy/?brand=GUESS', '/catalog_s/linzy_dlya_ochkov/?lensQuery=Stellest'];
+const framePaths = [...FRAME_BRAND_LANDINGS.map(b=>`/catalog_s/opravy/${b.slug}/`), ...FRAME_CATEGORY_LANDINGS.map(c=>`/catalog_s/${c.path}/`)];
+const acceptancePaths = [...new Set(['/', '/catalog_s/opravy/', '/catalog_n/opravy/', '/catalog_s/opravy/zhenskie/', ...framePaths, ...required, ...samples])].filter(p=>available.has(p));
+const queryAcceptancePaths = ['/search/?q=GUESS&city=nvk', '/catalog_s/opravy/zhenskie/?brand=GUESS', ...framePaths.map(p=>p+'?page=2'), '/catalog_s/opravy/?brand=GUESS', '/catalog_s/linzy_dlya_ochkov/?lensQuery=Stellest'];
 await writeFile(path.join(root, "release-manifest.json"), JSON.stringify({ version: 1, frontendSha: sha, backendSha,
   backendFiles: backend.files, templateFiles, runtime: process.version, apiOrigin: "https://optika100.com", routingBaseline: baseline, builtAt: new Date().toISOString(), routeCount: routes.count,
   inventorySha256: routes.inventorySha256, inventoryGeneratedAt: routes.inventoryGeneratedAt,

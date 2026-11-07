@@ -2,6 +2,9 @@
   "name": "tanstack_start_ts",
   "private": true,
   "sideEffects": false,
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite dev",
@@ -12,6 +15,7 @@
     "manifest:production": "node scripts/generate-production-manifest.mjs",
     "content:production": "node scripts/import-blog-articles.mjs",
     "build:production": "npm run content:localize && npm run manifest:production && vite build --config vite.config.production.ts && node scripts/validate-production-build.mjs",
+    "build:seo-preview": "vite build --config vite.config.seo-preview.ts",
     "validate:production": "node scripts/validate-production-build.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node --test tests/*.test.mjs",

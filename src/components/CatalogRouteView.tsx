@@ -14,7 +14,7 @@ import {
   FrameLandingFooter,
   FrameLandingBreadcrumbs,
 } from "@/components/FrameCatalogLanding";
-import { frameLanding } from "@/lib/frame-landing";
+import { frameLanding, frameLandingTitle } from "@/lib/frame-landing";
 import { categoryForCatalogPath, catalogSectionTitle } from "@/data/categories";
 import { catalogConfig } from "@/routes/catalog_s.$category";
 import { searchToFilters, type CatalogSearch, type LoaderResult } from "@/lib/catalog-route";
@@ -150,17 +150,17 @@ export function CatalogRouteView({
     <>
       <CatalogListing
         title={
-          landing === "women"
-            ? "Женские оправы для очков"
-            : landing === "brand"
-              ? "Оправы LION’S HEART в Санкт-Петербурге"
-              : isContactLensRoot
-                ? "Контактные линзы в Санкт-Петербурге"
-                : catalogSectionTitle(sectionPath, config.title)
+          landing
+            ? frameLandingTitle(normalizedSectionPath)
+            : isContactLensRoot
+              ? "Контактные линзы в Санкт-Петербурге"
+              : catalogSectionTitle(sectionPath, config.title)
         }
         subtitle={isContactLensRoot || landing ? undefined : config.subtitle}
         headerAfterTitle={
-          landing ? <FrameLandingIntro kind={landing} data={landingData} /> : undefined
+          landing ? (
+            <FrameLandingIntro path={normalizedSectionPath} kind={landing} data={landingData} />
+          ) : undefined
         }
         headerBeforeTitle={
           landing ? (
@@ -187,7 +187,9 @@ export function CatalogRouteView({
       />
       {isContactLensRoot && <ContactLensCatalogGuide total={result.data.total} />}
       {isContactLensRoot && <ContactLensCatalogFooter />}
-      {landing && <FrameLandingFooter kind={landing} data={landingData} />}
+      {landing && (
+        <FrameLandingFooter path={normalizedSectionPath} kind={landing} data={landingData} />
+      )}
       {city === "spb" && <CatalogSeoContent sectionPath={sectionPath} />}
     </>
   );

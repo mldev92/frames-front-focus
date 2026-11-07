@@ -1,6 +1,7 @@
 import { productHref, catalogHref } from "../data/categories.ts";
 import type { Product, Category } from "../data/types";
 import type { CityCode } from "./store/city";
+import { frameBrandForName } from "../data/frame-brand-landings.ts";
 
 export const SEARCH_ALIASES = [
   { name: "GUESS", aliases: ["гесс", "гэс", "гуесс"] },
@@ -13,6 +14,8 @@ export const SEARCH_ALIASES = [
   { name: "STEPPER", aliases: ["степпер"] },
   { name: "CARRERA", aliases: ["каррера"] },
   { name: "HUGO BOSS", aliases: ["хуго босс", "хьюго босс"] },
+  { name: "HUGO", aliases: ["хуго", "хьюго"] },
+  { name: "BOSS", aliases: ["босс"] },
   { name: "ANA HICKMANN", aliases: ["ана хикман", "анна хикман"] },
   { name: "FURLA", aliases: ["фурла"] },
 ];
@@ -29,6 +32,12 @@ export function normalizeSearchText(value: string) {
 export function canonicalSearchQuery(value: string) {
   const query = value.trim().replace(/\s+/g, " ").slice(0, 120);
   const normalized = normalizeSearchText(query);
+  if (normalized.length >= 3) {
+    const matches = SEARCH_ALIASES.filter((entry) =>
+      entry.aliases.some((alias) => normalizeSearchText(alias).startsWith(normalized)),
+    );
+    if (matches.length === 1) return matches[0].name;
+  }
   for (const entry of SEARCH_ALIASES) {
     for (const alias of entry.aliases) {
       const key = normalizeSearchText(alias);
@@ -36,12 +45,6 @@ export function canonicalSearchQuery(value: string) {
         return `${entry.name}${query.slice(key.length)}`.slice(0, 120);
       }
     }
-  }
-  if (normalized.length >= 3) {
-    const matches = SEARCH_ALIASES.filter((entry) =>
-      entry.aliases.some((alias) => normalizeSearchText(alias).startsWith(normalized)),
-    );
-    if (matches.length === 1) return matches[0].name;
   }
   return query;
 }
@@ -60,8 +63,9 @@ export interface SearchBrand {
 
 export function searchBrandHref(brand: SearchBrand, city: CityCode) {
   if (brand.searchOnly) return fullSearchHref(brand.name, city);
-  if (city === "spb" && brand.category === "opravy" && brand.name === "LION`S HEART")
-    return "/catalog_s/opravy/lions-heart/";
+  const landing =
+    city === "spb" && brand.category === "opravy" ? frameBrandForName(brand.name) : undefined;
+  if (landing) return `/catalog_s/opravy/${landing.slug}/`;
   return `${catalogHref(brand.category, city)}?brand=${encodeURIComponent(brand.name)}`;
 }
 

@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { FRAME_BRAND_LANDINGS } from "../src/data/frame-brand-landings.ts";
+import { FRAME_CATEGORY_LANDINGS } from "../src/data/frame-category-landings.ts";
 
 test("full search always resolves to the query-aware shell before a static empty page", async () => {
   const config = await readFile(new URL("../deploy/production.htaccess", import.meta.url), "utf8");
@@ -35,6 +37,8 @@ test("filtered frame landings use the shell before static HTML resolution", asyn
     return query.test(parsed.search.slice(1)) && path.test(parsed.pathname.slice(1));
   };
   for (const url of [
+    ...FRAME_BRAND_LANDINGS.map(b=>`/catalog_s/opravy/${b.slug}/?page=2`),
+    ...FRAME_CATEGORY_LANDINGS.map(c=>`/catalog_s/${c.path}/?priceMin=4000`),
     "/catalog_s/opravy/zhenskie/?brand=GUESS",
     "/catalog_s/opravy/lions-heart/?page=2",
     "/catalog_s/opravy/lions-heart/?utm_source=test&gender=Женские",
@@ -45,7 +49,7 @@ test("filtered frame landings use the shell before static HTML resolution", asyn
     "/catalog_s/opravy/lions-heart/?utm_source=test",
     "/catalog_s/opravy/lions-heart/product/?page=2",
     "/catalog_n/opravy/zhenskie/?brand=GUESS",
-    "/catalog_s/opravy/muzhskie/?page=2",
+    "/catalog_s/opravy/unknown-brand/?page=2",
     "/api/store/products.php?brand=GUESS",
   ]) assert.ok(!usesShell(url), url);
   assert.ok(rule.index < config.indexOf("RewriteCond %{DOCUMENT_ROOT}/o100_frontend_current/$1/index.html -f"));

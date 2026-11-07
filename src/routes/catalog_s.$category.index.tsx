@@ -2,6 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { categoryForCatalogPath } from "@/data/categories";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
 import { catalogConfig } from "./catalog_s.$category";
+import { catalogSectionMetadata } from "@/data/catalog-seo";
+import { frameCatalogSchemas } from "@/data/frame-catalog-seo";
 import type { Category } from "@/data/types";
 import {
   contactLensCatalogCanonical,
@@ -27,20 +29,22 @@ import {
 // ---------------------------------------------------------------------------
 
 export const Route = createFileRoute("/catalog_s/$category/")({
-  validateSearch: (search: Record<string, unknown>) => normalizeCatalogSearch(catalogSearchSchema.parse(search)),
+  validateSearch: (search: Record<string, unknown>) =>
+    normalizeCatalogSearch(catalogSearchSchema.parse(search)),
   // One request per distinct catalog state — these deps ARE the state.
   loaderDeps: ({ search }) => search,
   loader: ({ params, deps, abortController }) =>
     loadCatalogPage(params.category, deps, "spb", abortController.signal),
   head: ({ params, loaderData }) => {
     if (params.category === "kontaktnye_linzy_") {
-      const scripts = loaderData?.state === "ok"
-        ? contactLensCatalogSchemas(
-            loaderData.data.products,
-            loaderData.data.page,
-            loaderData.data.pageSize,
-          )
-        : [];
+      const scripts =
+        loaderData?.state === "ok"
+          ? contactLensCatalogSchemas(
+              loaderData.data.products,
+              loaderData.data.page,
+              loaderData.data.pageSize,
+            )
+          : [];
       return {
         meta: [
           { title: contactLensCatalogTitle },
@@ -59,13 +63,16 @@ export const Route = createFileRoute("/catalog_s/$category/")({
     const category = categoryForCatalogPath(params.category) as Category | undefined;
     if (!category) return { meta: [{ title: "Каталог · ОПТИКА 100%" }] };
     const c = catalogConfig[category];
+    const metadata = catalogSectionMetadata(params.category, c);
     return {
       meta: [
-        { title: c.metaTitle },
-        { name: "description", content: c.metaDescription },
-        { property: "og:title", content: c.metaTitle },
-        { property: "og:description", content: c.metaDescription },
+        { title: metadata.metaTitle },
+        { name: "description", content: metadata.metaDescription },
+        { property: "og:title", content: metadata.metaTitle },
+        { property: "og:description", content: metadata.metaDescription },
       ],
+      scripts:
+        loaderData?.state === "ok" ? frameCatalogSchemas(params.category, loaderData.data) : [],
     };
   },
   pendingComponent: CatalogPending,
