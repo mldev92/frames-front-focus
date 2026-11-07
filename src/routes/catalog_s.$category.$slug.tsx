@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { formatProductPrice, hasProductPrice } from "@/lib/product-price";
 import { CircleAlert, Heart, ChevronRight, Truck, ShieldCheck, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { catalogSectionTitle, categoryForCatalogPath, productCatalogHref } from "@/data/categories";
@@ -188,7 +189,7 @@ export function ProductPage({
     ((isFrameLike && product.price > 3500) ||
       (product.category === "kontaktnye-linzy" && isMisight));
   const lensQty = isLens && lensEyeMode === "different" ? 2 : 1;
-  const lensTotal = product.price * lensQty;
+  const hasPrice = hasProductPrice(product.price);
 
   useEffect(() => {
     if (!isLens || !product.lensOptions) return;
@@ -234,7 +235,7 @@ export function ProductPage({
   // над липкой панелью «В корзину».
   // У контактных линз цена и «В корзину» уже стоят под фото рядом с параметрами,
   // поэтому липкая панель их дублировала и позволяла купить, не увидев параметры.
-  const showStickyBuyBar = !isLens;
+  const showStickyBuyBar = !isLens && hasPrice;
 
   useEffect(() => {
     if (!showStickyBuyBar) return;
@@ -389,7 +390,7 @@ export function ProductPage({
             </div>
 
             <div className="mt-5 flex items-baseline gap-3">
-              <span className="font-serif text-3xl">{formatPrice(isLens ? lensTotal : product.price)}</span>
+              <span className="font-serif text-3xl">{formatProductPrice(product.price, isLens ? lensQty : 1)}</span>
               {product.oldPrice && (
                 <span className="text-sm text-muted-foreground line-through">
                   {formatPrice(isLens ? product.oldPrice * lensQty : product.oldPrice)}
@@ -403,7 +404,7 @@ export function ProductPage({
               quantity={isLens ? lensQty : 1}
               className="mt-2"
             />
-            {isLens && lensQty > 1 && (
+            {hasPrice && isLens && lensQty > 1 && (
               <div className="mt-1 text-xs text-muted-foreground">
                 {formatPrice(product.price)} × 2 упаковки
               </div>
@@ -476,6 +477,7 @@ export function ProductPage({
             )}
 
             <div className="mt-6 space-y-2.5">
+              {hasPrice ? <>
               <button
                 onClick={handlePrimaryCta}
                 className="w-full border border-brand bg-brand text-brand-foreground py-3.5 rounded-full hover:opacity-90 font-medium transition-opacity"
@@ -491,6 +493,9 @@ export function ProductPage({
                   Купить оправу без линз
                 </button>
               )}
+              </> : <a href="/contacts/" className="block w-full rounded-full border border-brand bg-brand py-3.5 text-center font-medium text-brand-foreground">
+                Уточнить цену
+              </a>}
             </div>
 
             {/* Компактно: колонка покупки липкая, и на экране 900 px блок должен

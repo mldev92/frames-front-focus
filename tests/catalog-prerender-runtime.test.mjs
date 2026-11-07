@@ -84,4 +84,7 @@ test("переход из списка загружает полное опис�
   assert.equal(detailRequests, 1);
   await api.getProduct("stellest", "nvk");
   assert.equal(detailRequests, 2);
+  api.invalidateProductPrices();
+  await api.getProduct("stellest");
+  assert.equal(detailRequests, 3);
 });

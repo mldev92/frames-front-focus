@@ -34,6 +34,10 @@ const productGalleryCache = new Map<string, Promise<string[]>>();
 const PRODUCT_CACHE_TTL_MS = 60_000;
 const productDetailCache = new Map<string, { product: Product; expiresAt: number }>();
 
+export function invalidateProductPrices(): void {
+  productDetailCache.clear();
+}
+
 function productCacheKey(city: "spb" | "nvk", slug: string): string {
   return `${city}:${slug}`;
 }

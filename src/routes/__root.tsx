@@ -1,4 +1,5 @@
 import { CartMigration } from "@/components/CartMigration";
+import { StorefrontFreshness } from "@/components/StorefrontFreshness";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -158,6 +159,7 @@ function RootComponent() {
       <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip">
         <Header />
         <CartMigration />
+        <StorefrontFreshness />
         <main className="min-w-0 flex-1 overflow-x-clip">
           <Outlet />
         </main>

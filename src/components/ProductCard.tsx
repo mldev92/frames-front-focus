@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { formatProductPrice } from "@/lib/product-price";
 import { Heart } from "lucide-react";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
@@ -223,7 +224,7 @@ export function ProductCard({
           </div>
         )}
         <div className="flex items-baseline gap-2 pt-0.5">
-          <span className="font-semibold text-sm">{formatPrice(product.price)}</span>
+          <span className="font-semibold text-sm">{formatProductPrice(product.price)}</span>
           {product.oldPrice && (
             <span className="text-xs text-muted-foreground line-through">
               {formatPrice(product.oldPrice)}

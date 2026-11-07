@@ -1,5 +1,7 @@
 import { mergeLegacy, consumeAttemptOnce } from "@/lib/cart-migration";
 import { mergePersistedCart } from "@/lib/cart-persistence";
+import { applyCartPrices, type CartPriceUpdate } from "@/lib/cart-prices";
+import { hasProductPrice } from "@/lib/product-price";
 import { productCardHref } from "@/data/categories";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -59,6 +61,7 @@ export interface CartLine {
 }
 
 interface CartState {
+  updatePrices: (updates: CartPriceUpdate[]) => void;
   importedSources: string[];
   importLegacy: (lines: CartLine[]) => void;
   consumedAttempts: string[];
@@ -113,6 +116,10 @@ function lineIdentity(
 export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
+      updatePrices: (updates) => set((state) => {
+        const lines = applyCartPrices(state.lines, updates);
+        return lines === state.lines ? state : { lines };
+      }),
       importedSources: [],
       importLegacy: (incoming) => set((state) => mergeLegacy(state.lines, state.importedSources ?? [], incoming)),
       consumedAttempts: [],
@@ -125,6 +132,7 @@ export const useCart = create<CartState>()(
       open: () => set({ isOpen: true }),
       close: () => set({ isOpen: false }),
       add: (product, opts) => {
+        if (!hasProductPrice(product.price)) throw new Error("Цена товара пока недоступна");
         if (!Number.isInteger(product.id) || (product.id ?? 0) <= 0) {
           throw new Error("Товар не содержит Bitrix ID");
         }
@@ -143,7 +151,8 @@ export const useCart = create<CartState>()(
         if (existing) {
           set({
             lines: get().lines.map((line) =>
-              line.lineId === lineId ? { ...line, qty: line.qty + qty } : line,
+              line.lineId === lineId ? { ...line, qty: line.qty + qty,
+                price: product.price, authoritativeBasePrice: product.price } : line,
             ),
             isOpen: openDrawer,
           });

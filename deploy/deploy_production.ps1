@@ -103,7 +103,7 @@ $BackendFileList = @(
     'api/store/_durable.php', 'api/store/_sdek_origin.php', 'api/store/sdek_widget_frame.php',
     'api/store/sdek_ajax_proxy.php', 'api/store/_bootstrap.php', 'api/store/_security.php',
     'api/store/_session.php', 'api/store/_index.php', 'api/store/_facets.php', 'api/store/csrf.php',
-    'api/store/_catalog_identity.php', 'api/store/catalog_sections.php', 'api/store/_product.php',
+    'api/store/_catalog_identity.php', 'api/store/catalog_sections.php', 'api/store/_product.php', 'api/store/_catalog_prices.php',
     'api/store/product.php', 'api/store/products.php', 'api/store/search.php',
     'api/store/_basket_display.php', 'api/store/_basket_bridge.php', 'api/store/_checkout.php',
     'api/store/_outbox.php', 'api/store/order_quote.php', 'api/store/order_attempt.php',
