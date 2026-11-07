@@ -2,18 +2,23 @@ import { useState } from "react";
 import type { CatalogPage } from "@/lib/api/bitrix";
 import { CONTACT, PRIMARY_SALON } from "@/data/contact";
 import { frameBreadcrumbs } from "@/data/frame-catalog-seo";
+import { FRAME_BRAND_LANDINGS, frameBrandForPath } from "@/data/frame-brand-landings";
+import { frameCategoryForPath } from "@/data/frame-category-landings";
 import {
   frameBrandHref,
   frameFacetEntries,
   framePriceRange,
   matchesFrameBrand,
-  LIONS_HEART_PATH,
+  frameLanding,
   WOMENS_FRAMES_PATH,
 } from "@/lib/frame-landing";
 
-type Props = { kind: "women" | "brand"; data: CatalogPage };
+type Props = {
+  path: string;
+  kind: NonNullable<ReturnType<typeof frameLanding>>;
+  data: CatalogPage;
+};
 const womenHref = `/catalog_s/${WOMENS_FRAMES_PATH}/`;
-const brandHref = `/catalog_s/${LIONS_HEART_PATH}/`;
 const linkClass = "text-brand underline-offset-4 hover:underline";
 
 export function FrameLandingBreadcrumbs({ path }: { path: string }) {
@@ -43,8 +48,10 @@ export function FrameLandingBreadcrumbs({ path }: { path: string }) {
   );
 }
 
-export function FrameLandingIntro({ kind, data }: Props) {
+export function FrameLandingIntro({ path, kind, data }: Props) {
   const price = framePriceRange(data);
+  const brand = frameBrandForPath(path);
+  const category = frameCategoryForPath(path);
   return (
     <div className="mb-10 max-w-3xl space-y-5">
       <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs uppercase tracking-widest text-muted-foreground">
@@ -55,7 +62,7 @@ export function FrameLandingIntro({ kind, data }: Props) {
       <p className="text-base leading-7 text-foreground/80">
         {kind === "women"
           ? "Сравните формы, материалы и размеры. Примерьте оправу на Кирочной, 17 в Санкт-Петербурге и подберите линзы по рецепту."
-          : "В каталоге LION’S HEART собраны мужские и женские оправы. Сравните формы, материалы и размеры, затем уточните наличие выбранной модели в салоне на Кирочной, 17 в Санкт-Петербурге."}
+          : (brand?.intro ?? category?.intro)}
       </p>
       <div className="flex flex-wrap gap-3">
         <a href="#catalog-products" className="rounded-full bg-ink px-4 py-3 text-sm text-white">
@@ -72,7 +79,7 @@ export function FrameLandingIntro({ kind, data }: Props) {
   );
 }
 
-function BrandDirectory({ data }: { data: CatalogPage }) {
+function BrandDirectory({ path, data }: { path: string; data: CatalogPage }) {
   const [query, setQuery] = useState("");
   const brands = frameFacetEntries(data, "brand");
   const matches = brands.filter(([name]) => matchesFrameBrand(name, query));
@@ -81,7 +88,7 @@ function BrandDirectory({ data }: { data: CatalogPage }) {
       {items.map(([brand, count]) => (
         <li key={brand}>
           <a
-            href={frameBrandHref(brand)}
+            href={frameBrandHref(brand, path)}
             className="flex items-center justify-between gap-3 rounded-lg border border-border px-4 py-3 text-sm hover:border-ink"
           >
             <span className="min-w-0 break-words">{brand}</span>
@@ -94,11 +101,11 @@ function BrandDirectory({ data }: { data: CatalogPage }) {
   return (
     <section aria-labelledby="frame-brands" className="space-y-5">
       <h2 id="frame-brands" className="font-serif text-3xl">
-        Бренды женских оправ
+        {path === WOMENS_FRAMES_PATH ? "Бренды женских оправ" : "Бренды в этом разделе"}
       </h2>
       <p className="text-sm text-muted-foreground">
-        Количество рядом с брендом относится к женскому каталогу. Страница LION’S HEART показывает
-        весь ассортимент бренда.
+        Количество рядом с брендом относится к этому разделу. Самостоятельная страница бренда
+        показывает весь его ассортимент оправ; доступные фильтры помогут уточнить выбор.
       </p>
       <label className="block max-w-md space-y-2 text-sm">
         <span>Поиск по бренду</span>
@@ -127,19 +134,35 @@ function BrandDirectory({ data }: { data: CatalogPage }) {
   );
 }
 
-export function FrameLandingFooter({ kind, data }: Props) {
+export function FrameLandingFooter({ path, kind, data }: Props) {
   const price = framePriceRange(data);
+  const brand = frameBrandForPath(path);
+  const category = frameCategoryForPath(path);
+  const catalogHref = `/catalog_s/${path}/`;
+  const isChildren = category?.path === "opravy/detskie_1";
+  const label = brand?.name ?? category?.title.toLocaleLowerCase("ru-RU") ?? "женские оправы";
   const faq = [
     {
-      q: kind === "women" ? "Как выбрать женскую оправу?" : "Как выбрать оправу LION’S HEART?",
-      a: "Учитывайте параметры рецепта, размер и посадку. На примерке специалист проверит положение оправы на переносице и заушниках и возможность установки выбранных линз.",
+      q:
+        category?.question ??
+        (kind === "women" ? "Как выбрать женскую оправу?" : `Как выбрать оправу ${label}?`),
+      a:
+        category?.answer ??
+        "Учитывайте параметры рецепта, размер и посадку. На примерке специалист проверит положение оправы на переносице и заушниках и возможность установки выбранных линз.",
     },
     {
-      q: "Какая оправа подойдёт для круглого лица?",
-      a: "Можно начать с прямоугольных, квадратных моделей или формы «кошачий глаз». Это ориентир для примерки: окончательный выбор зависит от ваших предпочтений, размера оправы и посадки.",
+      q: isChildren ? "Нужна ли примерка с ребёнком?" : "Какая оправа подойдёт для круглого лица?",
+      a: isChildren
+        ? "Примерка помогает оценить размеры и посадку на ребёнке. Сравните несколько моделей, положение переносицы и заушников; одной фотографии или возрастной отметки для выбора недостаточно."
+        : "Можно начать с прямоугольных, квадратных моделей или формы «кошачий глаз». Это ориентир для примерки: окончательный выбор зависит от ваших предпочтений, размера оправы и посадки.",
     },
     {
-      q: kind === "women" ? "Сколько стоят женские оправы?" : "Сколько стоят оправы LION’S HEART?",
+      q:
+        kind === "women"
+          ? "Сколько стоят женские оправы?"
+          : brand
+            ? `Сколько стоят оправы ${brand.name}?`
+            : `Сколько стоят ${label}?`,
       a: price
         ? `В текущем каталоге цены ${price}. Линзы и работы рассчитываются отдельно; итоговая стоимость зависит от рецепта и выбранной комплектации.`
         : "Актуальные цены указаны в карточках каталога. Линзы и работы рассчитываются отдельно.",
@@ -149,28 +172,65 @@ export function FrameLandingFooter({ kind, data }: Props) {
       a: "Совместимость зависит от рецепта, конструкции, размеров и состояния оправы. Возможность установки линз в вашу оправу специалист определит после осмотра.",
     },
     {
-      q: "Можно ли поставить прогрессивные линзы?",
-      a: "Специалист проверит высоту светового проёма и посадку конкретной оправы и подберёт подходящий дизайн линз. Совместимость оценивается на примерке.",
+      q: isChildren
+        ? "Что взять на примерку детской оправы?"
+        : "Можно ли поставить прогрессивные линзы?",
+      a: isChildren
+        ? "Возьмите действующий рецепт и очки, которыми ребёнок уже пользуется, если они есть. Специалист сможет сравнить размеры и обсудить комплектацию выбранной оправы."
+        : "Специалист проверит высоту светового проёма и посадку конкретной оправы и подберёт подходящий дизайн линз. Совместимость оценивается на примерке.",
     },
     {
       q: "Где примерить оправу в Санкт-Петербурге?",
       a: `${PRIMARY_SALON.address}, метро ${PRIMARY_SALON.metro}. ${PRIMARY_SALON.hours}. Перед поездкой уточните наличие выбранной модели по телефону ${CONTACT.phone.label}.`,
     },
   ];
+  if (brand) faq.unshift({ q: brand.question, a: brand.answer });
   return (
     <div className="mx-auto max-w-7xl space-y-12 px-6 py-12 lg:px-8">
-      {kind === "women" && <BrandDirectory data={data} />}
+      {kind !== "brand" && <BrandDirectory path={path} data={data} />}
       <section className="max-w-4xl space-y-5 text-[15px] leading-7 [&_a:hover]:underline">
         <h2 className="font-serif text-3xl">
           {kind === "women"
             ? "Женские оправы для очков в Санкт-Петербурге"
-            : "Как выбрать оправу LION’S HEART"}
+            : (brand?.heading ?? category?.heading)}
         </h2>
-        <p>
-          {kind === "women"
-            ? "Сравните формы и материалы в каталоге, а посадку оцените на примерке. Параметры рецепта и размеры оправы помогут сузить выбор."
-            : "Выбирайте конкретную модель по её характеристикам. Материал, размеры и конструкция указаны в карточке; наличие клипона нужно проверять для каждой модели отдельно."}
-        </p>
+        {kind === "women" ? (
+          <p>
+            Сравните формы и материалы в каталоге, а посадку оцените на примерке. Параметры рецепта
+            и размеры оправы помогут сузить выбор.
+          </p>
+        ) : (
+          (brand?.paragraphs ?? category?.paragraphs ?? []).map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))
+        )}
+        {brand && (
+          <div className="grid gap-6 sm:grid-cols-2">
+            {[
+              { facet: brand.facet, title: brand.facetTitle },
+              { facet: "gender" as const, title: "Для кого выбираете оправу" },
+            ].map(({ facet, title }) => (
+              <div key={facet}>
+                <h3 className="mb-3 text-lg font-semibold">{title}</h3>
+                <ul className="space-y-2">
+                  {Object.entries(data.facets[facet] ?? {})
+                    .filter(([, count]) => count > 0)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([value, count]) => (
+                      <li key={value}>
+                        <a
+                          className={linkClass}
+                          href={`${catalogHref}?${new URLSearchParams({ [facet]: value })}`}
+                        >
+                          {value} <span className="text-muted-foreground">({count})</span>
+                        </a>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
         <h3 className="text-lg font-semibold">Формы и материалы</h3>
         <p>
           Прямоугольные и квадратные оправы создают чёткий силуэт, круглые и овальные — более
@@ -182,7 +242,7 @@ export function FrameLandingFooter({ kind, data }: Props) {
           всей конструкции. При чувствительности к металлам уточните состав сплава, покрытие и
           материал деталей, соприкасающихся с кожей.
         </p>
-        {kind === "women" && (
+        {kind !== "brand" && (
           <div className="grid gap-6 sm:grid-cols-2">
             {(["shape", "material"] as const).map((facet) => (
               <div key={facet}>
@@ -193,7 +253,7 @@ export function FrameLandingFooter({ kind, data }: Props) {
                   {frameFacetEntries(data, facet).map(([value, count]) => (
                     <li key={value}>
                       <a
-                        href={`${womenHref}?${facet}=${encodeURIComponent(value)}`}
+                        href={`${catalogHref}?${facet}=${encodeURIComponent(value)}`}
                         className={linkClass}
                       >
                         {value} <span className="text-muted-foreground">({count})</span>
@@ -208,9 +268,10 @@ export function FrameLandingFooter({ kind, data }: Props) {
         <h3 className="text-lg font-semibold">Размеры и рецепт</h3>
         <p>
           Сопоставьте ширину линзы, ширину переносицы и длину заушника с удобной для вас оправой.
-          Ширина линзы не равна общей ширине оправы. Для прогрессивных линз важны высота светового
-          проёма и посадка; при сильной коррекции размер и форму лучше выбирать вместе со
-          специалистом.
+          Ширина линзы не равна общей ширине оправы.{" "}
+          {isChildren
+            ? "Для ребёнка оцените положение переносицы и заушников на примерке и обсудите совместимость с назначенными линзами."
+            : "Для прогрессивных линз важны высота светового проёма и посадка; при сильной коррекции размер и форму лучше выбирать вместе со специалистом."}
         </p>
         <h3 className="text-lg font-semibold">Цены и наличие</h3>
         <p>
@@ -235,21 +296,55 @@ export function FrameLandingFooter({ kind, data }: Props) {
       <section className="max-w-4xl space-y-5">
         <h2 className="font-serif text-3xl">Смотрите также</h2>
         <div className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
-          <a className={linkClass} href={kind === "women" ? brandHref : womenHref}>
-            {kind === "women" ? "Оправы LION’S HEART" : "Все женские оправы"}
-          </a>
-          <a className={linkClass} href="/catalog_s/opravy/">
-            Все оправы
-          </a>
+          {[
+            { href: "/catalog_s/opravy/", label: "Все оправы" },
+            { href: womenHref, label: "Женские оправы" },
+            { href: "/catalog_s/opravy/muzhskie/", label: "Мужские оправы" },
+            { href: "/catalog_s/opravy/detskie_1/", label: "Детские оправы" },
+            ...FRAME_BRAND_LANDINGS.map((item) => ({
+              href: `/catalog_s/opravy/${item.slug}/`,
+              label: `Оправы ${item.name}`,
+            })),
+          ]
+            .filter((item) => item.href !== catalogHref)
+            .map((item) => (
+              <a key={item.href} className={linkClass} href={item.href}>
+                {item.label}
+              </a>
+            ))}
+          {brand && ["GUESS", "CARRERA"].includes(brand.brand) && (
+            <a
+              className={linkClass}
+              href={`/catalog_s/solntsezashchitnye_ochki/?brand=${encodeURIComponent(brand.brand)}`}
+            >
+              Солнцезащитные очки {brand.name}
+            </a>
+          )}
+          {brand?.brand === "HUGO" && (
+            <>
+              <a className={linkClass} href="/catalog_s/opravy/?brand=BOSS">
+                Оправы BOSS
+              </a>
+              <a className={linkClass} href="/catalog_s/opravy/?brand=HUGO%20BOSS">
+                Оправы HUGO BOSS
+              </a>
+            </>
+          )}
           <a className={linkClass} href="/podbor-ochkov/">
             Подбор очков
           </a>
           <a className={linkClass} href="/uslugi/">
             Услуги и стоимость
           </a>
-          <a className={linkClass} href="/catalog_s/linzy_dlya_ochkov/?design=Прогрессивные">
-            Прогрессивные линзы
-          </a>
+          {isChildren ? (
+            <a className={linkClass} href="/stellest-katalog-s-linzami/">
+              Контроль миопии у детей
+            </a>
+          ) : (
+            <a className={linkClass} href="/catalog_s/linzy_dlya_ochkov/?design=Прогрессивные">
+              Прогрессивные линзы
+            </a>
+          )}
         </div>
       </section>
       <section className="max-w-4xl rounded-2xl bg-surface p-6 sm:p-8">

@@ -3,6 +3,7 @@ import { gunzipSync } from 'node:zlib';
 import { redirectTargets } from "./catalog-link-check.mjs";
 import { reconcileRetiredProducts } from "./reconcile-retired-products.mjs";
 import { loadInventory, productForPath, robotsAllows } from "./seo-inventory.mjs";
+import { FRAME_BRAND_LANDINGS } from "../src/data/frame-brand-landings.ts";
 
 const origin = (process.env.VITE_BITRIX_API || "https://optika100.com").replace(/\/$/, "");
 const outputDir = new URL("../generated/", import.meta.url);
@@ -31,7 +32,7 @@ const excludedExact = new Set([
   "/robots.txt",
 ]);
 const staticRoutes = [
-  "/catalog_s/opravy/lions-heart/",
+  ...FRAME_BRAND_LANDINGS.map((brand) => `/catalog_s/opravy/${brand.slug}/`),
   "/",
   "/basket/",
   "/checkout/",

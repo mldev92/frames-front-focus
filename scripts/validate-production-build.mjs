@@ -7,6 +7,8 @@ import { catalogHtmlProblems } from "./catalog-html-validation.mjs";
 import { decodeHTML } from "entities";
 import { loadInventory, productForPath } from "./seo-inventory.mjs";
 import { validateSitemap } from "./sitemap-validation.mjs";
+import { FRAME_BRAND_LANDINGS } from "../src/data/frame-brand-landings.ts";
+import { FRAME_CATEGORY_LANDINGS } from "../src/data/frame-category-landings.ts";
 
 const manifest = JSON.parse(
   await readFile(new URL("../generated/production-routes.json", import.meta.url), "utf8"),
@@ -51,10 +53,14 @@ const knownCatalogPaths = new Set([
   ...redirectPaths(await readFile(new URL("../deploy/redirects.production.txt", import.meta.url), "utf8")),
 ]);
 const brokenCatalogLinks = new Map();
+const framePaths = new Set(['/catalog_s/opravy/zhenskie/', ...FRAME_BRAND_LANDINGS.map(b=>`/catalog_s/opravy/${b.slug}/`), ...FRAME_CATEGORY_LANDINGS.map(c=>`/catalog_s/${c.path}/`)]);
 for (const route of routes) {
   const relative = route === "/" ? "index.html" : `${route.replace(/^\/|\/$/g, "")}/index.html`;
   const html = await readFile(new URL(relative, clientDir), "utf8");
-  if (["/catalog_s/opravy/zhenskie/", "/catalog_s/opravy/lions-heart/"].includes(route)
+  if (FRAME_BRAND_LANDINGS.some(b=>route===`/catalog_s/opravy/${b.slug}/`) && !/data-product-id=["']\d+["']/.test(html)) {
+    invalid.push(`${route}: brand landing has no real product cards`);
+  }
+  if (framePaths.has(route)
     && /<img\b[^>]*\bsrc=["']https?:\/\/(?:optika(?:-new)?\.p2print\.site|beta\.optika100\.com)\/upload\//i.test(html)) {
     invalid.push(`${route}: legacy upload origin in catalog images`);
   }

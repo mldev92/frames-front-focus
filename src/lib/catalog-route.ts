@@ -12,7 +12,7 @@ import {
 import type { CityCode } from "@/lib/store/city";
 import type { Product } from "@/data/types";
 import type { CatalogStateChange } from "@/components/CatalogListing";
-import { frameLanding, frameLandingQuery } from "@/lib/frame-landing";
+import { frameLanding, frameLandingQuery, frameApiSection } from "@/lib/frame-landing";
 
 const numOrStr = z
   .preprocess((value) => (typeof value === "number" ? String(value) : value), z.string())
@@ -194,7 +194,7 @@ export async function loadCatalogPage(
   };
   try {
     const landing = city === "spb" ? frameLanding(section) : undefined;
-    const apiSection = landing === "brand" ? "opravy" : landing === "women" ? "zhenskie" : section;
+    const apiSection = landing ? frameApiSection(section) : section;
     const appliedQuery = landing ? frameLandingQuery(section, query) : query;
     const data = await getCatalogPage(apiSection, appliedQuery, signal);
     if (!landing) return { state: "ok", data };
@@ -274,7 +274,12 @@ export async function resolveCatalogRoute(
 
   const section = sectionSegments.at(-1) ?? "";
   const result = await loadCatalogPage(section, search, city, signal);
-  if (result.state === "ok" && result.data.total === 0 && !await isKnownCatalogSection(sectionPath, city)) return null;
+  if (
+    result.state === "ok" &&
+    result.data.total === 0 &&
+    !(await isKnownCatalogSection(sectionPath, city))
+  )
+    return null;
   return {
     kind: "catalog",
     sectionPath,

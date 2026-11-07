@@ -21,6 +21,9 @@ jobs:
       O100_ROUTING_SHA256: ${{ inputs.routing_sha256 }}
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run typecheck && bun run lint && bun run test && bun run test:unit

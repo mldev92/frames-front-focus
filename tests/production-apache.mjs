@@ -1,6 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { catalogLinks } from "../scripts/catalog-link-check.mjs";
+import { FRAME_BRAND_LANDINGS } from "../src/data/frame-brand-landings.ts";
+import { FRAME_CATEGORY_LANDINGS } from "../src/data/frame-category-landings.ts";
 const routeManifest = JSON.parse(await readFile("generated/production-routes.json", "utf8"));
 const routes = routeManifest.routes;
 const origin = process.env.O100_REHEARSAL_ORIGIN || "http://127.0.0.1:8089";
@@ -25,6 +27,8 @@ await Promise.all(Array.from({ length: 8 }, worker));
 // Параметры поиска и фильтров не должны гидратировать неподходящий статический снимок.
 const shell = await readFile("dist/client/_shell.html");
 for (const path of [
+  ...FRAME_BRAND_LANDINGS.map(b=>`/catalog_s/opravy/${b.slug}/?page=2`),
+  ...FRAME_CATEGORY_LANDINGS.map(c=>`/catalog_s/${c.path}/?priceMin=5000`),
   "/search/?q=GUESS&city=nvk",
   "/catalog_s/opravy/zhenskie/?brand=GUESS",
   "/catalog_s/opravy/lions-heart/?gender=Женские",

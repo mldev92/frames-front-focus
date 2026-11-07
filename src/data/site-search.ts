@@ -1,5 +1,7 @@
 import { articleHref, articles } from "@/data/articles";
 import { canonicalSearchQuery } from "@/lib/search-query";
+import { FRAME_BRAND_LANDINGS } from "./frame-brand-landings";
+import { FRAME_CATEGORY_LANDINGS } from "./frame-category-landings";
 
 export interface SiteSearchEntry {
   title: string;
@@ -11,14 +13,25 @@ export interface SiteSearchEntry {
 }
 
 const pageEntries: SiteSearchEntry[] = [
-  {
-    title: "Оправы LION’S HEART",
-    description: "Мужские и женские оправы LION’S HEART, цены, материалы и примерка в Санкт-Петербурге.",
-    href: "/catalog_s/opravy/lions-heart/",
-    type: "Категория",
-    region: "spb",
-    keywords: ["lion", "lions heart", "lion`s heart", "лайонс харт", "лионс харт"],
-  },
+  ...FRAME_BRAND_LANDINGS.map((brand) => ({
+    title: `Оправы ${brand.name}`,
+    description: brand.description,
+    href: `/catalog_s/opravy/${brand.slug}/`,
+    type: "Категория" as const,
+    region: "spb" as const,
+    keywords: [...brand.keywords, `оправы ${brand.name}`],
+  })),
+  ...FRAME_CATEGORY_LANDINGS.map((category) => ({
+    title: category.title,
+    description: category.description,
+    href: `/catalog_s/${category.path}/`,
+    type: "Категория" as const,
+    region: "spb" as const,
+    keywords:
+      category.path === "opravy"
+        ? [category.title, "каталог оправ", "оправы для зрения"]
+        : [category.title, `${category.title} для очков`],
+  })),
   {
     title: "Женские оправы для очков",
     description: "Каталог женских оправ по брендам, форме, материалу и цене в Санкт-Петербурге.",

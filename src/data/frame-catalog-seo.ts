@@ -1,24 +1,33 @@
 import type { CatalogPage } from "@/lib/api/bitrix";
-import { frameLanding, WOMENS_FRAMES_PATH, LIONS_HEART_PATH } from "@/lib/frame-landing";
+import { frameLanding } from "@/lib/frame-landing";
 import { breadcrumbSchema } from "@/lib/seo-schema";
 import { productCardHref } from "@/data/categories";
+import { frameBrandForPath } from "./frame-brand-landings";
+import { frameLandingTitle } from "@/lib/frame-landing";
 
 export function frameBreadcrumbs(path: string) {
   const kind = frameLanding(path);
-  return [
+  const brand = frameBrandForPath(path);
+  const normalized = path.replace(/^\/+|\/+$/g, "");
+  const parents = [
     { label: "Главная", href: "/" },
     { label: "Оправы", href: "/catalog_s/opravy/" },
-    {
-      label: kind === "brand" ? "LION’S HEART" : "Женские оправы",
-      href: `/catalog_s/${kind === "brand" ? LIONS_HEART_PATH : WOMENS_FRAMES_PATH}/`,
-    },
   ];
+  return normalized === "opravy"
+    ? parents
+    : [
+        ...parents,
+        {
+          label: brand?.name ?? (kind === "women" ? "Женские оправы" : frameLandingTitle(path)),
+          href: `/catalog_s/${normalized}/`,
+        },
+      ];
 }
 
 export function frameCatalogSchemas(path: string, data: CatalogPage) {
   const kind = frameLanding(path);
   if (!kind) return [];
-  const productPath = kind === "brand" ? "opravy" : WOMENS_FRAMES_PATH;
+  const productPath = kind === "brand" ? "opravy" : path.replace(/^\/+|\/+$/g, "");
   return [
     breadcrumbSchema(frameBreadcrumbs(path)),
     {
