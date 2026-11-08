@@ -46,7 +46,7 @@ test("facet links stay hidden until the API confirms inventory", async () => {
   );
 });
 
-test("omitted regional offer facets preserve configured parameter shortcuts", async () => {
+test("omitted regional facets hide shortcuts that the API cannot match", async () => {
   const { isHeaderMenuHrefAvailable } = await loadFacetHelpers();
   const regionalSummary = {
     total: 63,
@@ -62,12 +62,14 @@ test("omitted regional offer facets preserve configured parameter shortcuts", as
       "/catalog_n/kontaktnye_linzy_/?sphere=%E2%88%926.00",
       regionalSummary,
     ),
-    true,
+    false,
   );
   assert.equal(
     isHeaderMenuHrefAvailable("/catalog_n/kontaktnye_linzy_/?bc=8.6", regionalSummary),
-    true,
+    false,
   );
+  assert.equal(isHeaderMenuHrefAvailable("/catalog_n/opravy/?brand=GUESS", { total: 100, facets: {} }), false);
+  assert.equal(isHeaderMenuHrefAvailable("/catalog_n/kontaktnye_linzy/?wearMode=Однодневные", regionalSummary), true);
 });
 
 test("numeric facets normalize unicode minus, plus signs, and trailing zeroes", async () => {

@@ -15,7 +15,6 @@ test("new global-search links use the shell only on the supported category roots
   const config = await readFile(new URL("../deploy/production.htaccess", import.meta.url), "utf8");
   for (const [parameter, positive, negative] of [
     ["lensQuery", ["catalog_s/linzy_dlya_ochkov/", "catalog_n/linzy_dlya_ochkov"], ["catalog_s/opravy/", "catalog_s/linzy_dlya_ochkov/product/"]],
-    ["brand", ["catalog_s/opravy/", "catalog_n/solntsezashchitnye_ochki/", "catalog_s/kontaktnye_linzy_/"], ["catalog_s/opravy/product/", "api/store/products.php"]],
   ]) {
     const rule = config.match(new RegExp(`RewriteCond %\\{QUERY_STRING\\} \\(\\^\\|&\\)${parameter}= \\[NC\\]\\r?\\nRewriteRule (.+) /o100_frontend_current/_shell\\.html \\[END\\]`));
     assert.ok(rule, parameter);
@@ -28,7 +27,7 @@ test("new global-search links use the shell only on the supported category roots
 
 test("filtered frame landings use the shell before static HTML resolution", async () => {
   const config = await readFile(new URL("../deploy/production.htaccess", import.meta.url), "utf8");
-  const rule = config.match(/RewriteCond %\{QUERY_STRING\} (.+) \[NC\]\r?\nRewriteRule (.+) \/o100_frontend_current\/_shell\.html \[END\]/);
+  const rule = config.match(/RewriteCond %\{QUERY_STRING\} (.+) \[NC\]\r?\n#[^\n]+\r?\nRewriteCond %\{DOCUMENT_ROOT\}\/o100_frontend_current\/\$1\/index\.html -f\r?\nRewriteRule (.+) \/o100_frontend_current\/_shell\.html \[END\]/);
   assert.ok(rule);
   const query = new RegExp(rule[1], "i");
   const path = new RegExp(rule[2]);
@@ -43,14 +42,15 @@ test("filtered frame landings use the shell before static HTML resolution", asyn
     "/catalog_s/opravy/lions-heart/?page=2",
     "/catalog_s/opravy/lions-heart/?utm_source=test&gender=Женские",
     "/catalog_s/opravy/zhenskie/?priceMin=4000",
+    "/catalog_n/opravy/zhenskie/?brand=GUESS",
+    "/catalog_s/solntsezashchitnye_ochki/?priceMax=5000",
+    "/catalog_n/kontaktnye_linzy/prozrachnye/?sphere=-2.5",
+    "/catalog_s/linzy_dlya_ochkov/?thickness=1.67",
   ]) assert.ok(usesShell(url), url);
   for (const url of [
     "/catalog_s/opravy/zhenskie/",
     "/catalog_s/opravy/lions-heart/?utm_source=test",
-    "/catalog_s/opravy/lions-heart/product/?page=2",
-    "/catalog_n/opravy/zhenskie/?brand=GUESS",
-    "/catalog_s/opravy/unknown-brand/?page=2",
     "/api/store/products.php?brand=GUESS",
   ]) assert.ok(!usesShell(url), url);
-  assert.ok(rule.index < config.indexOf("RewriteCond %{DOCUMENT_ROOT}/o100_frontend_current/$1/index.html -f"));
+  assert.ok(rule.index < config.indexOf("RewriteCond %{DOCUMENT_ROOT}/o100_frontend_current/$1 -f"));
 });

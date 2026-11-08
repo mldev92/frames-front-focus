@@ -42,6 +42,10 @@ printf '%s\n' 'SPB-CATALOG <a href="/catalog_s/opravy/deep-product/" data-produc
 printf '%s\n' 'NVK-CATALOG <a href="/catalog_n/opravy/deep-product/" data-product-id="2">Товар</a>' > /candidate/catalog_n/opravy/index.html
 printf '%s\n' 'DEEP-SPB' > /candidate/catalog_s/opravy/deep-product/index.html
 printf '%s\n' 'DEEP-NVK' > /candidate/catalog_n/opravy/deep-product/index.html
+for section in catalog_s/solntsezashchitnye_ochki catalog_n/solntsezashchitnye_ochki catalog_s/kontaktnye_linzy_/toricheskie catalog_n/kontaktnye_linzy/prozrachnye catalog_s/soputstvuyushchie_tovary catalog_n/linzy_dlya_ochkov; do
+  mkdir -p "/candidate/$section"
+  printf '%s\n' 'UNFILTERED-CATALOG' > "/candidate/$section/index.html"
+done
 printf '%s\n' 'ASSET' > /candidate/assets/test-hash.js
 printf '%s\n' '<urlset />' > /candidate/sitemap.xml
 printf '%s\n' 'User-agent: *' > /candidate/robots.txt
@@ -86,6 +90,13 @@ curl -s -H 'Authorization: Bearer rehearsal' "$O100_SMOKE_ORIGIN/api/store/csrf.
 check 200 /catalog_s/opravy/deep-product/
 grep -q DEEP-SPB /tmp/response
 check 200 /catalog_n/opravy/deep-product/
+for path in '/catalog_s/solntsezashchitnye_ochki/?priceMax=5000' '/catalog_n/solntsezashchitnye_ochki/?shape=round' '/catalog_s/kontaktnye_linzy_/toricheskie/?cylinder=-1.25' '/catalog_n/kontaktnye_linzy/prozrachnye/?sphere=-2.5' '/catalog_s/soputstvuyushchie_tovary/?sort=price_asc' '/catalog_n/linzy_dlya_ochkov/?thickness=1.67'; do
+  check 200 "$path"
+  grep -qx REACT /tmp/response || { echo "Wrong query shell: $path"; exit 1; }
+done
+check 200 '/catalog_s/solntsezashchitnye_ochki/?utm_source=audit'
+grep -qx UNFILTERED-CATALOG /tmp/response
+check 404 '/catalog_s/unknown-audit-section/?priceMax=5000'
 check 200 /assets/test-hash.js
 check 200 '/basket/?legacy=1'
 grep -q BASKET /tmp/response

@@ -28,14 +28,14 @@ RewriteRule ^assets/(.+)$ /o100_frontend_assets/$1 [END]
 RewriteRule ^search/?$ /o100_frontend_current/_shell.html [END]
 
 # Фильтры загружают своё состояние без гидратации чужого статического снимка.
-RewriteCond %{QUERY_STRING} (^|&)(page|sort|priceMin|priceMax|priceFrom|priceTo|expand|gender|brand|shape|material|color|size|discount|templeLength|bridgeWidth|rimWidth|construction|availability)= [NC]
-RewriteRule ^catalog_s/opravy(?:/(zhenskie|muzhskie|detskie_1|lions-heart|guess|stepper|silhouette|carrera|hugo))?/?$ /o100_frontend_current/_shell.html [END]
+RewriteCond %{QUERY_STRING} (^|&)(page|sort|priceMin|priceMax|priceFrom|priceTo|expand|gender|brand|shape|material|color|size|discount|templeLength|bridgeWidth|rimWidth|construction|availability|wearMode|wearingMode|lensType|design|technology|purpose|coating|index|thickness|lightTransmission|photochromicColor|astigmatic|prism|pd|sunLens|sphere|cylinder|axis|addition|bc)= [NC]
+# Не превращаем неизвестные и снятые адреса в ответ 200.
+RewriteCond %{DOCUMENT_ROOT}/o100_frontend_current/$1/index.html -f
+RewriteRule ^(catalog_[sn]/.+?)/?$ /o100_frontend_current/_shell.html [END]
 
 # Прямые ссылки глобального поиска загружают собственное состояние запроса.
 RewriteCond %{QUERY_STRING} (^|&)lensQuery= [NC]
 RewriteRule ^catalog_(s|n)/linzy_dlya_ochkov/?$ /o100_frontend_current/_shell.html [END]
-RewriteCond %{QUERY_STRING} (^|&)brand= [NC]
-RewriteRule ^catalog_(s|n)/(opravy|solntsezashchitnye_ochki|kontaktnye_linzy_)/?$ /o100_frontend_current/_shell.html [END]
 
 RewriteCond %{DOCUMENT_ROOT}/o100_frontend_current/$1 -f
 RewriteRule ^(.+)$ /o100_frontend_current/$1 [END]

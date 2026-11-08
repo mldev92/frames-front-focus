@@ -80,7 +80,7 @@ type FramesMegaMenu = {
     eyebrow: string;
     imageAlt: string;
     imageSrc: string;
-    price: string;
+    price?: string;
     title: string;
   };
   materials: CountChip[];
@@ -753,7 +753,6 @@ const FRAMES_MENU = buildFrameMega("opravy", {
       "Ацетатные оправы, отточенный овал и мягкая посадка. Собираем коллекцию вокруг форм, которые выглядят дорого без лишнего шума.",
     imageSrc: "/Anselm - Oval.webp",
     imageAlt: "O.D.L. Anselm Oval",
-    price: "от 8 900 ₽",
     ctaHref: "/catalog_s/opravy/?brand=O.D.L",
   },
 });
@@ -772,7 +771,6 @@ const SUNGLASSES_MENU = buildFrameMega("solntsezashchitnye", {
       "Популярные модели из лёгких и надёжных материалов — для комфортной посадки каждый день. Не утяжеляют образ и хорошо подходят для активного ритма жизни.",
     imageSrc: "/categ_frames_v4.webp",
     imageAlt: "Подборка оправ",
-    price: "от 5 500 ₽",
     ctaHref: "/catalog_s/opravy/?color=Черный",
   },
 });
@@ -836,9 +834,7 @@ const CONTACT_MENU: ContactMegaMenu = {
   addition: [
     { label: "Low", href: menuHref("kontaktnye-linzy", { addition: "Low" }) },
     { label: "Med", href: menuHref("kontaktnye-linzy", { addition: "Med" }) },
-    // High is the menu shortcut to the full multifocal range, not a literal
-    // ADD=High filter: two multifocal records do not expose that exact option.
-    { label: "High", href: `${catalogHref("kontaktnye-linzy")}multifokalnye/` },
+    { label: "High", href: menuHref("kontaktnye-linzy", { addition: "High" }) },
   ],
   bcValues: [
     { label: "8.4", href: menuHref("kontaktnye-linzy", { bc: "8.4" }) },
@@ -1057,7 +1053,6 @@ const GLASSES_MENU: GlassesMegaMenu = {
       "Замедляют прогрессирование миопии у детей на 67%. Технология H.A.L.T. с 1021 микролинзой.",
     imageSrc: "/stellest/hero-child-stellest.webp",
     imageAlt: "Линзы Stellest для контроля миопии",
-    price: "от 21 900 ₽ за пару",
     ctaHref: "/stellest-katalog-s-linzami/",
     ctaLabel: "Смотреть линзы",
   },
@@ -1139,15 +1134,15 @@ const ACCESSORIES_MENU: AccessoriesMegaMenu = {
     { label: "Ремонт очков", href: "/remont-ochkov/", icon: <Glasses className="h-4 w-4" /> },
     { label: "Доставка по СПб от 1 дня", href: "/payment/", icon: <Truck className="h-4 w-4" /> },
     {
-      label: "Гид по уходу за линзами",
-      href: "/blog/kontaktnye-linzy/",
+      label: "Журнал об оптике",
+      href: "/blog/",
       icon: <BookOpen className="h-4 w-4" />,
     },
   ],
   promoChips: [
-    { label: "Растворы от 290 ₽", href: accSection("aksessuary", "rastvory") },
-    { label: "Салфетки от 90 ₽", href: accSection("dlya_ochkov", "salfetki") },
-    { label: "Цепочки от 450 ₽", href: accSection("dlya_ochkov", "tsepochki") },
+    { label: "Растворы", href: accSection("aksessuary", "rastvory") },
+    { label: "Салфетки", href: accSection("dlya_ochkov", "salfetki") },
+    { label: "Цепочки", href: accSection("dlya_ochkov", "tsepochki") },
     { label: "Окклюдеры", href: accSection("dlya_ochkov", "okkllyudery") },
   ],
   featured: {
@@ -1397,9 +1392,11 @@ function FramesMegaPanel({ menu }: { menu: FramesMegaMenu }) {
                 {menu.featured.description}
               </p>
               <div className="mt-auto flex items-center justify-between border-t border-dashed border-border pt-3">
-                <span className="font-serif text-[22px] leading-none text-foreground">
-                  {menu.featured.price}
-                </span>
+                {menu.featured.price && (
+                  <span className="font-serif text-[22px] leading-none text-foreground">
+                    {menu.featured.price}
+                  </span>
+                )}
                 {menu.featured.ctaHref && (
                   <a
                     href={regionalMenuHref(menu.featured.ctaHref, city)}

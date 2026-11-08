@@ -3,10 +3,13 @@ import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import ts from "typescript";
+import * as facetValues from "../src/lib/catalog-facet-values.ts";
 
 const require = createRequire(import.meta.url);
 async function loadModule(path, mocks, env) {
   mocks = {
+    "./catalog-facet-values": facetValues,
+    "../catalog-facet-values": facetValues,
     "@/lib/frame-landing": { frameLanding: () => undefined, frameLandingQuery: (_path, query) => query },
     "@/lib/search-query": { canonicalSearchQuery: (query) => query.trim() },
     "@/lib/storefront-media": { storefrontUploadUrl: (value) => value },

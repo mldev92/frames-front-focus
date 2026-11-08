@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseFacetValues, serializeFacetValues } from "./catalog-facet-values";
 import {
   getCatalogPage,
   getProduct,
@@ -113,7 +114,7 @@ export const catalogSearchSchema = z.object({
   purpose: z.string().optional(),
   coating: z.string().optional(),
   index: numOrStr,
-  thickness: z.string().optional(),
+  thickness: numOrStr,
   lightTransmission: z.string().optional(),
   photochromicColor: z.string().optional(),
   astigmatic: z.string().optional(),
@@ -150,10 +151,7 @@ export function searchToFilters(search: CatalogSearch): Partial<Record<FacetKey,
   for (const key of FACET_PARAMS) {
     const value = search[key];
     if (typeof value !== "string" || value.trim() === "") continue;
-    let parts = value
-      .split(",")
-      .map((part) => part.trim())
-      .filter(Boolean);
+    let parts = parseFacetValues(value);
     // Compatibility for the short-lived header link shipped in release
     // 20260723_183528. "Выбор оси" means toric lenses, not a literal axis
     // value; normalize cached tabs/bookmarks to the canonical design facet.
@@ -294,7 +292,7 @@ export function applyCatalogState(current: CatalogSearch, next: CatalogStateChan
   if (next.filters !== undefined) {
     for (const key of FACET_PARAMS) delete output[key];
     for (const [key, values] of Object.entries(next.filters)) {
-      if (values?.length) output[key] = values.join(",");
+      if (values?.length) output[key] = serializeFacetValues(values);
     }
   }
   if (next.sort !== undefined) {

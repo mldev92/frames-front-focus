@@ -38,6 +38,16 @@ for (const path of [
   "/catalog_s/kontaktnye_linzy_/?brand=Alcon",
   "/catalog_s/linzy_dlya_ochkov/?lensQuery=Stellest",
   "/catalog_n/linzy_dlya_ochkov/?lensQuery=Stellest",
+  "/catalog_s/solntsezashchitnye_ochki/?priceMax=5000",
+  "/catalog_n/solntsezashchitnye_ochki/?shape=Авиатор",
+  "/catalog_s/kontaktnye_linzy_/?wearMode=Месячные",
+  "/catalog_n/kontaktnye_linzy/?addition=High",
+  "/catalog_s/kontaktnye_linzy_/toricheskie/?cylinder=-1.25",
+  "/catalog_n/kontaktnye_linzy/prozrachnye/?sphere=-2.5",
+  "/catalog_s/soputstvuyushchie_tovary/?sort=price_asc",
+  "/catalog_n/soputstvuyushchie_tovary/?priceMin=100",
+  "/catalog_s/linzy_dlya_ochkov/?thickness=1.67",
+  "/catalog_n/linzy_dlya_ochkov/?lightTransmission=Фотохромная",
 ]) {
   const response = await fetch(origin + path, { redirect: "manual" });
   if (response.status !== 200 || hash(Buffer.from(await response.arrayBuffer())) !== hash(shell)) failures.push(`Query shell: ${path}`);

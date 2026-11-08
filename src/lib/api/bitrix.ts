@@ -18,6 +18,7 @@ import {
   products as mockProducts,
 } from "@/data/products";
 import { categoryToSegment, segmentToCategory } from "@/data/categories";
+import { serializeFacetValues } from "../catalog-facet-values";
 import { apiFetch, securePost } from "@/lib/api/security";
 import { canonicalSearchQuery } from "@/lib/search-query";
 import { storefrontUploadUrl } from "@/lib/storefront-media";
@@ -461,7 +462,7 @@ export async function getCatalogPage(
   if (q.priceMax !== undefined) params.set("priceMax", String(q.priceMax));
   if (q.city && q.city !== "spb") params.set("city", q.city);
   for (const [k, vals] of Object.entries(q.filters ?? {})) {
-    if (vals && vals.length) params.set(k, vals.join(","));
+    if (vals && vals.length) params.set(k, serializeFacetValues(vals));
   }
   const res = await apiFetch(url(`products.php?${params.toString()}`), { signal });
   if (res.status === 503) throw new IndexNotReadyError();
