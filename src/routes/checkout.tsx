@@ -32,7 +32,7 @@ import {
 } from "@/lib/checkout-steps";
 import type { CheckoutStep, StepState } from "@/lib/checkout-steps";
 import { getMe } from "@/lib/api/account";
-import { checkCoupon, createOrder, getOrderDeliveryOptions, getStoreApiUrl, quoteOrder } from "@/lib/api/bitrix";
+import { checkCoupon, createOrder, getOrderDeliveryOptions, getOrderPickupPoints, quoteOrder } from "@/lib/api/bitrix";
 import type { CouponResult, DeliveryQuoteOption, PickupPointOption, CreateOrderInput, OrderQuote } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/checkout")({
@@ -79,7 +79,7 @@ interface DeliveryOption {
   /** Ставка НДС, % — входит в цену доставки. */
   vatRate?: number;
   vatAmount?: number;
-  /** Служба доставки Bitrix (для виджета пунктов выдачи СДЭК). */
+  /** Идентификатор службы доставки Bitrix. */
   serviceId?: number | null;
 }
 
@@ -213,6 +213,10 @@ function Checkout() {
   const [email, setEmail] = useState("");
   const [pickupPoint, setPickupPoint] = useState<PickupPoint | null>(null);
   const [pickupWidgetLoading, setPickupWidgetLoading] = useState(false);
+  const [pickupDialogOpen, setPickupDialogOpen] = useState(false);
+  const [pickupPoints, setPickupPoints] = useState<PickupPointOption[]>([]);
+  const [pickupSearch, setPickupSearch] = useState("");
+  const [pickupError, setPickupError] = useState("");
   const [quotedDeliveryOptions, setQuotedDeliveryOptions] = useState<DeliveryQuoteOption[] | null>(
     null,
   );
@@ -221,8 +225,6 @@ function Checkout() {
   const [deliveryRetry, setDeliveryRetry] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<string | null>(null);
-  const pickupWidgetHostId = "optika100-sdek-widget-host";
-  const pickupWidgetAssetFlag = "data-optika100-sdek-widget";
 
   useEffect(() => {
     if (!regionalCityHydrated) return;
@@ -274,34 +276,6 @@ function Checkout() {
   const isFree = deliveryPrice === 0;
   const deliveryVatRate = selectedDelivery?.vatRate ?? 0;
   const deliveryVat = selectedDelivery?.vatAmount || includedVat(deliveryPrice, deliveryVatRate);
-  const storeApiBase =
-    (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ??
-    "https://optika100.com";
-  const getSdekWidgetUrl = (path: string) => {
-    if (typeof window === "undefined") return getStoreApiUrl(path);
-    return `${window.location.origin}/api/store/${path}`;
-  };
-  const getSameOriginStoreApiUrl = (path: string) => {
-    return `${storeApiBase}/api/store/${path}`;
-  };
-  const pickupWidgetUrl = useMemo(() => {
-    const widgetUrl = new URL(getSameOriginStoreApiUrl("sdek_widget_frame.php"));
-    widgetUrl.searchParams.set("city", city);
-    widgetUrl.searchParams.set(
-      "deliveryId",
-      String(deliveryOptions.find((option) => option.code === "sdek_pickup")?.serviceId ?? 55),
-    );
-    widgetUrl.searchParams.set("orderPrice", String(orderTotal));
-    widgetUrl.searchParams.set("weight", "1000");
-    return widgetUrl.toString();
-  }, [city, orderTotal, deliveryOptions]);
-  const pickupWidgetAjaxUrl = useMemo(() => getSdekWidgetUrl("sdek_ajax_proxy.php"), []);
-  const pickupWidgetAssetProxyUrl = useMemo(() => getSdekWidgetUrl("sdek_asset_proxy.php"), []);
-  const pickupWidgetAssetOrigin = useMemo(
-    () => new URL(getStoreApiUrl("sdek_widget_frame.php")).origin,
-    [],
-  );
-
   // Оба способа СДЭК считаем сразу, параллельными запросами: сервер живой расчёт делает
   // только для одного способа за запрос, а покупателю нужны цены обоих до выбора.
   useEffect(() => {
@@ -367,262 +341,49 @@ function Checkout() {
       ? point.address
       : `${city}, ${point.address}`;
 
-  const stripPickupMarker = (value: string) => value.replace(/\s+#S[^\s]+$/u, "").trim();
-
-  useEffect(() => {
-    const onMessage = (event: MessageEvent) => {
-      const allowedOrigin = new URL(pickupWidgetUrl).origin;
-      if (event.origin !== allowedOrigin) return;
-      const payload = event.data;
-      if (!payload || typeof payload !== "object") return;
-
-      if (payload.type === "optika100-sdek-selected" && payload.point) {
-        const point = payload.point as PickupPoint;
-        const rawAddress = payload.displayAddress?.trim() || formatPickupAddress(point);
-        const normalizedAddress = stripPickupMarker(rawAddress);
-        setPickupPoint({ ...point, address: normalizedAddress, rawAddress });
-        setAddress(normalizedAddress);
-        setPickupWidgetLoading(false);
-        cleanupInjectedWidget();
-        toast.success("Пункт самовывоза СДЭК выбран");
-      }
-
-      if (payload.type === "optika100-sdek-error") {
-        setPickupWidgetLoading(false);
-        cleanupInjectedWidget();
-        toast.error(payload.message || "Не удалось загрузить карту пунктов СДЭК");
-      }
-    };
-
-    const onWidgetSelected = (event: Event) => {
-      onMessage(
-        new MessageEvent("message", {
-          data: (event as CustomEvent).detail,
-          origin: window.location.origin,
-        }),
-      );
-    };
-
-    const onWidgetError = (event: Event) => {
-      onMessage(
-        new MessageEvent("message", {
-          data: (event as CustomEvent).detail,
-          origin: window.location.origin,
-        }),
-      );
-    };
-
-    window.addEventListener("message", onMessage);
-    window.addEventListener("optika100-sdek-selected", onWidgetSelected as EventListener);
-    window.addEventListener("optika100-sdek-error", onWidgetError as EventListener);
-    return () => {
-      window.removeEventListener("message", onMessage);
-      window.removeEventListener("optika100-sdek-selected", onWidgetSelected as EventListener);
-      window.removeEventListener("optika100-sdek-error", onWidgetError as EventListener);
-    };
-  }, [formatPickupAddress, pickupWidgetUrl]);
-
-  const isAllowedWidgetScript = (script: HTMLScriptElement) => {
-    const src = script.getAttribute("src")?.toLowerCase() ?? "";
-    if (!src) {
-      const body = script.textContent ?? "";
-      return (
-        body.includes("IPOL_JSloader") ||
-        body.includes("IPOLSDEK_pvz") ||
-        body.includes("BX.message") ||
-        body.includes("BX.setJSList") ||
-        body.includes("BX.setCSSList") ||
-        body.includes("main.popup") ||
-        body.includes("optika100-sdek")
-      );
-    }
-
-    return (
-      src.includes("api-maps.yandex.ru") ||
-      src.includes("/bitrix/js/ipol.sdek/") ||
-      src.includes("/bitrix/js/main/jquery/") ||
-      src.includes("/bitrix/js/main/core/core.js") ||
-      src.includes("/bitrix/cache/js/") ||
-      src.includes("/bitrix/js/main/popup/dist/main.popup.bundle.js")
-    );
-  };
-
-  const isAllowedWidgetStyle = (node: Element) => {
-    const href = node.getAttribute("href")?.toLowerCase() ?? "";
-    if (!href) return true;
-    return (
-      href.includes("/bitrix/js/ipol.sdek/") ||
-      href.includes("/bitrix/cache/css/") ||
-      href.includes("/bitrix/js/main/popup/dist/") ||
-      href.includes("/bitrix/css/main/")
-    );
-  };
-
-  const resolveWidgetUrl = (value: string | null) => {
-    if (!value) return value;
-    if (value.startsWith("/bitrix/images/ipol.sdek/")) {
-      return `${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent(value)}`;
-    }
-    if (value.startsWith(`${pickupWidgetAssetOrigin}/bitrix/images/ipol.sdek/`)) {
-      const path = new URL(value).pathname;
-      return `${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent(path)}`;
-    }
-    if (value.startsWith("/bitrix/") || value.startsWith("/upload/")) {
-      return `${pickupWidgetAssetOrigin}${value}`;
-    }
-    return new URL(value, pickupWidgetUrl).toString();
-  };
-
-  const normalizeInlineWidgetScript = (code: string) => {
-    return code
-      .replaceAll('"/bitrix/js/ipol.sdek/ajax.php"', `"${pickupWidgetAjaxUrl}"`)
-      .replaceAll("'/bitrix/js/ipol.sdek/ajax.php'", `'${pickupWidgetAjaxUrl}'`)
-      .replaceAll('"/bitrix/js/ipol.sdek/ajax.php', `"${pickupWidgetAjaxUrl}`)
-      .replaceAll("'/bitrix/js/ipol.sdek/ajax.php", `'${pickupWidgetAjaxUrl}`)
-      .replaceAll(`${pickupWidgetAssetOrigin}/bitrix/js/ipol.sdek/ajax.php`, pickupWidgetAjaxUrl)
-      .replaceAll(
-        '"/bitrix/images/ipol.sdek/',
-        `"${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent("/bitrix/images/ipol.sdek/")}`,
-      )
-      .replaceAll(
-        "'/bitrix/images/ipol.sdek/",
-        `'${pickupWidgetAssetProxyUrl}?path=${encodeURIComponent("/bitrix/images/ipol.sdek/")}`,
-      )
-      .replaceAll('"/bitrix/', `"${pickupWidgetAssetOrigin}/bitrix/`)
-      .replaceAll("'/bitrix/", `'${pickupWidgetAssetOrigin}/bitrix/`)
-      .replaceAll('"/upload/', `"${pickupWidgetAssetOrigin}/upload/`)
-      .replaceAll("'/upload/", `'${pickupWidgetAssetOrigin}/upload/`);
-  };
-
-  const rewriteWidgetElementUrls = (root: ParentNode) => {
-    root.querySelectorAll("[src]").forEach((node) => {
-      const element = node as HTMLElement;
-      const src = element.getAttribute("src");
-      const nextSrc = resolveWidgetUrl(src);
-      if (nextSrc) element.setAttribute("src", nextSrc);
-    });
-    root.querySelectorAll("[href]").forEach((node) => {
-      const element = node as HTMLElement;
-      const href = element.getAttribute("href");
-      if (!href || href.startsWith("javascript:") || href.startsWith("#")) return;
-      const nextHref = resolveWidgetUrl(href);
-      if (nextHref) element.setAttribute("href", nextHref);
-    });
-  };
-
-  const loadExternalScript = async (script: HTMLScriptElement) => {
-    const src = resolveWidgetUrl(script.getAttribute("src"));
-    if (src && document.querySelector(`script[src="${src}"]`)) return;
-    const next = document.createElement("script");
-    next.setAttribute(pickupWidgetAssetFlag, "true");
-    if (src) {
-      next.src = src;
-      next.async = false;
-      await new Promise<void>((resolve, reject) => {
-        next.onload = () => resolve();
-        next.onerror = () => reject(new Error(`Не удалось загрузить ${src}`));
-        document.body.appendChild(next);
-      });
-      return;
-    }
-    next.textContent = normalizeInlineWidgetScript(script.textContent ?? "");
-    document.body.appendChild(next);
-  };
-
-  const cleanupInjectedWidget = () => {
-    document.querySelectorAll(`[${pickupWidgetAssetFlag}]`).forEach((node) => node.remove());
-    document.getElementById(pickupWidgetHostId)?.remove();
-  };
-
-  const injectWidgetDocument = async (html: string) => {
-    cleanupInjectedWidget();
-    const parsed = new DOMParser().parseFromString(html, "text/html");
-
-    parsed.head.querySelectorAll('link[rel="stylesheet"], style').forEach((node) => {
-      if (!isAllowedWidgetStyle(node)) return;
-      const clone = node.cloneNode(true) as HTMLElement;
-      if (clone.hasAttribute("href")) {
-        const href = resolveWidgetUrl(clone.getAttribute("href"));
-        if (href) clone.setAttribute("href", href);
-      }
-      clone.setAttribute(pickupWidgetAssetFlag, "true");
-      document.head.appendChild(clone);
-    });
-
-    const host = document.createElement("div");
-    host.id = pickupWidgetHostId;
-    host.setAttribute(pickupWidgetAssetFlag, "true");
-    const bodyNodes = Array.from(parsed.body.childNodes).filter(
-      (node) => node.nodeName.toLowerCase() !== "script",
-    );
-    bodyNodes.forEach((node) => host.appendChild(node.cloneNode(true)));
-    rewriteWidgetElementUrls(host);
-    document.body.appendChild(host);
-
-    for (const script of Array.from(parsed.head.querySelectorAll("script")).filter(
-      isAllowedWidgetScript,
-    )) {
-      await loadExternalScript(script);
-    }
-    for (const script of Array.from(parsed.body.querySelectorAll("script")).filter(
-      isAllowedWidgetScript,
-    )) {
-      await loadExternalScript(script);
-    }
-  };
-
   const openCdekPickupMap = async () => {
+    setPickupDialogOpen(true);
     setPickupWidgetLoading(true);
+    setPickupPoints([]);
+    setPickupSearch("");
+    setPickupError("");
     try {
-      cleanupInjectedWidget();
-      const runtimeWidgetUrl = new URL(pickupWidgetUrl);
-      runtimeWidgetUrl.searchParams.set("_", String(Date.now()));
-
-      // Create modal overlay
-      const overlay = document.createElement("div");
-      overlay.id = pickupWidgetHostId;
-      overlay.setAttribute(pickupWidgetAssetFlag, "true");
-      overlay.style.cssText =
-        "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;";
-
-      // Close button
-      const closeBtn = document.createElement("button");
-      closeBtn.textContent = "✕";
-      closeBtn.style.cssText =
-        "position:absolute;top:16px;right:16px;z-index:1;width:40px;height:40px;border-radius:50%;border:none;background:white;font-size:20px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.15);";
-      closeBtn.onclick = () => {
-        setPickupWidgetLoading(false);
-        cleanupInjectedWidget();
-      };
-
-      // Iframe
-      const iframe = document.createElement("iframe");
-      iframe.src = runtimeWidgetUrl.toString();
-      iframe.style.cssText =
-        "width:min(100vw,900px);height:min(100vh,700px);border:none;border-radius:12px;background:#fff;box-shadow:0 4px 24px rgba(0,0,0,0.2);";
-      iframe.onload = () => setPickupWidgetLoading(false);
-      iframe.onerror = () => {
-        setPickupWidgetLoading(false);
-        toast.error("Не удалось загрузить виджет СДЭК");
-      };
-
-      overlay.appendChild(closeBtn);
-      overlay.appendChild(iframe);
-      document.body.appendChild(overlay);
-
-      // Close on overlay click (not iframe)
-      overlay.addEventListener("click", (e) => {
-        if (e.target === overlay) {
-          setPickupWidgetLoading(false);
-          cleanupInjectedWidget();
-        }
-      });
+      const result = await getOrderPickupPoints({ city });
+      setPickupPoints(result.points);
+      if (result.points.length === 0) setPickupError("В этом городе пока нет доступных пунктов выдачи СДЭК.");
     } catch (error) {
-      console.error("[checkout] sdek widget:", error);
-      toast.error("Не удалось открыть виджет СДЭК");
+      console.error("[checkout] sdek pickup points:", error);
+      setPickupPoints([]);
+      setPickupError("Не удалось загрузить пункты выдачи. Повторите попытку.");
+    } finally {
       setPickupWidgetLoading(false);
     }
   };
+
+  const visiblePickupPoints = useMemo(() => {
+    const term = pickupSearch.trim().toLocaleLowerCase("ru");
+    if (!term) return pickupPoints;
+    return pickupPoints.filter((point) =>
+      `${point.name} ${point.address}`.toLocaleLowerCase("ru").includes(term),
+    );
+  }, [pickupPoints, pickupSearch]);
+
+  const choosePickupPoint = (point: PickupPointOption) => {
+    const normalizedAddress = formatPickupAddress(point);
+    setPickupPoint({ ...point, address: normalizedAddress, rawAddress: normalizedAddress });
+    setAddress(normalizedAddress);
+    setPickupDialogOpen(false);
+    toast.success("Пункт самовывоза СДЭК выбран");
+  };
+
+  useEffect(() => {
+    if (!pickupDialogOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPickupDialogOpen(false);
+    };
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [pickupDialogOpen]);
 
   useEffect(() => {
     setReview(null);
@@ -923,6 +684,60 @@ function Checkout() {
                 />
               ))}
             </div>
+            {pickupDialogOpen && (
+              <div
+                className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-3"
+                onMouseDown={(event) => {
+                  if (event.target === event.currentTarget) setPickupDialogOpen(false);
+                }}
+              >
+                <section
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Пункты выдачи СДЭК"
+                  className="flex max-h-[min(90vh,760px)] w-full max-w-2xl flex-col rounded-xl bg-white p-4 shadow-xl sm:p-6"
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <h2 className="text-lg font-semibold">Пункты выдачи СДЭК · {city}</h2>
+                    <button type="button" onClick={() => setPickupDialogOpen(false)} aria-label="Закрыть" className="rounded p-2 text-2xl leading-none">×</button>
+                  </div>
+                  <input
+                    type="search"
+                    autoFocus
+                    aria-label="Поиск пункта выдачи"
+                    placeholder="Поиск по адресу или названию"
+                    value={pickupSearch}
+                    onChange={(event) => setPickupSearch(event.target.value)}
+                    className="my-4 w-full rounded-lg border border-border px-3 py-2"
+                  />
+                  {pickupWidgetLoading && <p role="status">Загружаем пункты выдачи...</p>}
+                  {pickupError && (
+                    <div role="alert" className="mb-3 text-sm text-brand">
+                      {pickupError}{" "}
+                      <button type="button" onClick={() => void openCdekPickupMap()} className="underline">Повторить</button>
+                    </div>
+                  )}
+                  {!pickupWidgetLoading && !pickupError && visiblePickupPoints.length === 0 && (
+                    <p role="status">По вашему запросу пункты не найдены.</p>
+                  )}
+                  <div className="min-h-0 overflow-y-auto" role="list">
+                    {visiblePickupPoints.map((point) => (
+                      <div role="listitem" key={point.id}>
+                        <button
+                          type="button"
+                          onClick={() => choosePickupPoint(point)}
+                          className="w-full border-b border-border px-2 py-3 text-left hover:bg-muted focus-visible:bg-muted"
+                        >
+                          <span className="block font-medium">{point.name || point.address}</span>
+                          <span className="block text-sm text-muted-foreground">{point.address}</span>
+                          {point.workTime && <span className="block text-xs text-muted-foreground">{point.workTime}</span>}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              </div>
+            )}
             {selectedDelivery?.requiresAddress && (
               <div style={{ marginTop: "16px" }}>
                 <Field
@@ -1730,7 +1545,7 @@ function DeliveryCard({
             }}
           >
             {pickupWidgetLoading
-              ? "Загружаем карту..."
+              ? "Загружаем пункты..."
               : pickupPoint
                 ? "Изменить пункт самовывоза"
                 : "Выбрать пункт самовывоза"}

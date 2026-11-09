@@ -4,6 +4,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Reveal } from "@/components/Reveal";
+import { CabinetUnavailable } from "@/components/CabinetUnavailable";
 import { authUrl, IS_PRIVATE_BETA } from "@/lib/runtime";
 import { cn } from "@/lib/utils";
 import { getMe, saveProfile } from "@/lib/api/account";
@@ -92,6 +93,7 @@ function PrivateDataPage() {
   const [errors, setErrors] = useState<Partial<Record<keyof ProfileData, string>>>({});
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [profileError, setProfileError] = useState(false);
   const savedTimer = useRef<number | null>(null);
 
   useEffect(
@@ -107,7 +109,13 @@ function PrivateDataPage() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const me = await getMe().catch(() => ({ authorized: false }) as Awaited<ReturnType<typeof getMe>>);
+      let me: Awaited<ReturnType<typeof getMe>>;
+      try {
+        me = await getMe();
+      } catch {
+        if (alive) setProfileError(true);
+        return;
+      }
       if (!alive) return;
       if (!me.authorized) {
         window.location.assign(authUrl());
@@ -169,6 +177,8 @@ function PrivateDataPage() {
     }
     savedTimer.current = window.setTimeout(() => setSaved(false), 2600);
   }
+
+  if (profileError) return <CabinetUnavailable />;
 
   return (
     <div className="bg-background">

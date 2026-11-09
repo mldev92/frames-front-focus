@@ -14,6 +14,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Reveal } from "@/components/Reveal";
+import { CabinetUnavailable } from "@/components/CabinetUnavailable";
 import { authUrl, IS_PRIVATE_BETA } from "@/lib/runtime";
 import { cn } from "@/lib/utils";
 import { formatPrice, useCart } from "@/lib/store/cart";
@@ -327,6 +328,7 @@ function OrdersPage() {
   const navigate = Route.useNavigate();
   const [orders, setOrders] = useState<CabinetOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [profileError, setProfileError] = useState(false);
   const [filter, setFilter] = useState<OrderFilter>(
     filterHistory === "Y" ? "done" : filterCurrent === "Y" ? "progress" : "all",
   );
@@ -340,7 +342,13 @@ function OrdersPage() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const me = await getMe().catch(() => ({ authorized: false }) as Awaited<ReturnType<typeof getMe>>);
+      let me: Awaited<ReturnType<typeof getMe>>;
+      try {
+        me = await getMe();
+      } catch {
+        if (alive) setProfileError(true);
+        return;
+      }
       if (!alive) return;
       if (!me.authorized) {
         window.location.assign(authUrl());
@@ -386,6 +394,8 @@ function OrdersPage() {
         : orders.filter((o) => (filter === "progress" ? o.state === "progress" : o.state !== "progress")),
     [orders, filter],
   );
+
+  if (profileError) return <CabinetUnavailable />;
 
   return (
     <div className="bg-background">

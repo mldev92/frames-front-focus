@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { Reveal } from "@/components/Reveal";
+import { CabinetUnavailable } from "@/components/CabinetUnavailable";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { getMe, getOrders, logout, type CabinetOrder, type Me } from "@/lib/api/account";
 import { authUrl, IS_PRIVATE_BETA } from "@/lib/runtime";
@@ -118,6 +119,7 @@ function PersonalPage() {
   const [mounted, setMounted] = useState(false);
   const [me, setMe] = useState<Me | null>(null);
   const [orders, setOrders] = useState<CabinetOrder[]>([]);
+  const [profileError, setProfileError] = useState(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -126,7 +128,13 @@ function PersonalPage() {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const profile = await getMe().catch(() => ({ authorized: false }) as Me);
+      let profile: Me;
+      try {
+        profile = await getMe();
+      } catch {
+        if (alive) setProfileError(true);
+        return;
+      }
       if (!alive) return;
       if (!profile.authorized) {
         window.location.assign(authUrl());
@@ -146,6 +154,8 @@ function PersonalPage() {
   const lastOrder = orders[0] ?? null;
   const greetingName = me?.firstName?.trim() || "в кабинете";
   const bonus = me?.bonus ?? 0;
+
+  if (profileError) return <CabinetUnavailable />;
 
   return (
     <div className="bg-background">

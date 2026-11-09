@@ -74,12 +74,15 @@ export interface CabinetOrder {
 
 export type OrderFilterParam = "current" | "history" | "all";
 
-/** Current logged-in user, or `{ authorized:false }`. Only throws on network errors. */
+/** Текущий пользователь; `authorized:false` возвращается только при настоящем ответе 401. */
 export async function getMe(): Promise<Me> {
-  if (!BASE) return { authorized: false };
+  if (!BASE) throw new Error("Cabinet API base URL is missing");
   const res = await apiFetch(url("me.php"), { credentials: "include" });
-  // 401 carries a valid {authorized:false} body — read it, don't throw.
-  return (await res.json()) as Me;
+  if (res.status === 401) return { authorized: false };
+  if (!res.ok) throw new Error(`Cabinet API returned ${res.status}`);
+  const me = (await res.json()) as Me;
+  if (typeof me.authorized !== "boolean") throw new Error("Cabinet API returned an invalid response");
+  return me;
 }
 
 /** The user's orders for the given bucket. Returns [] on any failure. */
