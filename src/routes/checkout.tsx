@@ -32,6 +32,7 @@ import {
 } from "@/lib/checkout-steps";
 import type { CheckoutStep, StepState } from "@/lib/checkout-steps";
 import { getMe } from "@/lib/api/account";
+import { SdekPickupMap } from "@/components/SdekPickupMap";
 import { checkCoupon, createOrder, getOrderDeliveryOptions, getOrderPickupPoints, quoteOrder } from "@/lib/api/bitrix";
 import type { CouponResult, DeliveryQuoteOption, PickupPointOption, CreateOrderInput, OrderQuote } from "@/lib/api/bitrix";
 
@@ -109,6 +110,7 @@ const SPB_DELIVERY_OPTIONS: DeliveryOption[] = [
     code: "sdek_pickup",
     label: "Самовывоз из пункта выдачи СДЭК",
     description: "Доставка заказа в один из пунктов самовывоза компании СДЭК",
+    logo: "/sdek-logo.png",
     price: null,
     priceFormatted: "по тарифу",
     free: false,
@@ -121,6 +123,7 @@ const CDEK_DELIVERY_OPTIONS: DeliveryOption[] = [
     code: "sdek_courier",
     label: "СДЭК (Доставка курьером)",
     description: "Доставка заказа курьером компании СДЭК",
+    logo: "/sdek-logo.png",
     price: null,
     priceFormatted: "уточняется",
     free: false,
@@ -130,6 +133,7 @@ const CDEK_DELIVERY_OPTIONS: DeliveryOption[] = [
     code: "sdek_pickup",
     label: "СДЭК (Самовывоз)",
     description: "Доставка заказа в один из пунктов самовывоза компании СДЭК",
+    logo: "/sdek-logo.png",
     price: null,
     priceFormatted: "уточняется",
     free: false,
@@ -217,6 +221,7 @@ function Checkout() {
   const [pickupPoints, setPickupPoints] = useState<PickupPointOption[]>([]);
   const [pickupSearch, setPickupSearch] = useState("");
   const [pickupError, setPickupError] = useState("");
+  const [focusedPickupPointId, setFocusedPickupPointId] = useState<string | null>(null);
   const [quotedDeliveryOptions, setQuotedDeliveryOptions] = useState<DeliveryQuoteOption[] | null>(
     null,
   );
@@ -244,7 +249,7 @@ function Checkout() {
       priceFormatted: option.priceFormatted,
       free: option.price === 0,
       period: option.period,
-      logo: option.logo,
+      logo: option.logo || (option.code.startsWith("sdek_") ? "/sdek-logo.png" : null),
       requiresAddress: option.requiresAddress,
       requiresPickupPoint: option.requiresPickupPoint,
       errors: option.errors,
@@ -347,6 +352,7 @@ function Checkout() {
     setPickupPoints([]);
     setPickupSearch("");
     setPickupError("");
+    setFocusedPickupPointId(pickupPoint?.id ?? null);
     try {
       const result = await getOrderPickupPoints({ city });
       setPickupPoints(result.points);
@@ -367,6 +373,8 @@ function Checkout() {
       `${point.name} ${point.address}`.toLocaleLowerCase("ru").includes(term),
     );
   }, [pickupPoints, pickupSearch]);
+
+  const focusedPickupPoint = pickupPoints.find((point) => point.id === focusedPickupPointId) ?? null;
 
   const choosePickupPoint = (point: PickupPointOption) => {
     const normalizedAddress = formatPickupAddress(point);
@@ -694,46 +702,67 @@ function Checkout() {
                 <section
                   role="dialog"
                   aria-modal="true"
-                  aria-label="Пункты выдачи СДЭК"
-                  className="flex max-h-[min(90vh,760px)] w-full max-w-2xl flex-col rounded-xl bg-white p-4 shadow-xl sm:p-6"
+                  aria-label="Карта пунктов выдачи СДЭК"
+                  className="flex h-[min(92vh,700px)] w-full max-w-[900px] flex-col overflow-hidden rounded-xl bg-white shadow-xl"
                 >
-                  <div className="flex items-center justify-between gap-4">
-                    <h2 className="text-lg font-semibold">Пункты выдачи СДЭК · {city}</h2>
+                  <div className="flex items-center justify-between gap-4 border-b border-border px-4 py-3">
+                    <h2 className="text-lg font-semibold">Выберите пункт выдачи СДЭК · {city}</h2>
                     <button type="button" onClick={() => setPickupDialogOpen(false)} aria-label="Закрыть" className="rounded p-2 text-2xl leading-none">×</button>
                   </div>
-                  <input
-                    type="search"
-                    autoFocus
-                    aria-label="Поиск пункта выдачи"
-                    placeholder="Поиск по адресу или названию"
-                    value={pickupSearch}
-                    onChange={(event) => setPickupSearch(event.target.value)}
-                    className="my-4 w-full rounded-lg border border-border px-3 py-2"
-                  />
-                  {pickupPointsLoading && <p role="status">Загружаем пункты выдачи...</p>}
-                  {pickupError && (
-                    <div role="alert" className="mb-3 text-sm text-brand">
-                      {pickupError}{" "}
-                      <button type="button" onClick={() => void openPickupDialog()} className="underline">Повторить</button>
+                  <div className="grid min-h-0 flex-1 grid-rows-[minmax(250px,1fr)_minmax(170px,0.7fr)] lg:grid-cols-[minmax(0,1fr)_280px] lg:grid-rows-1">
+                    <div className="relative min-h-0 bg-slate-100">
+                      {visiblePickupPoints.length > 0 && (
+                        <SdekPickupMap
+                          points={visiblePickupPoints}
+                          activeId={focusedPickupPointId}
+                          onFocus={setFocusedPickupPointId}
+                        />
+                      )}
+                      {pickupPointsLoading && <p role="status" className="absolute inset-0 z-[1100] flex items-center justify-center bg-white/90">Загружаем карту пунктов выдачи...</p>}
+                      {focusedPickupPoint && (
+                        <div className="absolute bottom-3 left-3 right-3 z-[1100] rounded-lg bg-white p-3 shadow-lg">
+                          <div className="font-semibold">{focusedPickupPoint.name}</div>
+                          <div className="mt-1 text-sm text-muted-foreground">{focusedPickupPoint.address}</div>
+                          {focusedPickupPoint.workTime && <div className="mt-1 text-xs text-muted-foreground">{focusedPickupPoint.workTime}</div>}
+                          <button type="button" onClick={() => choosePickupPoint(focusedPickupPoint)} className="mt-3 rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white">Выбрать этот пункт</button>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  {!pickupPointsLoading && !pickupError && visiblePickupPoints.length === 0 && (
-                    <p role="status">По вашему запросу пункты не найдены.</p>
-                  )}
-                  <div className="min-h-0 overflow-y-auto" role="list">
-                    {visiblePickupPoints.map((point) => (
-                      <div role="listitem" key={point.id}>
-                        <button
-                          type="button"
-                          onClick={() => choosePickupPoint(point)}
-                          className="w-full border-b border-border px-2 py-3 text-left hover:bg-muted focus-visible:bg-muted"
-                        >
-                          <span className="block font-medium">{point.name || point.address}</span>
-                          <span className="block text-sm text-muted-foreground">{point.address}</span>
-                          {point.workTime && <span className="block text-xs text-muted-foreground">{point.workTime}</span>}
-                        </button>
+                    <div className="flex min-h-0 flex-col border-t border-border lg:border-l lg:border-t-0">
+                      <div className="p-3">
+                        <input
+                          type="search"
+                          aria-label="Поиск пункта выдачи"
+                          placeholder="Поиск по адресу"
+                          value={pickupSearch}
+                          onChange={(event) => setPickupSearch(event.target.value)}
+                          className="w-full rounded-lg border border-border px-3 py-2"
+                        />
                       </div>
-                    ))}
+                      {pickupError && (
+                        <div role="alert" className="px-3 pb-3 text-sm text-brand">
+                          {pickupError}{" "}
+                          <button type="button" onClick={() => void openPickupDialog()} className="underline">Повторить</button>
+                        </div>
+                      )}
+                      {!pickupPointsLoading && !pickupError && visiblePickupPoints.length === 0 && (
+                        <p role="status" className="px-3 pb-3 text-sm">По вашему запросу пункты не найдены.</p>
+                      )}
+                      <div className="min-h-0 overflow-y-auto" role="list">
+                        {visiblePickupPoints.map((point) => (
+                          <div role="listitem" key={point.id}>
+                            <button
+                              type="button"
+                              onClick={() => setFocusedPickupPointId(point.id)}
+                              className={`w-full border-b border-border px-3 py-2 text-left hover:bg-muted focus-visible:bg-muted ${focusedPickupPointId === point.id ? "bg-muted" : ""}`}
+                            >
+                              <span className="block text-sm font-medium">{point.name || point.address}</span>
+                              <span className="block text-xs text-muted-foreground">{point.address}</span>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </section>
               </div>
