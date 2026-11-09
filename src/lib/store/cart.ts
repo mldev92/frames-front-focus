@@ -63,7 +63,9 @@ export interface CartLine {
 interface CartState {
   updatePrices: (updates: CartPriceUpdate[]) => void;
   importedSources: string[];
-  importLegacy: (lines: CartLine[]) => void;
+  legacySyncStatus: "pending" | "ready" | "failed";
+  setLegacySyncStatus: (status: CartState["legacySyncStatus"]) => void;
+  importLegacy: (lines: CartLine[]) => CartLine[];
   consumedAttempts: string[];
   consume: (lines: CartLine[], attemptId: string) => void;
   lines: CartLine[];
@@ -121,7 +123,13 @@ export const useCart = create<CartState>()(
         return lines === state.lines ? state : { lines };
       }),
       importedSources: [],
-      importLegacy: (incoming) => set((state) => mergeLegacy(state.lines, state.importedSources ?? [], incoming)),
+      legacySyncStatus: "pending",
+      setLegacySyncStatus: (legacySyncStatus) => set({ legacySyncStatus }),
+      importLegacy: (incoming) => {
+        const next = mergeLegacy(get().lines, get().importedSources ?? [], incoming);
+        set({ lines: next.lines, importedSources: next.importedSources });
+        return next.removed;
+      },
       consumedAttempts: [],
       consume: (submitted, attemptId) => set((state) => consumeAttemptOnce(state.lines, state.consumedAttempts ?? [], submitted, attemptId)),
       lines: [],
@@ -248,7 +256,11 @@ export const useCart = create<CartState>()(
     {
       name: "optika-cart",
       version: 3,
-      merge: mergePersistedCart,
+      merge: (persisted, current) => ({
+        ...mergePersistedCart(persisted, current),
+        legacySyncStatus: current.legacySyncStatus,
+      }),
+      partialize: ({ legacySyncStatus: _legacySyncStatus, ...state }) => state,
       migrate: (persisted) => {
         const state = persisted as Partial<CartState>;
         return {

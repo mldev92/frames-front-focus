@@ -11,10 +11,33 @@ test("legacy rows import once even when the server repeats a row", () => {
 test("removed imported rows are not resurrected", () => {
   assert.equal(mergeLegacy([], ["source"], [line("old", 2, { legacySource: "source" })]).lines.length, 0);
 });
+
+test("an existing legacy row is not duplicated when its import marker is missing", () => {
+  const old = line("old", 2, { legacySource: "source" });
+  assert.deepEqual(mergeLegacy([old], [], [old]).lines, [old]);
+});
 test("different prescriptions and actual offer ids survive import", () => {
   const a = line("a", 2, { legacySource: "a", offerId: 42, parameters: { prescription: { right: { sphere: "-2" } } } });
   const b = line("b", 1, { legacySource: "b", offerId: 43, parameters: { prescription: { left: { sphere: "-3" } } } });
   assert.deepEqual(mergeLegacy([], [], [a,b]).lines, [a,b]);
+});
+
+test("expired session rows leave checkout while native lines remain", () => {
+  const native = line("new");
+  const expired = line("old", 2, { legacySource: "old-session" });
+  const next = mergeLegacy([native, expired], ["old-session"], []);
+  assert.deepEqual(next.lines, [native]);
+  assert.deepEqual(next.removed, [expired]);
+  assert.deepEqual(next.importedSources, []);
+});
+
+test("new Bitrix session replaces its old imported row and preserves removed-row choice", () => {
+  const old = line("old", 1, { legacySource: "old-session" });
+  const current = line("current", 1, { legacySource: "new-session" });
+  const next = mergeLegacy([old], ["old-session"], [current]);
+  assert.deepEqual(next.lines, [current]);
+  assert.deepEqual(next.removed, [old]);
+  assert.deepEqual(mergeLegacy([], next.importedSources, [current]).lines, []);
 });
 test("order completion removes only submitted quantities", () => {
   assert.deepEqual(consumeSubmitted([line("a", 4),line("b", 2)], [line("a", 2)]), [line("a",2),line("b",2)]);

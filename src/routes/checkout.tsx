@@ -1,6 +1,7 @@
 import { CartPrescription } from "@/components/CartPrescription";
 import { readAttempt, saveAttempt, forgetAttempt, checkAttempt, cancelAttempt, withCheckoutLock, orderFingerprint, ATTEMPT_STORAGE_KEY } from "@/lib/checkout-attempt";
 import { StoreApiError } from "@/lib/api/security";
+import { refreshLegacyBasket } from "@/lib/cart-legacy-sync";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode, CSSProperties } from "react";
@@ -164,6 +165,9 @@ function describeDeliveryError(error: unknown): string {
   if (message.includes("больше недоступен")) {
     return "Один из товаров в корзине больше недоступен. Проверьте корзину.";
   }
+  if (message.includes("Исходная корзина недоступна в этой сессии")) {
+    return "Сеанс прежней корзины изменился. Проверьте корзину и добавьте недостающие товары заново.";
+  }
   return message ? `Не удалось рассчитать доставку: ${message}` : "Не удалось рассчитать доставку.";
 }
 
@@ -189,7 +193,7 @@ function Checkout() {
   const isMobile = useIsMobile();
   const regionalCity = useCityStore((state) => state.city);
   const regionalCityHydrated = useCityStore((state) => state.hydrated);
-  const { totals, lines, setQty, consume } = useCart();
+  const { totals, lines, setQty, consume, legacySyncStatus } = useCart();
   const { subtotal } = totals();
 
   const [step, setStep] = useState<CheckoutStep>("region");
@@ -291,14 +295,34 @@ function Checkout() {
     setDeliveryError(null);
     if (!lines.length || !location) return;
     setDeliveryLoading(true);
+    if (legacySyncStatus === "pending" && lines.some((line) => line.legacySource)) return;
     const codes: Array<DeliveryCode | undefined> = isSpb ? SPB_CDEK_CODES : CDEK_CODES;
     Promise.allSettled(
       codes.map((deliveryCode) =>
         getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode }),
       ),
     )
-      .then((results) => {
+      .then(async (initialResults) => {
         if (cancelled) return;
+        let results = initialResults;
+        const initialError = (results[0] as PromiseRejectedResult).reason;
+        if (results.every((result) => result.status === "rejected") &&
+            initialError instanceof StoreApiError && initialError.status === 409 &&
+            initialError.message.includes("Исходная корзина недоступна в этой сессии")) {
+          const refreshed = await refreshLegacyBasket();
+          if (cancelled) return;
+          if (refreshed.removed.length) {
+            toast.warning("Сеанс прежней корзины изменился. Проверьте товары перед оформлением.");
+          }
+          if (useCart.getState().lines !== lines) return;
+          // Старый серверный снимок мог исчезнуть, хотя Bitrix-корзина ещё жива.
+          results = await Promise.allSettled(
+            codes.map((deliveryCode) =>
+              getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode }),
+            ),
+          );
+          if (cancelled) return;
+        }
         const firstOk = results.find((result) => result.status === "fulfilled");
         if (!firstOk || firstOk.status !== "fulfilled") {
           const reason = (results[0] as PromiseRejectedResult).reason;
@@ -319,13 +343,16 @@ function Checkout() {
         setQuotedDeliveryOptions(merged);
         setServerItemsTotal(firstOk.value.itemsTotal);
       })
+      .catch((error: unknown) => {
+        if (!cancelled) setDeliveryError(describeDeliveryError(error));
+      })
       .finally(() => {
         if (!cancelled) setDeliveryLoading(false);
       });
     return () => {
       cancelled = true;
     };
-  }, [city, location, isSpb, lines, deliveryRetry]);
+  }, [city, location, isSpb, lines, deliveryRetry, legacySyncStatus]);
 
   useEffect(() => {
     if (delivery !== null && !deliveryOptions.some((option) => option.code === delivery)) {
