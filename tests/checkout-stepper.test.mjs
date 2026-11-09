@@ -59,11 +59,13 @@ test("the delivery price shows the VAT that is already included", async () => {
   assert.match(checkout, /\(price \* rate\) \/ \(100 \+ rate\)/);
 });
 
-test("the CDEK pickup map opens in every city, St. Petersburg included", async () => {
+test("the CDEK pickup list loads in every city, St. Petersburg included", async () => {
   const checkout = await read("../src/routes/checkout.tsx");
-  const body = checkout.slice(checkout.indexOf("const openCdekPickupMap"));
-  const head = body.slice(0, body.indexOf("setPickupWidgetLoading(true)"));
+  const body = checkout.slice(checkout.indexOf("const openPickupDialog"));
+  const head = body.slice(0, body.indexOf("setPickupPointsLoading(true)"));
   assert.doesNotMatch(head, /isSpb/);
+  assert.match(checkout, /getOrderPickupPoints\(\{ city \}\)/);
+  assert.doesNotMatch(checkout, /document\.createElement\("iframe"\)/);
 });
 
 test("a frame always offers both purchase options side by side: with and without lenses", async () => {

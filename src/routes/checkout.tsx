@@ -212,7 +212,7 @@ function Checkout() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [pickupPoint, setPickupPoint] = useState<PickupPoint | null>(null);
-  const [pickupWidgetLoading, setPickupWidgetLoading] = useState(false);
+  const [pickupPointsLoading, setPickupPointsLoading] = useState(false);
   const [pickupDialogOpen, setPickupDialogOpen] = useState(false);
   const [pickupPoints, setPickupPoints] = useState<PickupPointOption[]>([]);
   const [pickupSearch, setPickupSearch] = useState("");
@@ -341,9 +341,9 @@ function Checkout() {
       ? point.address
       : `${city}, ${point.address}`;
 
-  const openCdekPickupMap = async () => {
+  const openPickupDialog = async () => {
     setPickupDialogOpen(true);
-    setPickupWidgetLoading(true);
+    setPickupPointsLoading(true);
     setPickupPoints([]);
     setPickupSearch("");
     setPickupError("");
@@ -356,7 +356,7 @@ function Checkout() {
       setPickupPoints([]);
       setPickupError("Не удалось загрузить пункты выдачи. Повторите попытку.");
     } finally {
-      setPickupWidgetLoading(false);
+      setPickupPointsLoading(false);
     }
   };
 
@@ -674,13 +674,13 @@ function Checkout() {
                   key={opt.code}
                   option={opt}
                   pickupPoint={opt.code === "sdek_pickup" ? pickupPoint : null}
-                  pickupWidgetLoading={pickupWidgetLoading}
+                  pickupPointsLoading={pickupPointsLoading}
                   selected={delivery === opt.code}
                   onClick={() => {
                     setDelivery(opt.code);
                     if (opt.code !== "sdek_pickup") setPickupPoint(null);
                   }}
-                  onChoosePickup={opt.code === "sdek_pickup" ? openCdekPickupMap : undefined}
+                  onChoosePickup={opt.code === "sdek_pickup" ? openPickupDialog : undefined}
                 />
               ))}
             </div>
@@ -710,14 +710,14 @@ function Checkout() {
                     onChange={(event) => setPickupSearch(event.target.value)}
                     className="my-4 w-full rounded-lg border border-border px-3 py-2"
                   />
-                  {pickupWidgetLoading && <p role="status">Загружаем пункты выдачи...</p>}
+                  {pickupPointsLoading && <p role="status">Загружаем пункты выдачи...</p>}
                   {pickupError && (
                     <div role="alert" className="mb-3 text-sm text-brand">
                       {pickupError}{" "}
-                      <button type="button" onClick={() => void openCdekPickupMap()} className="underline">Повторить</button>
+                      <button type="button" onClick={() => void openPickupDialog()} className="underline">Повторить</button>
                     </div>
                   )}
-                  {!pickupWidgetLoading && !pickupError && visiblePickupPoints.length === 0 && (
+                  {!pickupPointsLoading && !pickupError && visiblePickupPoints.length === 0 && (
                     <p role="status">По вашему запросу пункты не найдены.</p>
                   )}
                   <div className="min-h-0 overflow-y-auto" role="list">
@@ -1418,14 +1418,14 @@ function SectionCard({
 function DeliveryCard({
   option,
   pickupPoint,
-  pickupWidgetLoading,
+  pickupPointsLoading,
   selected,
   onClick,
   onChoosePickup,
 }: {
   option: DeliveryOption;
   pickupPoint: PickupPoint | null;
-  pickupWidgetLoading: boolean;
+  pickupPointsLoading: boolean;
   selected: boolean;
   onClick: () => void;
   onChoosePickup?: () => void;
@@ -1531,7 +1531,7 @@ function DeliveryCard({
           <button
             type="button"
             onClick={onChoosePickup}
-            disabled={pickupWidgetLoading}
+            disabled={pickupPointsLoading}
             style={{
               border: "1px solid var(--brand)",
               background: "white",
@@ -1540,11 +1540,11 @@ function DeliveryCard({
               padding: "9px 12px",
               fontSize: "13px",
               fontWeight: 600,
-              cursor: pickupWidgetLoading ? "wait" : "pointer",
-              opacity: pickupWidgetLoading ? 0.7 : 1,
+              cursor: pickupPointsLoading ? "wait" : "pointer",
+              opacity: pickupPointsLoading ? 0.7 : 1,
             }}
           >
-            {pickupWidgetLoading
+            {pickupPointsLoading
               ? "Загружаем пункты..."
               : pickupPoint
                 ? "Изменить пункт самовывоза"
