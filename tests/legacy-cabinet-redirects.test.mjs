@@ -20,11 +20,27 @@ test("старые списки кабинета редиректятся на R
 
 test("неизвестные адреса /personal/ отдают 404 после React-правил", async () => {
   const rules = (await readFile("deploy/production.htaccess", "utf8")).replace(/\r\n/g, "\n");
-  const rule = "RewriteRule ^personal/(?!orders/[^/]|subscribe|cart).+ - [R=404,END]";
+  const rule = "RewriteRule ^personal/(?!orders/[^/]).+ - [R=404,END]";
   const at = rules.indexOf(rule);
   assert.ok(at > 0, "правило 404 для /personal/ должно быть");
   assert.ok(at > rules.indexOf("RewriteRule ^(.+?)/?$ /o100_frontend_current/$1/index.html [END]"), "после React-правил, иначе закроет /personal/orders");
-  const re = new RegExp("^personal/(?!orders/[^/]|subscribe|cart).+");
+  const re = new RegExp("^personal/(?!orders/[^/]).+");
   for (const hit of ["personal/mimi/", "personal/foo/bar"]) assert.ok(re.test(hit), hit);
-  for (const miss of ["personal/orders/6473", "personal/subscribe/", "personal/cart/"]) assert.ok(!re.test(miss), miss);
+  for (const miss of ["personal/orders/6473"]) assert.ok(!re.test(miss), miss);
+});
+
+test("мёртвые адреса auth/sale/subscribe/cart редиректятся до правила пропуска в Bitrix", async () => {
+  const rules = (await readFile("deploy/production.htaccess", "utf8")).replace(/\r\n/g, "\n");
+  const pass = rules.indexOf("RewriteRule ^(api|auth|bitrix|sale|upload|local|order)(/|$) - [L]");
+  for (const rule of [
+    "RewriteRule ^auth/(registration|register|login|forgot-password|change-password)/?$ /auth/ [R=301,L]",
+    "RewriteRule ^sale/?$ / [R=301,L]",
+  ]) {
+    const at = rules.indexOf(rule);
+    assert.ok(at > 0 && at < pass, `${rule} должно стоять до правила пропуска`);
+  }
+  assert.ok(rules.includes("RewriteRule ^personal/subscribe/?$ /personal [R=301,L]"));
+  assert.ok(rules.includes("RewriteRule ^personal/cart/?$ /basket [R=301,L]"));
+  // /sale/payment/ не затронут: редирект только для точного /sale/.
+  assert.ok(!rules.includes("RewriteRule ^sale/"+"(.+)"));
 });
