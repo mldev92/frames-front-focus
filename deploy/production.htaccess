@@ -16,9 +16,14 @@ RewriteEngine On
 RewriteRule ^blog/pochemyMi\.php/?$ https://optika100.com/o-nas/?%{QUERY_STRING}#pochemu-my [R=301,NE,END]
 RewriteRule .* - [E=REMOTE_USER:%{HTTP:Authorization}]
 RewriteRule ^o100_frontend_ - [R=404,END]
+# Мёртвые и неиспользуемые адреса Aspro: ведут на живые страницы (до правил, пропускающих auth/sale в Bitrix).
+RewriteRule ^auth/(registration|register|login|forgot-password|change-password)/?$ /auth/ [R=301,L]
+RewriteRule ^sale/?$ / [R=301,L]
 RewriteRule ^(api|auth|bitrix|sale|upload|local|order)(/|$) - [L]
 # Старые списки кабинета заменены React-страницами; глубже (оплата, детали заказа) остаётся Bitrix.
 RewriteRule ^personal/order/make/?$ /checkout [R=301,L]
+RewriteRule ^personal/subscribe/?$ /personal [R=301,L]
+RewriteRule ^personal/cart/?$ /basket [R=301,L]
 RewriteRule ^personal/order/?$ /personal/orders [R=301,L]
 RewriteRule ^personal/profile/?$ /personal/private [R=301,L]
 RewriteRule ^personal/(order|payment|profile)(/|$) - [L]
@@ -81,8 +86,8 @@ RewriteRule ^catalog_s/opravy/detskie_1/dlya_devochek/oprava_fantasy_1112_prozra
 RewriteRule ^catalog_s/opravy/detskie_1/oprava_fantasy_1112_prozrachnaya/?$ - [R=404,END]
 # END O100 REVIEWED MISSING
 # Неизвестные адреса под /personal/ не должны попадать в старый Bitrix-кабинет (Aspro).
-# Остаются: детали заказа (/personal/orders/<id>), subscribe и cart (ждут решения владельца).
-RewriteRule ^personal/(?!orders/[^/]|subscribe|cart).+ - [R=404,END]
+# Остаются: детали заказа (/personal/orders/<id>).
+RewriteRule ^personal/(?!orders/[^/]).+ - [R=404,END]
 RewriteRule ^(basket|checkout|search)/?$ /o100_frontend_current/_shell.html [END]
 RewriteRule ^catalog_[sn]/[a-zA-Z0-9_/-]+/?$ /local/tools/o100-product-fallback.php [END]
 ErrorDocument 404 /local/tools/o100-frontend-404.php
