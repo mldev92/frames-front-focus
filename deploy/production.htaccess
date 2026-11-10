@@ -17,6 +17,10 @@ RewriteRule ^blog/pochemyMi\.php/?$ https://optika100.com/o-nas/?%{QUERY_STRING}
 RewriteRule .* - [E=REMOTE_USER:%{HTTP:Authorization}]
 RewriteRule ^o100_frontend_ - [R=404,END]
 RewriteRule ^(api|auth|bitrix|sale|upload|local|order)(/|$) - [L]
+# Старые списки кабинета заменены React-страницами; глубже (оплата, детали заказа) остаётся Bitrix.
+RewriteRule ^personal/order/make/?$ /checkout [R=301,L]
+RewriteRule ^personal/order/?$ /personal/orders [R=301,L]
+RewriteRule ^personal/profile/?$ /personal/private [R=301,L]
 RewriteRule ^personal/(order|payment|profile)(/|$) - [L]
 RewriteRule ^(1c_exchange|payment_callback|verification)(/|$) - [L]
 RewriteRule \.php$ - [L]
