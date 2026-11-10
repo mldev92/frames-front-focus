@@ -80,6 +80,9 @@ RewriteRule ^catalog_s/soputstvuyushchie_tovary/aksessuary/ochistiteli_i_kapli/r
 RewriteRule ^catalog_s/opravy/detskie_1/dlya_devochek/oprava_fantasy_1112_prozrachnaya/?$ - [R=404,END]
 RewriteRule ^catalog_s/opravy/detskie_1/oprava_fantasy_1112_prozrachnaya/?$ - [R=404,END]
 # END O100 REVIEWED MISSING
+# Неизвестные адреса под /personal/ не должны попадать в старый Bitrix-кабинет (Aspro).
+# Остаются: детали заказа (/personal/orders/<id>), subscribe и cart (ждут решения владельца).
+RewriteRule ^personal/(?!orders/[^/]|subscribe|cart).+ - [R=404,END]
 RewriteRule ^(basket|checkout|search)/?$ /o100_frontend_current/_shell.html [END]
 RewriteRule ^catalog_[sn]/[a-zA-Z0-9_/-]+/?$ /local/tools/o100-product-fallback.php [END]
 ErrorDocument 404 /local/tools/o100-frontend-404.php
