@@ -106,7 +106,7 @@ $BackendFileList = @(
     'api/store/_catalog_identity.php', 'api/store/catalog_sections.php', 'api/store/_product.php', 'api/store/_catalog_prices.php',
     'api/store/product.php', 'api/store/products.php', 'api/store/search.php',
     'api/store/_basket_display.php', 'api/store/_basket_bridge.php', 'api/store/_checkout.php',
-    'api/store/_outbox.php', 'api/store/order_quote.php', 'api/store/order_attempt.php',
+    'api/store/_outbox.php', 'api/store/order_quote.php', 'api/store/order_pickup_points.php', 'api/store/order_attempt.php',
     'api/store/basket_snapshot.php', 'api/store/basket_export.php', 'api/store/order_delivery.php',
     'api/store/order_create.php', 'api/store/callback.php', 'api/store/lens_selection_request.php',
     'local/tools/o100-cart-recovery.php', 'local/tools/o100-product-fallback.php',
