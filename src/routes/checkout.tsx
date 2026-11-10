@@ -2,6 +2,7 @@ import { CartPrescription } from "@/components/CartPrescription";
 import { readAttempt, saveAttempt, forgetAttempt, checkAttempt, cancelAttempt, withCheckoutLock, orderFingerprint, ATTEMPT_STORAGE_KEY } from "@/lib/checkout-attempt";
 import { StoreApiError } from "@/lib/api/security";
 import { refreshLegacyBasket } from "@/lib/cart-legacy-sync";
+import { addressAfterDeliveryChange, orderDestination } from "@/lib/checkout-destination";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode, CSSProperties } from "react";
@@ -406,9 +407,17 @@ function Checkout() {
   const choosePickupPoint = (point: PickupPointOption) => {
     const normalizedAddress = formatPickupAddress(point);
     setPickupPoint({ ...point, address: normalizedAddress, rawAddress: normalizedAddress });
-    setAddress(normalizedAddress);
     setPickupDialogOpen(false);
     toast.success("Пункт самовывоза СДЭК выбран");
+  };
+
+  const chooseLocation = (next: CheckoutLocation | null) => {
+    if (next?.name !== location?.name || next?.code !== location?.code) {
+      setDelivery(null);
+      setAddress("");
+      setPickupPoint(null);
+    }
+    setLocation(next);
   };
 
   useEffect(() => {
@@ -526,8 +535,7 @@ function Checkout() {
       customer: { fullName: fullName.trim(), phone: phone.trim(), email: email.trim() },
       lines, city, locationCode: location?.code, delivery: selectedDelivery.label, deliveryCode: selectedDelivery.code,
       payment: selectedPayment.label, paymentCode: selectedPayment.code,
-      address: pickupPoint?.rawAddress ?? pickupPoint?.address ?? (address.trim() || undefined),
-      pickupPoint: pickupPoint ? { id: pickupPoint.id, address: pickupPoint.rawAddress ?? pickupPoint.address } : undefined,
+      ...orderDestination(selectedDelivery, address, pickupPoint),
       comment: comment.trim() || undefined,
       coupon: coupon?.code,
     };
@@ -640,7 +648,7 @@ function Checkout() {
                   key={c}
                   label={c}
                   selected={city === c && !location?.code}
-                  onClick={() => setLocation(quickLocation(c))}
+                  onClick={() => chooseLocation(quickLocation(c))}
                 />
               ))}
             </div>
@@ -648,9 +656,9 @@ function Checkout() {
               hasSelection={Boolean(location)}
               selectedLabel={location?.code ? location.label : ""}
               onSelect={(item) =>
-                setLocation({ name: item.name, code: item.code, label: item.label })
+                chooseLocation({ name: item.name, code: item.code, label: item.label })
               }
-              onClear={() => setLocation(null)}
+              onClear={() => chooseLocation(null)}
             />
             <p className="text-muted-foreground" style={{ fontSize: "12px", margin: "8px 0 0" }}>
               Выберите из списка название вашего города или введите его название.
@@ -712,6 +720,7 @@ function Checkout() {
                   pickupPointsLoading={pickupPointsLoading}
                   selected={delivery === opt.code}
                   onClick={() => {
+                    setAddress(addressAfterDeliveryChange(address, pickupPoint, opt.code === "sdek_pickup"));
                     setDelivery(opt.code);
                     if (opt.code !== "sdek_pickup") setPickupPoint(null);
                   }}
