@@ -40,12 +40,19 @@ test("contact-lens category is product-first while retaining navigation, image, 
     assert.ok(metadata.includes(`/catalog_s/kontaktnye_linzy_/${slug}/`));
   }
   assert.ok(!content.includes('href="#catalog-products"'));
-  assert.ok(view.includes('catalogId={isContactLensRoot || landing ? "catalog-products"'));
+  assert.ok(view.includes('catalogId={isContactLensRoot || isColoredContactLens || landing ? "catalog-products"'));
   assert.ok(listing.includes("id={catalogId}"));
   // The spectacle-lens section keeps its separate base-driven view, but its
   // curated catalogue now receives the URL filter/sort/price/page contract.
   // The contact-lens root stays product-first in CatalogListing.
   assert.match(view, /headerAfterTitle=\{\s*landing\s*\?\s*\(?\s*<FrameLandingIntro/);
+  assert.ok(view.includes('normalizedSectionPath === "kontaktnye_linzy_/tsvetnye"'));
+  assert.ok(view.includes("<ContactLensCatalogIntro"));
+  assert.ok(view.includes('variant={isContactLensRoot ? "root" : "colored"}'));
+  assert.ok(content.includes('export function ContactLensCatalogIntro'));
+  assert.ok(content.includes('data.total.toLocaleString("ru-RU")'));
+  assert.ok(content.includes("однодневные, двухнедельные и месячные контактные линзы"));
+  assert.ok(content.includes("оттеночные и непрозрачные цветные линзы"));
   assert.ok(view.includes("if (isLensRoot)"));
   assert.ok(view.includes("initialFilters={appliedFilters}"));
   assert.ok(view.includes("appliedPriceMin={search.priceMin}"));

@@ -8,6 +8,7 @@ const paths = [
   "/search/",
   "/catalog_s/opravy/zhenskie/",
   "/catalog_s/kontaktnye_linzy_/",
+  "/catalog_s/kontaktnye_linzy_/tsvetnye/",
   ...FRAME_BRAND_LANDINGS.map((b) => `/catalog_s/opravy/${b.slug}/`),
   ...FRAME_CATEGORY_LANDINGS.map((c) => `/catalog_s/${c.path}/`),
 ];

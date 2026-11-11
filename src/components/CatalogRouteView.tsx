@@ -5,6 +5,7 @@ import { CatalogSeoContent } from "@/components/CatalogSeoContent";
 import {
   ContactLensCatalogFooter,
   ContactLensCatalogGuide,
+  ContactLensCatalogIntro,
   ContactLensCatalogNavigation,
 } from "@/components/ContactLensCatalogSeo";
 import { LensLinesCatalog } from "@/components/LensLinesCatalog";
@@ -80,6 +81,8 @@ export function CatalogRouteView({
   const config = catalogConfig[category];
   const normalizedSectionPath = sectionPath.replace(/^\/+|\/+$/g, "");
   const isContactLensRoot = city === "spb" && normalizedSectionPath === "kontaktnye_linzy_";
+  const isColoredContactLens =
+    city === "spb" && normalizedSectionPath === "kontaktnye_linzy_/tsvetnye";
   const isLensRoot = normalizedSectionPath === "linzy_dlya_ochkov";
 
   // Каталог 74 линеек работает от единой базы подборщика. Он не должен
@@ -156,10 +159,15 @@ export function CatalogRouteView({
               ? "Контактные линзы в Санкт-Петербурге"
               : catalogSectionTitle(sectionPath, config.title)
         }
-        subtitle={isContactLensRoot || landing ? undefined : config.subtitle}
+        subtitle={isContactLensRoot || isColoredContactLens || landing ? undefined : config.subtitle}
         headerAfterTitle={
           landing ? (
             <FrameLandingIntro path={normalizedSectionPath} kind={landing} data={landingData} />
+          ) : isContactLensRoot || isColoredContactLens ? (
+            <ContactLensCatalogIntro
+              data={result.data}
+              variant={isContactLensRoot ? "root" : "colored"}
+            />
           ) : undefined
         }
         headerBeforeTitle={
@@ -169,7 +177,7 @@ export function CatalogRouteView({
             <ContactLensCatalogNavigation />
           ) : undefined
         }
-        catalogId={isContactLensRoot || landing ? "catalog-products" : undefined}
+        catalogId={isContactLensRoot || isColoredContactLens || landing ? "catalog-products" : undefined}
         data={result.data}
         facets={(config.facets ?? []).filter((facet) => landing !== "brand" || facet !== "brand")}
         facetFilteringEnabled={supportsFacetFiltering}
