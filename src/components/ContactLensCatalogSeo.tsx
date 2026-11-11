@@ -1,6 +1,38 @@
 import { ChevronRight, Eye, ShieldCheck, Stethoscope, Truck } from "lucide-react";
 import { CONTACT, PRIMARY_SALON } from "@/data/contact";
 import { contactLensCatalogFaq, contactLensSubcategories } from "@/data/contact-lens-catalog-seo";
+import type { CatalogPage } from "@/lib/api/bitrix";
+
+function contactLensPriceRange(data: CatalogPage) {
+  const { min, max } = data.priceBounds;
+  if (!data.total || !Number.isFinite(min) || min <= 0 || !Number.isFinite(max) || max < min)
+    return undefined;
+  const format = (price: number) => `${price.toLocaleString("ru-RU")} ₽`;
+  return min === max ? format(min) : `от ${format(min)} до ${format(max)}`;
+}
+
+export function ContactLensCatalogIntro({
+  data,
+  variant,
+}: {
+  data: CatalogPage;
+  variant: "root" | "colored";
+}) {
+  const price = contactLensPriceRange(data);
+  return (
+    <div className="mb-10 w-full min-w-0 max-w-[calc(100vw-3rem)] space-y-5 sm:max-w-3xl">
+      <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs uppercase tracking-widest text-muted-foreground">
+        <span>{data.total.toLocaleString("ru-RU")} позиций в каталоге</span>
+        {price && <span>{price}</span>}
+      </div>
+      <p className="text-base leading-7 text-foreground/80">
+        {variant === "root"
+          ? "Сравните однодневные, двухнедельные и месячные контактные линзы, а также торические, мультифокальные, цветные модели и линзы для контроля миопии. В карточках указаны доступные оптические параметры; для первичного подбора и оценки посадки можно записаться в салон на Кирочной, 17."
+          : "Сравните оттеночные и непрозрачные цветные линзы, модели с диоптриями и варианты плановой замены. Итоговый цвет зависит от рисунка линзы и собственной радужки; перед первой покупкой специалист в салоне на Кирочной, 17 проверит параметры и посадку."}
+      </p>
+    </div>
+  );
+}
 
 export function ContactLensCatalogNavigation() {
   return (
