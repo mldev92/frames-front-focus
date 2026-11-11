@@ -7,9 +7,9 @@ test("старые списки кабинета редиректятся на R
   const native = rules.indexOf("RewriteRule ^personal/(order|payment|profile)(/|$) - [L]");
   assert.ok(native > 0, "нативное правило должно остаться");
   for (const rule of [
-    "RewriteRule ^personal/order/make/?$ /checkout [R=301,L]",
-    "RewriteRule ^personal/order/?$ /personal/orders [R=301,L]",
-    "RewriteRule ^personal/profile/?$ /personal/private [R=301,L]",
+    "RewriteRule ^personal/order/make/?$ https://optika100.com/checkout [R=301,L]",
+    "RewriteRule ^personal/order/?$ https://optika100.com/personal/orders [R=301,L]",
+    "RewriteRule ^personal/profile/?$ https://optika100.com/personal/private [R=301,L]",
   ]) {
     const at = rules.indexOf(rule);
     assert.ok(at > 0 && at < native, `${rule} должно стоять до нативного правила`);
@@ -33,14 +33,14 @@ test("мёртвые адреса auth/sale/subscribe/cart редиректят�
   const rules = (await readFile("deploy/production.htaccess", "utf8")).replace(/\r\n/g, "\n");
   const pass = rules.indexOf("RewriteRule ^(api|auth|bitrix|sale|upload|local|order)(/|$) - [L]");
   for (const rule of [
-    "RewriteRule ^auth/(registration|register|login|forgot-password|change-password)/?$ /auth/ [R=301,L]",
-    "RewriteRule ^sale/?$ / [R=301,L]",
+    "RewriteRule ^auth/(registration|register|login|forgot-password|change-password)/?$ https://optika100.com/auth/ [R=301,L]",
+    "RewriteRule ^sale/?$ https://optika100.com/ [R=301,L]",
   ]) {
     const at = rules.indexOf(rule);
     assert.ok(at > 0 && at < pass, `${rule} должно стоять до правила пропуска`);
   }
-  assert.ok(rules.includes("RewriteRule ^personal/subscribe/?$ /personal [R=301,L]"));
-  assert.ok(rules.includes("RewriteRule ^personal/cart/?$ /basket [R=301,L]"));
+  assert.ok(rules.includes("RewriteRule ^personal/subscribe/?$ https://optika100.com/personal [R=301,L]"));
+  assert.ok(rules.includes("RewriteRule ^personal/cart/?$ https://optika100.com/basket [R=301,L]"));
   // /sale/payment/ не затронут: редирект только для точного /sale/.
   assert.ok(!rules.includes("RewriteRule ^sale/"+"(.+)"));
 });
