@@ -337,7 +337,9 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
               {city === "spb" && (plano || tint || rock) && (
                 <p className="stellest-offer-condition">
                   {plano ? "Скидка 50%" : tint
-                    ? "Скидка 50% при покупке прозрачных линз Stellest"
+                    ? offer.line.includes("2.0")
+                      ? "Скидка 50% при покупке прозрачных линз Stellest 2.0"
+                      : "Скидка 90% при покупке прозрачных линз Stellest"
                     : "Скидка 20%"}
                 </p>
               )}

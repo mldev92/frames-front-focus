@@ -26,9 +26,9 @@ const PROMOS = [
     text: "ДО 25% НА ПРОГРЕССИВНЫЕ ЛИНЗЫ ESSILOR",
     href: "/catalog_s/linzy_dlya_ochkov/?brand=ESSILOR&lensType=Прогрессивные",
   },
-  { text: "ДО 50% НА ЛИНЗЫ STELLEST", href: "/stellest-katalog-s-linzami/" },
+  { text: "ДО 90% НА ЛИНЗЫ STELLEST", href: "/stellest-katalog-s-linzami/" },
   {
-    text: "MISIGHT 1 DAY 90: 20 ЛИНЗ В ПОДАРОК И СКИДКА 1 000 ₽",
+    text: "MISIGHT 1 DAY 90: 20 ЛИНЗ В ПОДАРОК И СКИДКА 2 000 ₽",
     href: "/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/",
   },
 ];
