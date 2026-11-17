@@ -107,6 +107,7 @@ $BackendFileList = @(
     'api/store/product.php', 'api/store/products.php', 'api/store/search.php',
     'api/store/_basket_display.php', 'api/store/_basket_bridge.php', 'api/store/_checkout.php',
     'api/store/_outbox.php', 'api/store/order_quote.php', 'api/store/order_attempt.php',
+    'api/store/order_pickup_points.php', 'api/store/order_action.php', 'api/store/_order_repeat.php',
     'api/store/basket_snapshot.php', 'api/store/basket_export.php', 'api/store/order_delivery.php',
     'api/store/order_create.php', 'api/store/callback.php', 'api/store/lens_selection_request.php',
     'local/tools/o100-cart-recovery.php', 'local/tools/o100-product-fallback.php',
@@ -350,9 +351,9 @@ function Get-BackendReferenceSha {
     # Informational label only -- verify-release.php never checks this against
     # anything; the `files` hashes (always re-measured live, see
     # Get-LiveBackendManifest) are what actually gates the deploy.
-    $sha = & git -C (Join-Path $FrontendRepo '..\cutover-backend') rev-parse HEAD 2>$null
-    if (-not $sha) { return '0' * 40 }
-    return $sha.Trim()
+    $backend = (Invoke-Ssh "cat '$DocRoot/../.o100-backend-release.json'") | ConvertFrom-Json
+    if ($backend.sha -notmatch '^[0-9a-f]{40}$') { throw 'Invalid live backend SHA' }
+    return $backend.sha
 }
 
 function Package-Release([string]$FullSha, [string]$RoutingBaseline, [string]$BackendSha, [string]$BackendManifestPath) {
