@@ -11,6 +11,7 @@
  * when logged out, and route loaders redirect to the native `/auth/` page.
  */
 import { apiFetch, securePost } from "@/lib/api/security";
+import type { RepeatOrderResult } from "@/lib/order-repeat";
 
 const BASE = (import.meta.env.VITE_BITRIX_API as string | undefined)?.replace(/\/$/, "") ?? "";
 const url = (path: string) => `${BASE}/api/store/${path}`;
@@ -140,4 +141,13 @@ export async function cancelOrder(
 
 export async function logout(): Promise<void> {
   await securePost<{ ok: true }>("logout.php", {});
+}
+
+/** Сервер проверяет владельца, актуальные товары, варианты и сохранённый рецепт. */
+export async function repeatOrder(id: string): Promise<RepeatOrderResult> {
+  const result = await securePost<RepeatOrderResult>("order_action.php", { action: "repeat", id });
+  if (!result.ok || !Array.isArray(result.lines) || !Array.isArray(result.unavailable)) {
+    throw new Error(result.error ?? "Не удалось повторить заказ. Попробуйте ещё раз.");
+  }
+  return result;
 }

@@ -1,5 +1,6 @@
 import { mergeLegacy, consumeAttemptOnce } from "@/lib/cart-migration";
 import { mergePersistedCart } from "@/lib/cart-persistence";
+import { mergeRepeatedOrder } from "@/lib/order-repeat";
 import { applyCartPrices, type CartPriceUpdate } from "@/lib/cart-prices";
 import { hasProductPrice } from "@/lib/product-price";
 import { productCardHref } from "@/data/categories";
@@ -61,6 +62,7 @@ export interface CartLine {
 }
 
 interface CartState {
+  repeatOrder: (lines: CartLine[]) => void;
   updatePrices: (updates: CartPriceUpdate[]) => void;
   importedSources: string[];
   legacySyncStatus: "pending" | "ready" | "failed";
@@ -118,6 +120,7 @@ function lineIdentity(
 export const useCart = create<CartState>()(
   persist(
     (set, get) => ({
+      repeatOrder: (lines) => set((state) => ({ lines: mergeRepeatedOrder(state.lines, lines), isOpen: false })),
       updatePrices: (updates) => set((state) => {
         const lines = applyCartPrices(state.lines, updates);
         return lines === state.lines ? state : { lines };

@@ -10,7 +10,7 @@ import {
   Eye,
 } from "lucide-react";
 import { type LucideIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Reveal } from "@/components/Reveal";
@@ -22,9 +22,9 @@ import {
   cancelOrder,
   getMe,
   getOrders,
+  repeatOrder,
   type CabinetOrder,
 } from "@/lib/api/account";
-import type { Product } from "@/data/types";
 
 export const Route = createFileRoute("/personal_/orders")({
   validateSearch: (
@@ -103,34 +103,42 @@ function OrderCard({
   const isDone = order.state === "done";
   const isCanceled = order.state === "canceled";
   const navigate = useNavigate();
-  const cartAdd = useCart((s) => s.add);
+  const addRepeatedOrder = useCart((s) => s.repeatOrder);
+  const repeatingRef = useRef(false);
+  const [repeating, setRepeating] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const paid = order.payment?.paid ?? false;
   const shipped = order.shipment?.shipped ?? false;
 
-  function repeat() {
-    if (!order.items.length) {
-      toast.info("В заказе нет позиций для повтора");
-      return;
-    }
-    for (const item of order.items) {
-      const product = {
-        slug: item.slug ?? `order-${order.id}-${item.name}`,
-        name: item.name,
-        brand: item.brand ?? "",
-        price: item.price,
-        images: [item.img ?? ""],
-      } as unknown as Product;
-      cartAdd(product, {
-        qty: item.qty,
-        image: item.img ?? undefined,
-        openDrawer: false,
+  async function repeat() {
+    if (repeatingRef.current || busy) return;
+    repeatingRef.current = true;
+    setRepeating(true);
+    try {
+      const result = await repeatOrder(order.id);
+      if (result.lines.length) addRepeatedOrder(result.lines);
+      if (result.unavailable.length) {
+        toast.warning(result.lines.length ? "Часть товаров добавлена в корзину" : "Не удалось добавить товары", {
+          description: result.unavailable.map((item) => `${item.name}: ${item.reason}`).join("; "),
+          duration: 12000,
+        });
+      } else if (result.lines.length) {
+        toast.success("Товары добавлены в корзину по актуальным ценам");
+      } else {
+        toast.info("В заказе нет позиций для повтора");
+      }
+      if (result.lines.length) void navigate({ to: "/basket" });
+    } catch (error) {
+      toast.error("Не удалось повторить заказ", {
+        description: error instanceof TypeError ? "Ошибка сети. Проверьте подключение и попробуйте ещё раз."
+          : error instanceof Error ? error.message : "Попробуйте ещё раз.",
       });
+    } finally {
+      repeatingRef.current = false;
+      setRepeating(false);
     }
-    toast.success("Товары добавлены в корзину");
-    void navigate({ to: "/basket" });
   }
 
   async function cancel() {
@@ -296,9 +304,10 @@ function OrderCard({
           <Eye className="h-4 w-4" strokeWidth={2} />
           {expanded ? "Скрыть состав" : "Подробнее о заказе"}
         </button>
-        <button type="button" onClick={repeat} className={primaryButton}>
+        <button type="button" onClick={repeat} disabled={repeating || busy} aria-busy={repeating}
+          className={cn(primaryButton, "disabled:cursor-wait disabled:opacity-60")}>
           <RotateCcw className="h-4 w-4" strokeWidth={2} />
-          Повторить заказ
+          {repeating ? "Добавляем товары…" : "Повторить заказ"}
         </button>
         <span className="hidden flex-1 sm:block" />
         {order.payment?.receiptUrl ? (
@@ -313,7 +322,7 @@ function OrderCard({
           </a>
         ) : null}
         {order.canCancel && !IS_PRIVATE_BETA ? (
-          <button type="button" onClick={cancel} disabled={busy} className={secondaryButton}>
+          <button type="button" onClick={cancel} disabled={busy || repeating} className={secondaryButton}>
             <CircleX className="h-4 w-4" strokeWidth={2} />
             {busy ? "Отмена…" : "Отменить заказ"}
           </button>
