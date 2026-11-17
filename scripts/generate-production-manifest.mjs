@@ -192,6 +192,8 @@ const reviewedInactiveTargets = new Set([
   "/catalog_s/solntsezashchitnye_ochki/solntsezashchitnye_ochki_ray_ban_3025_aviator_large_metal_9196af58/",
   // Bitrix 06.11.2026: СПб 10494 ACTIVE=N; отдельная карточка NvK 3485 остаётся активной.
   "/catalog_s/kontaktnye_linzy_/adria_neon/",
+  // Bitrix 17.11.2026: элемент 64469 ACTIVE=N; API подтверждает 404.
+  "/catalog_s/opravy/detskie_1/dlya_devochek/oprava_penguin_baby_62449_4/",
 ]);
 const retiredRedirectTargets = [];
 let targetPosition = 0;
