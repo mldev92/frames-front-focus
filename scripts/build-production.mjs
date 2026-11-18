@@ -41,7 +41,8 @@ const run = (file, argv, env) => new Promise((resolve,reject) => {
   child.once('exit',code => code === 0 ? resolve() : reject(Error(path.basename(file)+' exited '+code)));
 });
 try {
-  if (mode === 'capture') lease = await acquireProductionReadLease({host:value('--host'),identity:value('--identity')});
+  if (mode === 'capture') lease = await acquireProductionReadLease({host:value('--host'),identity:value('--identity'),
+    approvalSha256:value('--paused-read-approval'),sourceSha:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim()});
   lease?.signal.addEventListener('abort',() => controller.abort(lease.signal.reason),{once:true});
   lease?.assertAlive();
   const snapshot = await openSnapshot({directory,binding,mode,expectedSha256});
