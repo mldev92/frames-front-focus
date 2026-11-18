@@ -10,6 +10,8 @@
 
 ## Получение снимка
 
+Quality CI для pull request больше не запускает legacy `build:beta`, который читал production при локализации ресурсов и SSR-проверках. Он проверяет локальные ресурсы и компилирует витрину с loopback API и запретом внешнего fetch. Этот шаг проверяет компиляцию, не заменяет полную SSR/SEO-приёмку по проверенному снимку и Apache. Отдельные legacy beta-команды не предназначены для инцидентного окна.
+
 1. Обновить и закоммитить полный `deploy/seo-active-products.json.gz` проверенным `refresh-seo-inventory.mjs`. Экспорт использует общий приватный flock и отказывается работать при pause/permit 1С. Возраст inventory — не более 48 часов. Локальные зеркала ресурсов блога должны быть заранее подготовлены и закоммичены; сборка не скачивает их.
 2. Опубликовать проверенный SHA с исправлением. Проверить live backend SHA, все файлы backend-манифеста и SHA256 `.htaccess`. Запустить вручную `Capture production API snapshot` на этом SHA с `backend_sha` и `routing_sha256`. Workflow использует существующее защищённое окружение `production`, прежние SSH secrets и общую с выпуском concurrency group `optika100-production`. Ручной CLI: `node scripts/build-production.mjs --capture --snapshot .o100-api-snapshots/capture --host USER@HOST --identity KEY`; backend/routing передаются переменными `O100_BACKEND_SHA`, `O100_ROUTING_SHA256`. Не вставлять ключи в журнал.
 3. Capture держит один серверный flock `.o100-production-read.lock` на весь аккаунт. Heartbeat каждые 5 секунд; потеря SSH/свежести более 12 секунд прекращает чтение и сборку. Проверяются pause/permit; предельная длительность lease 8 часов. Это координация наших инструментов, не блокировка остальных процессов хостинга или 1С. Сам guard 1С остаётся отдельным механизмом.
