@@ -3,6 +3,7 @@ import { Search, User, Heart, ShoppingBag, Menu, X, ChevronDown } from "lucide-r
 import { useCallback, useEffect, useRef, useState } from "react";
 import { HeaderSearch } from "./HeaderSearch";
 import { useCart } from "@/lib/store/cart";
+import { cartTotals } from "@/lib/cart-totals";
 import { cn } from "@/lib/utils";
 import { contactForCity, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
 import { HEADER_NAV_ITEMS, HeaderMegaPanel, isMegaNavItem } from "./HeaderMegaMenu";
@@ -41,8 +42,8 @@ type FacetLoadState =
 const facetSummaryCache = new Map<string, Promise<CatalogFacetSummary>>();
 
 export function Header() {
-  const { totals, open: openCart, saved } = useCart();
-  const { count } = totals();
+  const { lines, lensSelections, open: openCart, saved } = useCart();
+  const { count } = cartTotals(lines, lensSelections);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const searchTrigger = useRef<HTMLButtonElement>(null);

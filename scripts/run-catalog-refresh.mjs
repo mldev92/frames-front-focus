@@ -36,7 +36,7 @@ const readOnlySsh=input=>{
   }
 };
 const exportInventory=()=>{
-  const php=readFileSync(path.join(source,'scripts/production-read-guard.php'),'utf8')+'\n'+readFileSync(path.join(source,'scripts/catalog-content-fingerprint.php'),'utf8').replace(/^<\?php/,'')+'\n'+readFileSync(path.join(source,'scripts/export-seo-inventory.php'),'utf8').replace(/^<\?php/,'');
+  const php=readFileSync(path.join(source,'scripts/paused-read-authorization.php'),'utf8')+'\n'+readFileSync(path.join(source,'scripts/production-read-guard.php'),'utf8').replace(/^<\?php/,'')+'\n'+readFileSync(path.join(source,'scripts/catalog-content-fingerprint.php'),'utf8').replace(/^<\?php/,'')+'\n'+readFileSync(path.join(source,'scripts/export-seo-inventory.php'),'utf8').replace(/^<\?php/,'');
   const inventory=validateInventory(JSON.parse(readOnlySsh(php)));
   if (catalogFingerprint(inventory)!==inventory.fingerprint) throw Error('Export fingerprint mismatch');
   return inventory;

@@ -120,6 +120,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const [slotsRefreshSequence, setSlotsRefreshSequence] = useState(0);
   const [availableDateKeyList, setAvailableDateKeyList] = useState<string[]>([]);
   const [selectedDateKey, setSelectedDateKey] = useState("");
+  const [requestedDate, setRequestedDate] = useState<{ scope: string; date: string } | null>(null);
   const [selectedSlotId, setSelectedSlotId] = useState("");
 
   const [lastName, setLastName] = useState("");
@@ -139,6 +140,10 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const [verifyingCode, setVerifyingCode] = useState(false);
 
   const selectedSalon = availableSalons.find((item) => item.id === salonId) ?? defaultSalon;
+  const dateScope = `${selectedSalon.clinicUid}|${ageType}|${service}`;
+  // Дата, выбранная ответом сервера, меняет календарь, но не запускает второй
+  // такой же lookup. Новый запрос даты нужен только после выбора посетителя.
+  const requestedDateKey = requestedDate?.scope === dateScope ? requestedDate.date : undefined;
   const groupedSlots = groupSlotsByDay(slots);
   const selectedGroup =
     groupedSlots.find((group) => group.dateKey === selectedDateKey) ?? groupedSlots[0] ?? null;
@@ -215,7 +220,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       clinicUid: selectedSalon.clinicUid,
       ageType,
       serviceCode: service,
-      date: selectedDateKey || undefined,
+      date: requestedDateKey,
       compact: true,
     })
       .then((availability) => {
@@ -247,7 +252,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   }, [
     ageType,
     open,
-    selectedDateKey,
+    requestedDateKey,
     selectedSalon.clinicUid,
     service,
     slotsRefreshSequence,
@@ -279,6 +284,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   }, [open, step]);
 
   function reset() {
+    setRequestedDate(null);
     setStep(1);
     setDirection("forward");
     setSalonId(defaultSalon.id);
@@ -690,7 +696,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                                     if (!date) return;
                                     slotsRef.current = [];
                                     setSlots([]);
-                                    setSelectedDateKey(formatAppointmentDateKey(date));
+                                    const dateKey = formatAppointmentDateKey(date);
+                                    setSelectedDateKey(dateKey);
+                                    setRequestedDate({ scope: dateScope, date: dateKey });
                                     setSelectedSlotId("");
                                     scrollToSlotsRef.current = true;
                                   }}

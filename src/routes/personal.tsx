@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { Reveal } from "@/components/Reveal";
 import { CabinetUnavailable } from "@/components/CabinetUnavailable";
 import { useCart, formatPrice } from "@/lib/store/cart";
+import { cartTotals } from "@/lib/cart-totals";
 import { getMe, getOrders, logout, type CabinetOrder, type Me } from "@/lib/api/account";
 import { authUrl, IS_PRIVATE_BETA } from "@/lib/runtime";
 
@@ -115,7 +116,7 @@ function showComingSoon() {
 }
 
 function PersonalPage() {
-  const { totals } = useCart();
+  const { lines, lensSelections } = useCart();
   const [mounted, setMounted] = useState(false);
   const [me, setMe] = useState<Me | null>(null);
   const [orders, setOrders] = useState<CabinetOrder[]>([]);
@@ -149,7 +150,7 @@ function PersonalPage() {
     };
   }, []);
 
-  const cartCount = mounted ? totals().count : 0;
+  const cartCount = mounted ? cartTotals(lines, lensSelections).count : 0;
   const currentCount = orders.filter((o) => o.state === "progress").length;
   const lastOrder = orders[0] ?? null;
   const greetingName = me?.firstName?.trim() || "в кабинете";

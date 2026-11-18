@@ -36,3 +36,6 @@ nul
 *.njsproj
 *.sln
 *.sw?
+
+# Локальная проверка runtime, не артефакт выпуска
+dist-performance/

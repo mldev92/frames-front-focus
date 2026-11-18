@@ -41,7 +41,8 @@ const run = (file, argv, env) => new Promise((resolve,reject) => {
   child.once('exit',code => code === 0 ? resolve() : reject(Error(path.basename(file)+' exited '+code)));
 });
 try {
-  if (mode === 'capture') lease = await acquireProductionReadLease({host:value('--host'),identity:value('--identity')});
+  if (mode === 'capture') lease = await acquireProductionReadLease({host:value('--host'),identity:value('--identity'),
+    approvalSha256:value('--paused-read-approval'),sourceSha:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim()});
   lease?.signal.addEventListener('abort',() => controller.abort(lease.signal.reason),{once:true});
   lease?.assertAlive();
   const snapshot = await openSnapshot({directory,binding,mode,expectedSha256});
@@ -49,7 +50,8 @@ try {
   if (mode === 'capture') await verifySource();
   gateway = await startGateway({snapshot,assertLease:() => lease.assertAlive(),leaseSignal:lease?.signal});
   const guard = new URL('./build-network-guard.mjs',import.meta.url).href;
-  const env = {...process.env,VITE_BITRIX_API:origin,O100_BUILD_ORIGIN:origin,O100_BUILD_GATEWAY:gateway.url,O100_BUILD_MODE:mode,
+  const frontendSha = execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
+  const env = {...process.env,VITE_RELEASE_SHA:frontendSha,VITE_BITRIX_API:origin,O100_BUILD_ORIGIN:origin,O100_BUILD_GATEWAY:gateway.url,O100_BUILD_MODE:mode,
     NODE_OPTIONS: `${process.env.NODE_OPTIONS || ''} --import=${guard}`.trim()};
   // Оба этапа используют один gateway: лимит общий для manifest, SSR и повторов маршрутов.
   await run('scripts/localize-blog-assets.mjs',['--offline'],env);
@@ -66,7 +68,6 @@ try {
     console.log('Capture output cannot be released. Run build:production with this snapshot and checksum.');
   } else {
     if (gateway.stats.upstreamRequests !== 0) throw Error('Replay unexpectedly accessed production');
-    const frontendSha = execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
     const receipt = {version:1,frontendSha,binding,snapshotSha256:expectedSha256,snapshotStartedAt:snapshot.index.startedAt,finishedAt:new Date().toISOString(),...gateway.stats};
     await writeFile(receiptFile,JSON.stringify(receipt,null,2)+'\n');
     console.log(JSON.stringify({status:'offline_build_complete',...receipt}));

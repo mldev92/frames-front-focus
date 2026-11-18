@@ -81,6 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "release", content: import.meta.env.VITE_RELEASE_SHA ?? "development" },
       { title: "ОПТИКА 100% — оправы, солнцезащитные очки и контактные линзы" },
       {
         name: "description",
