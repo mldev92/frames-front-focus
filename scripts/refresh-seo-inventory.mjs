@@ -12,7 +12,12 @@ if (!/^[A-Za-z0-9_@.-]+$/.test(host) || host.startsWith('-') || !identity) throw
 const source = await readFile(new URL('export-seo-inventory.php', import.meta.url));
 const fingerprint = await readFile(new URL('catalog-content-fingerprint.php', import.meta.url), 'utf8');
 const guard = await readFile(new URL('production-read-guard.php',import.meta.url),'utf8');
-const input = guard + '\n' + fingerprint.replace(/^<\?php/,'') + '\n' + source.toString('utf8').replace(/^<\?php/, '');
+const authorization = await readFile(new URL('paused-read-authorization.php',import.meta.url),'utf8');
+const approval = options.includes('--paused-read-approval') ? value('--paused-read-approval') : '';
+if (approval && !/^[a-f0-9]{64}$/.test(approval)) throw Error('Invalid paused read approval');
+const sha = execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim();
+const input = authorization + `\n$o100ApprovalHash='${approval}';$o100SourceSha='${sha}';\n` + guard.replace(/^<\?php/,'') + '\n' + fingerprint.replace(/^<\?php/,'') + '\n' + source.toString('utf8').replace(/^<\?php/, '')
+  + "\no100_read_authorization($o100ReadHome,$o100ApprovalHash,$o100SourceSha,'inventory');";
 const bytes = execFileSync('ssh', ['-o','BatchMode=yes','-o','StrictHostKeyChecking=yes','-o','ConnectTimeout=15','-i',identity,host,'php8.1'], {input, maxBuffer:32*1024*1024, timeout:600000});
 const inventory = validateInventory(JSON.parse(bytes.toString('utf8')));
 const target = new URL('../deploy/seo-active-products.json.gz',import.meta.url);
