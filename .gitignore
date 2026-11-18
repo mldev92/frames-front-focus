@@ -16,6 +16,7 @@ dist-ssr
 .nitro
 *.local
 generated/
+.o100-api-snapshots/
 dist-seo-preview/
 deploy/catalog-export.php
 

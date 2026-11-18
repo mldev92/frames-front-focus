@@ -12,6 +12,7 @@ const args=process.argv.slice(2), configFile=args[args.indexOf('--config')+1];
 if (!args.includes('--config')) throw Error('Usage: node scripts/run-catalog-refresh.mjs --config private-config.json [--execute]');
 const config=JSON.parse(readFileSync(configFile,'utf8'));
 const execute=args.includes('--execute');
+if (execute && (!/^\d+$/.test(String(config.apiSnapshotRunId || '')) || !/^[a-f0-9]{64}$/.test(config.apiSnapshotSha256 || ''))) throw Error('Catalog refresh requires a reviewed API snapshot; live production builds are disabled');
 const source=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const root='/home/t/tretya9f/wpoptik/public_html';
 if (!/^[a-f0-9]{40}$/.test(config.sourceSha) || !/^[A-Za-z0-9_.-]+@[A-Za-z0-9_.-]+$/.test(config.host)) throw Error('Invalid approved configuration');
@@ -35,7 +36,7 @@ const readOnlySsh=input=>{
   }
 };
 const exportInventory=()=>{
-  const php=readFileSync(path.join(source,'scripts/catalog-content-fingerprint.php'),'utf8')+'\n'+readFileSync(path.join(source,'scripts/export-seo-inventory.php'),'utf8').replace(/^<\?php/,'');
+  const php=readFileSync(path.join(source,'scripts/production-read-guard.php'),'utf8')+'\n'+readFileSync(path.join(source,'scripts/catalog-content-fingerprint.php'),'utf8').replace(/^<\?php/,'')+'\n'+readFileSync(path.join(source,'scripts/export-seo-inventory.php'),'utf8').replace(/^<\?php/,'');
   const inventory=validateInventory(JSON.parse(readOnlySsh(php)));
   if (catalogFingerprint(inventory)!==inventory.fingerprint) throw Error('Export fingerprint mismatch');
   return inventory;
@@ -97,7 +98,7 @@ try {
       const sha=git(checkout,'rev-parse','HEAD');
       state.pending={directory,checkout,branch,sha,phase:'dispatch',startedAt:new Date().toISOString()}; save(stateFile,state);
       git(checkout,'push','origin',branch);
-      gh('workflow','run','prepare-production.yml','--repo',config.repository,'--ref',branch,'-f','backend_sha='+live.backendSha,'-f','backend_manifest='+JSON.stringify(live.backendManifest),'-f','routing_sha256='+live.routingSha256);
+      gh('workflow','run','prepare-production.yml','--repo',config.repository,'--ref',branch,'-f','backend_sha='+live.backendSha,'-f','backend_manifest='+JSON.stringify(live.backendManifest),'-f','routing_sha256='+live.routingSha256,'-f','api_snapshot_run_id='+config.apiSnapshotRunId,'-f','api_snapshot_sha256='+config.apiSnapshotSha256);
       state.pending.phase='building'; save(stateFile,state);
       result={status:'build_started',sha,branch};
     }

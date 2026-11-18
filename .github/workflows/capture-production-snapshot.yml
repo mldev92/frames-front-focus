@@ -1,0 +1,66 @@
+name: Capture production API snapshot
+on:
+  workflow_dispatch:
+    inputs:
+      backend_sha:
+        description: Inspected production backend SHA
+        required: true
+      routing_sha256:
+        description: Inspected live routing SHA256
+        required: true
+      resume_run_id:
+        description: Optional previous capture run with a partial snapshot
+        required: false
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: optika100-production
+  cancel-in-progress: false
+jobs:
+  capture:
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    env:
+      O100_BACKEND_SHA: ${{ inputs.backend_sha }}
+      O100_ROUTING_SHA256: ${{ inputs.routing_sha256 }}
+      SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+      SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - name: Restore partial capture
+        if: ${{ inputs.resume_run_id != '' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: production-api-snapshot
+          run-id: ${{ inputs.resume_run_id }}
+          github-token: ${{ github.token }}
+          path: .o100-api-snapshots/capture
+      - name: Configure approved SSH identity
+        env:
+          SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.PRODUCTION_KNOWN_HOSTS }}
+        run: |
+          test -n "$KNOWN_HOSTS"
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/optika-production
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
+      - name: Capture with shared lease and bounded API traffic
+        timeout-minutes: 300
+        run: node scripts/build-production.mjs --capture --snapshot .o100-api-snapshots/capture --host "$SSH_USER@$SSH_HOST" --identity ~/.ssh/optika-production
+      - name: Preserve complete or resumable snapshot
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-api-snapshot
+          path: .o100-api-snapshots/capture/
+          include-hidden-files: true
+          retention-days: 2
+          if-no-files-found: warn
