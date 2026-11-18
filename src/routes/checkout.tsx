@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart, formatPrice } from "@/lib/store/cart";
+import { cartTotals } from "@/lib/cart-totals";
 import { useCityStore } from "@/lib/store/city";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { CONTACT } from "@/data/contact";
@@ -194,8 +195,8 @@ function Checkout() {
   const isMobile = useIsMobile();
   const regionalCity = useCityStore((state) => state.city);
   const regionalCityHydrated = useCityStore((state) => state.hydrated);
-  const { totals, lines, setQty, consume, legacySyncStatus } = useCart();
-  const { subtotal } = totals();
+  const { lines, setQty, consume, legacySyncStatus } = useCart();
+  const { subtotal } = cartTotals(lines);
 
   const [step, setStep] = useState<CheckoutStep>("region");
   const [location, setLocation] = useState<CheckoutLocation | null>(() =>
