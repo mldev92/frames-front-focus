@@ -1,3 +1,4 @@
+import './retired-production-build.mjs';
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { redirectTargets } from "./catalog-link-check.mjs";
 
