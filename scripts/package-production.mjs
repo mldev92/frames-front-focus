@@ -8,6 +8,7 @@ import { loadInventory } from './seo-inventory.mjs';
 import { catalogFingerprint } from './catalog-refresh-policy.mjs';
 import { FRAME_BRAND_LANDINGS } from '../src/data/frame-brand-landings.ts';
 import { FRAME_CATEGORY_LANDINGS } from '../src/data/frame-category-landings.ts';
+import { verifyApiBuildReceipt } from './api-build-receipt.mjs';
 
 if (process.env.O100_PRERENDER_LIMIT || process.env.O100_PRERENDER_ROUTES) throw new Error("Partial production builds cannot be packaged");
 const sha = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
@@ -38,6 +39,8 @@ async function walk(dir) {
 await walk(root);
 const routes = JSON.parse(await readFile("generated/production-routes.json", "utf8"));
 const inventory = await loadInventory();
+const apiSnapshot = JSON.parse(await readFile('generated/api-snapshot-build.json','utf8'));
+verifyApiBuildReceipt(apiSnapshot,{frontendSha:sha,backendSha,routingSha256:baseline,inventorySha256:createHash('sha256').update(await readFile('deploy/seo-active-products.json.gz')).digest('hex')});
 const required = JSON.parse(await readFile('deploy/seo-required-products.json','utf8')).paths;
 const available = new Set(routes.routes);
 const samples = inventory.products.filter(p=>p.sectionActive).filter((p,i)=>i%150===0).map(p=>p.canonicalPath);
@@ -47,6 +50,7 @@ const queryAcceptancePaths = ['/search/?q=GUESS&city=nvk', '/catalog_s/opravy/zh
 await writeFile(path.join(root, "release-manifest.json"), JSON.stringify({ version: 1, frontendSha: sha, backendSha,
   backendFiles: backend.files, templateFiles, runtime: process.version, apiOrigin: "https://optika100.com", routingBaseline: baseline, builtAt: new Date().toISOString(), routeCount: routes.count,
   inventorySha256: routes.inventorySha256, inventoryGeneratedAt: routes.inventoryGeneratedAt,
+  apiSnapshotSha256: apiSnapshot.snapshotSha256,
   catalogFingerprint: inventory.content ? catalogFingerprint(inventory) : null, acceptancePaths, queryAcceptancePaths,
   retiredPaths: [...new Set([...routes.retiredProductPaths,...routes.retiredSectionPaths])],
   settings: { privateBeta: false, fixtures: false, virtualTryOn: false }, files }, null, 2) + "\n");

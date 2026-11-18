@@ -6,12 +6,17 @@ const manifest = JSON.parse(
 ) as { routes: string[] };
 if (process.env.O100_PRERENDER_LIMIT || process.env.O100_PRERENDER_ROUTES) throw new Error("Partial production prerender is forbidden");
 const productionRoutes = manifest.routes;
+const gateway = new URL(process.env.O100_BUILD_GATEWAY || "http://invalid");
+if (gateway.hostname !== "127.0.0.1" || gateway.protocol !== "http:" || !gateway.port || !["capture", "replay"].includes(process.env.O100_BUILD_MODE || "")) {
+  throw new Error("Production prerender requires the snapshot runner; direct production reads are forbidden");
+}
 
 export default defineConfig({
   cloudflare: false,
   vite: {
     define: {
       "import.meta.env.VITE_PRERENDER_BUILD": JSON.stringify("true"),
+      "import.meta.env.VITE_PRERENDER_API": JSON.stringify(gateway.origin),
       "import.meta.env.VITE_PRIVATE_BETA": JSON.stringify("false"),
       "import.meta.env.VITE_ALLOW_FIXTURES": JSON.stringify("false"),
       "import.meta.env.VITE_VIRTUAL_TRY_ON": JSON.stringify("false"),
@@ -34,7 +39,7 @@ export default defineConfig({
       crawlLinks: false,
       concurrency: 4,
       failOnError: true,
-      retryCount: 2,
+      retryCount: 0,
     },
   },
 });

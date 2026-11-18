@@ -20,7 +20,16 @@ jobs:
       - run: bunx eslint src eslint.config.js vite.config.ts vite.config.beta.ts vite.config.production.ts
       - run: bun run test
       - run: bun run test:unit
-      - run: VITE_BITRIX_API=https://optika100.com bun run build:beta
+      - name: Verify tracked blog assets without production reads
+        run: node scripts/localize-blog-assets.mjs --offline
+      - name: Compile storefront without live API acceptance
+        env:
+          VITE_BITRIX_API: http://127.0.0.1:9
+          O100_BUILD_ORIGIN: https://optika100.com
+          O100_BUILD_GATEWAY: http://127.0.0.1:9
+          O100_BUILD_MODE: replay
+          NODE_OPTIONS: --import=./scripts/build-network-guard.mjs
+        run: node node_modules/vite/bin/vite.js build --config vite.config.beta.ts
 
   apache:
     runs-on: ubuntu-latest

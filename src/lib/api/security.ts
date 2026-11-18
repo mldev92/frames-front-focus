@@ -38,7 +38,18 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
   const startedAt = typeof performance === "undefined" ? Date.now() : performance.now();
   let status: number | undefined;
   try {
-    const response = await fetch(input, init);
+    // Только статическая сборка обращается к локальному снимку. Браузер и обычный SSR сохраняют live API.
+    let target = input;
+    if (import.meta.env?.SSR && import.meta.env.VITE_PRERENDER_BUILD === "true") {
+      const gateway = new URL(import.meta.env.VITE_PRERENDER_API || "http://invalid");
+      const request = new Request(input, init);
+      const source = new URL(request.url);
+      if (gateway.hostname !== "127.0.0.1" || gateway.protocol !== "http:" || !gateway.port || source.origin !== BASE || request.method !== "GET" || request.headers.has("authorization") || request.headers.has("cookie")) {
+        throw new Error("Prerender requires an anonymous read from the local API snapshot");
+      }
+      target = gateway.origin + source.pathname + source.search;
+    }
+    const response = await fetch(target, init);
     status = response.status;
     return response;
   } finally {

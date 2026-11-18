@@ -1,3 +1,4 @@
+import './build-network-guard.mjs';
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { gunzipSync } from 'node:zlib';
 import { redirectTargets } from "./catalog-link-check.mjs";
