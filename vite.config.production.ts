@@ -1,3 +1,4 @@
+import './scripts/retired-production-build.mjs';
 import { readFileSync } from "node:fs";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 

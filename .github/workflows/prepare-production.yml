@@ -20,6 +20,10 @@ jobs:
       O100_BACKEND_SHA: ${{ inputs.backend_sha }}
       O100_ROUTING_SHA256: ${{ inputs.routing_sha256 }}
     steps:
+      - name: Reject retired production pipeline
+        run: |
+          echo 'Use the maintained codex/repeat-order-production-20261117 branch with a reviewed API snapshot.'
+          exit 2
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile

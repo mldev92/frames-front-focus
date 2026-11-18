@@ -116,6 +116,13 @@ async function mirrorAsset(url) {
   const filePath = toDiskPath(url);
   let asset;
 
+  // Production-сборка использует только уже проверенные локальные ресурсы.
+  if (process.argv.includes('--offline')) {
+    await access(filePath);
+    if (url.pathname.endsWith('.css')) discoverCssAssets(await readFile(filePath, 'utf8'), url);
+    return;
+  }
+
   try {
     asset = await fetchProductionAsset(url);
   } catch (error) {
@@ -157,6 +164,11 @@ while (queue.length > 0) {
   completed.add(key);
 }
 
-await writeFile(SOURCE, `${JSON.stringify(content, null, 2)}\n`);
+const localized = `${JSON.stringify(content, null, 2)}\n`;
+if (process.argv.includes('--offline')) {
+  if ((await readFile(SOURCE, 'utf8')).replaceAll('\r\n', '\n') !== localized) throw new Error('Commit localized blog content before the offline production build');
+} else {
+  await writeFile(SOURCE, localized);
+}
 
 console.log(`Localized ${completed.size} production blog assets.`);

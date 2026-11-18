@@ -1,0 +1,22 @@
+name: Capture production API snapshot
+on:
+  workflow_dispatch:
+    inputs:
+      backend_sha:
+        description: Inspected production backend SHA
+        required: true
+      routing_sha256:
+        description: Inspected live routing SHA256
+        required: true
+      resume_run_id:
+        description: Optional previous partial capture run
+        required: false
+permissions:
+  contents: read
+jobs:
+  select-maintained-source:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo 'Select codex/repeat-order-production-20261117 when dispatching this workflow. Main has no supported production inventory pipeline.'
+          exit 2
