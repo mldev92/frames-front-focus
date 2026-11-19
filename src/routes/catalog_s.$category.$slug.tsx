@@ -177,17 +177,17 @@ export function ProductPage({
   useEffect(() => setCity(city), [city, setCity]);
 
   const isLens = product.category === "kontaktnye-linzy";
-  const isFrameLike = product.category === "opravy" || product.category === "linzy-dlya-ochkov";
+  const isFrame = product.category === "opravy";
+  const isSpectacleLens = product.category === "linzy-dlya-ochkov";
   const showTryOn =
-    VIRTUAL_TRY_ON_ENABLED && product.category !== "kontaktnye-linzy" && product.category !== "linzy-dlya-ochkov";
+    VIRTUAL_TRY_ON_ENABLED && !isLens && !isSpectacleLens;
   const isMisight = product.slug.toLowerCase().includes("misight");
   // Ссылка CooperVision — с идентификатором салона СПб, поэтому кнопка только в каталоге СПб
   // (его же видит регион «Вся Россия»).
   const isMisightPromo = isLens && city === "spb" && isMisightPromoProduct(product);
   const showInstallment =
     city === "spb" &&
-    ((isFrameLike && product.price > 3500) ||
-      (product.category === "kontaktnye-linzy" && isMisight));
+    (((isFrame || isSpectacleLens) && product.price > 3500) || (isLens && isMisight));
   const lensQty = isLens && lensEyeMode === "different" ? 2 : 1;
   const hasPrice = hasProductPrice(product.price);
 
@@ -205,7 +205,7 @@ export function ProductPage({
   }, [color, isLens, lensEyeMode, product]);
 
   const handlePrimaryCta = () => {
-    if (isFrameLike) {
+    if (isFrame) {
       setLensModal(true);
     } else {
       if (isLens && !lensPurchaseComplete(product, prescription)) {
@@ -347,7 +347,7 @@ export function ProductPage({
           <div className="min-w-0 max-lg:order-3 max-lg:[&>div]:mt-0">
             <ProductInfoSections
               product={product}
-              showPrescription={!isLens && isFrameLike}
+              showPrescription={isFrame}
               prescriptionVariant={isLens ? "contacts" : "frames"}
               prescription={prescription}
               onPrescriptionChange={setPrescription}
@@ -482,9 +482,9 @@ export function ProductPage({
                 onClick={handlePrimaryCta}
                 className="w-full border border-brand bg-brand text-brand-foreground py-3.5 rounded-full hover:opacity-90 font-medium transition-opacity"
               >
-                {isFrameLike ? "Подобрать линзы и купить" : "В корзину"}
+                {isFrame ? "Подобрать линзы и купить" : "В корзину"}
               </button>
-              {isFrameLike && (
+              {isFrame && (
                 // Тот же размер и вес, что у кнопки с линзами: покупатель сразу видит оба варианта.
                 <button
                   onClick={addFrameWithoutLenses}
@@ -560,10 +560,10 @@ export function ProductPage({
                 discountPercent={product.discountPercent}
                 // У оправы рядом две кнопки: строка скидки на узком экране переносилась и раздувала панель
                 // выше отступа плавающей кнопки чата; скидка видна в основном блоке.
-                className={cn("text-[11px]", isFrameLike && "hidden sm:block")}
+                className={cn("text-[11px]", isFrame && "hidden sm:block")}
               />
             </div>
-            {isFrameLike ? (
+            {isFrame ? (
               // Оба варианта покупки оправы всегда на виду, одного размера: без линз и с линзами.
               <div className="flex shrink-0 gap-2">
                 <button
@@ -593,13 +593,15 @@ export function ProductPage({
         </div>
       )}
 
-      <LensWizard
-        open={lensModal}
-        onClose={() => setLensModal(false)}
-        frame={product}
-        previewImage={currentImage}
-        selectedColor={selectedColor?.name}
-      />
+      {isFrame && (
+        <LensWizard
+          open={lensModal}
+          onClose={() => setLensModal(false)}
+          frame={product}
+          previewImage={currentImage}
+          selectedColor={selectedColor?.name}
+        />
+      )}
       {showTryOn && (
         <VirtualTryOnModal open={vtoOpen} onClose={() => setVtoOpen(false)} vtoSku={vtoSku} />
       )}
