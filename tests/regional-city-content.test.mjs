@@ -111,8 +111,8 @@ test("shared pages derive regional text and links from the selected city", async
   assert.match(repair, /city === "nvk" \? NK_SALONS\[0\] : SPB_SALONS\[0\]/);
   assert.match(productInfo, /serviceHref\("diagnostika", city\)/);
   assert.match(productInfo, /Доставка по Новокузнецку/);
-  assert.match(appointment, /salon\.city === "nk"/);
-  assert.match(appointment, /availableSalons\.map/);
+  assert.match(appointment, /chosenSalon\s*\?\?\s*APPOINTMENT_SALONS\.find/);
+  assert.match(appointment, /APPOINTMENT_SALONS\.map\(\(salon\) => \(/);
   assert.match(appointment, /if \(!open \|\| \(step !== 1 && step !== 2\)\) \{/);
   assert.match(appointment, /slotsRefreshSequence/);
   assert.match(appointment, /window\.addEventListener\("focus", refreshVisibleSlots\)/);

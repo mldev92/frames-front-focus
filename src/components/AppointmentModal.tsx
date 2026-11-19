@@ -99,14 +99,11 @@ interface Props {
 
 export function AppointmentModal({ open, onOpenChange }: Props) {
   const city = useCityStore((state) => state.city);
-  const availableSalons = APPOINTMENT_SALONS.filter((salon) =>
-    city === "nvk" ? salon.city === "nk" : salon.city === "spb",
-  );
-  const defaultSalon = availableSalons[0];
+  const salonCity = city === "nvk" ? "nk" : "spb";
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState<Direction>("forward");
 
-  const [salonId, setSalonId] = useState(defaultSalon.id);
+  const [chosenSalon, setChosenSalon] = useState<AppointmentSalon | null>(null);
   const [ageType, setAgeType] = useState<AgeType>("adult");
   const [salonOpen, setSalonOpen] = useState(false);
 
@@ -138,7 +135,10 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const [resendingCode, setResendingCode] = useState(false);
   const [verifyingCode, setVerifyingCode] = useState(false);
 
-  const selectedSalon = availableSalons.find((item) => item.id === salonId) ?? defaultSalon;
+  const selectedSalon =
+    chosenSalon ??
+    APPOINTMENT_SALONS.find((salon) => salon.city === salonCity) ??
+    APPOINTMENT_SALONS[0];
   const groupedSlots = groupSlotsByDay(slots);
   const selectedGroup =
     groupedSlots.find((group) => group.dateKey === selectedDateKey) ?? groupedSlots[0] ?? null;
@@ -165,7 +165,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     setAvailableDateKeyList([]);
     setSelectedDateKey("");
     setSelectedSlotId("");
-  }, [salonId, ageType, service]);
+  }, [selectedSalon.id, ageType, service]);
 
   useEffect(() => {
     slotsRef.current = slots;
@@ -177,12 +177,6 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     scrollToSlotsRef.current = false;
     slotsPanelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [slots]);
-
-  useEffect(() => {
-    if (!availableSalons.some((salon) => salon.id === salonId)) {
-      setSalonId(defaultSalon.id);
-    }
-  }, [availableSalons, defaultSalon.id, salonId]);
 
   useEffect(() => {
     if (!open || step !== 4 || confirmationExpiresAt <= 0) {
@@ -281,7 +275,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   function reset() {
     setStep(1);
     setDirection("forward");
-    setSalonId(defaultSalon.id);
+    setChosenSalon(null);
     setAgeType("adult");
     setSalonOpen(false);
     setService("glasses");
@@ -557,21 +551,21 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                         </button>
                         {salonOpen && (
                           <div className="absolute left-0 right-0 top-full mt-2 bg-background border border-border rounded-xl shadow-lg z-30 overflow-hidden animate-in fade-in-0 zoom-in-95 duration-150">
-                            {availableSalons.map((salon) => (
+                            {APPOINTMENT_SALONS.map((salon) => (
                               <button
                                 key={salon.id}
                                 type="button"
                                 onClick={() => {
-                                  setSalonId(salon.id);
+                                  setChosenSalon(salon);
                                   setSalonOpen(false);
                                 }}
                                 className={cn(
                                   "w-full text-left text-sm px-4 py-3 transition-colors hover:bg-muted flex items-center justify-between gap-3",
-                                  salon.id === salonId && "bg-muted",
+                                  salon.id === selectedSalon.id && "bg-muted",
                                 )}
                               >
                                 <span className="min-w-0 truncate">{salon.appointmentLabel}</span>
-                                {salon.id === salonId && (
+                                {salon.id === selectedSalon.id && (
                                   <Check className="h-3.5 w-3.5 text-brand shrink-0" />
                                 )}
                               </button>
