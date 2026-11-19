@@ -77,3 +77,14 @@ test("a frame always offers both purchase options side by side: with and without
   assert.match(bar, /С линзами/);
   assert.doesNotMatch(bar, />Подобрать</);
 });
+
+test("покупка оправы с линзами или без доступна только для оправ", async () => {
+  const page = await read("../src/routes/catalog_s.$category.$slug.tsx");
+  const bar = page.slice(page.indexOf("showStickyBuyBar && ("));
+  assert.match(page, /^  const isFrame = product\.category === "opravy";$/m);
+  assert.match(page, /const handlePrimaryCta = \(\) => \{\s*if \(isFrame\) \{\s*setLensModal\(true\)/);
+  assert.match(page, /\{isFrame \? "Подобрать линзы и купить" : "В корзину"\}/);
+  assert.match(page, /\{isFrame && \(\s*(?:\/\/[^\n]*\n\s*)?<button\s+onClick=\{addFrameWithoutLenses\}/);
+  assert.match(bar, /\{isFrame \? \([\s\S]*?onClick=\{addFrameWithoutLenses\}/);
+  assert.match(page, /\{isFrame && \(\s*<LensWizard\b/);
+});
