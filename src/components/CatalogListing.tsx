@@ -57,6 +57,7 @@ interface ListingProps {
   subtitle?: string;
   headerBeforeTitle?: ReactNode;
   headerAfterTitle?: ReactNode;
+  adminActions?: ReactNode;
   catalogId?: string;
   /** Server-driven catalog page: slice + totals + facet counts + priceBounds. */
   data: CatalogPage;
@@ -946,6 +947,7 @@ export function CatalogListing({
   subtitle,
   headerBeforeTitle,
   headerAfterTitle,
+  adminActions,
   catalogId,
   data,
   facets = [],
@@ -2255,6 +2257,7 @@ export function CatalogListing({
         <h1 className="font-serif text-4xl lg:text-5xl">{title}</h1>
         {subtitle && <p className="mt-3 text-muted-foreground max-w-2xl">{subtitle}</p>}
       </div>
+      {adminActions}
       {headerAfterTitle}
 
       <div id={catalogId} className="scroll-mt-24 lg:flex lg:items-start" style={{ minHeight: "80vh" }}>
