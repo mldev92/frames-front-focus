@@ -13,6 +13,7 @@ import {
 import { Toaster } from "sonner";
 
 import appCss from "../styles.css?url";
+import { AdminShortcuts } from "@/components/layout/AdminShortcuts";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
@@ -157,6 +158,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip">
+        <AdminShortcuts />
         <Header />
         <CartMigration />
         <StorefrontFreshness />
