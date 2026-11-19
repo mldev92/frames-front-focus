@@ -183,3 +183,48 @@ cmp /evidence/shadow.htaccess "$root/.htaccess"
 [[ ! -L "$root/o100_frontend_current" ]]
 cp /evidence/legacy.htaccess "$root/.htaccess"
 echo 'PASS: shadowing public robots automatically restores legacy'
+
+# Точечный выпуск повторно использует готовые страницы и проваливается при дрейфе.
+while IFS= read -r -d '' file; do
+  html=$(cat "$file")
+  printf '<!doctype html><html><head><script type="module" src="/assets/test-hash.js"></script></head><body>%s</body></html>\n' "$html" > "$file"
+done < <(find /candidate -name '*.html' -type f -print0)
+parent=8888888888888888888888888888888888888888
+make_archive "$parent"
+baseline=$(sha256sum "$root/.htaccess" | cut -d' ' -f1)
+bash /frontend/deploy/release.sh deploy "$root" "$parent" "$baseline" "/evidence/$parent.tgz"
+baseline=$(sha256sum "$root/.htaccess" | cut -d' ' -f1)
+cp "$root/.htaccess" /evidence/toolbar.htaccess
+printf '%s\n' 'Пауза 1С' > /var/www/.o100-1c-catalog-paused
+mkdir -p "$root/bitrix/admin"
+printf '%s\n' '<?php echo "failure";' > "$root/bitrix/admin/1c_exchange.php"
+printf '%s\n' '<?php header("Content-Type: application/json"); if(isset($_GET["productId"])) http_response_code(403); else echo "{\"isAdmin\":false}";' > "$root/api/store/admin_shortcuts.php"
+php <<'PHP'
+<?php
+$root='/var/www/html';
+$file=$root.'/o100_frontend_current/release-manifest.json';
+$m=json_decode(file_get_contents($file),true);
+$m['catalogFingerprint']=str_repeat('f', 64);
+$m['routeCount']=5;
+$m['acceptancePaths']=['/','/catalog_s/opravy/','/catalog_n/opravy/','/catalog_n/opravy/deep-product/'];
+file_put_contents($file,json_encode($m));
+$backend=['sha'=>str_repeat('b',40),'files'=>['api/store/admin_shortcuts.php'=>hash_file('sha256',$root.'/api/store/admin_shortcuts.php')]];
+file_put_contents('/var/www/.o100-backend-release.json',json_encode($backend));
+PHP
+export O100_EXPECTED_FRONTEND="$parent" O100_BACKEND_SHA=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+export O100_PARENT_MANIFEST_SHA256=$(sha256sum "$root/o100_frontend_current/release-manifest.json" | cut -d' ' -f1)
+export O100_BACKEND_MANIFEST_SHA256=$(sha256sum /var/www/.o100-backend-release.json | cut -d' ' -f1)
+export O100_EXPECTED_PAUSE_SHA256=$(sha256sum /var/www/.o100-1c-catalog-paused | cut -d' ' -f1)
+export O100_EXPECTED_1C_GUARD_SHA256=$(sha256sum "$root/bitrix/admin/1c_exchange.php" | cut -d' ' -f1)
+if O100_TEST_FAIL_AFTER_SWAP=1 bash /frontend/deploy/release.sh deploy-toolbar "$root" 9999999999999999999999999999999999999999 "$baseline"; then exit 1; fi
+[[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$parent" ]]
+cmp /evidence/toolbar.htaccess "$root/.htaccess"
+toolbar=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+bash /frontend/deploy/release.sh deploy-toolbar "$root" "$toolbar" "$baseline"
+[[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$toolbar" ]]
+cmp /evidence/toolbar.htaccess "$root/.htaccess"
+cmp "$root/o100_frontend_releases/$parent/sitemap.xml" "$root/o100_frontend_current/sitemap.xml"
+cmp "$root/o100_frontend_releases/$parent/assets/test-hash.js" "$root/o100_frontend_current/assets/test-hash.js"
+check 200 /catalog_n/opravy/deep-product/
+grep -q 'o100-admin-toolbar-' /tmp/response
+echo 'PASS: toolbar-only immutable release preserves routing, assets, sitemap and rollback'

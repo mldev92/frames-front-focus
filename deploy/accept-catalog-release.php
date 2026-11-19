@@ -1,8 +1,9 @@
 <?php
 // Выполняется под release lock до отключения автоматического отката.
-if (PHP_SAPI !== 'cli' || $argc !== 4) exit(2);
+if (PHP_SAPI !== 'cli' || ($argc !== 4 && ($argc !== 5 || $argv[4] !== 'deploy-toolbar'))) exit(2);
 try {
     [$script,$root,$release,$origin]=$argv;
+    $toolbarOnly = $argc === 5;
     $manifest=json_decode(file_get_contents($release.'/release-manifest.json'),true,512,JSON_THROW_ON_ERROR);
     $request=function(string $path) use ($origin): array {
         $curl=curl_init($origin.str_replace(' ', '%20', $path));
@@ -33,7 +34,17 @@ try {
         if ($status!==200 || hash('sha256',$body)!==($manifest['files']['_shell.html']??'')) throw new RuntimeException('Public search shell mismatch: '.$path);
     }
     // Контроль источника после HTTP-проверок исключает публикацию устаревшего снимка.
-    if (!empty($manifest['catalogFingerprint'])) {
+    if ($toolbarOnly) {
+        $asset = $manifest['adminToolbar']['asset'] ?? '';
+        if (!preg_match('~^/assets/o100-admin-toolbar-[a-f0-9]{64}\.js$~D', $asset)) throw new RuntimeException('Toolbar release metadata missing');
+        [$assetStatus,$assetBody]=$request($asset);
+        [$homepageStatus,$homepage]=$request('/');
+        [$sessionStatus,$session]=$request('/api/store/admin_shortcuts.php');
+        [$editStatus]=$request('/api/store/admin_shortcuts.php?productId=1');
+        if ($assetStatus!==200 || hash('sha256',$assetBody)!==($manifest['files'][ltrim($asset,'/')]??'')) throw new RuntimeException('Public toolbar asset mismatch');
+        if ($homepageStatus!==200 || !str_contains($homepage,'<script defer src="'.$asset.'"></script>')) throw new RuntimeException('Public toolbar entry missing');
+        if ($sessionStatus!==200 || (json_decode($session,true)['isAdmin']??null)!==false || $editStatus!==403) throw new RuntimeException('Guest toolbar access check failed');
+    } elseif (!empty($manifest['catalogFingerprint'])) {
         ob_start();
         require __DIR__.'/catalog-export.php';
         $inventory=json_decode(ob_get_clean(),true,512,JSON_THROW_ON_ERROR);
