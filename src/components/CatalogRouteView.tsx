@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { CatalogListing, type CatalogStateChange } from "@/components/CatalogListing";
 import { CatalogSeoContent } from "@/components/CatalogSeoContent";
+import { CatalogAdminActions } from "@/components/CatalogAdminActions";
 import {
   ContactLensCatalogFooter,
   ContactLensCatalogGuide,
@@ -160,6 +161,7 @@ export function CatalogRouteView({
               : catalogSectionTitle(sectionPath, config.title)
         }
         subtitle={isContactLensRoot || isColoredContactLens || landing ? undefined : config.subtitle}
+        adminActions={landing !== "brand" && <CatalogAdminActions sectionPath={normalizedSectionPath} city={city} />}
         headerAfterTitle={
           landing ? (
             <FrameLandingIntro path={normalizedSectionPath} kind={landing} data={landingData} />

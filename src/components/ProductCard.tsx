@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { getProductGallery } from "@/lib/api/bitrix";
 import type { CityCode } from "@/lib/store/city";
 import { PriceSavings } from "@/components/PriceSavings";
+import { AdminProductAction } from "@/components/AdminProductAction";
 
 interface ProductCardProps {
   product: Product;
@@ -177,6 +178,7 @@ export function ProductCard({
         >
           {product.name}
         </a>
+        <AdminProductAction id={product.id} name={product.name} />
         {product.colors && product.colors.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {displayColors.map((c) => {

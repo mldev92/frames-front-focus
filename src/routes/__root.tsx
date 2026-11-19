@@ -158,14 +158,15 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip">
-        <AdminShortcuts />
-        <Header />
-        <CartMigration />
-        <StorefrontFreshness />
-        <main className="min-w-0 flex-1 overflow-x-clip">
-          <Outlet />
-        </main>
-        <Footer />
+        <AdminShortcuts>
+          <Header />
+          <CartMigration />
+          <StorefrontFreshness />
+          <main className="min-w-0 flex-1 overflow-x-clip">
+            <Outlet />
+          </main>
+          <Footer />
+        </AdminShortcuts>
       </div>
       <CartDrawer />
       <MessengerFAB />

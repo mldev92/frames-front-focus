@@ -8,6 +8,7 @@ import { isMisightPromoProduct, MISIGHT_PROMO } from "@/data/promotions";
 import type { Product } from "@/data/types";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { ProductCard } from "@/components/ProductCard";
+import { AdminProductAction } from "@/components/AdminProductAction";
 import { PriceSavings } from "@/components/PriceSavings";
 import { TryOnBadge, TryOnIcon } from "@/components/TryOnIcon";
 import { ProductInfoSections } from "@/components/ProductInfoSections";
@@ -370,6 +371,7 @@ export function ProductPage({
               {displayBrand}
             </div>
             <h1 className="font-serif text-2xl lg:text-3xl mt-1 pr-10">{product.name}</h1>
+            <AdminProductAction id={product.id} name={product.name} />
 
             <div className="mt-2 flex items-center gap-3 text-xs">
               <span
