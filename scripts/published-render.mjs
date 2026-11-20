@@ -24,6 +24,23 @@ globalThis.fetch = () => {
   throw Error("Network request during offline rendering");
 };
 
+async function render(route) {
+  let url = new URL(route, "http://localhost");
+  const pathname = url.pathname;
+  const seen = new Set();
+  while (seen.size < 5 && !seen.has(url.href)) {
+    seen.add(url.href);
+    const response = await server.fetch(new Request(url));
+    if (![301, 302, 303, 307, 308].includes(response.status)) return response;
+    const location = response.headers.get("location");
+    if (!location) break;
+    url = new URL(location, url);
+    // Загрузчик поиска нормализует query перед рендером того же маршрута.
+    if (url.origin !== "http://localhost" || url.pathname !== pathname) break;
+  }
+  throw Error("Unexpected redirect while rendering " + route);
+}
+
 for (let i = index; i < routes.length; i += count) {
   const route = routes[i],
     file = routeFile(route);
@@ -32,7 +49,7 @@ for (let i = index; i < routes.length; i += count) {
     if (createHash("sha256").update(bytes).digest("hex") !== manifest.files[file])
       throw Error("Published checksum mismatch");
     const source = bytes.toString("utf8");
-    const response = await server.fetch(new Request(new URL(route, "http://localhost")));
+    const response = await render(route);
     if (response.status !== 200 || !response.headers.get("content-type")?.includes("text/html"))
       throw Error("Unexpected SSR response " + response.status);
     const html = await response.text();

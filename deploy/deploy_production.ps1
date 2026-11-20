@@ -6,7 +6,7 @@
   was run by hand, file by file, over SSH. This script automates that exact
   sequence.
 
-  Dry-run (builds + packages locally, touches nothing on the server):
+  Проверка без публикации (для исправлений витрины готовит кандидат в Actions):
     ./deploy/deploy_production.ps1 -Sha <pushed-commit>
 
   Deploy:
@@ -446,20 +446,23 @@ if (-not (Test-Path $KeyPath)) { throw "SSH key not found: $KeyPath" }
 
 $fullSha = Resolve-PushedSha
 Assert-CleanWorkingTreeAt $fullSha
-Write-Host "Deploying frontend $fullSha"
+Write-Host "Preparing frontend $fullSha"
 
 $timestamp = Get-Date -Format 'yyyyMMdd_HHmmss'
 $work = Join-Path $env:TEMP "optika_production_$timestamp"
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 
 try {
-    $parent = (Invoke-Ssh "cat '$DocRoot/o100_frontend_current/.release-sha'").Trim()
+    $parent = (Invoke-Ssh "if test -f '$DocRoot/o100_frontend_current/.release-sha'; then cat '$DocRoot/o100_frontend_current/.release-sha'; fi").Trim()
     Push-Location $FrontendRepo
     try {
         & bun install --frozen-lockfile | Out-Host
         if ($LASTEXITCODE) { throw 'Dependency installation failed.' }
-        $mode = & node scripts/storefront-release-mode.mjs $parent $fullSha
-        if ($LASTEXITCODE) { throw 'Could not classify storefront changes.' }
+        $mode = 'full'
+        if ($parent) {
+            $mode = & node scripts/storefront-release-mode.mjs $parent $fullSha
+            if ($LASTEXITCODE) { throw 'Could not classify storefront changes.' }
+        }
         if ($mode -eq 'code-only') {
             $routing = Get-RemoteSha "$DocRoot/.htaccess"
             $backend = Invoke-Ssh "cat '$DocRoot/../.o100-backend-release.json'"
