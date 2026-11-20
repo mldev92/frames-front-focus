@@ -54,7 +54,7 @@ export const promotions: Promotion[] = [
     title: "25% на прогрессивные линзы Varilux",
     description:
       "ESSILOR VARILUX COMFORT MAX\nESSILOR VARILUX COMFORT MAX F-360\nESSILOR VARILUX LIBERTY 3.0 BCT",
-    href: "/catalog_s/linzy_dlya_ochkov/?brand=ESSILOR&lensType=%D0%9F%D1%80%D0%BE%D0%B3%D1%80%D0%B5%D1%81%D1%81%D0%B8%D0%B2%D0%BD%D1%8B%D0%B5",
+    href: "/catalog_s/linzy_dlya_ochkov/?brand=ESSILOR&lensType=%D0%9F%D1%80%D0%BE%D0%B3%D1%80%D0%B5%D1%81%D1%81%D0%B8%D0%B2%D0%BD%D1%8B%D0%B5&technology=Varilux&discount=25",
     location: "spb",
   },
   {
@@ -77,7 +77,7 @@ export const promotions: Promotion[] = [
     pct: "−30%",
     title: "От 30% на солнцезащитные очки",
     description: "Скидка от 30% на солнцезащитные очки в Санкт-Петербурге. На некоторые модели скидка выше.",
-    href: "/catalog_s/solntsezashchitnye_ochki/",
+    href: "/catalog_s/solntsezashchitnye_ochki/?discount=30,40",
     location: "spb",
   },
   {
@@ -87,7 +87,7 @@ export const promotions: Promotion[] = [
     pct: "−15%",
     title: "До 15% на оправы",
     description: "Актуальные скидки уже указаны в карточках оправ.",
-    href: "/catalog_s/opravy/",
+    href: "/catalog_s/opravy/?discount=5,10,15",
     location: "spb",
   },
   {

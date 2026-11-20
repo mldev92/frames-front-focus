@@ -44,6 +44,7 @@ export type LensLineFilters = Partial<Record<string, string[]>>;
 
 export const LENS_LINE_FACET_ORDER = [
   "brand",
+  "discount",
   "availability",
   "material",
   "lensType",
@@ -62,6 +63,7 @@ export type LensLineFacet = (typeof LENS_LINE_FACET_ORDER)[number];
 
 export const LENS_LINE_FACET_TITLES: Record<LensLineFacet, string> = {
   brand: "Бренд",
+  discount: "Скидка, %",
   availability: "Наличие",
   material: "Материал",
   lensType: "Тип линзы",
@@ -170,6 +172,7 @@ function variantAsCard(card: FilterableLensLine, variant: LensLineFilterVariant)
   return {
     ...card,
     fromPriceRub: variant.priceRub,
+    fromDiscountPercent: variant.discountPercent,
     indexes: variant.index === null ? [] : [variant.index],
     treatments: variant.treatment ? [variant.treatment] : [],
     designs: variant.design === "unknown" ? [] : [variant.design],
@@ -188,6 +191,8 @@ export function facetValues(card: FilterableLensLine, facet: LensLineFacet): str
   const data = card.filterData;
 
   if (facet === "brand") values.add(BRAND_LABELS[card.supplier] ?? card.supplier);
+  if (facet === "discount" && (card.fromDiscountPercent ?? 0) > 0)
+    values.add(String(card.fromDiscountPercent));
   if (facet === "availability") {
     for (const value of data.availability) {
       if (value === "warehouse") values.add("В наличии");
@@ -289,6 +294,10 @@ const FACET_ALIASES: Partial<Record<LensLineFacet, Record<string, string>>> = {
 };
 
 export function canonicalLensLineFacetValue(facet: LensLineFacet, value: string): string {
+  if (facet === "discount") {
+    const parsed = numeric(value);
+    return parsed === null ? value.trim() : String(parsed);
+  }
   if (facet === "thickness") {
     const parsed = numeric(value);
     return parsed === null ? value : parsed.toFixed(2);
@@ -391,6 +400,7 @@ export function lensLineFacetOptions(cards: FilterableLensLine[], facet: LensLin
   const values = new Set(cards.flatMap((card) => facetValues(card, facet)));
   const preferred = VALUE_ORDER[facet] ?? [];
   return [...values].sort((a, b) => {
+    if (facet === "discount") return (numeric(a) ?? 0) - (numeric(b) ?? 0);
     if (facet === "thickness") return (numeric(a) ?? 0) - (numeric(b) ?? 0);
     if (facet === "sphere" || facet === "cylinder") return (numeric(a) ?? 0) - (numeric(b) ?? 0);
     const ai = preferred.indexOf(a);
