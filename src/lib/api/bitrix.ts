@@ -432,20 +432,13 @@ export class IndexNotReadyError extends Error {
   constructor() { super("catalog index not ready"); this.name = "IndexNotReadyError"; }
 }
 
-export async function getCatalogSections(city: "spb" | "nvk", signal?: AbortSignal) {
-  const data = await fetchJson<{ city: string; sections: Array<{ id: number; path: string }> }>(`catalog_sections.php?city=${city}`, signal);
-  if (data.city !== city || !Array.isArray(data.sections) || !data.sections.length) {
-    throw new Error(`Invalid catalog sections for ${city}`);
-  }
-  return data.sections;
-}
-
 // Нулевой остаток не отличает существующий раздел от неизвестного URL.
 export async function isKnownCatalogSection(sectionPath: string, city: "spb" | "nvk"): Promise<boolean> {
-  const sections = await getCatalogSections(city);
+  const data = await fetchJson<{ city: string; sections: Array<{ path: string }> }>(`catalog_sections.php?city=${city}`);
+  if (data.city !== city || !data.sections?.length) throw new Error(`Invalid catalog sections for ${city}`);
   const section = sectionPath.replace(/^\/+|\/+$/g, "");
   const prefix = city === "nvk" ? "catalog_n" : "catalog_s";
-  return sections.some(({ path }) => path === `/${prefix}/${section}/`
+  return data.sections.some(({ path }) => path === `/${prefix}/${section}/`
     || (!section.includes("/") && path.endsWith(`/${section}/`)));
 }
 
