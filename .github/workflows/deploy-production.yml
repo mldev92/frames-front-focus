@@ -97,13 +97,9 @@ jobs:
           remote="$SSH_USER@$SSH_HOST"
           ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15)
           upload="o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          mkdir candidate
-          tar -xzf production-release.tgz -C candidate
           ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '$upload/client'"
-          # rsync использует старые файлы как основу дельты; публикация выполняется отдельной транзакцией.
-          rsync -rpcz --chmod=D755,F644 --no-whole-file --link-dest="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT" \
-            -e 'ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15' \
-            candidate/ "$remote:$upload/client/"
+          # Передаём проверенный архив одним потоком, чтобы не согласовывать десятки тысяч файлов по сети.
+          ssh -T "${ssh_opts[@]}" "$remote" "umask 077; tar -xzf - --no-same-owner --no-same-permissions -C '$upload/client'" < production-release.tgz
           scp "${ssh_opts[@]}" production-tools.tgz "$remote:$upload/"
           ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' client --consume-upload"
       - name: Remove private code-only transfer directory
