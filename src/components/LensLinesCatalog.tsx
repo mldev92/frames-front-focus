@@ -327,7 +327,7 @@ export function LensLinesCatalog({
                     >
                       {checked && <Check className="h-3 w-3" strokeWidth={3} />}
                     </span>
-                    <span className="flex-1">{value}</span>
+                    <span className="flex-1">{facet === "discount" ? `${value}%` : value}</span>
                     <span className="text-xs text-muted-foreground">({count} {lineNoun(count)})</span>
                   </button>
                 );
@@ -400,7 +400,7 @@ export function LensLinesCatalog({
                 onClick={() => toggle(facet, value)}
                 className="inline-flex items-center gap-1 rounded-full border border-ink/20 bg-cream px-3 py-1 text-xs hover:border-ink"
               >
-                {value} <X className="h-3 w-3" />
+                {facet === "discount" ? `${value}%` : value} <X className="h-3 w-3" />
               </button>
             ))}
           </div>

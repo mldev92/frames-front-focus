@@ -155,6 +155,46 @@ test("combined filters require one compatible offer and show its matching price"
   assert.equal(filterLensLines([mixed], photoFilter, 17000, 19000).length, 1);
 });
 
+test("a 25% Varilux link excludes 15% variants before choosing the card price", () => {
+  const base = card({
+    id: "varilux-liberty",
+    title: "VARILUX LIBERTY 3.0",
+    designs: ["progressive"],
+    fromDiscountPercent: 15,
+  });
+  const variant = (offerId, discountPercent, priceRub, treatment) => ({
+    offerId,
+    index: 1.5,
+    treatment,
+    coating: "",
+    design: "progressive",
+    priceRub,
+    priceBeforeDiscountRub: Math.round(priceRub / (1 - discountPercent / 100)),
+    discountPercent,
+    filterData: base.filterData,
+  });
+  const mixed = {
+    ...base,
+    filterVariants: [
+      variant("standard", 15, 9000, "Прозрачные"),
+      variant("bct", 25, 12000, "BCT"),
+    ],
+  };
+  const selected = filterLensLines([mixed], {
+    brand: ["ESSILOR"],
+    lensType: ["Прогрессивные"],
+    technology: ["Varilux"],
+    discount: ["25"],
+  });
+
+  assert.equal(selected.length, 1);
+  assert.equal(selected[0].fromPriceRub, 12000);
+  assert.equal(selected[0].fromDiscountPercent, 25);
+  assert.deepEqual(selected[0].filterVariants.map((item) => item.offerId), ["bct"]);
+  assert.deepEqual(lensLineFacetOptions([mixed], "discount"), ["15", "25"]);
+  assert.equal(canonicalLensLineFacetValue("discount", "25%"), "25");
+});
+
 test("incomplete photochromic color facet is not displayed", () => {
   assert.equal(LENS_LINE_FACET_ORDER.includes("photochromicColor"), false);
 });
