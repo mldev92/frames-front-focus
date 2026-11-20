@@ -102,7 +102,14 @@ if [[ "$action" == deploy-code-only ]]; then
   incoming=$(realpath "${5:?verified private upload directory}")
   [[ -d "$incoming" && "$incoming" != "$root" && "$incoming" != "$root/"* ]]
   # Новые файлы наследуют ACL публичного каталога, а не приватной загрузки SSH.
-  tar -C "$incoming" -cf - . | tar -C "$stage" -xf - --no-same-owner --no-same-permissions
+  if [[ "${6:-}" == --consume-upload ]]; then
+    upload_name=$(basename "$(dirname "$incoming")")
+    [[ "$upload_name" =~ ^o100-code-[0-9]+-[0-9]+$ && "$incoming" == "$(realpath "$HOME")/$upload_name/client" ]]
+    # Удаляем из одноразовой загрузки только файлы, успешно записанные в stage.
+    rsync -rc --remove-source-files --link-dest="$(realpath "$root/o100_frontend_current")" "$incoming/" "$stage/"
+  else
+    tar -C "$incoming" -cf - . | tar -C "$stage" -xf - --no-same-owner --no-same-permissions
+  fi
   "$php_bin" "$script_dir/verify-code-only.php" "$stage" "$root"
 elif [[ "$action" == deploy-toolbar ]]; then
   home=$(dirname "$root")

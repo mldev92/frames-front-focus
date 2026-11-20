@@ -105,7 +105,7 @@ jobs:
             -e 'ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15' \
             candidate/ "$remote:$upload/client/"
           scp "${ssh_opts[@]}" production-tools.tgz "$remote:$upload/"
-          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' client"
+          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' client --consume-upload"
       - name: Remove private code-only transfer directory
         if: always() && steps.artifact.outputs.parent != ''
         run: |
