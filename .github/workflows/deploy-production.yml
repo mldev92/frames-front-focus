@@ -8,6 +8,9 @@ on:
       candidate_run_id:
         description: Verified prepare-production workflow run ID
         required: false
+      parent_candidate_run_id:
+        description: Verified prepare run for the current production storefront
+        required: false
       artifact_sha256:
         description: Approved production-release.tgz SHA256
         required: false
@@ -88,48 +91,40 @@ jobs:
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
           scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && { (while sleep 15; do echo RELEASE_HEARTBEAT; done) & heartbeat=\$!; trap 'kill \$heartbeat 2>/dev/null || true' EXIT; O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz; }"
+      - uses: actions/download-artifact@v4
+        if: steps.artifact.outputs.parent != ''
+        with:
+          name: production-candidate
+          run-id: ${{ inputs.parent_candidate_run_id }}
+          github-token: ${{ github.token }}
+          path: parent-artifact
       - name: Package changes against their published parent
         if: steps.artifact.outputs.parent != ''
         env:
           PARENT: ${{ steps.artifact.outputs.parent }}
         run: |
           set -Eeuo pipefail
-          remote="$SSH_USER@$SSH_HOST"
-          ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15)
-          parent_release="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT"
           parent_manifest=$(jq -r '.codeOnly.parentManifestSha256' release-manifest.json)
           [[ "$parent_manifest" =~ ^[a-f0-9]{64}$ ]]
-          scp "${ssh_opts[@]}" "$remote:$parent_release/release-manifest.json" parent-manifest.json
-          printf '%s  parent-manifest.json\n' "$parent_manifest" | sha256sum -c -
-          mkdir candidate
+          mkdir candidate published
           tar -xzf production-release.tgz -C candidate
-          node --input-type=module <<'NODE'
-          import { readFileSync, writeFileSync } from 'node:fs';
-          const parent = JSON.parse(readFileSync('parent-manifest.json', 'utf8')).files;
-          const next = JSON.parse(readFileSync('release-manifest.json', 'utf8')).files;
-          const removed = Object.keys(parent).filter(path => !Object.hasOwn(next, path));
-          const changed = Object.keys(next).filter(path => parent[path] !== next[path]);
-          for (const path of [...changed, ...removed]) {
-            if (path.startsWith('/') || path.includes('\\') || path.includes('\0') ||
-                path.split('/').some(segment => segment === '..' || segment === '.' || segment === '')) {
-              throw new Error('Unexpected release path');
-            }
-          }
-          writeFileSync('changed-files', ['./release-manifest.json', ...changed.map(path => './' + path)].join('\0') + '\0');
-          writeFileSync('removed-files', removed.length ? removed.join('\0') + '\0' : '');
-          NODE
-          tar -czf changed.tgz -C candidate --no-recursion --null -T changed-files
-          sha256sum changed.tgz removed-files > changed.sha256
-          du -h changed.tgz
+          (cd parent-artifact && sha256sum -c production-release.tgz.sha256)
+          tar -xzf parent-artifact/production-release.tgz -C published
+          printf '%s  published/release-manifest.json\n' "$parent_manifest" | sha256sum -c -
+          grep -Fx "$PARENT" published/.release-sha
+          rsync_opts=(-rcz --delete --no-whole-file --protocol=30)
+          rsync "${rsync_opts[@]}" --only-write-batch=changes.rsync candidate/ published/
+          rsync "${rsync_opts[@]}" --read-batch=changes.rsync published/
+          differences=$(rsync -rcni --delete candidate/ published/)
+          test -z "$differences"
+          xz -T2 -6 changes.rsync
+          du -h changes.rsync.xz
       - uses: actions/upload-artifact@v4
         if: steps.artifact.outputs.parent != ''
         id: transfer
         with:
           name: production-transfer-${{ github.run_attempt }}
-          path: |
-            changed.tgz
-            removed-files
-            changed.sha256
+          path: changes.rsync.xz
           compression-level: 0
           retention-days: 1
           if-no-files-found: error
@@ -161,9 +156,9 @@ jobs:
           url=$(awk 'tolower($1) == "location:" {sub(/\r$/, ""); print $2}' "$RUNNER_TEMP/transfer.headers")
           [[ "$url" =~ ^https://[^[:space:]\"\\]+$ ]]
           echo "::add-mask::$url"
-          printf 'url = "%s"\n' "$url" | ssh "${ssh_opts[@]}" "$remote" "set -e; umask 077; cd '/tmp/$upload'; curl --silent --show-error --fail --proto '=https' --max-time 900 --output transfer.zip --config -; echo '$TRANSFER_DIGEST  transfer.zip' | sha256sum -c -; unzip -q transfer.zip changed.tgz removed-files changed.sha256; rm -- transfer.zip"
-          # Изменённые файлы распаковываются после удаления старых ссылок, сохраняя родительский выпуск.
-          ssh "${ssh_opts[@]}" "$remote" "set -e; (cd '/tmp/$upload'; sha256sum -c changed.sha256); cd '$upload'; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c -; umask 022; mkdir '$incoming'; cp -rl '$parent_release/.' '$incoming/'; while IFS= read -r -d '' relative; do rm -f -- '$incoming/'\"\$relative\"; done < '/tmp/$upload/removed-files'; tar -xzf '/tmp/$upload/changed.tgz' --unlink-first --no-same-owner --no-same-permissions -C '$incoming'; rm -- '/tmp/$upload/changed.tgz'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' '$incoming' --adopt-upload"
+          printf 'url = "%s"\n' "$url" | ssh "${ssh_opts[@]}" "$remote" "set -e; umask 077; cd '/tmp/$upload'; curl --silent --show-error --fail --proto '=https' --max-time 900 --output transfer.zip --config -; echo '$TRANSFER_DIGEST  transfer.zip' | sha256sum -c -; unzip -q transfer.zip changes.rsync.xz; rm -- transfer.zip; xz -d changes.rsync.xz"
+          # Rsync заменяет изменённые файлы через временные имена и сохраняет родительский выпуск.
+          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c -; umask 022; mkdir '$incoming'; cp -rl '$parent_release/.' '$incoming/'; rsync -rcz --delete --no-whole-file --protocol=30 --read-batch='/tmp/$upload/changes.rsync' '$incoming/'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' '$incoming' --adopt-upload"
       - name: Remove private code-only transfer directory
         if: always() && steps.artifact.outputs.parent != ''
         run: |
