@@ -25,18 +25,39 @@ if (decision.mode !== "code-only")
   throw Error("Full catalog build required: " + decision.reasons.join(", "));
 if (
   !baseline.catalogFingerprint ||
-  baseline.backendSha !== process.env.O100_BACKEND_SHA ||
   !/^[a-f0-9]{64}$/.test(process.env.O100_ROUTING_SHA256 || "") ||
   Object.values(baseline.settings).some(Boolean)
 )
   throw Error("Invalid production baseline");
+const backendSha = process.env.O100_BACKEND_SHA;
+let backendFiles = baseline.backendFiles;
 if (process.env.O100_BACKEND_MANIFEST) {
   const backend = JSON.parse(await readFile(process.env.O100_BACKEND_MANIFEST, "utf8"));
-  const hashes = Object.fromEntries(
+  backendFiles = Object.fromEntries(
     Object.entries(backend.files).map(([name, entry]) => [name, entry.sha256 ?? entry]),
   );
-  if (backend.sha !== baseline.backendSha || !isDeepStrictEqual(hashes, baseline.backendFiles))
+  if (backend.sha !== backendSha) throw Error("Backend manifest SHA differs from release input");
+  if (backendSha !== baseline.backendSha) {
+    const previous = backend.codeOnlyCompatibleFrom;
+    const changed = Object.fromEntries(
+      Object.entries(backendFiles)
+        .filter(([name, hash]) => baseline.backendFiles[name] !== hash)
+        .map(([name]) => [name, baseline.backendFiles[name] ?? null]),
+    );
+    if (
+      !Object.keys(changed).length ||
+      previous?.sha !== baseline.backendSha ||
+      !isDeepStrictEqual(previous.changedFiles, changed) ||
+      Object.keys(baseline.backendFiles).some((name) => !Object.hasOwn(backendFiles, name))
+    )
+      throw Error("Backend changes lack a matching compatibility declaration");
+  }
+}
+if (backendSha === baseline.backendSha) {
+  if (!isDeepStrictEqual(backendFiles, baseline.backendFiles))
     throw Error("Published backend contract changed");
+} else if (!process.env.O100_BACKEND_MANIFEST) {
+  throw Error("A changed backend requires its verified manifest");
 }
 
 async function readPublished(name) {
@@ -153,6 +174,8 @@ for (const name of [
 const manifest = {
   ...baseline,
   frontendSha: sha,
+  backendSha,
+  backendFiles,
   routingBaseline: process.env.O100_ROUTING_SHA256,
   files,
   templateFiles,
