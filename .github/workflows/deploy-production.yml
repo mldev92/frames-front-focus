@@ -88,12 +88,6 @@ jobs:
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
           scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && { (while sleep 15; do echo RELEASE_HEARTBEAT; done) & heartbeat=\$!; trap 'kill \$heartbeat 2>/dev/null || true' EXIT; O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz; }"
-      - uses: actions/cache/restore@v4
-        if: steps.artifact.outputs.parent != ''
-        id: published_parent
-        with:
-          path: dist/client
-          key: storefront-published-v1-${{ steps.artifact.outputs.parent }}
       - name: Transfer code changes and activate against their published parent
         if: steps.artifact.outputs.parent != ''
         env:
@@ -103,20 +97,9 @@ jobs:
           remote="$SSH_USER@$SSH_HOST"
           ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15)
           upload="o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          parent_manifest=$(jq -r '.codeOnly.parentManifestSha256' release-manifest.json)
-          [[ "$parent_manifest" =~ ^[a-f0-9]{64}$ ]]
-          printf '%s  dist/client/release-manifest.json\n' "$parent_manifest" | sha256sum -c -
-          mkdir candidate
-          tar -xzf production-release.tgz -C candidate
-          # Проверяем локальное восстановление побайтно перед передачей дельты.
-          rsync -rcz --compress-choice=zlib --protocol=31 --no-whole-file --delete \
-            --only-write-batch=frontend.batch candidate/ dist/client/
-          rsync -rcz --compress-choice=zlib --protocol=31 --delete --read-batch=frontend.batch dist/client/
-          test -z "$(rsync -rcni --delete candidate/ dist/client/)"
-          sha256sum frontend.batch > frontend.batch.sha256
           ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '$upload/client'"
-          scp "${ssh_opts[@]}" frontend.batch frontend.batch.sha256 production-tools.tgz "$remote:$upload/"
-          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; sha256sum -c frontend.batch.sha256; echo '$parent_manifest  $PRODUCTION_ROOT/o100_frontend_releases/$PARENT/release-manifest.json' | sha256sum -c -; cp -al '$PRODUCTION_ROOT/o100_frontend_releases/$PARENT/.' client/; umask 022; rsync -rcz --protocol=31 --delete --read-batch=frontend.batch client/; cmp client/.release-sha <(echo '$FRONTEND_SHA'); tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' client --consume-upload"
+          scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$remote:$upload/"
+          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; sha256sum -c production-release.tgz.sha256; umask 022; tar -xzf production-release.tgz --no-same-owner --no-same-permissions -C client; rm -- production-release.tgz; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' client --consume-upload"
       - name: Remove private code-only transfer directory
         if: always() && steps.artifact.outputs.parent != ''
         run: |
