@@ -24,7 +24,7 @@ const CITIES: { code: RegionCode; label: string }[] = [
 const PROMOS = [
   {
     text: "ДО 25% НА ПРОГРЕССИВНЫЕ ЛИНЗЫ ESSILOR",
-    href: "/catalog_s/linzy_dlya_ochkov/?brand=ESSILOR&lensType=Прогрессивные",
+    href: "/catalog_s/linzy_dlya_ochkov/?brand=ESSILOR&lensType=Прогрессивные&technology=Varilux&discount=25",
   },
   { text: "ДО 90% НА ЛИНЗЫ STELLEST", href: "/stellest-katalog-s-linzami/" },
   {
