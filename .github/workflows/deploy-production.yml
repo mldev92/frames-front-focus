@@ -97,6 +97,7 @@ jobs:
           remote="$SSH_USER@$SSH_HOST"
           ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15)
           upload="o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          incoming="$PRODUCTION_ROOT/o100_frontend_releases/.incoming-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           parent_release="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT"
           parent_manifest=$(jq -r '.codeOnly.parentManifestSha256' release-manifest.json)
           [[ "$parent_manifest" =~ ^[a-f0-9]{64}$ ]]
@@ -121,15 +122,15 @@ jobs:
           NODE
           tar -czf changed.tgz -C candidate --no-recursion --null -T changed-files
           sha256sum changed.tgz removed-files > changed.sha256
-          ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '$upload/client' && mkdir '/tmp/$upload'"
+          ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '/tmp/$upload'"
           scp "${ssh_opts[@]}" changed.tgz removed-files changed.sha256 "$remote:/tmp/$upload/"
           scp "${ssh_opts[@]}" production-tools.tgz "$remote:$upload/"
           # Изменённые файлы распаковываются после удаления старых ссылок, сохраняя родительский выпуск.
-          ssh "${ssh_opts[@]}" "$remote" "set -e; (cd '/tmp/$upload'; sha256sum -c changed.sha256); cd '$upload'; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c -; cp -al '$parent_release/.' client/; umask 022; while IFS= read -r -d '' relative; do rm -f -- \"client/\$relative\"; done < '/tmp/$upload/removed-files'; tar -xzf '/tmp/$upload/changed.tgz' --unlink-first --no-same-owner --no-same-permissions -C client; rm -- '/tmp/$upload/changed.tgz'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' client --adopt-upload"
+          ssh "${ssh_opts[@]}" "$remote" "set -e; (cd '/tmp/$upload'; sha256sum -c changed.sha256); cd '$upload'; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c -; umask 022; mkdir '$incoming'; cp -rl '$parent_release/.' '$incoming/'; while IFS= read -r -d '' relative; do rm -f -- '$incoming/'\"\$relative\"; done < '/tmp/$upload/removed-files'; tar -xzf '/tmp/$upload/changed.tgz' --unlink-first --no-same-owner --no-same-permissions -C '$incoming'; rm -- '/tmp/$upload/changed.tgz'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' '$incoming' --adopt-upload"
       - name: Remove private code-only transfer directory
         if: always() && steps.artifact.outputs.parent != ''
         run: |
-          ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "rm -rf -- 'o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT' '/tmp/o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT'"
+          ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "rm -rf -- 'o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT' '/tmp/o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT' '$PRODUCTION_ROOT/o100_frontend_releases/.incoming-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT'"
       - name: Release admin toolbar against the approved static storefront
         if: ${{ inputs.toolbar_baseline != '' }}
         run: |
