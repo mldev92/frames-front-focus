@@ -102,11 +102,23 @@ if [[ "$action" == deploy-code-only ]]; then
   incoming=$(realpath "${5:?verified private upload directory}")
   [[ -d "$incoming" && "$incoming" != "$root" && "$incoming" != "$root/"* ]]
   # Новые файлы наследуют ACL публичного каталога, а не приватной загрузки SSH.
-  if [[ "${6:-}" == --consume-upload ]]; then
+  if [[ "${6:-}" == --adopt-upload || "${6:-}" == --consume-upload ]]; then
     upload_name=$(basename "$(dirname "$incoming")")
     [[ "$upload_name" =~ ^o100-code-[0-9]+-[0-9]+$ && "$incoming" == "$(realpath "$HOME")/$upload_name/client" ]]
-    # Удаляем из одноразовой загрузки только файлы, успешно записанные в stage.
-    rsync -rc --remove-source-files --link-dest="$(realpath "$root/o100_frontend_current")" "$incoming/" "$stage/"
+    if [[ "${6:-}" == --adopt-upload ]]; then
+      # Совпадающие файлы уже связаны с опубликованным выпуском. Не меняем их ACL.
+      [[ "$(stat -c %d "$stage")" == "$(stat -c %d "$incoming")" ]]
+      upload_root=$(dirname "$incoming")
+      getfacl -cp "$stage" > "$upload_root/directory.acl"
+      getfacl -cp "$root/o100_frontend_current/index.html" > "$upload_root/file.acl"
+      find "$incoming" -type d -exec setfacl --set-file="$upload_root/directory.acl" {} +
+      find "$incoming" -type f -links 1 -exec setfacl --set-file="$upload_root/file.acl" {} +
+      rmdir "$stage"
+      mv -T "$incoming" "$stage"
+    else
+      # Удаляем из одноразовой загрузки только файлы, успешно записанные в stage.
+      rsync -rc --remove-source-files --link-dest="$(realpath "$root/o100_frontend_current")" "$incoming/" "$stage/"
+    fi
   else
     tar -C "$incoming" -cf - . | tar -C "$stage" -xf - --no-same-owner --no-same-permissions
   fi
