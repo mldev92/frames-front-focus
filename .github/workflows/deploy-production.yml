@@ -99,7 +99,7 @@ jobs:
           upload="o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '$upload/client'"
           # Передаём проверенный архив одним потоком, чтобы не согласовывать десятки тысяч файлов по сети.
-          ssh -T "${ssh_opts[@]}" "$remote" "umask 077; tar -xzf - --no-same-owner --no-same-permissions -C '$upload/client'" < production-release.tgz
+          ssh -T "${ssh_opts[@]}" "$remote" "umask 022; tar -xzf - --no-same-owner --no-same-permissions -C '$upload/client'" < production-release.tgz
           scp "${ssh_opts[@]}" production-tools.tgz "$remote:$upload/"
           ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' client --consume-upload"
       - name: Remove private code-only transfer directory
