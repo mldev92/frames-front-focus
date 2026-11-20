@@ -21,6 +21,9 @@ function bitrixAsset(value: string) {
 async function insertScript(source: HTMLScriptElement, parent: Element, signal: AbortSignal) {
   signal.throwIfAborted();
   const script = document.createElement("script");
+  for (const attribute of source.attributes) {
+    if (attribute.name !== "src") script.setAttribute(attribute.name, attribute.value);
+  }
   if (!source.hasAttribute("src")) {
     script.textContent = source.textContent;
     parent.append(script);
