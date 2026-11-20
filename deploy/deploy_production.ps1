@@ -22,9 +22,9 @@
       without fighting package-production.mjs's own `git rev-parse HEAD` call
       (which needs a real .git directory and so can't run against an archive
       export);
-    - builds the complete production artifact via `bun run build:production`
-      (full prerender of every route -- partial builds are refused by the
-      build config itself);
+    - сравнивает изменения с опубликованной витриной. Исправления её кода
+      собираются офлайн из данных готовых страниц. Изменения каталога или
+      маршрутизации используют проверенный снимок API;
     - re-hashes the CURRENTLY LIVE backend files and routing baseline (.htaccess)
       over SSH right before packaging, so the release manifest always reflects
       the real server state, never a stale local record. Production's backend
@@ -453,12 +453,37 @@ $work = Join-Path $env:TEMP "optika_production_$timestamp"
 New-Item -ItemType Directory -Force -Path $work | Out-Null
 
 try {
+    $parent = (Invoke-Ssh "cat '$DocRoot/o100_frontend_current/.release-sha'").Trim()
+    Push-Location $FrontendRepo
+    try {
+        & bun install --frozen-lockfile | Out-Host
+        if ($LASTEXITCODE) { throw 'Dependency installation failed.' }
+        $mode = & node scripts/storefront-release-mode.mjs $parent $fullSha
+        if ($LASTEXITCODE) { throw 'Could not classify storefront changes.' }
+        if ($mode -eq 'code-only') {
+            $routing = Get-RemoteSha "$DocRoot/.htaccess"
+            $backend = Invoke-Ssh "cat '$DocRoot/../.o100-backend-release.json'"
+            $action = if ($Execute) { 'execute' } else { 'prepare' }
+            $backend | & node scripts/code-only-workflow.mjs $fullSha $routing $action
+            if ($LASTEXITCODE) { throw 'Code-only release failed.' }
+            return
+        }
+    } finally { Pop-Location }
     $live = Get-LiveBackendManifest
     Write-Host "Routing baseline: $($live.RoutingBaseline)"
 
     $backendSha = Get-BackendReferenceSha
 
-    Build-ProductionArtifact
+    $oldBackendSha = $env:O100_BACKEND_SHA
+    $oldRouting = $env:O100_ROUTING_SHA256
+    try {
+        $env:O100_BACKEND_SHA = $backendSha
+        $env:O100_ROUTING_SHA256 = $live.RoutingBaseline
+        Build-ProductionArtifact
+    } finally {
+        $env:O100_BACKEND_SHA = $oldBackendSha
+        $env:O100_ROUTING_SHA256 = $oldRouting
+    }
 
     $manifestInput = Join-Path $work 'backend-manifest.json'
     Write-BackendManifestFile $manifestInput $backendSha $live.Files

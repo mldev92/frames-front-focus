@@ -53,6 +53,7 @@ jobs:
           run-id: ${{ inputs.candidate_run_id }}
           github-token: ${{ github.token }}
       - name: Verify approved artifact
+        id: artifact
         if: ${{ inputs.toolbar_baseline == '' }}
         env:
           ARTIFACT_SHA256: ${{ inputs.artifact_sha256 }}
@@ -62,6 +63,9 @@ jobs:
           printf '%s  production-release.tgz\n' "$ARTIFACT_SHA256" | sha256sum -c -
           tar -xOf production-release.tgz ./.release-sha | grep -Fx "$FRONTEND_SHA"
           tar -xOf production-release.tgz ./release-manifest.json > release-manifest.json
+          parent=$(jq -r '.codeOnly.parentSha // empty' release-manifest.json)
+          if [[ -n "$parent" ]]; then [[ "$parent" =~ ^[a-f0-9]{40}$ ]]; fi
+          echo "parent=$parent" >> "$GITHUB_OUTPUT"
           node -e 'const m=JSON.parse(require("fs").readFileSync("release-manifest.json")); if(m.backendSha!==process.env.O100_BACKEND_SHA || m.routingBaseline!==process.env.O100_ROUTING_SHA256) process.exit(1)'
           node -e 'const fs=require("fs"),m=JSON.parse(fs.readFileSync("release-manifest.json")),log=fs.readFileSync("apache-production.log","utf8"); if(!log.includes(`PASS: Apache served all ${m.routeCount} manifest routes byte-for-byte;`)) throw new Error("Full Apache acceptance evidence is missing")'
           printf '%s  production-release.tgz\n' "$ARTIFACT_SHA256" > production-release.tgz.sha256
@@ -78,12 +82,34 @@ jobs:
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
       - name: Upload candidate and execute guarded switch
-        if: ${{ inputs.toolbar_baseline == '' }}
+        if: inputs.toolbar_baseline == '' && steps.artifact.outputs.parent == ''
         run: |
           ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
           scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && { (while sleep 15; do echo RELEASE_HEARTBEAT; done) & heartbeat=\$!; trap 'kill \$heartbeat 2>/dev/null || true' EXIT; O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz; }"
+      - name: Transfer code changes and activate against their published parent
+        if: steps.artifact.outputs.parent != ''
+        env:
+          PARENT: ${{ steps.artifact.outputs.parent }}
+        run: |
+          set -Eeuo pipefail
+          remote="$SSH_USER@$SSH_HOST"
+          ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15)
+          upload="o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir candidate
+          tar -xzf production-release.tgz -C candidate
+          ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '$upload/client'"
+          # rsync использует старые файлы как основу дельты; публикация выполняется отдельной транзакцией.
+          rsync -rpcz --chmod=D755,F644 --no-whole-file --link-dest="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT" \
+            -e 'ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15' \
+            candidate/ "$remote:$upload/client/"
+          scp "${ssh_opts[@]}" production-tools.tgz "$remote:$upload/"
+          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' client"
+      - name: Remove private code-only transfer directory
+        if: always() && steps.artifact.outputs.parent != ''
+        run: |
+          ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "rm -rf -- 'o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT'"
       - name: Release admin toolbar against the approved static storefront
         if: ${{ inputs.toolbar_baseline != '' }}
         run: |

@@ -206,6 +206,10 @@ $file=$root.'/o100_frontend_current/release-manifest.json';
 $m=json_decode(file_get_contents($file),true);
 $m['catalogFingerprint']=str_repeat('f', 64);
 $m['routeCount']=5;
+$m['inventorySha256']=str_repeat('1',64);
+$m['inventoryGeneratedAt']='2026-11-19T00:00:00Z';
+$m['retiredPaths']=[];
+$m['queryAcceptancePaths']=[];
 $m['acceptancePaths']=['/','/catalog_s/opravy/','/catalog_n/opravy/','/catalog_n/opravy/deep-product/'];
 file_put_contents($file,json_encode($m));
 $backend=['sha'=>str_repeat('b',40),'files'=>['api/store/admin_shortcuts.php'=>hash_file('sha256',$root.'/api/store/admin_shortcuts.php')]];
@@ -228,3 +232,32 @@ cmp "$root/o100_frontend_releases/$parent/assets/test-hash.js" "$root/o100_front
 check 200 /catalog_n/opravy/deep-product/
 grep -q 'o100-admin-toolbar-' /tmp/response
 echo 'PASS: toolbar-only immutable release preserves routing, assets, sitemap and rollback'
+
+# Выпуск исправления по базовой версии, проверка дрейфа, откат и повтор.
+code_sha=dddddddddddddddddddddddddddddddddddddddd
+export O100_EXPECTED_FRONTEND=$toolbar
+mkdir /evidence/code-client
+cp -a "$root/o100_frontend_current/." /evidence/code-client/
+printf '%s\n' "$code_sha" >/evidence/code-client/.release-sha
+printf '\n<!-- storefront fix -->\n' >>/evidence/code-client/index.html
+php <<'PHP'
+<?php
+$dir='/evidence/code-client';
+$file=$dir.'/release-manifest.json';
+$m=json_decode(file_get_contents($file),true,512,JSON_THROW_ON_ERROR);
+$m['codeOnly']=['parentSha'=>$m['frontendSha'],'parentManifestSha256'=>hash_file('sha256',$file)];
+$m['frontendSha']=trim(file_get_contents($dir.'/.release-sha'));
+foreach (['index.html','.release-sha'] as $name) $m['files'][$name]=hash_file('sha256',$dir.'/'.$name);
+$m['templateFiles']['deploy/verify-code-only.php']=hash_file('sha256','/frontend/deploy/verify-code-only.php');
+file_put_contents($file,json_encode($m));
+PHP
+if O100_TEST_FAIL_AFTER_SWAP=1 bash /frontend/deploy/release.sh deploy-code-only "$root" "$code_sha" "$baseline" /evidence/code-client; then exit 1; fi
+[[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$toolbar" ]]
+bash /frontend/deploy/release.sh deploy-code-only "$root" "$code_sha" "$baseline" /evidence/code-client
+check 200 /
+grep -q 'storefront fix' /tmp/response
+cmp /evidence/toolbar.htaccess "$root/.htaccess"
+O100_EXPECTED_FRONTEND=$code_sha bash /frontend/deploy/release.sh rollback "$root"
+[[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$toolbar" ]]
+if O100_EXPECTED_FRONTEND=$parent bash /frontend/deploy/release.sh deploy-code-only "$root" "$code_sha" "$baseline" /evidence/code-client; then exit 1; fi
+echo 'PASS: code-only release, parent drift rejection, rollback and retry'

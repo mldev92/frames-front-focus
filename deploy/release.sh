@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Переключение и возврат без восстановления базы данных.
 set -Eeuo pipefail
-action=${1:?deploy, deploy-toolbar or rollback}
+action=${1:?deploy, deploy-code-only, deploy-toolbar or rollback}
 root=$(realpath "${2:?document root}")
 [[ -d "$root/bitrix" && -f "$root/.htaccess" ]] || { echo 'Invalid Bitrix document root' >&2; exit 2; }
 state="$(dirname "$root")/.o100-deploy"
@@ -78,7 +78,7 @@ if [[ "$action" == rollback ]]; then
   printf '%s\n' rolled-back > "$transaction/status"
   exit
 fi
-[[ "$action" == deploy || "$action" == deploy-toolbar ]] || exit 2
+[[ "$action" == deploy || "$action" == deploy-toolbar || "$action" == deploy-code-only ]] || exit 2
 sha=${3:?approved frontend SHA}
 baseline=${4:?approved routing SHA256}
 [[ "$sha" =~ ^[a-f0-9]{40}$ && "$baseline" =~ ^[a-f0-9]{64}$ ]] || exit 2
@@ -87,12 +87,23 @@ if [[ -n "${O100_EXPECTED_FRONTEND:-}" ]]; then
   [[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$O100_EXPECTED_FRONTEND" ]] || { echo 'Frontend drift; deployment refused' >&2; exit 3; }
 fi
 release="$root/o100_frontend_releases/$sha"
-[[ ! -e "$release" ]] || { echo 'Immutable release already exists' >&2; exit 3; }
+if [[ -e "$release" ]]; then
+  [[ "$action" == deploy-code-only && -d "$release" && ! -L "$release" ]] || { echo 'Immutable release already exists' >&2; exit 3; }
+  cmp "$release/release-manifest.json" "${5:?private upload}/release-manifest.json"
+  "$php_bin" "$script_dir/verify-release.php" "$release" "$root"
+fi
 stage="$release.stage-$$"
 mkdir -p "$stage"
 # Не оставляем распакованный stage после ошибки квоты или проверки.
 trap 'if [[ "$stage" == "$root/o100_frontend_releases/$sha.stage-"* && -d "$stage" && ! -L "$stage" ]]; then rm -rf -- "$stage"; fi' EXIT
-if [[ "$action" == deploy-toolbar ]]; then
+if [[ "$action" == deploy-code-only ]]; then
+  exec 8>"$(dirname "$root")/.o100-production-read.lock"
+  flock -w 60 8
+  incoming=$(realpath "${5:?verified private upload directory}")
+  [[ -d "$incoming" && "$incoming" != "$root" && "$incoming" != "$root/"* ]]
+  cp -al -- "$incoming/." "$stage/"
+  "$php_bin" "$script_dir/verify-code-only.php" "$stage" "$root"
+elif [[ "$action" == deploy-toolbar ]]; then
   home=$(dirname "$root")
   exec 8>"$home/.o100-production-read.lock"
   flock -n 8
@@ -112,6 +123,9 @@ else
 fi
 for file in index.html _shell.html 404.html sitemap.xml robots.txt release-manifest.json; do test -s "$stage/$file"; done
 [[ "$(cat "$stage/.release-sha")" == "$sha" ]]
+if [[ "$action" == deploy ]]; then
+  "$php_bin" -r '$m=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR); if(isset($m["codeOnly"])) {fwrite(STDERR,"Code-only candidate requires its published parent\n"); exit(3);}' "$stage/release-manifest.json"
+fi
 "$php_bin" "$script_dir/verify-release.php" "$stage" "$root"
 # Сохраняем общие inode без медленного сопоставления 25 тысяч имён в tar 1.26.
 if [[ "$action" == deploy ]]; then
@@ -125,7 +139,7 @@ if [[ "$action" == deploy ]]; then
 fi
 readlink "$root/o100_frontend_current" > "$transaction/previous" || : > "$transaction/previous"
 if [[ -s "$state/active-transaction" ]]; then cp "$state/active-transaction" "$transaction/parent-transaction"; fi
-mv "$stage" "$release"
+if [[ ! -e "$release" ]]; then mv "$stage" "$release"; fi
 mkdir -p "$root/o100_frontend_assets" "$root/assets"
 if [[ -d "$release/assets" ]]; then
   while IFS= read -r -d '' asset; do
@@ -150,6 +164,7 @@ revert_on_error() {
 }
 trap revert_on_error ERR HUP INT TERM
 if [[ "$action" == deploy-toolbar ]]; then check_paused; fi
+if [[ "$action" == deploy-code-only ]]; then "$php_bin" "$script_dir/verify-code-only.php" "$release" "$root"; fi
 ln -sfn "$release" "$root/o100_frontend_next"
 mv -Tf "$root/o100_frontend_next" "$root/o100_frontend_current"
 if [[ "$action" == deploy ]]; then
@@ -159,7 +174,9 @@ fi
 [[ "${O100_TEST_FAIL_AFTER_SWAP:-0}" != 1 ]]
 smoke
 acceptance_script=${O100_ACCEPTANCE_SCRIPT:-}
-if [[ "$action" == deploy-toolbar ]]; then
+if [[ "$action" == deploy-code-only ]]; then
+  "$php_bin" "$script_dir/accept-catalog-release.php" "$root" "$release" "$origin" deploy-code-only
+elif [[ "$action" == deploy-toolbar ]]; then
   "$php_bin" "$script_dir/accept-catalog-release.php" "$root" "$release" "$origin" deploy-toolbar
   check_paused
 elif "$php_bin" -r '$m=json_decode(file_get_contents($argv[1]),true); exit(empty($m["catalogFingerprint"])?1:0);' "$release/release-manifest.json"; then

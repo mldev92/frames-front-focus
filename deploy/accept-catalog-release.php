@@ -1,9 +1,9 @@
 <?php
 // Выполняется под release lock до отключения автоматического отката.
-if (PHP_SAPI !== 'cli' || ($argc !== 4 && ($argc !== 5 || $argv[4] !== 'deploy-toolbar'))) exit(2);
+if (PHP_SAPI !== 'cli' || ($argc !== 4 && ($argc !== 5 || !in_array($argv[4], ['deploy-toolbar','deploy-code-only'],true)))) exit(2);
 try {
     [$script,$root,$release,$origin]=$argv;
-    $toolbarOnly = $argc === 5;
+    $toolbarOnly = ($argv[4] ?? '') === 'deploy-toolbar';
     $manifest=json_decode(file_get_contents($release.'/release-manifest.json'),true,512,JSON_THROW_ON_ERROR);
     $request=function(string $path) use ($origin): array {
         $curl=curl_init($origin.str_replace(' ', '%20', $path));
@@ -44,7 +44,7 @@ try {
         if ($assetStatus!==200 || hash('sha256',$assetBody)!==($manifest['files'][ltrim($asset,'/')]??'')) throw new RuntimeException('Public toolbar asset mismatch');
         if ($homepageStatus!==200 || !str_contains($homepage,'<script defer src="'.$asset.'"></script>')) throw new RuntimeException('Public toolbar entry missing');
         if ($sessionStatus!==200 || (json_decode($session,true)['isAdmin']??null)!==false || $editStatus!==403) throw new RuntimeException('Guest toolbar access check failed');
-    } elseif (!empty($manifest['catalogFingerprint'])) {
+    } elseif (($argv[4] ?? '') !== 'deploy-code-only' && !empty($manifest['catalogFingerprint'])) {
         ob_start();
         require __DIR__.'/catalog-export.php';
         $inventory=json_decode(ob_get_clean(),true,512,JSON_THROW_ON_ERROR);

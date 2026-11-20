@@ -13,6 +13,9 @@ jobs:
     environment: production
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.deployed_sha }}
       - name: Restore saved routing and previous frontend
         env:
           DEPLOYED_SHA: ${{ inputs.deployed_sha }}
@@ -28,4 +31,4 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/optika-production
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
-          ssh -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "O100_SMOKE_ORIGIN=https://optika100.com bash ~/o100-upload-$DEPLOYED_SHA/deploy/release.sh rollback '$PRODUCTION_ROOT'"
+          ssh -i ~/.ssh/optika-production -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "set -e; tool=\$(mktemp); trap 'rm -f \"\$tool\"' EXIT; cat > \"\$tool\"; O100_EXPECTED_FRONTEND='$DEPLOYED_SHA' O100_SMOKE_ORIGIN=https://optika100.com bash \"\$tool\" rollback '$PRODUCTION_ROOT'" < deploy/release.sh
