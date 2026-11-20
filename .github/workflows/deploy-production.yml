@@ -88,7 +88,7 @@ jobs:
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
           scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && { (while sleep 15; do echo RELEASE_HEARTBEAT; done) & heartbeat=\$!; trap 'kill \$heartbeat 2>/dev/null || true' EXIT; O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz; }"
-      - name: Transfer code changes and activate against their published parent
+      - name: Package changes against their published parent
         if: steps.artifact.outputs.parent != ''
         env:
           PARENT: ${{ steps.artifact.outputs.parent }}
@@ -96,8 +96,6 @@ jobs:
           set -Eeuo pipefail
           remote="$SSH_USER@$SSH_HOST"
           ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15)
-          upload="o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          incoming="$PRODUCTION_ROOT/o100_frontend_releases/.incoming-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
           parent_release="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT"
           parent_manifest=$(jq -r '.codeOnly.parentManifestSha256' release-manifest.json)
           [[ "$parent_manifest" =~ ^[a-f0-9]{64}$ ]]
@@ -122,9 +120,48 @@ jobs:
           NODE
           tar -czf changed.tgz -C candidate --no-recursion --null -T changed-files
           sha256sum changed.tgz removed-files > changed.sha256
+          du -h changed.tgz
+      - uses: actions/upload-artifact@v4
+        if: steps.artifact.outputs.parent != ''
+        id: transfer
+        with:
+          name: production-transfer-${{ github.run_attempt }}
+          path: |
+            changed.tgz
+            removed-files
+            changed.sha256
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+      - name: Transfer code changes and activate against their published parent
+        if: steps.artifact.outputs.parent != ''
+        timeout-minutes: 20
+        env:
+          PARENT: ${{ steps.artifact.outputs.parent }}
+          GH_TOKEN: ${{ github.token }}
+          TRANSFER_ARTIFACT: ${{ steps.transfer.outputs.artifact-id }}
+          TRANSFER_DIGEST: ${{ steps.transfer.outputs.artifact-digest }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$TRANSFER_ARTIFACT" =~ ^[0-9]+$ && "$TRANSFER_DIGEST" =~ ^[a-f0-9]{64}$ ]]
+          remote="$SSH_USER@$SSH_HOST"
+          ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15)
+          upload="o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          incoming="$PRODUCTION_ROOT/o100_frontend_releases/.incoming-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          parent_release="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT"
+          parent_manifest=$(jq -r '.codeOnly.parentManifestSha256' release-manifest.json)
+          [[ "$parent_manifest" =~ ^[a-f0-9]{64}$ ]]
           ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '/tmp/$upload'"
-          scp "${ssh_opts[@]}" changed.tgz removed-files changed.sha256 "$remote:/tmp/$upload/"
           scp "${ssh_opts[@]}" production-tools.tgz "$remote:$upload/"
+          # Передаём только краткоживущую ссылку. Токен GitHub остаётся на runner.
+          status=$(curl --silent --show-error --fail --max-time 20 --dump-header "$RUNNER_TEMP/transfer.headers" \
+            --output /dev/null --write-out '%{http_code}' -H "Authorization: Bearer $GH_TOKEN" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/artifacts/$TRANSFER_ARTIFACT/zip")
+          [[ "$status" == 302 ]]
+          url=$(awk 'tolower($1) == "location:" {sub(/\r$/, ""); print $2}' "$RUNNER_TEMP/transfer.headers")
+          [[ "$url" =~ ^https://[^[:space:]\"\\]+$ ]]
+          echo "::add-mask::$url"
+          printf 'url = "%s"\n' "$url" | ssh "${ssh_opts[@]}" "$remote" "set -e; umask 077; cd '/tmp/$upload'; curl --silent --show-error --fail --proto '=https' --max-time 900 --output transfer.zip --config -; echo '$TRANSFER_DIGEST  transfer.zip' | sha256sum -c -; unzip -q transfer.zip changed.tgz removed-files changed.sha256; rm -- transfer.zip"
           # Изменённые файлы распаковываются после удаления старых ссылок, сохраняя родительский выпуск.
           ssh "${ssh_opts[@]}" "$remote" "set -e; (cd '/tmp/$upload'; sha256sum -c changed.sha256); cd '$upload'; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c -; umask 022; mkdir '$incoming'; cp -rl '$parent_release/.' '$incoming/'; while IFS= read -r -d '' relative; do rm -f -- '$incoming/'\"\$relative\"; done < '/tmp/$upload/removed-files'; tar -xzf '/tmp/$upload/changed.tgz' --unlink-first --no-same-owner --no-same-permissions -C '$incoming'; rm -- '/tmp/$upload/changed.tgz'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' '$incoming' --adopt-upload"
       - name: Remove private code-only transfer directory
