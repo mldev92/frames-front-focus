@@ -38,6 +38,7 @@ jobs:
       O100_BACKEND_SHA: ${{ inputs.backend_sha }}
       O100_ROUTING_SHA256: ${{ inputs.routing_sha256 }}
       O100_TOOLBAR_BASELINE: ${{ inputs.toolbar_baseline }}
+      O100_TRANSFER_RSYNC_SHA256: a8e24fdd6bcfd58ab582251d5f648997fc305cb847d0a1c14f5ac40ef2f460c1
       SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
       SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
       PRODUCTION_ROOT: ${{ secrets.PRODUCTION_ROOT }}
@@ -112,9 +113,13 @@ jobs:
           tar -xzf parent-artifact/production-release.tgz -C published
           printf '%s  published/release-manifest.json\n' "$parent_manifest" | sha256sum -c -
           grep -Fx "$PARENT" published/.release-sha
+          # Формат batch должен совпадать на обеих сторонах, даже при одинаковом протоколе.
+          scp -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST:/usr/bin/rsync" transfer-rsync
+          printf '%s  transfer-rsync\n' "$O100_TRANSFER_RSYNC_SHA256" | sha256sum -c -
+          chmod 0700 transfer-rsync
           rsync_opts=(-rcz --delete --no-whole-file --protocol=30)
-          rsync "${rsync_opts[@]}" --only-write-batch=changes.rsync candidate/ published/
-          rsync "${rsync_opts[@]}" --read-batch=changes.rsync published/
+          ./transfer-rsync "${rsync_opts[@]}" --only-write-batch=changes.rsync candidate/ published/
+          ./transfer-rsync "${rsync_opts[@]}" --read-batch=changes.rsync published/
           differences=$(rsync -rcni --delete candidate/ published/)
           test -z "$differences"
           xz -T2 -6 changes.rsync
@@ -158,7 +163,7 @@ jobs:
           echo "::add-mask::$url"
           printf 'url = "%s"\n' "$url" | ssh "${ssh_opts[@]}" "$remote" "set -e; umask 077; cd '/tmp/$upload'; curl --silent --show-error --fail --proto '=https' --max-time 900 --output transfer.zip --config -; echo '$TRANSFER_DIGEST  transfer.zip' | sha256sum -c -; unzip -q transfer.zip changes.rsync.xz; rm -- transfer.zip; xz -d changes.rsync.xz"
           # Rsync заменяет изменённые файлы через временные имена и сохраняет родительский выпуск.
-          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c -; umask 022; mkdir '$incoming'; cp -rl '$parent_release/.' '$incoming/'; rsync -rcz --delete --no-whole-file --protocol=30 --read-batch='/tmp/$upload/changes.rsync' '$incoming/'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' '$incoming' --adopt-upload"
+          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c -; echo '$O100_TRANSFER_RSYNC_SHA256  /usr/bin/rsync' | sha256sum -c -; umask 022; mkdir '$incoming'; cp -rl '$parent_release/.' '$incoming/'; /usr/bin/rsync -rcz --delete --no-whole-file --protocol=30 --read-batch='/tmp/$upload/changes.rsync' '$incoming/'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' '$incoming' --adopt-upload"
       - name: Remove private code-only transfer directory
         if: always() && steps.artifact.outputs.parent != ''
         run: |
