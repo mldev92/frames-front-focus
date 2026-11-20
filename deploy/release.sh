@@ -101,7 +101,8 @@ if [[ "$action" == deploy-code-only ]]; then
   flock -w 60 8
   incoming=$(realpath "${5:?verified private upload directory}")
   [[ -d "$incoming" && "$incoming" != "$root" && "$incoming" != "$root/"* ]]
-  cp -al -- "$incoming/." "$stage/"
+  # Новые файлы наследуют ACL публичного каталога, а не приватной загрузки SSH.
+  tar -C "$incoming" -cf - . | tar -C "$stage" -xf - --no-same-owner --no-same-permissions
   "$php_bin" "$script_dir/verify-code-only.php" "$stage" "$root"
 elif [[ "$action" == deploy-toolbar ]]; then
   home=$(dirname "$root")
@@ -128,7 +129,7 @@ if [[ "$action" == deploy ]]; then
 fi
 "$php_bin" "$script_dir/verify-release.php" "$stage" "$root"
 # Сохраняем общие inode без медленного сопоставления 25 тысяч имён в tar 1.26.
-if [[ "$action" == deploy ]]; then
+if [[ "$action" == deploy || "$action" == deploy-code-only ]]; then
   "$php_bin" "$script_dir/link-unchanged.php" "$stage" "$root/o100_frontend_current" --relink-staged
 fi
 transaction="$state/transactions/$(date -u +%Y%m%dT%H%M%SZ)-$sha"
