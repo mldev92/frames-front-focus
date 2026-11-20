@@ -174,7 +174,7 @@ export function releaseMode(parent, target = "HEAD") {
       if (isDeepStrictEqual(buildInputs(parent), buildInputs(target))) continue;
     }
     // Параметры сборки, инвентарь, SEO и серверные маршруты проверяются полным путём.
-    if (/^src\/(?:components\/|hooks\/|lib\/|routes\/|styles\.css$)/.test(file)) {
+    if (/^src\/(?:components\/|hooks\/|lib\/|routes\/|styles\.css$)/.test(file) || file === "src/data/promotions.ts") {
       before ??= contract(parent);
       after ??= contract(target);
       if (

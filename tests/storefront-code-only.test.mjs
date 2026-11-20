@@ -31,7 +31,7 @@ test("release mode follows published route and loader dependencies across commit
   const git = (...args) =>
     execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
   git("init");
-  for (const dir of ["src/routes", "src/lib", "src/components", "deploy"])
+  for (const dir of ["src/routes", "src/lib", "src/components", "src/data", "deploy"])
     mkdirSync(dir, { recursive: true });
   const route = "src/routes/product.tsx";
   const original =
@@ -51,6 +51,14 @@ test("release mode follows published route and loader dependencies across commit
   writeFileSync("src/lib/prices.ts", "export const get=()=>110;");
   assert.deepEqual(releaseMode(parent, commit()).reasons, ["src/lib/prices.ts"]);
   writeFileSync("src/lib/prices.ts", "export const get=()=>100;");
+  const promotions = "src/data/promotions.ts";
+  writeFileSync(promotions, 'export const href="/sale/";');
+  assert.equal(releaseMode(parent, commit()).mode, "code-only");
+  writeFileSync("src/lib/data.ts", 'export { href as get } from "@/data/promotions";');
+  const promotionLoader = commit();
+  writeFileSync(promotions, 'export const href="/offers/";');
+  assert.deepEqual(releaseMode(promotionLoader, commit()).reasons, [promotions]);
+  writeFileSync("src/lib/data.ts", 'export { get } from "./prices";');
   writeFileSync(route, original.replace('"/product"', '"/other"'));
   assert.deepEqual(releaseMode(parent, commit()).reasons, [route]);
   writeFileSync(route, original);
