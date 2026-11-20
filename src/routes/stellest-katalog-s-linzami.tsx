@@ -10,6 +10,7 @@ import { fetchLensSearch, type LensRecommendCard } from "@/lib/api/lens-recommen
 import { formatPrice, useCart } from "@/lib/store/cart";
 import { CONTACT } from "@/data/contact";
 import { PriceSavings } from "@/components/PriceSavings";
+import { LensDetailDialog } from "@/components/LensWizard/LensWizard";
 import { DEFAULT_REGION, useCityStore } from "@/lib/store/city";
 
 import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
@@ -287,11 +288,13 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
   const city = useCityStore((state) => state.city);
   const addLens = useCart((state) => state.addLens);
   const [offers, setOffers] = useState<LensRecommendCard[] | null>(null);
+  const [detailOffer, setDetailOffer] = useState<LensRecommendCard | null>(null);
   const [error, setError] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
     setOffers(null);
+    setDetailOffer(null);
     setError(false);
     fetchLensSearch("Stellest", { limit: 100 }, controller.signal)
       .then((result) => {
@@ -327,7 +330,14 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
               ? "/stellest/stellest-crizal-prevencia.webp"
               : "/stellest/stellest-crizal-rock.webp";
         return (
-          <article className="coat-card" key={offer.id}>
+          <article
+            className="coat-card"
+            key={offer.id}
+            style={{ cursor: "pointer" }}
+            onClick={(event) => {
+              if (!(event.target as Element).closest("button, a")) setDetailOffer(offer);
+            }}
+          >
             <div className="coat-photo"><img src={image} alt="" loading="lazy" /></div>
             <div className="coat-body">
               <div className="coat-num">Essilor Stellest · {offer.index?.toFixed(2) ?? "1.59"}</div>
@@ -359,6 +369,14 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
                 </span>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  className="coat-btn"
+                  onClick={() => setDetailOffer(offer)}
+                  aria-label={`Подробнее о ${title}`}
+                >
+                  Подробнее
+                </button>
                 <button type="button" className="coat-btn" onClick={() => addLens(offer)}>В корзину</button>
                 <a href={CONTACT.phone.href} className="coat-btn">Позвонить в салон</a>
                 <button type="button" className="coat-btn" onClick={onBook}>Записаться на приём</button>
@@ -367,6 +385,10 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
           </article>
         );
       })}
+      <LensDetailDialog
+        offer={detailOffer}
+        onOpenChange={(open) => { if (!open) setDetailOffer(null); }}
+      />
     </div>
   );
 }
