@@ -2234,7 +2234,7 @@ function MainV2PromoBlock() {
     <div className="h-full flex flex-col gap-3">
       <div className="mb-2">
         <div className="text-[11px] uppercase tracking-[0.2em] mb-2" style={{ color: "var(--brand)" }}>
-          Акции · Санкт-Петербург
+          Акции
         </div>
         <h3 className="font-serif text-foreground" style={{ fontSize: 26, lineHeight: 1.15 }}>
           Специальные предложения
