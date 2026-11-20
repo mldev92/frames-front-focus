@@ -315,7 +315,7 @@ export function Header() {
         </div>
       </div>
 
-      <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur">
+      <header className="sticky top-[var(--o100-admin-panel-offset,0px)] z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-[1600px] px-4 lg:px-8">
           <div
             className="relative flex h-16 items-center justify-between gap-4"

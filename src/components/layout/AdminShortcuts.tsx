@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { useRouterState } from "@tanstack/react-router";
-import { useState, type ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { AdminEditMode, adminActionClass, adminProductEditHref, adminShortcutsUrl } from "@/lib/admin-edit-mode";
 import type { ResolvedCatalogRoute } from "@/lib/catalog-route";
+import { NativeBitrixPanel } from "./NativeBitrixPanel";
 
 const editModeKey = "o100-admin-edit-mode";
 
 export function AdminShortcuts({ children }: { children: ReactNode }) {
+  const [nativeReady, setNativeReady] = useState(false);
   const [editing, setEditing] = useState(() => {
     try {
       return typeof window === "undefined" || window.sessionStorage.getItem(editModeKey) !== "off";
@@ -31,23 +33,25 @@ export function AdminShortcuts({ children }: { children: ReactNode }) {
       return route?.kind === "product" ? route.data.product.id : undefined;
     },
   });
-  const isHomepage = useRouterState({ select: (state) => state.location.pathname === "/" });
+  const page = useRouterState({ select: (state) => state.location.pathname });
   const showToolbar = isAdmin === true && !isError;
   const editProductHref = adminProductEditHref(productId);
 
-  function toggleEditing() {
-    const next = !editing;
+  const updateEditing = useCallback((next: boolean) => {
     setEditing(next);
     try {
       window.sessionStorage.setItem(editModeKey, next ? "on" : "off");
     } catch {
       // Режим правки доступен и при отключённом хранилище.
     }
-  }
+  }, []);
 
   return (
     <AdminEditMode.Provider value={showToolbar && editing}>
       {showToolbar && (
+        <NativeBitrixPanel page={page} productId={productId} onReady={setNativeReady} onEditModeChange={updateEditing} />
+      )}
+      {showToolbar && !nativeReady && (
         <nav
           aria-label="Управление сайтом"
           className="flex flex-wrap items-center gap-1 border-b border-border bg-muted px-2 py-1 lg:px-8"
@@ -57,11 +61,11 @@ export function AdminShortcuts({ children }: { children: ReactNode }) {
             type="button"
             className={`${adminActionClass} border border-border aria-pressed:bg-background aria-pressed:font-semibold`}
             aria-pressed={editing}
-            onClick={toggleEditing}
+            onClick={() => updateEditing(!editing)}
           >
             Режим правки
           </button>
-          {editing && isHomepage && (
+          {editing && page === "/" && (
             <a className={adminActionClass} href="/bitrix/admin/o100_homepage.php">Редактировать главную</a>
           )}
           {editing && editProductHref && (
