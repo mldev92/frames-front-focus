@@ -93,6 +93,21 @@ test('один отказ upstream останавливает очередь б�
   assert.ok(results.every(r=>r.status===503));assert.equal(calls,1);assert.throws(()=>server.assertHealthy(),/503/);
 });
 
+test('ошибка upstream указывает endpoint и код, не раскрывая тело или параметры', async t => {
+  const privateKey = key.replace('one', 'private-marker');
+  const invalid = await gateway(t, {
+    fetchImpl: async () => new Response('private-marker', { headers: { 'content-type': 'application/json' } }),
+  });
+  assert.equal((await fetch(invalid.server.url + privateKey)).status, 503);
+  assert.throws(() => invalid.server.assertHealthy(), { message: 'Snapshot upstream returned invalid JSON at /api/store/product.php' });
+
+  const disconnected = await gateway(t, {
+    fetchImpl: async () => { throw Error('private-marker', { cause: { code: 'ECONNRESET' } }); },
+  });
+  assert.equal((await fetch(disconnected.server.url + privateKey)).status, 503);
+  assert.throws(() => disconnected.server.assertHealthy(), { message: 'Snapshot upstream request failed at /api/store/product.php (ECONNRESET)' });
+});
+
 test('закрытая lease и исчерпанный бюджет запрещают следующие production-запросы',async t=>{
   let calls=0;
   const first=await gateway(t,{assertLease:()=>{throw Error('paused');},fetchImpl:async()=>{calls++;return Response.json({id:1});}});

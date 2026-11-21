@@ -1,6 +1,7 @@
 import { mergeLegacy, consumeAttemptOnce } from "@/lib/cart-migration";
 import { mergePersistedCart } from "@/lib/cart-persistence";
 import { mergeRepeatedOrder } from "@/lib/order-repeat";
+import { cartTotals } from "@/lib/cart-totals";
 import { applyCartPrices, type CartPriceUpdate } from "@/lib/cart-prices";
 import { hasProductPrice } from "@/lib/product-price";
 import { productCardHref } from "@/data/categories";
@@ -247,18 +248,14 @@ export const useCart = create<CartState>()(
           savedCities: { ...savedCities, [slug]: useCityStore.getState().city },
         });
       },
-      totals: () => {
-        const lines = get().lines;
-        const lensSelections = get().lensSelections;
-        return {
-          count: lines.reduce((sum, line) => sum + line.qty, 0) + lensSelections.reduce((sum, item) => sum + item.qty, 0),
-          subtotal: lines.reduce((sum, line) => sum + line.qty * line.price, 0),
-        };
-      },
+      totals: () => cartTotals(get().lines, get().lensSelections),
     }),
     {
       name: "optika-cart",
       version: 3,
+      // CartMigration читает localStorage после hydration; первый снимок
+      // совпадает с пустой корзиной в серверном HTML.
+      skipHydration: true,
       merge: (persisted, current) => ({
         ...mergePersistedCart(persisted, current),
         legacySyncStatus: current.legacySyncStatus,

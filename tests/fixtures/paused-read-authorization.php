@@ -19,5 +19,13 @@ unlink($home.'/.o100-1c-catalog-paused');deny(fn()=>o100_read_authorization($hom
 if(o100_read_authorization($home,'','','inventory')!==null)throw new RuntimeException('Normal unpaused read rejected');
 $s=['Threads_connected'=>70,'Threads_running'=>2,'max_connections'=>320,'max_user_connections'=>50,'account_connections'=>1,'account_active'=>0,'Connection_errors_max_connections'=>10,'Uptime'=>1000];
 o100_check_capture_pressure($s,null);o100_check_capture_pressure($s,$s);
-foreach([['Threads_connected'=>256],['Threads_running'=>40],['account_connections'=>10],['account_active'=>5],['Connection_errors_max_connections'=>11],['Uptime'=>999],['max_connections'=>321]] as $change)deny(fn()=>o100_check_capture_pressure(array_replace($s,$change),$s));
+foreach(['Threads_connected'=>256,'Threads_running'=>40,'account_connections'=>10,'account_active'=>5,
+         'Connection_errors_max_connections'=>11,'Uptime'=>999,'max_connections'=>321,'max_user_connections'=>51] as $field=>$value) {
+    try { o100_check_capture_pressure(array_replace($s,[$field=>$value]),$s); }
+    catch (RuntimeException $e) {
+        if (!str_contains($e->getMessage(), "$field=$value")) throw $e;
+        continue;
+    }
+    throw new RuntimeException('Unsafe pressure accepted: '.$field);
+}
 echo "PASS: paused read authorization and pressure boundaries\n";

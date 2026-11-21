@@ -48,7 +48,7 @@ export async function acquireProductionReadLease({ host, identity, approvalSha25
     }
   });
   child.on('error', error => abort.abort(error));
-  child.on('exit', () => abort.abort(Error('Production read lease ended: ' + errorText.trim())));
+  child.on('exit', (code, signal) => abort.abort(Error(`Production read lease ended (${signal ?? `exit ${code}`}): ${errorText.trim()}`)));
   child.stdin.on('error', error => abort.abort(error));
   const check = setInterval(() => {
     if (lastHeartbeat && Date.now() - lastHeartbeat > 12000) abort.abort(Error('Production read lease heartbeat expired'));

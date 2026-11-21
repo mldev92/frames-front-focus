@@ -123,11 +123,17 @@ export async function startGateway({ snapshot, fetchImpl = fetch, assertLease = 
       snapshot.fresh();
       lastStarted = Date.now(); stats.upstreamRequests++;
       // Ни cookie, ни Authorization, ни произвольные заголовки клиента не передаются.
+      const endpoint = key.split('?')[0];
       const response = await fetchImpl(snapshot.binding.origin + key, {
         headers: { accept: 'application/json', 'user-agent': 'Optika100 bounded snapshot capture' },
         redirect: 'error', signal: AbortSignal.any([shutdown.signal, ...(leaseSignal ? [leaseSignal] : []), AbortSignal.timeout(timeoutMs)]),
+      }).catch(error => {
+        if (leaseSignal?.aborted) throw leaseSignal.reason;
+        const code = [error?.cause?.code, error?.code, error?.name].find(value =>
+          typeof value === 'string' && /^[A-Za-z0-9_]{1,48}$/.test(value));
+        throw Error(`Snapshot upstream request failed at ${endpoint} (${code ?? 'unknown'})`);
       });
-      if (response.status !== 200 && !(response.status === 404 && key.startsWith('/api/store/product.php?'))) throw Error('Snapshot upstream failed: ' + response.status);
+      if (response.status !== 200 && !(response.status === 404 && key.startsWith('/api/store/product.php?'))) throw Error(`Snapshot upstream failed: ${response.status} at ${endpoint}`);
       const xml = key.startsWith('/sitemap');
       if (!xml && !response.headers.get('content-type')?.includes('application/json')) throw Error('Snapshot upstream did not return JSON');
       const chunks = []; let size = 0;
@@ -138,7 +144,11 @@ export async function startGateway({ snapshot, fetchImpl = fetch, assertLease = 
       }
       const text = Buffer.concat(chunks).toString('utf8');
       if (xml && !/^\s*(?:<\?xml|<sitemapindex\b|<urlset\b)/.test(text)) throw Error('Snapshot upstream did not return a sitemap');
-      const body = xml ? text : JSON.parse(text);
+      let body = text;
+      if (!xml) {
+        try { body = JSON.parse(text); }
+        catch { throw Error(`Snapshot upstream returned invalid JSON at ${endpoint}`); }
+      }
       if (response.status === 200 && body && typeof body === 'object' && 'error' in body) throw Error('Snapshot upstream returned an API error');
       assertLease();
       const record = { key, status: response.status, contentType: xml ? 'application/xml' : 'application/json', body };

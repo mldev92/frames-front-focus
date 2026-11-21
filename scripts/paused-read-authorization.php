@@ -29,17 +29,28 @@ function o100_capture_pressure(string $home, ?array $baseline): array {
     if (!hash_equals('52dc853c36c00a1da90e0e6815b5cc2067fe547e67dbd3ce98b048ca98cd7533',hash_file('sha256',$probe))) throw new RuntimeException('Pressure probe changed');
     exec('timeout 10 '.escapeshellarg(PHP_BINARY).' '.escapeshellarg($probe).' '.escapeshellarg($home.'/public_html').' 2>/dev/null', $lines, $code);
     $s = json_decode(implode("\n",$lines),true);
-    if ($code!==0 || !is_array($s) || ($s['ok']??false)!==true) throw new RuntimeException('Capture pressure probe failed');
+    if ($code!==0) throw new RuntimeException('Capture pressure probe failed: exit='.$code);
+    if (!is_array($s) || ($s['ok']??false)!==true) throw new RuntimeException('Capture pressure probe failed: no valid result');
     return o100_check_capture_pressure($s, $baseline);
 }
 function o100_check_capture_pressure(array $s, ?array $baseline): array {
     foreach (['Threads_connected','Threads_running','max_connections','max_user_connections','account_connections','account_active','Connection_errors_max_connections','Uptime'] as $key) {
-        if (!is_int($s[$key]??null) || $s[$key]<0) throw new RuntimeException('Capture pressure sample invalid');
+        if (!is_int($s[$key]??null) || $s[$key]<0) throw new RuntimeException('Capture pressure sample invalid: '.$key);
     }
-    if ($s['max_connections']<1 || $s['Threads_connected']>=.8*$s['max_connections'] || $s['Threads_running']>=40
-        || $s['account_connections']>=10 || $s['account_active']>=5
-        || ($s['max_user_connections'] && $s['account_connections']+1>=.8*$s['max_user_connections'])) throw new RuntimeException('Capture pressure limit reached');
-    if ($baseline && ($s['Connection_errors_max_connections']!==$baseline['Connection_errors_max_connections'] || $s['Uptime']<$baseline['Uptime']
-        || $s['max_connections']!==$baseline['max_connections'] || $s['max_user_connections']!==$baseline['max_user_connections'])) throw new RuntimeException('Capture database baseline changed');
+    if ($s['max_connections']<1) throw new RuntimeException('Capture pressure sample invalid: max_connections=0');
+    $limits = ['Threads_connected'=>.8*$s['max_connections'], 'Threads_running'=>40, 'account_connections'=>10, 'account_active'=>5];
+    foreach ($limits as $key=>$limit) {
+        if ($s[$key]>=$limit) throw new RuntimeException("Capture pressure limit reached: $key={$s[$key]}, limit=$limit");
+    }
+    $userCapacity = .8*$s['max_user_connections'];
+    if ($s['max_user_connections'] && $s['account_connections']+1>=$userCapacity) {
+        throw new RuntimeException("Capture pressure limit reached: account_connections+1=".($s['account_connections']+1).", user_capacity=$userCapacity");
+    }
+    if ($baseline) {
+        foreach (['Connection_errors_max_connections','Uptime','max_connections','max_user_connections'] as $key) {
+            $changed = $key==='Uptime' ? $s[$key]<$baseline[$key] : $s[$key]!==$baseline[$key];
+            if ($changed) throw new RuntimeException("Capture database baseline changed: $key={$s[$key]}, baseline={$baseline[$key]}");
+        }
+    }
     return $s;
 }

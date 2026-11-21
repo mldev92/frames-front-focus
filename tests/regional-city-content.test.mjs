@@ -127,7 +127,7 @@ test("shared pages derive regional text and links from the selected city", async
   );
   assert.match(appointment, /setAvailableDateKeyList\(availability\.availableDates\)/);
   assert.match(appointment, /compact: true/);
-  assert.match(appointment, /date: selectedDateKey \|\| undefined/);
+  assert.match(appointment, /date: requestedDateKey/);
   assert.match(
     appointment,
     /disabled=\{\(date\) =>\s*!availableDateKeys\.has\(formatAppointmentDateKey\(date\)\)/,

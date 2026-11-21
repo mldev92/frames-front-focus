@@ -1,12 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { useCart, formatPrice } from "@/lib/store/cart";
+import { cartTotals } from "@/lib/cart-totals";
 import { PriceSavings } from "@/components/PriceSavings";
 import { CartPrescription } from "@/components/CartPrescription";
 
 export function CartDrawer() {
-  const { isOpen, close, lines, lensSelections, setQty, remove, removeLens, totals } = useCart();
-  const { subtotal, count } = totals();
+  const { isOpen, close, lines, lensSelections, setQty, remove, removeLens } = useCart();
+  const { subtotal, count } = cartTotals(lines, lensSelections);
 
   if (!isOpen) return null;
 
