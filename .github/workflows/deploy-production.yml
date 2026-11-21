@@ -8,6 +8,9 @@ on:
       candidate_run_id:
         description: Verified prepare-production workflow run ID
         required: false
+      parent_candidate_run_id:
+        description: Optional override for resolving the published parent artifact
+        required: false
       artifact_sha256:
         description: Approved production-release.tgz SHA256
         required: false
@@ -35,6 +38,7 @@ jobs:
       O100_BACKEND_SHA: ${{ inputs.backend_sha }}
       O100_ROUTING_SHA256: ${{ inputs.routing_sha256 }}
       O100_TOOLBAR_BASELINE: ${{ inputs.toolbar_baseline }}
+      O100_TRANSFER_RSYNC_SHA256: a8e24fdd6bcfd58ab582251d5f648997fc305cb847d0a1c14f5ac40ef2f460c1
       SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
       SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
       PRODUCTION_ROOT: ${{ secrets.PRODUCTION_ROOT }}
@@ -88,28 +92,104 @@ jobs:
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
           scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && { (while sleep 15; do echo RELEASE_HEARTBEAT; done) & heartbeat=\$!; trap 'kill \$heartbeat 2>/dev/null || true' EXIT; O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz; }"
-      - name: Transfer code changes and activate against their published parent
+      - name: Package changes against their published parent
         if: steps.artifact.outputs.parent != ''
+        timeout-minutes: 20
         env:
           PARENT: ${{ steps.artifact.outputs.parent }}
+          PARENT_RUN_OVERRIDE: ${{ inputs.parent_candidate_run_id }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -Eeuo pipefail
+          parent_manifest=$(jq -er '.codeOnly.parentManifestSha256' release-manifest.json)
+          [[ "$parent_manifest" =~ ^[a-f0-9]{64}$ ]]
+          [[ -z "$PARENT_RUN_OVERRIDE" || "$PARENT_RUN_OVERRIDE" =~ ^[0-9]+$ ]]
+          remote="$SSH_USER@$SSH_HOST"
+          ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
+          parent_release="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT"
+          mkdir candidate published
+          tar -xzf production-release.tgz -C candidate
+          parent_run="$PARENT_RUN_OVERRIDE"
+          if [[ -z "$parent_run" ]]; then
+            parent_run=$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/artifacts" \
+              -f "name=production-candidate-manifest-$parent_manifest" \
+              --jq '[.artifacts[] | select(.expired == false) | .workflow_run.id][0] // empty')
+          fi
+          if [[ -z "$parent_run" ]]; then
+            # Кандидаты старого workflow ещё не помечены хешем манифеста.
+            parent_run=$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/prepare-production.yml/runs" \
+              -f "head_sha=$PARENT" -f status=success -F per_page=1 --jq '.workflow_runs[0].id // empty')
+          fi
+          if [[ "$parent_run" =~ ^[0-9]+$ ]] && \
+              timeout 300s gh run download "$parent_run" --repo "$GITHUB_REPOSITORY" --name production-candidate --dir parent-artifact && \
+              (cd parent-artifact && sha256sum -c production-release.tgz.sha256) && \
+              [[ "$(tar -xOf parent-artifact/production-release.tgz ./release-manifest.json | sha256sum | cut -d' ' -f1)" == "$parent_manifest" ]]; then
+            tar -xzf parent-artifact/production-release.tgz -C published
+          elif [[ -n "$PARENT_RUN_OVERRIDE" ]]; then
+            echo 'The specified parent candidate is missing or differs from the published manifest.' >&2
+            exit 2
+          else
+            # После истечения артефакта читаем только статические файлы точного выпуска.
+            ssh -C "${ssh_opts[@]}" "$remote" "set -e; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c --status -; tar -cf - -C '$parent_release' ." \
+              | tar -xf - -C published --no-same-owner --no-same-permissions
+          fi
+          printf '%s  published/release-manifest.json\n' "$parent_manifest" | sha256sum -c -
+          grep -Fx "$PARENT" published/.release-sha
+          # Формат batch должен совпадать на обеих сторонах, даже при одинаковом протоколе.
+          scp "${ssh_opts[@]}" "$remote:/usr/bin/rsync" transfer-rsync
+          printf '%s  transfer-rsync\n' "$O100_TRANSFER_RSYNC_SHA256" | sha256sum -c -
+          chmod 0700 transfer-rsync
+          rsync_opts=(-rcz --delete --no-whole-file --protocol=30)
+          ./transfer-rsync "${rsync_opts[@]}" --only-write-batch=changes.rsync candidate/ published/
+          ./transfer-rsync "${rsync_opts[@]}" --read-batch=changes.rsync published/
+          differences=$(rsync -rcni --delete candidate/ published/)
+          test -z "$differences"
+          xz -T2 -6 changes.rsync
+          du -h changes.rsync.xz
+      - uses: actions/upload-artifact@v4
+        if: steps.artifact.outputs.parent != ''
+        id: transfer
+        with:
+          name: production-transfer-${{ github.run_attempt }}
+          path: changes.rsync.xz
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+      - name: Transfer code changes and activate against their published parent
+        if: steps.artifact.outputs.parent != ''
+        timeout-minutes: 20
+        env:
+          PARENT: ${{ steps.artifact.outputs.parent }}
+          GH_TOKEN: ${{ github.token }}
+          TRANSFER_ARTIFACT: ${{ steps.transfer.outputs.artifact-id }}
+          TRANSFER_DIGEST: ${{ steps.transfer.outputs.artifact-digest }}
+        run: |
+          set -Eeuo pipefail
+          [[ "$TRANSFER_ARTIFACT" =~ ^[0-9]+$ && "$TRANSFER_DIGEST" =~ ^[a-f0-9]{64}$ ]]
           remote="$SSH_USER@$SSH_HOST"
           ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15)
           upload="o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          mkdir candidate
-          tar -xzf production-release.tgz -C candidate
-          ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '$upload/client'"
-          # rsync использует старые файлы как основу дельты; публикация выполняется отдельной транзакцией.
-          rsync -rpcz --chmod=D755,F644 --no-whole-file --link-dest="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT" \
-            -e 'ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15' \
-            candidate/ "$remote:$upload/client/"
+          incoming="$PRODUCTION_ROOT/o100_frontend_releases/.incoming-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          parent_release="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT"
+          parent_manifest=$(jq -r '.codeOnly.parentManifestSha256' release-manifest.json)
+          [[ "$parent_manifest" =~ ^[a-f0-9]{64}$ ]]
+          ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '/tmp/$upload'"
           scp "${ssh_opts[@]}" production-tools.tgz "$remote:$upload/"
-          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' client --consume-upload"
+          # Передаём только краткоживущую ссылку. Токен GitHub остаётся на runner.
+          status=$(curl --silent --show-error --fail --max-time 20 --dump-header "$RUNNER_TEMP/transfer.headers" \
+            --output /dev/null --write-out '%{http_code}' -H "Authorization: Bearer $GH_TOKEN" \
+            "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/artifacts/$TRANSFER_ARTIFACT/zip")
+          [[ "$status" == 302 ]]
+          url=$(awk 'tolower($1) == "location:" {sub(/\r$/, ""); print $2}' "$RUNNER_TEMP/transfer.headers")
+          [[ "$url" =~ ^https://[^[:space:]\"\\]+$ ]]
+          echo "::add-mask::$url"
+          printf 'url = "%s"\n' "$url" | ssh "${ssh_opts[@]}" "$remote" "set -e; umask 077; cd '/tmp/$upload'; curl --silent --show-error --fail --proto '=https' --max-time 900 --output transfer.zip --config -; echo '$TRANSFER_DIGEST  transfer.zip' | sha256sum -c -; unzip -q transfer.zip changes.rsync.xz; rm -- transfer.zip; xz -d changes.rsync.xz"
+          # Rsync заменяет изменённые файлы через временные имена и сохраняет родительский выпуск.
+          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c -; echo '$O100_TRANSFER_RSYNC_SHA256  /usr/bin/rsync' | sha256sum -c -; umask 022; mkdir '$incoming'; cp -rl '$parent_release/.' '$incoming/'; /usr/bin/rsync -rcz --delete --no-whole-file --protocol=30 --read-batch='/tmp/$upload/changes.rsync' '$incoming/'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' '$incoming' --adopt-upload"
       - name: Remove private code-only transfer directory
         if: always() && steps.artifact.outputs.parent != ''
         run: |
-          ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "rm -rf -- 'o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT'"
+          ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "rm -rf -- 'o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT' '/tmp/o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT' '$PRODUCTION_ROOT/o100_frontend_releases/.incoming-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT'"
       - name: Release admin toolbar against the approved static storefront
         if: ${{ inputs.toolbar_baseline != '' }}
         run: |
