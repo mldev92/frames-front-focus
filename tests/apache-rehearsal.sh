@@ -43,7 +43,7 @@ printf '%s\n' 'NVK-CATALOG <a href="/catalog_n/opravy/deep-product/" data-produc
 printf '%s\n' 'DEEP-SPB' > /candidate/catalog_s/opravy/deep-product/index.html
 printf '%s\n' 'DEEP-NVK' > /candidate/catalog_n/opravy/deep-product/index.html
 printf '%s\n' 'ASSET' > /candidate/assets/test-hash.js
-printf '%s\n' '<urlset />' > /candidate/sitemap.xml
+printf '%s\n' '<urlset>' '</urlset>' > /candidate/sitemap.xml
 printf '%s\n' 'User-agent: *' > /candidate/robots.txt
 make_archive() {
   local sha=$1
@@ -240,24 +240,42 @@ mkdir /evidence/code-client
 cp -a "$root/o100_frontend_current/." /evidence/code-client/
 printf '%s\n' "$code_sha" >/evidence/code-client/.release-sha
 printf '\n<!-- storefront fix -->\n' >>/evidence/code-client/index.html
+mkdir /evidence/code-client/eye-exams
+printf '%s\n' '<!doctype html><title>Eye exams</title>' >/evidence/code-client/eye-exams/index.html
+sed -i '/^<\/urlset>$/i\  <url><loc>https://optika100.com/eye-exams/</loc></url>' /evidence/code-client/sitemap.xml
 php <<'PHP'
 <?php
 $dir='/evidence/code-client';
 $file=$dir.'/release-manifest.json';
 $m=json_decode(file_get_contents($file),true,512,JSON_THROW_ON_ERROR);
-$m['codeOnly']=['parentSha'=>$m['frontendSha'],'parentManifestSha256'=>hash_file('sha256',$file)];
+$m['codeOnly']=['parentSha'=>$m['frontendSha'],'parentManifestSha256'=>hash_file('sha256',$file),'standalonePaths'=>['/eye-exams/']];
 $m['frontendSha']=trim(file_get_contents($dir.'/.release-sha'));
-foreach (['index.html','.release-sha'] as $name) $m['files'][$name]=hash_file('sha256',$dir.'/'.$name);
+$m['routeCount']++;
+$m['acceptancePaths'][]='/eye-exams/';
+foreach (['index.html','.release-sha','eye-exams/index.html','sitemap.xml'] as $name) $m['files'][$name]=hash_file('sha256',$dir.'/'.$name);
 $m['templateFiles']['deploy/verify-code-only.php']=hash_file('sha256','/frontend/deploy/verify-code-only.php');
 file_put_contents($file,json_encode($m));
 PHP
+mkdir "$root/eye-exams"
+if php /frontend/deploy/verify-code-only.php /evidence/code-client "$root"; then exit 1; fi
+rmdir "$root/eye-exams"
+cp /evidence/code-client/release-manifest.json /evidence/standalone-manifest.json
+php -r '$p=$argv[1]; $m=json_decode(file_get_contents($p),true); $m["files"]["sitemap.xml"]=str_repeat("a",64); file_put_contents($p,json_encode($m));' /evidence/code-client/release-manifest.json
+if php /frontend/deploy/verify-code-only.php /evidence/code-client "$root"; then exit 1; fi
+cp /evidence/standalone-manifest.json /evidence/code-client/release-manifest.json
 if O100_TEST_FAIL_AFTER_SWAP=1 bash /frontend/deploy/release.sh deploy-code-only "$root" "$code_sha" "$baseline" /evidence/code-client; then exit 1; fi
 [[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$toolbar" ]]
 bash /frontend/deploy/release.sh deploy-code-only "$root" "$code_sha" "$baseline" /evidence/code-client
 check 200 /
 grep -q 'storefront fix' /tmp/response
+check 200 /eye-exams/
+grep -q 'Eye exams' /tmp/response
+check 200 /sitemap.xml
+grep -q '<loc>https://optika100.com/eye-exams/</loc>' /tmp/response
 cmp /evidence/toolbar.htaccess "$root/.htaccess"
 O100_EXPECTED_FRONTEND=$code_sha bash /frontend/deploy/release.sh rollback "$root"
 [[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$toolbar" ]]
+check 404 /eye-exams/
+[[ "$(sha256sum /var/www/.o100-1c-catalog-paused | cut -d' ' -f1)" == "$O100_EXPECTED_PAUSE_SHA256" ]]
 if O100_EXPECTED_FRONTEND=$parent bash /frontend/deploy/release.sh deploy-code-only "$root" "$code_sha" "$baseline" /evidence/code-client; then exit 1; fi
-echo 'PASS: code-only release, parent drift rejection, rollback and retry'
+echo 'PASS: offline storefront release, standalone HTML and sitemap, collision rejection, rollback and retry'

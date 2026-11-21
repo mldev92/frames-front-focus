@@ -34,15 +34,49 @@ if ($parent['backendSha'] === $manifest['backendSha']) {
         throw new RuntimeException('Backend changes lack a matching compatibility declaration');
     }
 }
-foreach (['catalogFingerprint','inventorySha256','inventoryGeneratedAt','routeCount','settings','retiredPaths','acceptancePaths','queryAcceptancePaths'] as $key) {
+foreach (['catalogFingerprint','inventorySha256','inventoryGeneratedAt','settings','retiredPaths','queryAcceptancePaths'] as $key) {
     if (!isset($parent[$key]) || $manifest[$key] !== $parent[$key]) throw new RuntimeException('Changed published baseline: '.$key);
 }
-foreach (['sitemap.xml','robots.txt'] as $name) {
-    if ($manifest['files'][$name] !== $parent['files'][$name]) throw new RuntimeException('Changed published '.$name);
-}
+if ($manifest['files']['robots.txt'] !== $parent['files']['robots.txt']) throw new RuntimeException('Changed published robots.txt');
 $routes = static function(array $files): array {
     $names = array_filter(array_keys($files), fn($p) => $p === 'index.html' || str_ends_with($p, '/index.html'));
     sort($names, SORT_STRING);
     return $names;
 };
-if ($routes($manifest['files']) !== $routes($parent['files'])) throw new RuntimeException('Changed published routes');
+$pages = $binding['standalonePaths'] ?? [];
+if (!is_array($pages) || !array_is_list($pages)) throw new RuntimeException('Invalid standalone page list');
+$parentRoutes = $routes($parent['files']);
+$newRoutes = $parentRoutes;
+$entries = '';
+foreach ($pages as $path) {
+    if (!is_string($path) || !preg_match('~^/[a-z][a-z0-9]*(?:-[a-z0-9]+)*/$~D', $path)
+        || preg_match('~^/(api|assets|auth|basket|bitrix|catalog|checkout|local|o100|order|payment|personal|robots|sale|search|sitemap|upload|verification)(?:-|/)~', $path)
+        || in_array($path, $parent['retiredPaths'], true) || file_exists($root.'/'.trim($path, '/'))) {
+        throw new RuntimeException('Invalid standalone page path');
+    }
+    $file = ltrim($path, '/').'index.html';
+    if (in_array($file, $newRoutes, true)) throw new RuntimeException('Duplicate standalone page path');
+    $newRoutes[] = $file;
+    $entries .= '  <url><loc>https://optika100.com'.$path."</loc></url>\n";
+}
+sort($newRoutes, SORT_STRING);
+if ($routes($manifest['files']) !== $newRoutes || $manifest['routeCount'] !== $parent['routeCount'] + count($pages)
+    || $manifest['acceptancePaths'] !== array_merge($parent['acceptancePaths'], $pages)) {
+    throw new RuntimeException('Changed published routes outside standalone page additions');
+}
+$sitemapHash = $parent['files']['sitemap.xml'];
+if ($pages) {
+    $sitemap = file_get_contents($current.'/sitemap.xml');
+    $end = strpos($sitemap, '</urlset>');
+    if (hash('sha256', $sitemap) !== $sitemapHash || $end === false || !preg_match('~^</urlset>\s*$~D', substr($sitemap, $end))) {
+        throw new RuntimeException('Invalid published sitemap');
+    }
+    foreach ($pages as $path) {
+        $url = 'https://optika100.com'.$path;
+        if (str_contains($sitemap, '<loc>'.$url.'</loc>') || str_contains($sitemap, '<loc>'.rtrim($url, '/').'</loc>')) {
+            throw new RuntimeException('Standalone page already in published sitemap');
+        }
+    }
+    $sitemapHash = hash('sha256', substr_replace($sitemap, $entries, $end, 0));
+}
+if ($manifest['files']['sitemap.xml'] !== $sitemapHash) throw new RuntimeException('Unexpected published sitemap change');

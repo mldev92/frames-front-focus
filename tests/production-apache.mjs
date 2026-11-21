@@ -24,6 +24,15 @@ async function worker() {
   }
 }
 await Promise.all(Array.from({ length: 8 }, worker));
+if (routeManifest.standalonePaths?.length) {
+  const response = await fetch(origin + "/sitemap.xml", { redirect: "manual" });
+  const sitemap = await response.text();
+  const expected = await readFile("dist/client/sitemap.xml", "utf8");
+  if (response.status !== 200 || sitemap !== expected) failures.push("Standalone sitemap differs from the candidate");
+  for (const route of routeManifest.standalonePaths) {
+    if (!sitemap.includes(`<loc>https://optika100.com${route}</loc>`)) failures.push(`Standalone sitemap entry missing: ${route}`);
+  }
+}
 // Параметры поиска и фильтров не должны гидратировать неподходящий статический снимок.
 const shell = await readFile("dist/client/_shell.html");
 for (const path of [

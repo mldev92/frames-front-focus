@@ -3,6 +3,7 @@ import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { pathToFileURL } from "node:url";
 import ts from "typescript";
+import { registry, standalonePages } from "./standalone-pages.mjs";
 
 const git = (...args) =>
   execFileSync("git", args, { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
@@ -26,6 +27,7 @@ const buildTools = new Set([
     "published-page",
     "published-loaders",
     "published-render",
+    "standalone-pages",
     "storefront-release-mode",
     "build-code-only",
     "code-only-workflow",
@@ -38,6 +40,7 @@ function routeInputs(file) {
   const bindings = new Map();
   const imports = new Map();
   const roots = [];
+  let staticPath;
   for (const s of file.statements) {
     if (ts.isImportDeclaration(s)) {
       const clause = s.importClause;
@@ -69,6 +72,27 @@ function routeInputs(file) {
         ) {
           throw Error("Unknown route declaration: " + file.fileName);
         }
+        if (
+          ts.isCallExpression(call.expression) &&
+          ts.isIdentifier(call.expression.expression) &&
+          isDeepStrictEqual(imports.get(call.expression.expression.text), [
+            "@tanstack/react-router",
+            "createFileRoute",
+          ]) &&
+          call.expression.arguments.length === 1 &&
+          ts.isStringLiteral(call.expression.arguments[0]) &&
+          call.arguments[0].properties.every(
+            (property) =>
+              ts.isPropertyAssignment(property) &&
+              ts.isIdentifier(property.name) &&
+              presentation.has(property.name.text),
+          ) &&
+          call.arguments[0].properties.some(
+            (property) => property.name?.getText(file) === "component",
+          )
+        ) {
+          staticPath = call.expression.arguments[0].text.replace(/\/?$/, "/");
+        }
         roots.push(
           call.expression,
           ...call.arguments[0].properties.filter((p) => !presentation.has(p.name?.getText(file))),
@@ -98,6 +122,7 @@ function routeInputs(file) {
   return {
     signature: JSON.stringify([source, [...usedImports].sort()]),
     modules: [...usedImports.values()].map(([module]) => module),
+    staticPath,
   };
 }
 
@@ -107,6 +132,7 @@ function contract(ref) {
   );
   const protectedFiles = new Set();
   const routes = new Map();
+  const staticRoutes = new Map();
   function inspect(file) {
     return ts.createSourceFile(
       file,
@@ -140,11 +166,29 @@ function contract(ref) {
   }
   for (const name of files) {
     if (!/^src\/routes\/.+\.tsx?$/.test(name)) continue;
-    const { signature, modules } = routeInputs(inspect(name));
+    const { signature, modules, staticPath } = routeInputs(inspect(name));
     routes.set(name, signature);
+    if (staticPath) staticRoutes.set(name, staticPath);
     for (const module of modules) dependency(name, module);
   }
-  return { routes, protectedFiles };
+  const standalone = files.has(registry)
+    ? standalonePages(JSON.parse(git("show", ref + ":" + registry)))
+    : [];
+  return { routes, staticRoutes, protectedFiles, standalone };
+}
+
+// При первом выпуске подключение реестра не меняет остальную логику сборки каталога.
+function registryIntegration(parent, target, file) {
+  const before = git("show", parent + ":" + file);
+  const after = git("show", target + ":" + file);
+  const importer = 'import { registry, standalonePages } from "./standalone-pages.mjs";\n';
+  const entry =
+    '  ...standalonePages(JSON.parse(await readFile(new URL("../" + registry, import.meta.url), "utf8"))),\n';
+  return (
+    after.includes(importer) &&
+    after.includes(entry) &&
+    after.replace(importer, "").replace(entry, "") === before
+  );
 }
 
 export function releaseMode(parent, target = "HEAD") {
@@ -154,11 +198,39 @@ export function releaseMode(parent, target = "HEAD") {
     .filter(Boolean);
   const reasons = [];
   let before, after;
+  const additions = new Map();
+  if (paths.includes(registry)) {
+    before = contract(parent);
+    after = contract(target);
+    const added = after.standalone.filter((route) => !before.standalone.includes(route));
+    for (const route of added) {
+      const file = `src/routes${route.slice(0, -1)}.tsx`;
+      if (!before.routes.has(file) && after.staticRoutes.get(file) === route)
+        additions.set(file, route);
+    }
+    if (
+      added.length !== additions.size ||
+      before.standalone.some((route) => !after.standalone.includes(route))
+    ) {
+      reasons.push(registry);
+    }
+  }
   for (const file of paths) {
     if (
       buildTools.has(file) ||
       /^(tests\/|\.github\/workflows\/)/.test(file) ||
       file.endsWith(".md")
+    )
+      continue;
+    if (
+      file === registry ||
+      additions.has(file) ||
+      (additions.size && file === "src/routeTree.gen.ts")
+    )
+      continue;
+    if (
+      file === "scripts/generate-production-manifest.mjs" &&
+      registryIntegration(parent, target, file)
     )
       continue;
     if (/^public\/.*\.(?:ico|png|jpe?g|webp|avif|svg|woff2?)$/i.test(file)) continue;
@@ -174,7 +246,10 @@ export function releaseMode(parent, target = "HEAD") {
       if (isDeepStrictEqual(buildInputs(parent), buildInputs(target))) continue;
     }
     // Параметры сборки, инвентарь, SEO и серверные маршруты проверяются полным путём.
-    if (/^src\/(?:components\/|hooks\/|lib\/|routes\/|styles\.css$)/.test(file) || file === "src/data/promotions.ts") {
+    if (
+      /^src\/(?:components\/|hooks\/|lib\/|routes\/|styles\.css$)/.test(file) ||
+      file === "src/data/promotions.ts"
+    ) {
       before ??= contract(parent);
       after ??= contract(target);
       if (
@@ -186,7 +261,11 @@ export function releaseMode(parent, target = "HEAD") {
     }
     reasons.push(file);
   }
-  return { mode: reasons.length ? "full" : "code-only", reasons };
+  return {
+    mode: reasons.length ? "full" : "code-only",
+    reasons,
+    standalonePaths: [...additions.values()],
+  };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const result = releaseMode(process.argv[2], process.argv[3]);

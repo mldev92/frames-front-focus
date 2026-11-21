@@ -8,7 +8,10 @@ import { catalogHtmlProblems } from "./catalog-html-validation.mjs";
 import { catalogLinks, redirectPaths } from "./catalog-link-check.mjs";
 
 const [index, count] = process.argv.slice(2).map(Number);
-const { routes } = JSON.parse(await readFile("generated/production-routes.json"));
+const { routes, standalonePaths = [] } = JSON.parse(
+  await readFile("generated/production-routes.json"),
+);
+const standalone = new Set(standalonePaths);
 const parent = process.env.O100_PUBLISHED_DIR;
 const manifest = JSON.parse(await readFile(path.join(parent, "release-manifest.json")));
 const allowed = new Set([
@@ -45,23 +48,46 @@ for (let i = index; i < routes.length; i += count) {
   const route = routes[i],
     file = routeFile(route);
   try {
-    const bytes = await readFile(path.join(parent, file));
-    if (createHash("sha256").update(bytes).digest("hex") !== manifest.files[file])
-      throw Error("Published checksum mismatch");
-    const source = bytes.toString("utf8");
+    let source;
+    if (!standalone.has(route)) {
+      const bytes = await readFile(path.join(parent, file));
+      if (createHash("sha256").update(bytes).digest("hex") !== manifest.files[file])
+        throw Error("Published checksum mismatch");
+      source = bytes.toString("utf8");
+    }
     const response = await render(route);
     if (response.status !== 200 || !response.headers.get("content-type")?.includes("text/html"))
       throw Error("Unexpected SSR response " + response.status);
     const html = await response.text();
     if (networkRequest) throw Error("Unexpected network dependency");
-    if (!isDeepStrictEqual(publishedMatches(source), publishedMatches(html)))
-      throw Error("Route or catalog data changed");
+    const matches = publishedMatches(html);
+    if (source === undefined) {
+      const page = route.slice(0, -1);
+      // TanStack объединяет ID маршрута и его полный путь в ключ совпадения.
+      if (
+        matches.length !== 2 ||
+        matches[0].id !== "__root__/" ||
+        matches[1].id !== page + page ||
+        matches.some((match) => match.data !== undefined)
+      ) {
+        throw Error("Standalone page rendered a different route or has loader data");
+      }
+      if (
+        identity.test(html) ||
+        !isDeepStrictEqual(canonicals(html), ["https://optika100.com" + route])
+      ) {
+        throw Error("Standalone page must have one matching canonical and no product identity");
+      }
+    } else {
+      if (!isDeepStrictEqual(publishedMatches(source), matches))
+        throw Error("Route or catalog data changed");
+      if (source.match(identity)?.[1] !== html.match(identity)?.[1])
+        throw Error("Product identity changed");
+      if (!isDeepStrictEqual(canonicals(source), canonicals(html)))
+        throw Error("Canonical route changed");
+    }
     if (route.startsWith("/catalog_") && catalogHtmlProblems(html).length)
       throw Error("Invalid catalog HTML");
-    if (source.match(identity)?.[1] !== html.match(identity)?.[1])
-      throw Error("Product identity changed");
-    if (!isDeepStrictEqual(canonicals(source), canonicals(html)))
-      throw Error("Canonical route changed");
     if (!html.includes('type="module"') || !html.includes('id="$tsr-stream-barrier"'))
       throw Error("Missing hydration assets");
     for (const link of catalogLinks(html))

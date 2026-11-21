@@ -5,6 +5,7 @@ import { redirectTargets } from "./catalog-link-check.mjs";
 import { reconcileRetiredProducts } from "./reconcile-retired-products.mjs";
 import { loadInventory, productForPath, robotsAllows } from "./seo-inventory.mjs";
 import { FRAME_BRAND_LANDINGS } from "../src/data/frame-brand-landings.ts";
+import { registry, standalonePages } from "./standalone-pages.mjs";
 
 const origin = (process.env.VITE_BITRIX_API || "https://optika100.com").replace(/\/$/, "");
 const outputDir = new URL("../generated/", import.meta.url);
@@ -33,6 +34,7 @@ const excludedExact = new Set([
   "/robots.txt",
 ]);
 const staticRoutes = [
+  ...standalonePages(JSON.parse(await readFile(new URL("../" + registry, import.meta.url), "utf8"))),
   ...FRAME_BRAND_LANDINGS.map((brand) => `/catalog_s/opravy/${brand.slug}/`),
   "/",
   "/basket/",
