@@ -62,15 +62,21 @@ for (let i = index; i < routes.length; i += count) {
     if (networkRequest) throw Error("Unexpected network dependency");
     const matches = publishedMatches(html);
     if (source === undefined) {
+      const page = route.slice(0, -1);
+      // TanStack объединяет ID маршрута и его полный путь в ключ совпадения.
       if (
         matches.length !== 2 ||
-        matches[0].id !== "__root__" ||
-        matches[1].id.replace(/\/?$/, "/") !== route ||
-        matches.some((match) => match.data !== undefined) ||
+        matches[0].id !== "__root__/" ||
+        matches[1].id !== page + page ||
+        matches.some((match) => match.data !== undefined)
+      ) {
+        throw Error("Standalone page rendered a different route or has loader data");
+      }
+      if (
         identity.test(html) ||
         !isDeepStrictEqual(canonicals(html), ["https://optika100.com" + route])
       ) {
-        throw Error("Standalone page must have its own canonical and no loader data");
+        throw Error("Standalone page must have one matching canonical and no product identity");
       }
     } else {
       if (!isDeepStrictEqual(publishedMatches(source), matches))
