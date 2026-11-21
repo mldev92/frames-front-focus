@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 import { publishedMatches, routeFile } from "../scripts/published-page.mjs";
 import { releaseMode } from "../scripts/storefront-release-mode.mjs";
+import { appendStandaloneSitemap, registry } from "../scripts/standalone-pages.mjs";
 
 test("published loader data is decoded as data, including aliases and missing values", () => {
   const payload =
@@ -62,6 +63,45 @@ test("release mode follows published route and loader dependencies across commit
   writeFileSync(route, original.replace('"/product"', '"/other"'));
   assert.deepEqual(releaseMode(parent, commit()).reasons, [route]);
   writeFileSync(route, original);
+  const landing = "src/routes/eye-exams.tsx";
+  const staticRoute = `import { createFileRoute } from "@tanstack/react-router";
+    export const Route = createFileRoute("/eye-exams")({component: Page});
+    function Page() { return <p>Eye exams</p>; }`;
+  writeFileSync(landing, staticRoute);
+  const unregistered = commit();
+  assert.deepEqual(releaseMode(parent, unregistered).reasons, [landing]);
+  writeFileSync(registry, '["/eye-exams/"]');
+  writeFileSync("src/routeTree.gen.ts", "// generated\n");
+  const registered = commit();
+  assert.deepEqual(releaseMode(parent, registered), {
+    mode: "code-only",
+    reasons: [],
+    standalonePaths: ["/eye-exams/"],
+  });
+  writeFileSync(
+    landing,
+    staticRoute.replace("component: Page", "loader: () => {}, component: Page"),
+  );
+  assert.equal(releaseMode(parent, commit()).mode, "full");
+  writeFileSync(landing, staticRoute);
+  writeFileSync(registry, "[]");
+  assert.equal(releaseMode(registered, commit()).mode, "full");
+  rmSync(landing);
+  rmSync(registry);
+  rmSync("src/routeTree.gen.ts");
   writeFileSync("deploy/seo-active-products.json.gz", "changed");
   assert.deepEqual(releaseMode(parent, commit()).reasons, ["deploy/seo-active-products.json.gz"]);
+});
+
+test("the offline sitemap only gains the approved standalone URLs", () => {
+  const original =
+    "<urlset>\n  <url><loc>https://optika100.com/catalog_s/product/</loc></url>\n</urlset>\n";
+  const updated = appendStandaloneSitemap(original, ["/eye-exams/"]);
+  assert.equal(
+    updated.replace("  <url><loc>https://optika100.com/eye-exams/</loc></url>\n", ""),
+    original,
+  );
+  assert.throws(() => appendStandaloneSitemap(updated, ["/eye-exams/"]), /already in/);
+  assert.throws(() => appendStandaloneSitemap(original, ["/bitrix/"]), /Invalid standalone/);
+  assert.throws(() => appendStandaloneSitemap("<sitemapindex/>", ["/eye-exams/"]), /not a URL set/);
 });

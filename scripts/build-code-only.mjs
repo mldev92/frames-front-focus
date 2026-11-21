@@ -6,6 +6,9 @@ import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { publishedMatches } from "./published-page.mjs";
 import { releaseMode } from "./storefront-release-mode.mjs";
+import { appendStandaloneSitemap } from "./standalone-pages.mjs";
+import { redirectPaths } from "./catalog-link-check.mjs";
+import { robotsAllows } from "./seo-inventory.mjs";
 
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const parent = path.resolve(process.env.O100_PUBLISHED_DIR || process.argv[2] || "");
@@ -71,10 +74,29 @@ const pageFiles = Object.keys(baseline.files).filter(
 if (pageFiles.length !== baseline.routeCount || !pageFiles.includes("index.html"))
   throw Error("Published route count mismatch");
 const routes = pageFiles.map((f) => "/" + f.slice(0, -"index.html".length));
+const { standalonePaths } = decision;
+const robots = await readPublished("robots.txt");
+const redirects = redirectPaths(await readFile("deploy/redirects.production.txt", "utf8"));
+for (const route of standalonePaths) {
+  if (
+    routes.includes(route) ||
+    redirects.has(route) ||
+    baseline.retiredPaths.includes(route) ||
+    !robotsAllows(robots.toString(), route)
+  ) {
+    throw Error("Standalone page conflicts with published routing: " + route);
+  }
+  routes.push(route);
+}
 await mkdir("generated", { recursive: true });
 await writeFile(
   "generated/production-routes.json",
-  JSON.stringify({ routes, count: routes.length, retiredProductPaths: baseline.retiredPaths }),
+  JSON.stringify({
+    routes,
+    count: routes.length,
+    retiredProductPaths: baseline.retiredPaths,
+    standalonePaths,
+  }),
 );
 const preload = (name) => new URL(name, import.meta.url).href;
 const env = {
@@ -96,8 +118,11 @@ execFileSync(
   { env, stdio: "inherit" },
 );
 const client = "dist/client";
-for (const file of ["sitemap.xml", "robots.txt"])
-  await writeFile(path.join(client, file), await readPublished(file));
+await writeFile(path.join(client, "robots.txt"), robots);
+await writeFile(
+  path.join(client, "sitemap.xml"),
+  appendStandaloneSitemap((await readPublished("sitemap.xml")).toString(), standalonePaths),
+);
 
 const files = {};
 async function walk(dir) {
@@ -150,10 +175,11 @@ await walk(client);
 const outputPages = Object.keys(files).filter(
   (f) => f === "index.html" || f.endsWith("/index.html"),
 );
-if (
-  outputPages.length !== routes.length ||
-  outputPages.some((f) => !Object.hasOwn(baseline.files, f))
-)
+const expectedPages = new Set([
+  ...pageFiles,
+  ...standalonePaths.map((route) => route.slice(1) + "index.html"),
+]);
+if (outputPages.length !== expectedPages.size || outputPages.some((f) => !expectedPages.has(f)))
   throw Error("Code-only release changed routes");
 for (const name of ["404.html", "robots.txt", "sitemap.xml", "_shell.html"])
   if (!files[name]) throw Error("Missing " + name);
@@ -177,10 +203,16 @@ const manifest = {
   backendSha,
   backendFiles,
   routingBaseline: process.env.O100_ROUTING_SHA256,
+  routeCount: routes.length,
+  acceptancePaths: [...baseline.acceptancePaths, ...standalonePaths],
   files,
   templateFiles,
   builtAt: new Date().toISOString(),
-  codeOnly: { parentSha: baseline.frontendSha, parentManifestSha256: digest(manifestBytes) },
+  codeOnly: {
+    parentSha: baseline.frontendSha,
+    parentManifestSha256: digest(manifestBytes),
+    standalonePaths,
+  },
 };
 // Панель из React-компонента теперь входит в обычный бандл.
 delete manifest.adminToolbar;

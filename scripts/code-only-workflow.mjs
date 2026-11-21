@@ -17,11 +17,9 @@ const refs = git(
 )
   .split(/\r?\n/)
   .filter((r) => r && r !== "HEAD");
-const branch = git("branch", "--show-current");
-const ref = refs.includes(branch) ? branch : refs[0];
-if (!ref) throw Error("A published branch pointing to the requested commit is required");
+if (!refs.length) throw Error("A published branch pointing to the requested commit is required");
 async function workflow(name, inputs) {
-  const url = execFileSync("gh", ["workflow", "run", name, "--ref", ref, "--json"], {
+  const url = execFileSync("gh", ["workflow", "run", name, "--ref", "main", "--json"], {
     input: JSON.stringify(inputs),
     encoding: "utf8",
     stdio: ["pipe", "pipe", "inherit"],
@@ -32,10 +30,14 @@ async function workflow(name, inputs) {
   let head;
   for (let attempt = 1; ; attempt++) {
     try {
-      head = execFileSync("gh", ["run", "view", id, "--json", "headSha", "--jq", ".headSha"], {
-        encoding: "utf8",
-        stdio: ["ignore", "pipe", "pipe"],
-      }).trim();
+      head = execFileSync(
+        "gh",
+        ["run", "view", id, "--json", "headBranch", "--jq", ".headBranch"],
+        {
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "pipe"],
+        },
+      ).trim();
       break;
     } catch (error) {
       // Сразу после запуска Actions иногда ещё не видит выданный ID.
@@ -43,7 +45,7 @@ async function workflow(name, inputs) {
       await delay(attempt * 1000);
     }
   }
-  if (head !== sha) throw Error("Workflow branch changed before dispatch");
+  if (head !== "main") throw Error("The release workflow did not run from main");
   execFileSync("gh", ["run", "watch", id, "--exit-status", "--interval", "20"], {
     stdio: "inherit",
   });
@@ -52,6 +54,7 @@ async function workflow(name, inputs) {
 const binding = { backend_sha: backend.sha, routing_sha256: routing };
 const run = await workflow("prepare-production.yml", {
   ...binding,
+  storefront_ref: sha,
   backend_manifest: JSON.stringify(backend),
 });
 const directory = mkdtempSync(path.join(tmpdir(), "o100-code-receipt-"));

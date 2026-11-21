@@ -131,11 +131,13 @@ jobs:
           O100_BACKEND_MANIFEST: generated/backend-release.json
         run: node scripts/build-code-only.mjs
       - name: Package candidate
+        id: package
         env:
           O100_BACKEND_MANIFEST: generated/backend-release.json
         run: |
           tar -czf production-release.tgz -C dist/client .
           sha256sum production-release.tgz > production-release.tgz.sha256
+          echo "manifest=$(sha256sum dist/client/release-manifest.json | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
           tar -czf production-tools.tgz deploy
           sha256sum production-tools.tgz > production-tools.tgz.sha256
       - name: Rehearse complete artifact on isolated Apache
@@ -170,3 +172,8 @@ jobs:
             generated/api-snapshot-build.json
             apache-rollback.log
             apache-production.log
+      - uses: actions/upload-artifact@v4
+        with:
+          name: production-candidate-manifest-${{ steps.package.outputs.manifest }}
+          retention-days: 30
+          path: dist/client/release-manifest.json
