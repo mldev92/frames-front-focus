@@ -60,6 +60,7 @@ const staticRoutes = [
   "/warranty/",
   "/kabinet-diagnostiki-spb/",
   "/kabinet-diagnostiki-nk/",
+  "/detskaya-diagnostika-spb/",
   "/biometriya-glaza/",
   "/linzy-spb/",
   "/optika-spb/",
