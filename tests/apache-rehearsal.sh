@@ -98,6 +98,11 @@ curl -s -D /tmp/headers -o /dev/null "$O100_SMOKE_ORIGIN/catalog_s/kontaktnye_li
 grep -q '/catalog_s/kontaktnye_linzy_/prozrachnye/biofinity_6_sht/?utm_source=rehearsal' /tmp/headers
 curl -s -D /tmp/headers -o /dev/null "$O100_SMOKE_ORIGIN/blog/pochemyMi.php/?cutover_probe=1"
 grep -Fq 'Location: https://optika100.com/o-nas/?cutover_probe=1#pochemu-my' /tmp/headers || { cat /tmp/headers; exit 1; }
+check 301 '/catalog_s/linzy_dlea%20ochkov/'
+check 301 '/catalog_s/linzy_dlea%20ochkov?utm_source=rehearsal'
+curl -s -D /tmp/headers -o /dev/null "$O100_SMOKE_ORIGIN/catalog_s/linzy_dlea%20ochkov?utm_source=rehearsal"
+grep -Fq 'Location: https://optika100.com/catalog_s/linzy_dlya_ochkov/?utm_source=rehearsal' /tmp/headers || { cat /tmp/headers; exit 1; }
+check 404 '/catalog_s/linzy_dlea%20ochkov/unrelated/'
 check 404 /catalog_s/kontaktnye_linzy_/biofinity_6_sht/unrelated/
 curl -s -H 'Authorization: Bearer rehearsal' "$O100_SMOKE_ORIGIN/api/store/csrf.php?auth=1" | grep -q 'Bearer rehearsal'
 check 200 /catalog_s/opravy/deep-product/
