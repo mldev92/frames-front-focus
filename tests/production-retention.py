@@ -6,7 +6,6 @@ import subprocess
 import sys
 import tarfile
 import tempfile
-import time
 import unittest
 from pathlib import Path
 
@@ -25,7 +24,7 @@ def digest(path):
 
 
 class Retention(unittest.TestCase):
-    def test_archive_and_headroom(self):
+    def test_archive_checksums(self):
         with tempfile.TemporaryDirectory() as workspace:
             work = Path(workspace)
             sha = "a" * 40
@@ -36,11 +35,6 @@ class Retention(unittest.TestCase):
             verify = [sys.executable, ROOT / "scripts/verify-retention-archive.py", archive, sha]
             run(*verify, manifest)
             run(*verify, "0" * 64, ok=False)
-            now = int(time.time())
-            check = [sys.executable, ROOT / "scripts/check-release-headroom.py"]
-            run(*check, f"2000@{now}", archive)
-            for reading in ("", f"1@{now}", f"2000@{now-1000}", f"2000@{now+120}"):
-                run(*check, reading, archive, ok=False)
 
     def release(self, path, sha):
         path.mkdir()

@@ -35,7 +35,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Verify archive, quota and retention guards
+      - name: Rehearse account and filesystem capacity checks
+        run: bash tests/release-capacity.sh
+      - name: Verify archive and retention guards
         run: python3 tests/production-retention.py
       - name: Rehearse Apache routing and rollback
         run: |
