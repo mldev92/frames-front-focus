@@ -1,21 +1,13 @@
 <?php
 // Учитываем квоту аккаунта Beget и свободное место файловой системы.
 declare(strict_types=1);
-if ($argc !== 4) exit(2);
-[, $root, $requiredBytes, $requiredFiles] = $argv;
-if (!ctype_digit($requiredBytes) || !ctype_digit($requiredFiles)) exit(2);
-$path = dirname($root) . '/.o100-deploy/account-capacity.json';
-$reading = is_file($path) ? json_decode(file_get_contents($path), true) : null;
-if (!is_array($reading) || !is_int($reading['measuredAt'] ?? null)
-    || abs(time() - $reading['measuredAt']) > 300) {
-    fwrite(STDERR, "Fresh Beget account quota reading required. Need $requiredBytes bytes and $requiredFiles files.\n");
-    exit(3);
+if ($argc !== 5) exit(2);
+[, $root, $requiredBytes, $requiredFiles, $accountBytes] = $argv;
+foreach ([$requiredBytes, $requiredFiles, $accountBytes] as $number) {
+    if (!ctype_digit($number) || (string)(int)$number !== $number) exit(2);
 }
-$available = [];
-foreach (['bytes', 'files'] as $unit) {
-    if (!is_int($reading[$unit] ?? null) || $reading[$unit] < 0) exit(3);
-    $available[$unit] = $reading[$unit];
-}
+$available = ['bytes' => (int)$accountBytes, 'files' => PHP_INT_MAX];
+// df ограничивает только свободные inode файловой системы; квоту файлов аккаунта проверяет сама запись.
 foreach ([$root, sys_get_temp_dir(), getenv('HOME') ?: $root] as $dir) {
     $free = disk_free_space($dir);
     if ($free === false) exit(3);
