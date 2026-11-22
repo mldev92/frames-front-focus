@@ -89,6 +89,7 @@ jobs:
           set -Eeuo pipefail
           echo "source=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           parent=$(jq -er .parent "$RUNNER_TEMP/baseline.json")
+          git merge-base --is-ancestor "$parent" HEAD || { echo 'Merge the published storefront revision into the release branch first.' >&2; exit 2; }
           if [[ -n "$SNAPSHOT_RUN" || -n "$O100_API_SNAPSHOT_SHA256" ]]; then
             [[ "$SNAPSHOT_RUN" =~ ^[0-9]+$ && "$O100_API_SNAPSHOT_SHA256" =~ ^[a-f0-9]{64}$ ]]
             echo 'mode=full' >> "$GITHUB_OUTPUT"
