@@ -6,7 +6,7 @@ import {
   type HTMLAttributes,
   type ReactNode,
 } from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { Calendar as DateCalendar } from "@/components/ui/calendar";
 import { SALONS as salons, type VerifiedSalon } from "@/data/contact";
 import { cn } from "@/lib/utils";
@@ -95,16 +95,21 @@ const APPOINTMENT_SALONS: AppointmentSalon[] = APPOINTMENT_CLINICS.map((clinic) 
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
+  initialSelection?: { salonId: VerifiedSalon["id"]; ageType: AgeType };
 }
 
-export function AppointmentModal({ open, onOpenChange }: Props) {
+export function AppointmentModal({ open, onOpenChange, initialSelection }: Props) {
   const city = useCityStore((state) => state.city);
   const salonCity = city === "nvk" ? "nk" : "spb";
+  const initialAgeType = initialSelection?.ageType ?? "adult";
+  const initialSalon = initialSelection
+    ? APPOINTMENT_SALONS.find((salon) => salon.id === initialSelection.salonId) ?? null
+    : null;
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState<Direction>("forward");
 
-  const [chosenSalon, setChosenSalon] = useState<AppointmentSalon | null>(null);
-  const [ageType, setAgeType] = useState<AgeType>("adult");
+  const [chosenSalon, setChosenSalon] = useState<AppointmentSalon | null>(initialSalon);
+  const [ageType, setAgeType] = useState<AgeType>(initialAgeType);
   const [salonOpen, setSalonOpen] = useState(false);
 
   const [service, setService] = useState<ServiceType>("glasses");
@@ -275,8 +280,8 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   function reset() {
     setStep(1);
     setDirection("forward");
-    setChosenSalon(null);
-    setAgeType("adult");
+    setChosenSalon(initialSalon);
+    setAgeType(initialAgeType);
     setSalonOpen(false);
     setService("glasses");
     setSlotsLoading(false);
@@ -456,7 +461,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
           <div className="relative hidden md:flex flex-col justify-between overflow-hidden w-[320px] min-w-[320px] p-8 bg-ink">
             {STEPS.map((item, index) => (
               <img
-                key={item.img}
+                key={item.label}
                 src={item.img}
                 alt=""
                 className="absolute inset-0 h-full w-full object-cover transition-opacity duration-[700ms] ease-[var(--ease-editorial)]"
@@ -470,9 +475,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                 Онлайн-запись
               </div>
               <h2 className="font-serif text-3xl leading-tight text-white">Запись к&nbsp;врачу</h2>
-              <p className="mt-3 text-[12px] text-white/55 leading-relaxed max-w-[220px]">
+              <DialogDescription className="mt-3 text-[12px] text-white/55 leading-relaxed max-w-[220px]">
                 Выберите филиал, услугу, время и подтвердите номер телефона кодом из СМС.
-              </p>
+              </DialogDescription>
             </div>
 
             <div className="relative space-y-7">

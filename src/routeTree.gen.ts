@@ -30,6 +30,7 @@ import { Route as LoyaltyRouteImport } from './routes/loyalty'
 import { Route as LinzySpbRouteImport } from './routes/linzy-spb'
 import { Route as KabinetDiagnostikiSpbRouteImport } from './routes/kabinet-diagnostiki-spb'
 import { Route as KabinetDiagnostikiNkRouteImport } from './routes/kabinet-diagnostiki-nk'
+import { Route as DetskayaDiagnostikaSpbRouteImport } from './routes/detskaya-diagnostika-spb'
 import { Route as ContactsRouteImport } from './routes/contacts'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as BlogRouteImport } from './routes/blog'
@@ -162,6 +163,11 @@ const KabinetDiagnostikiSpbRoute = KabinetDiagnostikiSpbRouteImport.update({
 const KabinetDiagnostikiNkRoute = KabinetDiagnostikiNkRouteImport.update({
   id: '/kabinet-diagnostiki-nk',
   path: '/kabinet-diagnostiki-nk',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DetskayaDiagnostikaSpbRoute = DetskayaDiagnostikaSpbRouteImport.update({
+  id: '/detskaya-diagnostika-spb',
+  path: '/detskaya-diagnostika-spb',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactsRoute = ContactsRouteImport.update({
@@ -306,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
+  '/detskaya-diagnostika-spb': typeof DetskayaDiagnostikaSpbRoute
   '/kabinet-diagnostiki-nk': typeof KabinetDiagnostikiNkRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/linzy-spb': typeof LinzySpbRoute
@@ -354,6 +361,7 @@ export interface FileRoutesByTo {
   '/biometriya-glaza': typeof BiometriyaGlazaRoute
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
+  '/detskaya-diagnostika-spb': typeof DetskayaDiagnostikaSpbRoute
   '/kabinet-diagnostiki-nk': typeof KabinetDiagnostikiNkRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/linzy-spb': typeof LinzySpbRoute
@@ -401,6 +409,7 @@ export interface FileRoutesById {
   '/blog': typeof BlogRouteWithChildren
   '/checkout': typeof CheckoutRoute
   '/contacts': typeof ContactsRoute
+  '/detskaya-diagnostika-spb': typeof DetskayaDiagnostikaSpbRoute
   '/kabinet-diagnostiki-nk': typeof KabinetDiagnostikiNkRoute
   '/kabinet-diagnostiki-spb': typeof KabinetDiagnostikiSpbRoute
   '/linzy-spb': typeof LinzySpbRoute
@@ -452,6 +461,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/checkout'
     | '/contacts'
+    | '/detskaya-diagnostika-spb'
     | '/kabinet-diagnostiki-nk'
     | '/kabinet-diagnostiki-spb'
     | '/linzy-spb'
@@ -500,6 +510,7 @@ export interface FileRouteTypes {
     | '/biometriya-glaza'
     | '/checkout'
     | '/contacts'
+    | '/detskaya-diagnostika-spb'
     | '/kabinet-diagnostiki-nk'
     | '/kabinet-diagnostiki-spb'
     | '/linzy-spb'
@@ -546,6 +557,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/checkout'
     | '/contacts'
+    | '/detskaya-diagnostika-spb'
     | '/kabinet-diagnostiki-nk'
     | '/kabinet-diagnostiki-spb'
     | '/linzy-spb'
@@ -596,6 +608,7 @@ export interface RootRouteChildren {
   BlogRoute: typeof BlogRouteWithChildren
   CheckoutRoute: typeof CheckoutRoute
   ContactsRoute: typeof ContactsRoute
+  DetskayaDiagnostikaSpbRoute: typeof DetskayaDiagnostikaSpbRoute
   KabinetDiagnostikiNkRoute: typeof KabinetDiagnostikiNkRoute
   KabinetDiagnostikiSpbRoute: typeof KabinetDiagnostikiSpbRoute
   LinzySpbRoute: typeof LinzySpbRoute
@@ -776,6 +789,13 @@ declare module '@tanstack/react-router' {
       path: '/kabinet-diagnostiki-nk'
       fullPath: '/kabinet-diagnostiki-nk'
       preLoaderRoute: typeof KabinetDiagnostikiNkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/detskaya-diagnostika-spb': {
+      id: '/detskaya-diagnostika-spb'
+      path: '/detskaya-diagnostika-spb'
+      fullPath: '/detskaya-diagnostika-spb'
+      preLoaderRoute: typeof DetskayaDiagnostikaSpbRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contacts': {
@@ -1036,6 +1056,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlogRoute: BlogRouteWithChildren,
   CheckoutRoute: CheckoutRoute,
   ContactsRoute: ContactsRoute,
+  DetskayaDiagnostikaSpbRoute: DetskayaDiagnostikaSpbRoute,
   KabinetDiagnostikiNkRoute: KabinetDiagnostikiNkRoute,
   KabinetDiagnostikiSpbRoute: KabinetDiagnostikiSpbRoute,
   LinzySpbRoute: LinzySpbRoute,
