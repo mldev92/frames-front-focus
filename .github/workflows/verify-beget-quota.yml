@@ -1,0 +1,27 @@
+name: Verify Beget disk quota
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Проверить обработку ответов Beget
+        run: python3 tests/beget-capacity.py
+      - name: Получить квоту диска аккаунта
+        env:
+          BEGET_API_LOGIN: ${{ secrets.BEGET_API_LOGIN }}
+          BEGET_API_PASSWORD: ${{ secrets.BEGET_API_PASSWORD }}
+        run: |
+          python3 scripts/beget-free-bytes.py > /dev/null
+          echo 'Beget подтвердил лимит и использование диска.' >> "$GITHUB_STEP_SUMMARY"
