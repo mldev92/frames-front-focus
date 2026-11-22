@@ -74,6 +74,16 @@ export function publishedMatches(html) {
   return matches.map((m) => ({ id: m.i.replaceAll("\0", "/"), data: m.l }));
 }
 
+export function matchesStandaloneRoute(matches, route) {
+  const page = route.slice(0, -1);
+  return (
+    matches.length === 2 &&
+    matches[0].id === "__root__/" &&
+    (matches[1].id === page + page || matches[1].id === route + route) &&
+    matches.every((match) => match.data === undefined)
+  );
+}
+
 export function routeFile(pathname) {
   const decoded = decodeURIComponent(pathname);
   if (

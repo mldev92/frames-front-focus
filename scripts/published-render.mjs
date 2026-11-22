@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";
 import path from "node:path";
 import server from "../dist/server/server.js";
-import { publishedMatches, routeFile } from "./published-page.mjs";
+import { matchesStandaloneRoute, publishedMatches, routeFile } from "./published-page.mjs";
 import { catalogHtmlProblems } from "./catalog-html-validation.mjs";
 import { catalogLinks, redirectPaths } from "./catalog-link-check.mjs";
 
@@ -62,14 +62,7 @@ for (let i = index; i < routes.length; i += count) {
     if (networkRequest) throw Error("Unexpected network dependency");
     const matches = publishedMatches(html);
     if (source === undefined) {
-      const page = route.slice(0, -1);
-      // TanStack объединяет ID маршрута и его полный путь в ключ совпадения.
-      if (
-        matches.length !== 2 ||
-        matches[0].id !== "__root__/" ||
-        matches[1].id !== page + page ||
-        matches.some((match) => match.data !== undefined)
-      ) {
+      if (!matchesStandaloneRoute(matches, route)) {
         throw Error("Standalone page rendered a different route or has loader data");
       }
       if (

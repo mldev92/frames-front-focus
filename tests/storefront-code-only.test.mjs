@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { publishedMatches, routeFile } from "../scripts/published-page.mjs";
+import { matchesStandaloneRoute, publishedMatches, routeFile } from "../scripts/published-page.mjs";
 import { releaseMode } from "../scripts/storefront-release-mode.mjs";
 import { appendStandaloneSitemap, registry } from "../scripts/standalone-pages.mjs";
 
@@ -131,6 +131,16 @@ test("release mode follows published route and loader dependencies across commit
   rmSync("src/routeTree.gen.ts");
   writeFileSync("deploy/seo-active-products.json.gz", "changed");
   assert.deepEqual(releaseMode(parent, commit()).reasons, ["deploy/seo-active-products.json.gz"]);
+});
+
+test("standalone routes verify both TanStack index and leaf match IDs", () => {
+  const root = { id: "__root__/", data: undefined };
+  const index = { id: "/eye-exams//eye-exams/", data: undefined };
+  const leaf = { id: "/eye-exams/child/eye-exams/child", data: undefined };
+  assert.ok(matchesStandaloneRoute([root, index], "/eye-exams/"));
+  assert.ok(matchesStandaloneRoute([root, leaf], "/eye-exams/child/"));
+  assert.ok(!matchesStandaloneRoute([root, index], "/eye-exams/child/"));
+  assert.ok(!matchesStandaloneRoute([root, { ...leaf, data: true }], "/eye-exams/child/"));
 });
 
 test("the offline sitemap only gains the approved standalone URLs", () => {
