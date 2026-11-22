@@ -117,6 +117,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   const [slotsRefreshSequence, setSlotsRefreshSequence] = useState(0);
   const [availableDateKeyList, setAvailableDateKeyList] = useState<string[]>([]);
   const [selectedDateKey, setSelectedDateKey] = useState("");
+  const [requestedDate, setRequestedDate] = useState<{ scope: string; date: string } | null>(null);
   const [selectedSlotId, setSelectedSlotId] = useState("");
 
   const [lastName, setLastName] = useState("");
@@ -139,6 +140,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
     chosenSalon ??
     APPOINTMENT_SALONS.find((salon) => salon.city === salonCity) ??
     APPOINTMENT_SALONS[0];
+  const dateScope = `${selectedSalon.clinicUid}|${ageType}|${service}`;
+  // Дата из ответа меняет календарь. Повторный запрос нужен только при выборе посетителя.
+  const requestedDateKey = requestedDate?.scope === dateScope ? requestedDate.date : undefined;
   const groupedSlots = groupSlotsByDay(slots);
   const selectedGroup =
     groupedSlots.find((group) => group.dateKey === selectedDateKey) ?? groupedSlots[0] ?? null;
@@ -209,7 +213,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
       clinicUid: selectedSalon.clinicUid,
       ageType,
       serviceCode: service,
-      date: selectedDateKey || undefined,
+      date: requestedDateKey,
       compact: true,
     })
       .then((availability) => {
@@ -241,7 +245,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   }, [
     ageType,
     open,
-    selectedDateKey,
+    requestedDateKey,
     selectedSalon.clinicUid,
     service,
     slotsRefreshSequence,
@@ -273,6 +277,7 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
   }, [open, step]);
 
   function reset() {
+    setRequestedDate(null);
     setStep(1);
     setDirection("forward");
     setChosenSalon(null);
@@ -684,7 +689,9 @@ export function AppointmentModal({ open, onOpenChange }: Props) {
                                     if (!date) return;
                                     slotsRef.current = [];
                                     setSlots([]);
-                                    setSelectedDateKey(formatAppointmentDateKey(date));
+                                    const dateKey = formatAppointmentDateKey(date);
+                                    setSelectedDateKey(dateKey);
+                                    setRequestedDate({ scope: dateScope, date: dateKey });
                                     setSelectedSlotId("");
                                     scrollToSlotsRef.current = true;
                                   }}
