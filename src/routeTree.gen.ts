@@ -37,11 +37,18 @@ import { Route as BlogRouteImport } from './routes/blog'
 import { Route as BiometriyaGlazaRouteImport } from './routes/biometriya-glaza'
 import { Route as BasketRouteImport } from './routes/basket'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LinzyDlyaKontrolyaMiopiiIndexRouteImport } from './routes/linzy-dlya-kontrolya-miopii/index'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as UslugiSlugRouteImport } from './routes/uslugi.$slug'
 import { Route as PersonalPrivateRouteImport } from './routes/personal_.private'
 import { Route as PersonalOrdersRouteImport } from './routes/personal_.orders'
 import { Route as PersonalFavoritesRouteImport } from './routes/personal_.favorites'
+import { Route as LinzyDlyaKontrolyaMiopiiSeed1DayPureEdofRouteImport } from './routes/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof'
+import { Route as LinzyDlyaKontrolyaMiopiiPrimaBioBiFocalRouteImport } from './routes/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal'
+import { Route as LinzyDlyaKontrolyaMiopiiMyopiluxPlusRouteImport } from './routes/linzy-dlya-kontrolya-miopii/myopilux-plus'
+import { Route as LinzyDlyaKontrolyaMiopiiMyocareRouteImport } from './routes/linzy-dlya-kontrolya-miopii/myocare'
+import { Route as LinzyDlyaKontrolyaMiopiiMiyosmartRouteImport } from './routes/linzy-dlya-kontrolya-miopii/miyosmart'
+import { Route as LinzyDlyaKontrolyaMiopiiMisightRouteImport } from './routes/linzy-dlya-kontrolya-miopii/misight'
 import { Route as Catalog_sCategoryRouteImport } from './routes/catalog_s.$category'
 import { Route as Catalog_sSplatRouteImport } from './routes/catalog_s.$'
 import { Route as Catalog_nCategoryRouteImport } from './routes/catalog_n.$category'
@@ -200,6 +207,12 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LinzyDlyaKontrolyaMiopiiIndexRoute =
+  LinzyDlyaKontrolyaMiopiiIndexRouteImport.update({
+    id: '/linzy-dlya-kontrolya-miopii/',
+    path: '/linzy-dlya-kontrolya-miopii/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -225,6 +238,42 @@ const PersonalFavoritesRoute = PersonalFavoritesRouteImport.update({
   path: '/personal/favorites',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LinzyDlyaKontrolyaMiopiiSeed1DayPureEdofRoute =
+  LinzyDlyaKontrolyaMiopiiSeed1DayPureEdofRouteImport.update({
+    id: '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof',
+    path: '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LinzyDlyaKontrolyaMiopiiPrimaBioBiFocalRoute =
+  LinzyDlyaKontrolyaMiopiiPrimaBioBiFocalRouteImport.update({
+    id: '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal',
+    path: '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LinzyDlyaKontrolyaMiopiiMyopiluxPlusRoute =
+  LinzyDlyaKontrolyaMiopiiMyopiluxPlusRouteImport.update({
+    id: '/linzy-dlya-kontrolya-miopii/myopilux-plus',
+    path: '/linzy-dlya-kontrolya-miopii/myopilux-plus',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LinzyDlyaKontrolyaMiopiiMyocareRoute =
+  LinzyDlyaKontrolyaMiopiiMyocareRouteImport.update({
+    id: '/linzy-dlya-kontrolya-miopii/myocare',
+    path: '/linzy-dlya-kontrolya-miopii/myocare',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LinzyDlyaKontrolyaMiopiiMiyosmartRoute =
+  LinzyDlyaKontrolyaMiopiiMiyosmartRouteImport.update({
+    id: '/linzy-dlya-kontrolya-miopii/miyosmart',
+    path: '/linzy-dlya-kontrolya-miopii/miyosmart',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LinzyDlyaKontrolyaMiopiiMisightRoute =
+  LinzyDlyaKontrolyaMiopiiMisightRouteImport.update({
+    id: '/linzy-dlya-kontrolya-miopii/misight',
+    path: '/linzy-dlya-kontrolya-miopii/misight',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const Catalog_sCategoryRoute = Catalog_sCategoryRouteImport.update({
   id: '/catalog_s/$category',
   path: '/catalog_s/$category',
@@ -341,11 +390,18 @@ export interface FileRoutesByFullPath {
   '/catalog_n/$category': typeof Catalog_nCategoryRouteWithChildren
   '/catalog_s/$': typeof Catalog_sSplatRoute
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
+  '/linzy-dlya-kontrolya-miopii/misight': typeof LinzyDlyaKontrolyaMiopiiMisightRoute
+  '/linzy-dlya-kontrolya-miopii/miyosmart': typeof LinzyDlyaKontrolyaMiopiiMiyosmartRoute
+  '/linzy-dlya-kontrolya-miopii/myocare': typeof LinzyDlyaKontrolyaMiopiiMyocareRoute
+  '/linzy-dlya-kontrolya-miopii/myopilux-plus': typeof LinzyDlyaKontrolyaMiopiiMyopiluxPlusRoute
+  '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal': typeof LinzyDlyaKontrolyaMiopiiPrimaBioBiFocalRoute
+  '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof': typeof LinzyDlyaKontrolyaMiopiiSeed1DayPureEdofRoute
   '/personal/favorites': typeof PersonalFavoritesRoute
   '/personal/orders': typeof PersonalOrdersRoute
   '/personal/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/linzy-dlya-kontrolya-miopii/': typeof LinzyDlyaKontrolyaMiopiiIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_n/$category/$slug': typeof Catalog_nCategorySlugRoute
@@ -387,11 +443,18 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/catalog_n/$': typeof Catalog_nSplatRoute
   '/catalog_s/$': typeof Catalog_sSplatRoute
+  '/linzy-dlya-kontrolya-miopii/misight': typeof LinzyDlyaKontrolyaMiopiiMisightRoute
+  '/linzy-dlya-kontrolya-miopii/miyosmart': typeof LinzyDlyaKontrolyaMiopiiMiyosmartRoute
+  '/linzy-dlya-kontrolya-miopii/myocare': typeof LinzyDlyaKontrolyaMiopiiMyocareRoute
+  '/linzy-dlya-kontrolya-miopii/myopilux-plus': typeof LinzyDlyaKontrolyaMiopiiMyopiluxPlusRoute
+  '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal': typeof LinzyDlyaKontrolyaMiopiiPrimaBioBiFocalRoute
+  '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof': typeof LinzyDlyaKontrolyaMiopiiSeed1DayPureEdofRoute
   '/personal/favorites': typeof PersonalFavoritesRoute
   '/personal/orders': typeof PersonalOrdersRoute
   '/personal/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog': typeof BlogIndexRoute
+  '/linzy-dlya-kontrolya-miopii': typeof LinzyDlyaKontrolyaMiopiiIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_n/$category/$slug': typeof Catalog_nCategorySlugRoute
@@ -438,11 +501,18 @@ export interface FileRoutesById {
   '/catalog_n/$category': typeof Catalog_nCategoryRouteWithChildren
   '/catalog_s/$': typeof Catalog_sSplatRoute
   '/catalog_s/$category': typeof Catalog_sCategoryRouteWithChildren
+  '/linzy-dlya-kontrolya-miopii/misight': typeof LinzyDlyaKontrolyaMiopiiMisightRoute
+  '/linzy-dlya-kontrolya-miopii/miyosmart': typeof LinzyDlyaKontrolyaMiopiiMiyosmartRoute
+  '/linzy-dlya-kontrolya-miopii/myocare': typeof LinzyDlyaKontrolyaMiopiiMyocareRoute
+  '/linzy-dlya-kontrolya-miopii/myopilux-plus': typeof LinzyDlyaKontrolyaMiopiiMyopiluxPlusRoute
+  '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal': typeof LinzyDlyaKontrolyaMiopiiPrimaBioBiFocalRoute
+  '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof': typeof LinzyDlyaKontrolyaMiopiiSeed1DayPureEdofRoute
   '/personal_/favorites': typeof PersonalFavoritesRoute
   '/personal_/orders': typeof PersonalOrdersRoute
   '/personal_/private': typeof PersonalPrivateRoute
   '/uslugi/$slug': typeof UslugiSlugRoute
   '/blog/': typeof BlogIndexRoute
+  '/linzy-dlya-kontrolya-miopii/': typeof LinzyDlyaKontrolyaMiopiiIndexRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/blog/$category/$slug': typeof BlogCategorySlugRoute
   '/catalog_n/$category/$slug': typeof Catalog_nCategorySlugRoute
@@ -490,11 +560,18 @@ export interface FileRouteTypes {
     | '/catalog_n/$category'
     | '/catalog_s/$'
     | '/catalog_s/$category'
+    | '/linzy-dlya-kontrolya-miopii/misight'
+    | '/linzy-dlya-kontrolya-miopii/miyosmart'
+    | '/linzy-dlya-kontrolya-miopii/myocare'
+    | '/linzy-dlya-kontrolya-miopii/myopilux-plus'
+    | '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal'
+    | '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof'
     | '/personal/favorites'
     | '/personal/orders'
     | '/personal/private'
     | '/uslugi/$slug'
     | '/blog/'
+    | '/linzy-dlya-kontrolya-miopii/'
     | '/.mcp/invoke-tool/$tool'
     | '/blog/$category/$slug'
     | '/catalog_n/$category/$slug'
@@ -536,11 +613,18 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/catalog_n/$'
     | '/catalog_s/$'
+    | '/linzy-dlya-kontrolya-miopii/misight'
+    | '/linzy-dlya-kontrolya-miopii/miyosmart'
+    | '/linzy-dlya-kontrolya-miopii/myocare'
+    | '/linzy-dlya-kontrolya-miopii/myopilux-plus'
+    | '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal'
+    | '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof'
     | '/personal/favorites'
     | '/personal/orders'
     | '/personal/private'
     | '/uslugi/$slug'
     | '/blog'
+    | '/linzy-dlya-kontrolya-miopii'
     | '/.mcp/invoke-tool/$tool'
     | '/blog/$category/$slug'
     | '/catalog_n/$category/$slug'
@@ -586,11 +670,18 @@ export interface FileRouteTypes {
     | '/catalog_n/$category'
     | '/catalog_s/$'
     | '/catalog_s/$category'
+    | '/linzy-dlya-kontrolya-miopii/misight'
+    | '/linzy-dlya-kontrolya-miopii/miyosmart'
+    | '/linzy-dlya-kontrolya-miopii/myocare'
+    | '/linzy-dlya-kontrolya-miopii/myopilux-plus'
+    | '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal'
+    | '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof'
     | '/personal_/favorites'
     | '/personal_/orders'
     | '/personal_/private'
     | '/uslugi/$slug'
     | '/blog/'
+    | '/linzy-dlya-kontrolya-miopii/'
     | '/.mcp/invoke-tool/$tool'
     | '/blog/$category/$slug'
     | '/catalog_n/$category/$slug'
@@ -636,9 +727,16 @@ export interface RootRouteChildren {
   Catalog_nCategoryRoute: typeof Catalog_nCategoryRouteWithChildren
   Catalog_sSplatRoute: typeof Catalog_sSplatRoute
   Catalog_sCategoryRoute: typeof Catalog_sCategoryRouteWithChildren
+  LinzyDlyaKontrolyaMiopiiMisightRoute: typeof LinzyDlyaKontrolyaMiopiiMisightRoute
+  LinzyDlyaKontrolyaMiopiiMiyosmartRoute: typeof LinzyDlyaKontrolyaMiopiiMiyosmartRoute
+  LinzyDlyaKontrolyaMiopiiMyocareRoute: typeof LinzyDlyaKontrolyaMiopiiMyocareRoute
+  LinzyDlyaKontrolyaMiopiiMyopiluxPlusRoute: typeof LinzyDlyaKontrolyaMiopiiMyopiluxPlusRoute
+  LinzyDlyaKontrolyaMiopiiPrimaBioBiFocalRoute: typeof LinzyDlyaKontrolyaMiopiiPrimaBioBiFocalRoute
+  LinzyDlyaKontrolyaMiopiiSeed1DayPureEdofRoute: typeof LinzyDlyaKontrolyaMiopiiSeed1DayPureEdofRoute
   PersonalFavoritesRoute: typeof PersonalFavoritesRoute
   PersonalOrdersRoute: typeof PersonalOrdersRoute
   PersonalPrivateRoute: typeof PersonalPrivateRoute
+  LinzyDlyaKontrolyaMiopiiIndexRoute: typeof LinzyDlyaKontrolyaMiopiiIndexRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
 }
 
@@ -840,6 +938,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/linzy-dlya-kontrolya-miopii/': {
+      id: '/linzy-dlya-kontrolya-miopii/'
+      path: '/linzy-dlya-kontrolya-miopii'
+      fullPath: '/linzy-dlya-kontrolya-miopii/'
+      preLoaderRoute: typeof LinzyDlyaKontrolyaMiopiiIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/': {
       id: '/blog/'
       path: '/'
@@ -873,6 +978,48 @@ declare module '@tanstack/react-router' {
       path: '/personal/favorites'
       fullPath: '/personal/favorites'
       preLoaderRoute: typeof PersonalFavoritesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof': {
+      id: '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof'
+      path: '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof'
+      fullPath: '/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof'
+      preLoaderRoute: typeof LinzyDlyaKontrolyaMiopiiSeed1DayPureEdofRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal': {
+      id: '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal'
+      path: '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal'
+      fullPath: '/linzy-dlya-kontrolya-miopii/prima-bio-bi-focal'
+      preLoaderRoute: typeof LinzyDlyaKontrolyaMiopiiPrimaBioBiFocalRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/linzy-dlya-kontrolya-miopii/myopilux-plus': {
+      id: '/linzy-dlya-kontrolya-miopii/myopilux-plus'
+      path: '/linzy-dlya-kontrolya-miopii/myopilux-plus'
+      fullPath: '/linzy-dlya-kontrolya-miopii/myopilux-plus'
+      preLoaderRoute: typeof LinzyDlyaKontrolyaMiopiiMyopiluxPlusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/linzy-dlya-kontrolya-miopii/myocare': {
+      id: '/linzy-dlya-kontrolya-miopii/myocare'
+      path: '/linzy-dlya-kontrolya-miopii/myocare'
+      fullPath: '/linzy-dlya-kontrolya-miopii/myocare'
+      preLoaderRoute: typeof LinzyDlyaKontrolyaMiopiiMyocareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/linzy-dlya-kontrolya-miopii/miyosmart': {
+      id: '/linzy-dlya-kontrolya-miopii/miyosmart'
+      path: '/linzy-dlya-kontrolya-miopii/miyosmart'
+      fullPath: '/linzy-dlya-kontrolya-miopii/miyosmart'
+      preLoaderRoute: typeof LinzyDlyaKontrolyaMiopiiMiyosmartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/linzy-dlya-kontrolya-miopii/misight': {
+      id: '/linzy-dlya-kontrolya-miopii/misight'
+      path: '/linzy-dlya-kontrolya-miopii/misight'
+      fullPath: '/linzy-dlya-kontrolya-miopii/misight'
+      preLoaderRoute: typeof LinzyDlyaKontrolyaMiopiiMisightRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/catalog_s/$category': {
@@ -1085,9 +1232,20 @@ const rootRouteChildren: RootRouteChildren = {
   Catalog_nCategoryRoute: Catalog_nCategoryRouteWithChildren,
   Catalog_sSplatRoute: Catalog_sSplatRoute,
   Catalog_sCategoryRoute: Catalog_sCategoryRouteWithChildren,
+  LinzyDlyaKontrolyaMiopiiMisightRoute: LinzyDlyaKontrolyaMiopiiMisightRoute,
+  LinzyDlyaKontrolyaMiopiiMiyosmartRoute:
+    LinzyDlyaKontrolyaMiopiiMiyosmartRoute,
+  LinzyDlyaKontrolyaMiopiiMyocareRoute: LinzyDlyaKontrolyaMiopiiMyocareRoute,
+  LinzyDlyaKontrolyaMiopiiMyopiluxPlusRoute:
+    LinzyDlyaKontrolyaMiopiiMyopiluxPlusRoute,
+  LinzyDlyaKontrolyaMiopiiPrimaBioBiFocalRoute:
+    LinzyDlyaKontrolyaMiopiiPrimaBioBiFocalRoute,
+  LinzyDlyaKontrolyaMiopiiSeed1DayPureEdofRoute:
+    LinzyDlyaKontrolyaMiopiiSeed1DayPureEdofRoute,
   PersonalFavoritesRoute: PersonalFavoritesRoute,
   PersonalOrdersRoute: PersonalOrdersRoute,
   PersonalPrivateRoute: PersonalPrivateRoute,
+  LinzyDlyaKontrolyaMiopiiIndexRoute: LinzyDlyaKontrolyaMiopiiIndexRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
 }
 export const routeTree = rootRouteImport

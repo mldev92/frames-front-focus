@@ -1,0 +1,10 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { MyopiaLensDetail } from "@/components/pages/MyopiaLensPage";
+import { getMyopiaDetailModel, myopiaDetailHead } from "@/data/myopia-lenses";
+
+const model = getMyopiaDetailModel("seed-1-day-pure-edof");
+
+export const Route = createFileRoute("/linzy-dlya-kontrolya-miopii/seed-1-day-pure-edof")({
+  head: () => myopiaDetailHead(model),
+  component: () => <MyopiaLensDetail model={model} />,
+});

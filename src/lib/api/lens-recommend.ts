@@ -376,8 +376,10 @@ export async function fetchLensLineImageSources(signal?: AbortSignal): Promise<L
   }));
 }
 
-export async function fetchLensLines(signal?: AbortSignal): Promise<LensLineCard[]> {
-  const city = useCityStore.getState().city;
+export async function fetchLensLines(
+  signal?: AbortSignal,
+  city = useCityStore.getState().city,
+): Promise<LensLineCard[]> {
   const res = await apiFetch(getStoreApiUrl(`lens_lines.php?city=${city}`), { signal });
   if (!res.ok) throw new Error(`lens_lines ${res.status}`);
   const body = (await res.json()) as { cards: LensLineCard[] };
