@@ -179,14 +179,8 @@ export function CatalogRouteView({
               ? "Контактные линзы в Санкт-Петербурге"
               : catalogSectionTitle(sectionPath, config.title)
         }
-        subtitle={
-          isContactLensRoot || isColoredContactLens || landing ? undefined : config.subtitle
-        }
-        adminActions={
-          landing !== "brand" && (
-            <CatalogAdminActions sectionPath={normalizedSectionPath} city={city} />
-          )
-        }
+        subtitle={isContactLensRoot || isColoredContactLens || landing ? undefined : config.subtitle}
+        adminActions={landing !== "brand" && <CatalogAdminActions sectionPath={normalizedSectionPath} city={city} />}
         headerAfterTitle={
           landing ? (
             <FrameLandingIntro path={normalizedSectionPath} kind={landing} data={landingData} />
@@ -204,9 +198,7 @@ export function CatalogRouteView({
             <ContactLensCatalogNavigation />
           ) : undefined
         }
-        catalogId={
-          isContactLensRoot || isColoredContactLens || landing ? "catalog-products" : undefined
-        }
+        catalogId={isContactLensRoot || isColoredContactLens || landing ? "catalog-products" : undefined}
         data={result.data}
         facets={(config.facets ?? []).filter((facet) => landing !== "brand" || facet !== "brand")}
         facetFilteringEnabled={supportsFacetFiltering}
