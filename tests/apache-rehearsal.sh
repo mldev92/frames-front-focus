@@ -65,6 +65,23 @@ check() { local expected=$1 path=$2 actual; actual=$(curl -s -o /tmp/response -w
 sha=1111111111111111111111111111111111111111
 make_archive "$sha"
 baseline=$(sha256sum "$root/.htaccess" | cut -d' ' -f1)
+# Имитируем отказ посередине копирования общего ресурса перед первым переключением.
+mkdir -p /evidence/limited-bin
+cat > /evidence/limited-bin/cp <<'LIMIT'
+#!/usr/bin/env bash
+if [[ "$1" == --preserve=mode && "${!#}" == */.o100-asset-* ]]; then
+  echo truncated > "${!#}"
+  echo 'Disk quota exceeded' >&2
+  exit 1
+fi
+exec /bin/cp "$@"
+LIMIT
+chmod +x /evidence/limited-bin/cp
+if PATH="/evidence/limited-bin:$PATH" bash /frontend/deploy/release.sh deploy "$root" "$sha" "$baseline" "/evidence/$sha.tgz"; then exit 1; fi
+[[ ! -e "$root/o100_frontend_releases/$sha" && ! -L "$root/o100_frontend_current" ]]
+[[ ! -e "$root/assets/test-hash.js" && ! -e "$root/o100_frontend_assets/test-hash.js" ]]
+cmp /evidence/legacy.htaccess "$root/.htaccess"
+echo 'PASS: failed shared asset copy leaves no partial public asset or immutable release'
 started=$SECONDS
 if O100_TEST_FAIL_AFTER_SWAP=1 bash /frontend/deploy/release.sh deploy "$root" "$sha" "$baseline" "/evidence/$sha.tgz"; then echo 'Expected injected failure' >&2; exit 1; fi
 cmp /evidence/legacy.htaccess "$root/.htaccess"

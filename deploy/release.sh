@@ -99,7 +99,12 @@ fi
 stage="$release.stage-$$"
 mkdir -p "$stage"
 # Не оставляем распакованный stage после ошибки квоты или проверки.
-trap 'if [[ "$stage" == "$root/o100_frontend_releases/$sha.stage-"* && -d "$stage" && ! -L "$stage" ]]; then rm -rf -- "$stage"; fi' EXIT
+asset_tmp=
+cleanup_stage() {
+  if [[ -n "$asset_tmp" ]]; then rm -f -- "$asset_tmp"; fi
+  if [[ "$stage" == "$root/o100_frontend_releases/$sha.stage-"* && -d "$stage" && ! -L "$stage" ]]; then rm -rf -- "$stage"; fi
+}
+trap cleanup_stage EXIT
 if [[ "$action" == deploy-code-only ]]; then
   exec 8>"$(dirname "$root")/.o100-production-read.lock"
   flock -w 60 8
@@ -158,19 +163,36 @@ if [[ "$action" == deploy ]]; then
 fi
 readlink "$root/o100_frontend_current" > "$transaction/previous" || : > "$transaction/previous"
 if [[ -s "$state/active-transaction" ]]; then cp "$state/active-transaction" "$transaction/parent-transaction"; fi
-if [[ ! -e "$release" ]]; then mv "$stage" "$release"; fi
 mkdir -p "$root/o100_frontend_assets" "$root/assets"
-if [[ -d "$release/assets" ]]; then
+if [[ -d "$stage/assets" ]]; then
   while IFS= read -r -d '' asset; do
-    relative=${asset#"$release/assets/"}
+    relative=${asset#"$stage/assets/"}
     for destination in "$root/o100_frontend_assets/$relative" "$root/assets/$relative"; do
-      if [[ -f "$destination" ]]; then cmp "$asset" "$destination" || { echo "Asset collision: $relative" >&2; exit 3; }
-      else mkdir -p "$(dirname "$destination")"; cp "$asset" "$destination"; fi
+      if [[ -f "$destination" ]]; then
+        cmp "$asset" "$destination" || { echo "Asset collision: $relative" >&2; exit 3; }
+      else
+        dir=$(dirname "$destination")
+        mkdir -p "$dir"
+        # На хостинге stage и assets находятся на одном томе. При другом монтировании
+        # используем каталог назначения, чтобы rename не превращался в копирование.
+        temp_dir="$stage"
+        if [[ "$(stat -c %d "$stage")" != "$(stat -c %d "$dir")" ]]; then temp_dir="$dir"; fi
+        asset_tmp=$(mktemp "$temp_dir/.o100-asset-XXXXXXXX")
+        cp --preserve=mode "$asset" "$asset_tmp"
+        mv -T "$asset_tmp" "$destination"
+        asset_tmp=
+      fi
     done
-  done < <(find "$release/assets" -type f -print0)
+  done < <(find "$stage/assets" -type f -print0)
 fi
+if [[ "$action" == deploy-toolbar ]]; then check_paused; fi
+if [[ "$action" == deploy-code-only ]]; then "$php_bin" "$script_dir/verify-code-only.php" "$stage" "$root"; fi
+# Выделяем место для переключения, пока полный выпуск ещё принадлежит stage.
 printf '%s\n' "$transaction" > "$state/active-transaction.next"
-mv -f "$state/active-transaction.next" "$state/active-transaction"
+printf '%s\n' pending > "$transaction/status"
+ln -sfn "$release" "$root/o100_frontend_next"
+if [[ "$action" == deploy ]]; then cp "$transaction/next.htaccess" "$root/.htaccess.next"; fi
+if [[ ! -e "$release" ]]; then mv -T "$stage" "$release"; fi
 armed=1
 revert_on_error() {
   local code=$?
@@ -182,12 +204,9 @@ revert_on_error() {
   exit "${code:-1}"
 }
 trap revert_on_error ERR HUP INT TERM
-if [[ "$action" == deploy-toolbar ]]; then check_paused; fi
-if [[ "$action" == deploy-code-only ]]; then "$php_bin" "$script_dir/verify-code-only.php" "$release" "$root"; fi
-ln -sfn "$release" "$root/o100_frontend_next"
+mv -f "$state/active-transaction.next" "$state/active-transaction"
 mv -Tf "$root/o100_frontend_next" "$root/o100_frontend_current"
 if [[ "$action" == deploy ]]; then
-  cp "$transaction/next.htaccess" "$root/.htaccess.next"
   mv -f "$root/.htaccess.next" "$root/.htaccess"
 fi
 [[ "${O100_TEST_FAIL_AFTER_SWAP:-0}" != 1 ]]
