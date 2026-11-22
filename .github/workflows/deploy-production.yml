@@ -20,6 +20,9 @@ on:
       routing_sha256:
         description: Approved live htaccess SHA256
         required: true
+      beget_free_mb_at:
+        description: Full releases only. Free MB in Beget panel @ Unix time, e.g. 8000@1795300000
+        required: false
       toolbar_baseline:
         description: Verified live baseline JSON for the admin toolbar release without a catalog build
         required: false
@@ -85,6 +88,18 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/optika-production
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
+      - uses: actions/checkout@v4
+        if: inputs.toolbar_baseline == '' && steps.artifact.outputs.parent == ''
+        with:
+          ref: ${{ github.sha }}
+          path: .release-policy
+          sparse-checkout: scripts/check-release-headroom.py
+          sparse-checkout-cone-mode: false
+      - name: Check Beget account headroom before full upload
+        if: inputs.toolbar_baseline == '' && steps.artifact.outputs.parent == ''
+        env:
+          BEGET_FREE_MB_AT: ${{ inputs.beget_free_mb_at }}
+        run: python3 .release-policy/scripts/check-release-headroom.py "$BEGET_FREE_MB_AT" production-release.tgz production-tools.tgz
       - name: Upload candidate and execute guarded switch
         if: inputs.toolbar_baseline == '' && steps.artifact.outputs.parent == ''
         run: |
@@ -92,6 +107,8 @@ jobs:
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
           scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && { (while sleep 15; do echo RELEASE_HEARTBEAT; done) & heartbeat=\$!; trap 'kill \$heartbeat 2>/dev/null || true' EXIT; O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz; }"
+          # Кандидат уже сохранён в Actions. После успешной проверки убираем временную копию архива с хостинга.
+          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && rm -- production-release.tgz"
       - name: Package changes against their published parent
         if: steps.artifact.outputs.parent != ''
         timeout-minutes: 20
