@@ -36,4 +36,12 @@ docker run --rm --tmpfs /stage:size=1m -v "$PWD/deploy/check-release-capacity.ph
   if php /check.php /stage/site 2000000 10 > /tmp/report; then exit 1; fi
   grep -E "^bytes .*shortfall=[1-9][0-9]*$" /tmp/report
   [[ -z "$(ls -A /stage/site)" ]]
+  mkdir -p /root/o100-test/site
+  php /check.php /root/o100-test/site 1000 10 100000000 > /tmp/automatic
+  grep -Fx "bytes required=1000 available=100000000 shortfall=0" /tmp/automatic
+  if php /check.php /root/o100-test/site 1000 10 999 > /tmp/automatic; then exit 1; fi
+  grep -E "^bytes .*shortfall=1$" /tmp/automatic
+  if php /check.php /root/o100-test/site 1000 5000000 100000000 > /tmp/automatic; then exit 1; fi
+  grep -E "^files .*shortfall=[1-9][0-9]*$" /tmp/automatic
+  if php /check.php /stage/site 1000 10 100000000; then exit 1; fi
 '

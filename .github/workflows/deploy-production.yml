@@ -130,15 +130,18 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/optika-production
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
+      - name: Check Beget quota before full release upload
+        if: steps.artifact.outputs.parent == ''
+        env:
+          BEGET_API_LOGIN: ${{ secrets.BEGET_API_LOGIN }}
+          BEGET_API_PASSWORD: ${{ secrets.BEGET_API_PASSWORD }}
+        working-directory: source
+        run: bash ../controller/scripts/check-beget-release-capacity.sh production-release.tgz production-tools.tgz
       - name: Upload candidate and execute guarded switch
         if: steps.artifact.outputs.parent == ''
         working-directory: source
         run: |
           ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
-          required=$(python3 ../controller/scripts/release-capacity.py production-release.tgz production-tools.tgz )
-          bytes=$(jq -er .bytes <<< "$required")
-          files=$(jq -er .files <<< "$required")
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "php8.1 /dev/stdin '$PRODUCTION_ROOT' '$bytes' '$files'" < ../controller/deploy/check-release-capacity.php
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
           scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && { (while sleep 15; do echo RELEASE_HEARTBEAT; done) & heartbeat=\$!; trap 'kill \$heartbeat 2>/dev/null || true' EXIT; O100_EXPECTED_FRONTEND='$APPROVED_PARENT' O100_EXPECTED_PARENT_MANIFEST='$APPROVED_PARENT_HASH' O100_EXPECTED_BACKEND='$O100_BACKEND_SHA' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz; }"
@@ -209,6 +212,13 @@ jobs:
           compression-level: 0
           retention-days: 1
           if-no-files-found: error
+      - name: Check Beget quota before code-only release upload
+        if: steps.artifact.outputs.parent != ''
+        env:
+          BEGET_API_LOGIN: ${{ secrets.BEGET_API_LOGIN }}
+          BEGET_API_PASSWORD: ${{ secrets.BEGET_API_PASSWORD }}
+        working-directory: source
+        run: bash ../controller/scripts/check-beget-release-capacity.sh production-release.tgz production-tools.tgz --parent "$RUNNER_TEMP/parent.json" --batch changes.rsync.xz
       - name: Transfer code changes and activate against their published parent
         if: steps.artifact.outputs.parent != ''
         timeout-minutes: 20
@@ -228,10 +238,6 @@ jobs:
           parent_release="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT"
           parent_manifest=$(jq -r '.codeOnly.parentManifestSha256' release-manifest.json)
           [[ "$parent_manifest" =~ ^[a-f0-9]{64}$ ]]
-          required=$(python3 ../controller/scripts/release-capacity.py production-release.tgz production-tools.tgz --parent "$RUNNER_TEMP/parent.json" --batch changes.rsync.xz)
-          bytes=$(jq -er .bytes <<< "$required")
-          files=$(jq -er .files <<< "$required")
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "php8.1 /dev/stdin '$PRODUCTION_ROOT' '$bytes' '$files'" < ../controller/deploy/check-release-capacity.php
           ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '/tmp/$upload'"
           scp "${ssh_opts[@]}" production-tools.tgz "$remote:$upload/"
           # Передаём только краткоживущую ссылку. Токен GitHub остаётся на runner.
