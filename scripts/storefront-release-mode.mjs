@@ -191,6 +191,32 @@ function registryIntegration(parent, target, file) {
   );
 }
 
+function isLiteralSearchField(property) {
+  if (!ts.isPropertyAssignment(property) || !ts.isIdentifier(property.name)) return false;
+  const value = property.initializer;
+  return property.name.text === "keywords"
+    ? ts.isArrayLiteralExpression(value) && value.elements.every(ts.isStringLiteral)
+    : ts.isStringLiteral(value);
+}
+
+// Записи справочника меняют результаты запроса, но не данные пререндера без запроса.
+function searchDirectoryCode(ref, file) {
+  const source = git("show", ref + ":" + file);
+  const parsed = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
+  const entries = parsed.statements
+    .filter(ts.isVariableStatement)
+    .flatMap((statement) => [...statement.declarationList.declarations])
+    .find((declaration) => declaration.name.getText(parsed) === "pageEntries")?.initializer;
+  if (!entries || !ts.isArrayLiteralExpression(entries) || parsed.parseDiagnostics.length) return;
+  const dynamicEntries = entries.elements
+    .filter(
+      (entry) =>
+        !ts.isObjectLiteralExpression(entry) || !entry.properties.every(isLiteralSearchField),
+    )
+    .map((entry) => print.printNode(ts.EmitHint.Unspecified, entry, parsed));
+  return [source.slice(0, entries.getStart(parsed)), dynamicEntries, source.slice(entries.end)];
+}
+
 export function releaseMode(parent, target = "HEAD") {
   if (!/^[a-f0-9]{40}$/.test(parent)) throw Error("Published frontend SHA required");
   const paths = git("diff", "--no-renames", "--name-only", "-z", parent, target)
@@ -233,6 +259,14 @@ export function releaseMode(parent, target = "HEAD") {
       registryIntegration(parent, target, file)
     )
       continue;
+    if (file === "src/data/site-search.ts") {
+      const currentSearchCode = searchDirectoryCode(parent, file);
+      if (
+        currentSearchCode &&
+        isDeepStrictEqual(currentSearchCode, searchDirectoryCode(target, file))
+      )
+        continue;
+    }
     if (/^public\/.*\.(?:ico|png|jpe?g|webp|avif|svg|woff2?)$/i.test(file)) continue;
     if (file === "package.json" || file === "bun.lock") {
       const buildInputs = (ref) => {
