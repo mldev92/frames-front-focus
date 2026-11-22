@@ -26,6 +26,7 @@ releases="$root/o100_frontend_releases"
 parent=$(printf '%040d' 1)
 sha=$(printf '%040d' 2)
 mkdir "$releases/$parent" "$releases/rollback" "$releases/foreign"
+printf '%s\n' "$parent" > "$releases/$parent/.release-sha"
 echo live > "$releases/$parent/index.html"
 echo rollback > "$releases/rollback/index.html"
 ln -s "$releases/$parent" "$root/o100_frontend_current"
@@ -58,7 +59,7 @@ for mode in full delta; do
     tar -cf - -C "$work" production-tools.tgz production-release.tgz production-release.tgz.sha256 | transfer receive
     rsync_hash=$(sha256sum /usr/bin/rsync | cut -d' ' -f1)
     if transfer activate "$mode" "$parent" "$hash" "$parent" "$routing" "$rsync_hash" > "$work/log" 2>&1; then exit 1; fi
-    grep -m1 'Disk quota exceeded' "$work/log"
+    grep -m1 'Disk quota exceeded' "$work/log" || { cat "$work/log" >&2; exit 1; }
     marker="$mountpoint/.o100-deploy/transfer-journal/$attempt.$sha"
     if PATH="$work/wrappers:$PATH" transfer finish; then exit 1; fi
     [[ -d "$marker" && ! -e "$HOME/o100-transfer-$attempt" && -d "/tmp/o100-transfer-$attempt" ]]
