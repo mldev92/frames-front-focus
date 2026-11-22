@@ -1,0 +1,67 @@
+name: Retain production releases
+on:
+  workflow_run:
+    workflows: [Deploy production]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: optika100-release-retention
+  cancel-in-progress: false
+jobs:
+  retain:
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'workflow_dispatch' && github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 60
+    env:
+      SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
+      SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
+      PRODUCTION_ROOT: ${{ secrets.PRODUCTION_ROOT }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Identify inactive releases
+        id: inventory
+        env:
+          SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.PRODUCTION_KNOWN_HOSTS }}
+        run: |
+          set -Eeuo pipefail
+          install -d -m 700 ~/.ssh
+          umask 077
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/optika-production
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          bash scripts/production-retention.sh list > inventory.json
+          jq '{live, previous, older: (.older | keys)}' inventory.json
+          echo "pending=$(jq '.pending | length' inventory.json)" >> "$GITHUB_OUTPUT"
+          echo "count=$(jq '.older | length' inventory.json)" >> "$GITHUB_OUTPUT"
+      - name: Verify and encrypt off-server copies
+        if: steps.inventory.outputs.count != '0'
+        env:
+          RECIPIENT: ${{ vars.RETENTION_AGE_RECIPIENT }}
+        run: |
+          set -Eeuo pipefail
+          sudo apt-get update -qq && sudo apt-get install -y age
+          bash scripts/production-retention.sh archive
+      - uses: actions/upload-artifact@v4
+        if: steps.inventory.outputs.count != '0'
+        id: archive
+        with:
+          name: archived-storefront-${{ github.run_id }}-${{ github.run_attempt }}
+          path: encrypted/
+          retention-days: 90
+          compression-level: 0
+          if-no-files-found: error
+      - uses: actions/download-artifact@v4
+        if: steps.inventory.outputs.count != '0'
+        with:
+          artifact-ids: ${{ steps.archive.outputs.artifact-id }}
+          merge-multiple: true
+          path: restored
+      - name: Verify stored copies and prune under deployment lock
+        if: steps.inventory.outputs.count != '0' || steps.inventory.outputs.pending != '0'
+        run: bash scripts/production-retention.sh prune

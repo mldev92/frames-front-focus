@@ -142,6 +142,8 @@ jobs:
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
           scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && { (while sleep 15; do echo RELEASE_HEARTBEAT; done) & heartbeat=\$!; trap 'kill \$heartbeat 2>/dev/null || true' EXIT; O100_EXPECTED_FRONTEND='$APPROVED_PARENT' O100_EXPECTED_PARENT_MANIFEST='$APPROVED_PARENT_HASH' O100_EXPECTED_BACKEND='$O100_BACKEND_SHA' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz; }"
+          # Кандидат уже сохранён в Actions. После успешной проверки убираем временную копию архива с хостинга.
+          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && rm -- production-release.tgz"
       - name: Package changes against their published parent
         if: steps.artifact.outputs.parent != ''
         timeout-minutes: 20

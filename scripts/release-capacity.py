@@ -59,7 +59,8 @@ def estimate(archive, tools, parent, batch):
                 size += allocated(len(chunk))
         size += 2 * allocated(os.path.getsize(batch))
     else:
-        size += allocated(os.path.getsize(archive))
+        # Для полной распаковки оставляем рабочий резерв аккаунта.
+        size += allocated(os.path.getsize(archive)) + 1024**3
     return {"bytes": size + (len(directories) + 1) * BLOCK + entries * 512 + 16 * 1024**2,
             "files": new_files + len(directories) + (max(candidate_files, len(parent)) if parent is not None else 0) + 128}
 
