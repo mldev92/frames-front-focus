@@ -18,6 +18,7 @@ def estimate(archive, tools, parent, batch):
     # Каталоги и записи hard link занимают место даже при неизменных данных.
     directories = set()
     entries = 0
+    candidate_files = 0
     new_files = 0
     size = 0
     with tarfile.open(archive, "r:gz") as tar:
@@ -32,6 +33,7 @@ def estimate(archive, tools, parent, batch):
             if not member.isfile():
                 raise ValueError(f"Unexpected archive entry: {path}")
             entries += 1
+            candidate_files += 1
             if parent is not None and path.as_posix() in parent:
                 digest = hashlib.file_digest(tar.extractfile(member), "sha256").hexdigest()
                 if parent[path.as_posix()] == digest:
@@ -59,7 +61,7 @@ def estimate(archive, tools, parent, batch):
     else:
         size += allocated(os.path.getsize(archive))
     return {"bytes": size + (len(directories) + 1) * BLOCK + entries * 512 + 16 * 1024**2,
-            "files": new_files + len(directories) + 128}
+            "files": new_files + len(directories) + (max(candidate_files, len(parent)) if parent is not None else 0) + 128}
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ on:
         required: false
       candidate_run_id:
         description: Verified prepare-production workflow run ID
-        required: false
+        required: true
       parent_candidate_run_id:
         description: Optional override for resolving the published parent artifact
         required: false
@@ -19,9 +19,6 @@ on:
         required: false
       routing_sha256:
         description: Approved live htaccess SHA256
-        required: false
-      toolbar_baseline:
-        description: Verified live baseline JSON for the admin toolbar release without a catalog build
         required: false
 permissions:
   contents: read
@@ -38,7 +35,6 @@ jobs:
       FRONTEND_SHA: ${{ inputs.expected_sha }}
       O100_BACKEND_SHA: ${{ inputs.backend_sha }}
       O100_ROUTING_SHA256: ${{ inputs.routing_sha256 }}
-      O100_TOOLBAR_BASELINE: ${{ inputs.toolbar_baseline }}
       O100_TRANSFER_RSYNC_SHA256: a8e24fdd6bcfd58ab582251d5f648997fc305cb847d0a1c14f5ac40ef2f460c1
       SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
       SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
@@ -49,7 +45,6 @@ jobs:
           path: controller
           persist-credentials: false
       - name: Verify candidate run
-        if: inputs.toolbar_baseline == ''
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ inputs.candidate_run_id }}
@@ -64,7 +59,6 @@ jobs:
             .status == "completed" and .conclusion == "success"
           ' "$RUNNER_TEMP/run.json"
       - uses: actions/download-artifact@v4
-        if: inputs.toolbar_baseline == ''
         with:
           name: production-candidate
           run-id: ${{ inputs.candidate_run_id }}
@@ -74,32 +68,25 @@ jobs:
         id: source
         env:
           REQUESTED_HASH: ${{ inputs.artifact_sha256 }}
-          TOOLBAR: ${{ inputs.toolbar_baseline }}
         run: |
           set -Eeuo pipefail
-          if [[ -z "$TOOLBAR" ]]; then
-            cd approved
-            digest=$(sha256sum production-release.tgz | cut -d' ' -f1)
-            [[ "$(cat production-release.tgz.sha256)" == "$digest  production-release.tgz" ]]
-            [[ -z "$REQUESTED_HASH" || "$REQUESTED_HASH" == "$digest" ]]
-            tar -xOf production-release.tgz ./release-manifest.json > "$RUNNER_TEMP/manifest.json"
-            sha=$(jq -er .frontendSha "$RUNNER_TEMP/manifest.json")
-            backend=$(jq -er .backendSha "$RUNNER_TEMP/manifest.json")
-            routing=$(jq -er .routingBaseline "$RUNNER_TEMP/manifest.json")
-            parent=$(jq -er .parent candidate-parent.json)
-            parent_hash=$(jq -er .manifest candidate-parent.json)
-            [[ "$parent" =~ ^[a-f0-9]{40}$ && "$parent_hash" =~ ^[a-f0-9]{64}$ ]]
-            [[ -z "$FRONTEND_SHA" || "$FRONTEND_SHA" == "$sha" ]]
-            [[ -z "$O100_BACKEND_SHA" || "$O100_BACKEND_SHA" == "$backend" ]]
-            [[ -z "$O100_ROUTING_SHA256" || "$O100_ROUTING_SHA256" == "$routing" ]]
-            echo "ARTIFACT_SHA256=$digest" >> "$GITHUB_ENV"
-            echo "APPROVED_PARENT=$parent" >> "$GITHUB_ENV"
-            echo "APPROVED_PARENT_HASH=$parent_hash" >> "$GITHUB_ENV"
-          else
-            sha=$FRONTEND_SHA
-            backend=$O100_BACKEND_SHA
-            routing=$O100_ROUTING_SHA256
-          fi
+          cd approved
+          digest=$(sha256sum production-release.tgz | cut -d' ' -f1)
+          [[ "$(cat production-release.tgz.sha256)" == "$digest  production-release.tgz" ]]
+          [[ -z "$REQUESTED_HASH" || "$REQUESTED_HASH" == "$digest" ]]
+          tar -xOf production-release.tgz ./release-manifest.json > "$RUNNER_TEMP/manifest.json"
+          sha=$(jq -er .frontendSha "$RUNNER_TEMP/manifest.json")
+          backend=$(jq -er .backendSha "$RUNNER_TEMP/manifest.json")
+          routing=$(jq -er .routingBaseline "$RUNNER_TEMP/manifest.json")
+          parent=$(jq -er .parent candidate-parent.json)
+          parent_hash=$(jq -er .manifest candidate-parent.json)
+          [[ "$parent" =~ ^[a-f0-9]{40}$ && "$parent_hash" =~ ^[a-f0-9]{64}$ ]]
+          [[ -z "$FRONTEND_SHA" || "$FRONTEND_SHA" == "$sha" ]]
+          [[ -z "$O100_BACKEND_SHA" || "$O100_BACKEND_SHA" == "$backend" ]]
+          [[ -z "$O100_ROUTING_SHA256" || "$O100_ROUTING_SHA256" == "$routing" ]]
+          echo "ARTIFACT_SHA256=$digest" >> "$GITHUB_ENV"
+          echo "APPROVED_PARENT=$parent" >> "$GITHUB_ENV"
+          echo "APPROVED_PARENT_HASH=$parent_hash" >> "$GITHUB_ENV"
           [[ "$sha" =~ ^[a-f0-9]{40}$ && "$backend" =~ ^[a-f0-9]{40}$ && "$routing" =~ ^[a-f0-9]{64}$ ]]
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "FRONTEND_SHA=$sha" >> "$GITHUB_ENV"
@@ -115,7 +102,6 @@ jobs:
         run: git -C source merge-base --is-ancestor HEAD origin/release/storefront
       - name: Verify approved artifact
         id: artifact
-        if: ${{ inputs.toolbar_baseline == '' }}
         working-directory: source
         run: |
           set -Eeuo pipefail
@@ -145,7 +131,7 @@ jobs:
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
       - name: Upload candidate and execute guarded switch
-        if: inputs.toolbar_baseline == '' && steps.artifact.outputs.parent == ''
+        if: steps.artifact.outputs.parent == ''
         working-directory: source
         run: |
           ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
@@ -262,24 +248,3 @@ jobs:
         working-directory: source
         run: |
           ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "rm -rf -- 'o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT' '/tmp/o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT' '$PRODUCTION_ROOT/o100_frontend_releases/.incoming-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT'"
-      - name: Release admin toolbar against the approved static storefront
-        if: ${{ inputs.toolbar_baseline != '' }}
-        working-directory: source
-        run: |
-          set -Eeuo pipefail
-          read -r parent parent_manifest backend_manifest pause guard < <(jq -er '[.frontend, .frontendManifest, .backendManifest, .pause, .guard] | @tsv' <<< "$O100_TOOLBAR_BASELINE")
-          [[ "$parent" =~ ^[a-f0-9]{40}$ ]]
-          for hash in "$parent_manifest" "$backend_manifest" "$pause" "$guard"; do [[ "$hash" =~ ^[a-f0-9]{64}$ ]]; done
-          bash -n deploy/release.sh
-          php -l deploy/admin-toolbar-overlay.php && php -l deploy/accept-catalog-release.php && php -l deploy/verify-release.php
-          node --check deploy/admin-toolbar.js
-          docker run -d --name toolbar-apache -v "$PWD:/frontend:ro" php:8.1-apache bash -c 'a2enmod rewrite && apache2-foreground'
-          for attempt in $(seq 1 30); do docker exec toolbar-apache curl -s http://127.0.0.1/ >/dev/null && break; sleep 1; done
-          docker exec toolbar-apache bash /frontend/tests/apache-rehearsal.sh
-          tar -czf production-tools.tgz deploy/{release.sh,verify-release.php,accept-catalog-release.php,admin-toolbar-overlay.php,admin-toolbar.js,production.htaccess,redirects.production.txt,merge-routing.php,link-unchanged.php,tar-extract.sh}
-          tools_hash=$(sha256sum production-tools.tgz | cut -d' ' -f1)
-          ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
-          stage="\$HOME/o100-toolbar-$FRONTEND_SHA"
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "umask 077; mkdir \"$stage\""
-          scp "${ssh_opts[@]}" production-tools.tgz "$SSH_USER@$SSH_HOST:o100-toolbar-$FRONTEND_SHA/"
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd \"$stage\"; printf '%s  production-tools.tgz\\n' '$tools_hash' | sha256sum -c -; tar -xzf production-tools.tgz; O100_SMOKE_ORIGIN=https://optika100.com O100_EXPECTED_FRONTEND='$parent' O100_PARENT_MANIFEST_SHA256='$parent_manifest' O100_BACKEND_SHA='$O100_BACKEND_SHA' O100_BACKEND_MANIFEST_SHA256='$backend_manifest' O100_EXPECTED_PAUSE_SHA256='$pause' O100_EXPECTED_1C_GUARD_SHA256='$guard' bash deploy/release.sh deploy-toolbar '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256'"
