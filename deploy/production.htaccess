@@ -33,7 +33,9 @@ RewriteCond %{QUERY_STRING} (^|&)(page|sort|priceMin|priceMax|priceFrom|priceTo|
 RewriteRule ^catalog_s/opravy(?:/(zhenskie|muzhskie|detskie_1|lions-heart|guess|stepper|silhouette|carrera|hugo))?/?$ /o100_frontend_current/_shell.html [END]
 
 # Прямые ссылки поиска и фильтра по модели загружают собственное состояние запроса.
-RewriteCond %{QUERY_STRING} (^|&)(lensQuery|model)= [NC]
+RewriteCond %{QUERY_STRING} (^|&)lensQuery= [NC]
+RewriteRule ^catalog_(s|n)/linzy_dlya_ochkov/?$ /o100_frontend_current/_shell.html [END]
+RewriteCond %{QUERY_STRING} (^|&)model= [NC]
 RewriteRule ^catalog_(s|n)/linzy_dlya_ochkov/?$ /o100_frontend_current/_shell.html [END]
 RewriteCond %{QUERY_STRING} (^|&)brand= [NC]
 RewriteRule ^catalog_(s|n)/(opravy|solntsezashchitnye_ochki|kontaktnye_linzy_)/?$ /o100_frontend_current/_shell.html [END]
