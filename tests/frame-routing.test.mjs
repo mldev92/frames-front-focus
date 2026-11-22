@@ -11,11 +11,10 @@ test("full search always resolves to the query-aware shell before a static empty
   assert.ok(config.indexOf(rule) < config.indexOf("RewriteCond %{DOCUMENT_ROOT}/o100_frontend_current/$1 -f"));
 });
 
-test("catalog search and model links use the shell only on the supported category roots", async () => {
+test("new global-search links use the shell only on the supported category roots", async () => {
   const config = await readFile(new URL("../deploy/production.htaccess", import.meta.url), "utf8");
   for (const [parameter, positive, negative] of [
     ["lensQuery", ["catalog_s/linzy_dlya_ochkov/", "catalog_n/linzy_dlya_ochkov"], ["catalog_s/opravy/", "catalog_s/linzy_dlya_ochkov/product/"]],
-    ["model", ["catalog_s/linzy_dlya_ochkov/", "catalog_n/linzy_dlya_ochkov"], ["catalog_s/opravy/", "catalog_s/linzy_dlya_ochkov/product/"]],
     ["brand", ["catalog_s/opravy/", "catalog_n/solntsezashchitnye_ochki/", "catalog_s/kontaktnye_linzy_/"], ["catalog_s/opravy/product/", "api/store/products.php"]],
   ]) {
     const rule = config.match(new RegExp(`RewriteCond %\\{QUERY_STRING\\} \\(\\^\\|&\\)${parameter}= \\[NC\\]\\r?\\nRewriteRule (.+) /o100_frontend_current/_shell\\.html \\[END\\]`));

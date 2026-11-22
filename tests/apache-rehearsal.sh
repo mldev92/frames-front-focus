@@ -106,7 +106,7 @@ grep -Fq 'Location: https://optika100.com/catalog_s/linzy_dlya_ochkov/?utm_sourc
 check 404 '/catalog_s/linzy_dlea%20ochkov/unrelated/'
 check 200 '/catalog_s/linzy_dlya_ochkov/'
 grep -q SPECTACLE-CATALOG /tmp/response
-check 200 '/catalog_s/linzy_dlya_ochkov/?model=myopilux-plus'
+check 200 '/catalog_s/linzy_dlya_ochkov/?lensQuery=model%3Amyopilux-plus'
 grep -q REACT /tmp/response
 check 404 /catalog_s/kontaktnye_linzy_/biofinity_6_sht/unrelated/
 curl -s -H 'Authorization: Bearer rehearsal' "$O100_SMOKE_ORIGIN/api/store/csrf.php?auth=1" | grep -q 'Bearer rehearsal'
@@ -267,19 +267,22 @@ mkdir /evidence/code-client
 cp -a "$root/o100_frontend_current/." /evidence/code-client/
 printf '%s\n' "$code_sha" >/evidence/code-client/.release-sha
 printf '\n<!-- storefront fix -->\n' >>/evidence/code-client/index.html
-mkdir /evidence/code-client/eye-exams
+mkdir -p /evidence/code-client/eye-exams/child
 printf '%s\n' '<!doctype html><title>Eye exams</title>' >/evidence/code-client/eye-exams/index.html
-sed -i '/^<\/urlset>$/i\  <url><loc>https://optika100.com/eye-exams/</loc></url>' /evidence/code-client/sitemap.xml
+printf '%s\n' '<!doctype html><title>Child eye exams</title>' >/evidence/code-client/eye-exams/child/index.html
+sed -i '/^<\/urlset>$/i\  <url><loc>https://optika100.com/eye-exams/</loc></url>\n  <url><loc>https://optika100.com/eye-exams/child/</loc></url>' /evidence/code-client/sitemap.xml
 php <<'PHP'
 <?php
 $dir='/evidence/code-client';
 $file=$dir.'/release-manifest.json';
 $m=json_decode(file_get_contents($file),true,512,JSON_THROW_ON_ERROR);
-$m['codeOnly']=['parentSha'=>$m['frontendSha'],'parentManifestSha256'=>hash_file('sha256',$file),'standalonePaths'=>['/eye-exams/']];
+$m['codeOnly']=['parentSha'=>$m['frontendSha'],'parentManifestSha256'=>hash_file('sha256',$file),'standalonePaths'=>['/eye-exams/','/eye-exams/child/'],
+    'routingRedirects'=>['RewriteRule ^catalog_s/legacy\x20fixture/?$ https://optika100.com/eye-exams/child/ [R=301,END]']];
 $m['frontendSha']=trim(file_get_contents($dir.'/.release-sha'));
-$m['routeCount']++;
+$m['routeCount']+=2;
 $m['acceptancePaths'][]='/eye-exams/';
-foreach (['index.html','.release-sha','eye-exams/index.html','sitemap.xml'] as $name) $m['files'][$name]=hash_file('sha256',$dir.'/'.$name);
+$m['acceptancePaths'][]='/eye-exams/child/';
+foreach (['index.html','.release-sha','eye-exams/index.html','eye-exams/child/index.html','sitemap.xml'] as $name) $m['files'][$name]=hash_file('sha256',$dir.'/'.$name);
 $m['templateFiles']['deploy/verify-code-only.php']=hash_file('sha256','/frontend/deploy/verify-code-only.php');
 file_put_contents($file,json_encode($m));
 PHP
@@ -299,10 +302,15 @@ check 200 /eye-exams/
 grep -q 'Eye exams' /tmp/response
 check 200 /sitemap.xml
 grep -q '<loc>https://optika100.com/eye-exams/</loc>' /tmp/response
-cmp /evidence/toolbar.htaccess "$root/.htaccess"
+check 200 /eye-exams/child/
+check 301 '/catalog_s/legacy%20fixture/'
+curl -s -D /tmp/headers -o /dev/null "$O100_SMOKE_ORIGIN/catalog_s/legacy%20fixture/?test=1"
+grep -Fq 'Location: https://optika100.com/eye-exams/child/?test=1' /tmp/headers
 O100_EXPECTED_FRONTEND=$code_sha bash /frontend/deploy/release.sh rollback "$root"
 [[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$toolbar" ]]
 check 404 /eye-exams/
+check 404 '/catalog_s/legacy%20fixture/'
+cmp /evidence/toolbar.htaccess "$root/.htaccess"
 [[ "$(sha256sum /var/www/.o100-1c-catalog-paused | cut -d' ' -f1)" == "$O100_EXPECTED_PAUSE_SHA256" ]]
 if O100_EXPECTED_FRONTEND=$parent bash /frontend/deploy/release.sh deploy-code-only "$root" "$code_sha" "$baseline" /evidence/code-client; then exit 1; fi
 echo 'PASS: offline storefront release, standalone HTML and sitemap, collision rejection, rollback and retry'

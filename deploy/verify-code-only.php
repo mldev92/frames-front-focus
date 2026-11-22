@@ -49,10 +49,15 @@ $parentRoutes = $routes($parent['files']);
 $newRoutes = $parentRoutes;
 $entries = '';
 foreach ($pages as $path) {
-    if (!is_string($path) || !preg_match('~^/[a-z][a-z0-9]*(?:-[a-z0-9]+)*/$~D', $path)
+    if (!is_string($path) || !preg_match('~^/(?:[a-z][a-z0-9]*(?:-[a-z0-9]+)*/)+$~D', $path)
         || preg_match('~^/(api|assets|auth|basket|bitrix|catalog|checkout|local|o100|order|payment|personal|robots|sale|search|sitemap|upload|verification)(?:-|/)~', $path)
         || in_array($path, $parent['retiredPaths'], true) || file_exists($root.'/'.trim($path, '/'))) {
         throw new RuntimeException('Invalid standalone page path');
+    }
+    $directory = dirname(rtrim($path, '/'));
+    if ($directory !== '/' && !in_array($directory.'/', $pages, true)
+        && !in_array(ltrim($directory, '/').'/index.html', $parentRoutes, true)) {
+        throw new RuntimeException('Standalone parent route missing');
     }
     $file = ltrim($path, '/').'index.html';
     if (in_array($file, $newRoutes, true)) throw new RuntimeException('Duplicate standalone page path');

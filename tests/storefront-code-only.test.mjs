@@ -53,6 +53,10 @@ test("release mode follows published route and loader dependencies across commit
     git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-m", "test");
     return git("rev-parse", "HEAD");
   };
+  const apache = "deploy/production.htaccess";
+  const apacheBaseline = "# BEGIN O100 FRONTEND\nRewriteEngine On\n";
+  const redirect = String.raw`RewriteRule ^catalog_s/linzy_dlea\x20ochkov/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/ [R=301,END]`;
+  writeFileSync(apache, apacheBaseline);
   const parent = commit();
   writeFileSync(route, original.replace("old", "new"));
   writeFileSync("src/components/Button.tsx", "export const Button=()=>null;");
@@ -96,6 +100,24 @@ test("release mode follows published route and loader dependencies across commit
     reasons: [],
     standalonePaths: ["/eye-exams/"],
   });
+  mkdirSync("src/routes/eye-exams");
+  const detail = "src/routes/eye-exams/child.tsx";
+  writeFileSync(detail, staticRoute.replace('"/eye-exams"', '"/eye-exams/child"'));
+  writeFileSync(registry, '["/eye-exams/","/eye-exams/child/"]');
+  writeFileSync(apache, apacheBaseline + redirect + "\n");
+  assert.deepEqual(releaseMode(parent, commit()), {
+    mode: "code-only",
+    reasons: [],
+    standalonePaths: ["/eye-exams/", "/eye-exams/child/"],
+    routingRedirects: [redirect],
+  });
+  writeFileSync(apache, apacheBaseline + redirect.replace("[R=301,END]", "[R=302,L]") + "\n");
+  assert.deepEqual(releaseMode(parent, commit()).reasons, [apache]);
+  writeFileSync(apache, apacheBaseline);
+  writeFileSync(registry, '["/eye-exams/child/"]');
+  assert.equal(releaseMode(parent, commit()).mode, "full");
+  rmSync(detail);
+  writeFileSync(registry, '["/eye-exams/"]');
   writeFileSync(
     landing,
     staticRoute.replace("component: Page", "loader: () => {}, component: Page"),

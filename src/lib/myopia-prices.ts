@@ -1,4 +1,4 @@
-import type { ContactMyopiaModel, SpectacleMyopiaModel } from "@/data/myopia-lenses";
+import type { ContactMyopiaModel, SpectacleMyopiaModel } from "@/lib/myopia-lenses";
 import type { Product } from "@/data/types";
 import type { LensLineCard } from "@/lib/api/lens-recommend";
 

@@ -1,4 +1,4 @@
-import { getSpectacleMyopiaModel } from "@/data/myopia-lenses";
+import { getSpectacleMyopiaModel } from "@/lib/myopia-lenses";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {

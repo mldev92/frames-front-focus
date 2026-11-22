@@ -3,10 +3,11 @@ import assert from "node:assert/strict";
 import {
   contactMyopiaModels,
   getSpectacleMyopiaModel,
+  getSpectacleMyopiaModelFromQuery,
   myopiaCatalogPath,
   myopiaDetailsPath,
   spectacleMyopiaModels,
-} from "../../src/data/myopia-lenses.ts";
+} from "../../src/lib/myopia-lenses.ts";
 import { contactPackPrice, spectaclePairPrice } from "../../src/lib/myopia-prices.ts";
 
 test("myopia models have distinct details and model-specific catalog destinations", () => {
@@ -16,7 +17,10 @@ test("myopia models have distinct details and model-specific catalog destination
   assert.equal(new Set(models.map(myopiaCatalogPath)).size, 7);
   for (const model of spectacleMyopiaModels) {
     const path = new URL(myopiaCatalogPath(model), "https://optika100.com");
-    assert.equal(getSpectacleMyopiaModel(path.searchParams.get("model")).slug, model.slug);
+    assert.equal(
+      getSpectacleMyopiaModelFromQuery(path.searchParams.get("lensQuery")).slug,
+      model.slug,
+    );
   }
 });
 

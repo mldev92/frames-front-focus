@@ -10,7 +10,8 @@ try {
         curl_setopt_array($curl,[CURLOPT_RETURNTRANSFER=>true,CURLOPT_FOLLOWLOCATION=>false,CURLOPT_TIMEOUT=>30,CURLOPT_ENCODING=>'']);
         $body=curl_exec($curl); $status=curl_getinfo($curl,CURLINFO_HTTP_CODE);
         if ($body===false) throw new RuntimeException('Public request failed: '.$path);
-        curl_close($curl); return [$status,$body];
+        $redirect=curl_getinfo($curl,CURLINFO_REDIRECT_URL);
+        curl_close($curl); return [$status,$body,$redirect];
     };
     foreach ($manifest['files'] as $path=>$hash) {
         if (hash_file('sha256',$release.'/'.$path)!==$hash) throw new RuntimeException('Release file drift: '.$path);
@@ -32,6 +33,15 @@ try {
     foreach ($manifest['queryAcceptancePaths']??[] as $path) {
         [$status,$body]=$request($path);
         if ($status!==200 || hash('sha256',$body)!==($manifest['files']['_shell.html']??'')) throw new RuntimeException('Public search shell mismatch: '.$path);
+    }
+    foreach ($manifest['codeOnly']['routingRedirects'] ?? [] as $rule) {
+        $parts = explode(' ', $rule);
+        $path = '/'.str_replace('\x20', ' ', substr($parts[1], 1, -3)).'/';
+        $location = $parts[2];
+        [$status, , $redirect] = $request($path);
+        if ($status !== 301 || $redirect !== $location) throw new RuntimeException('Exact redirect failed: '.$path);
+        [$targetStatus] = $request(parse_url($location, PHP_URL_PATH));
+        if ($targetStatus !== 200) throw new RuntimeException('Exact redirect target failed: '.$location);
     }
     // Контроль источника после HTTP-проверок исключает публикацию устаревшего снимка.
     if ($toolbarOnly) {

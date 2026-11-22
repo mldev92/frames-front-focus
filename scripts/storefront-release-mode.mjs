@@ -16,10 +16,46 @@ const presentation = new Set([
   "head",
 ]);
 const print = ts.createPrinter({ removeComments: true });
+const apacheTemplate = "deploy/production.htaccess";
+const exactRedirect =
+  /^RewriteRule \^(catalog_[sn]\/(?:[a-z0-9_-]+(?:\\x20[a-z0-9_-]+)*\/)*[a-z0-9_-]+(?:\\x20[a-z0-9_-]+)*)\/\?\$ https:\/\/optika100\.com(\/(?:[a-z0-9_-]+\/)+) \[R=301,END\]$/;
+
+export function exactCatalogRedirect(line) {
+  const match = exactRedirect.exec(line);
+  if (!match) return;
+  return { source: "/" + match[1].replaceAll("\\x20", " ") + "/", target: match[2] };
+}
+
+function addedExactRedirects(parent, target) {
+  const original = git("show", parent + ":" + apacheTemplate).split(/\r?\n/);
+  const final = git("show", target + ":" + apacheTemplate).split(/\r?\n/);
+  let next = 0;
+  const added = [];
+  const sources = new Set(
+    original.flatMap((line) => {
+      const route = exactCatalogRedirect(line);
+      return route ? [route.source] : [];
+    }),
+  );
+
+  for (const line of final) {
+    if (line === original[next]) {
+      next++;
+      continue;
+    }
+    const route = exactCatalogRedirect(line);
+    if (!route || route.source === route.target || sources.has(route.source)) return;
+    sources.add(route.source);
+    added.push(line);
+  }
+  if (next === original.length && added.length) return added;
+}
+
 const buildTools = new Set([
   "vite.config.code-only.ts",
   "deploy/deploy_production.ps1",
   "deploy/release.sh",
+  "deploy/merge-routing.php",
   "deploy/verify-release.php",
   "deploy/verify-code-only.php",
   "deploy/accept-catalog-release.php",
@@ -223,15 +259,19 @@ export function releaseMode(parent, target = "HEAD") {
     .split("\0")
     .filter(Boolean);
   const reasons = [];
-  let before, after;
+  let before, after, routingRedirects;
   const additions = new Map();
   if (paths.includes(registry)) {
     before = contract(parent);
     after = contract(target);
     const added = after.standalone.filter((route) => !before.standalone.includes(route));
     for (const route of added) {
-      const file = `src/routes${route.slice(0, -1)}.tsx`;
-      if (!before.routes.has(file) && after.staticRoutes.get(file) === route)
+      const base = `src/routes${route.slice(0, -1)}`;
+      const file = [`${base}.tsx`, `${base}/index.tsx`].find(
+        (candidate) => !before.routes.has(candidate) && after.staticRoutes.get(candidate) === route,
+      );
+      const parentPath = route.slice(0, route.lastIndexOf("/", route.length - 2) + 1);
+      if (file && (parentPath === "/" || after.standalone.includes(parentPath)))
         additions.set(file, route);
     }
     if (
@@ -242,6 +282,10 @@ export function releaseMode(parent, target = "HEAD") {
     }
   }
   for (const file of paths) {
+    if (file === apacheTemplate) {
+      routingRedirects = addedExactRedirects(parent, target);
+      if (routingRedirects) continue;
+    }
     if (
       buildTools.has(file) ||
       /^(tests\/|\.github\/workflows\/)/.test(file) ||
@@ -299,6 +343,7 @@ export function releaseMode(parent, target = "HEAD") {
     mode: reasons.length ? "full" : "code-only",
     reasons,
     standalonePaths: [...additions.values()],
+    ...(routingRedirects ? { routingRedirects } : {}),
   };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

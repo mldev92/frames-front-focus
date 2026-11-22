@@ -9,8 +9,8 @@ export function standalonePages(value) {
     value.some(
       (path) =>
         typeof path !== "string" ||
-        !/^\/[a-z][a-z0-9]*(?:-[a-z0-9]+)*\/$/.test(path) ||
-        reserved.test(path.slice(1, -1)),
+        !/^\/(?:[a-z][a-z0-9]*(?:-[a-z0-9]+)*\/)+$/.test(path) ||
+        reserved.test(path.split("/")[1]),
     ) ||
     new Set(value).size !== value.length
   ) {

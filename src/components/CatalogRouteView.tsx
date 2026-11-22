@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useRouterState } from "@tanstack/react-router";
+import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { CatalogListing, type CatalogStateChange } from "@/components/CatalogListing";
 import { CatalogSeoContent } from "@/components/CatalogSeoContent";
 import { CatalogAdminActions } from "@/components/CatalogAdminActions";
@@ -19,7 +19,13 @@ import {
 import { frameLanding, frameLandingTitle } from "@/lib/frame-landing";
 import { categoryForCatalogPath, catalogSectionTitle } from "@/data/categories";
 import { catalogConfig } from "@/routes/catalog_s.$category";
-import { searchToFilters, type CatalogSearch, type LoaderResult } from "@/lib/catalog-route";
+import {
+  applyCatalogState,
+  searchToFilters,
+  type CatalogSearch,
+  type LoaderResult,
+} from "@/lib/catalog-route";
+import { getSpectacleMyopiaModelFromQuery } from "@/lib/myopia-lenses";
 import { useCityStore, type CityCode } from "@/lib/store/city";
 
 interface CatalogRouteViewProps {
@@ -65,6 +71,7 @@ export function CatalogRouteView({
   onRetry,
   onStateChange,
 }: CatalogRouteViewProps) {
+  const navigate = useNavigate();
   const setCity = useCityStore((state) => state.setCity);
   const pending = useRouterState({ select: (state) => state.status === "pending" });
   const [mounted, setMounted] = useState(false);
@@ -90,6 +97,7 @@ export function CatalogRouteView({
   // падать из-за состояния больше не показываемого Bitrix-индекса.
   if (isLensRoot) {
     const appliedFilters = searchToFilters(search);
+    const model = getSpectacleMyopiaModelFromQuery(search.lensQuery);
     return (
       <>
         <div className="w-full py-10" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
@@ -101,15 +109,25 @@ export function CatalogRouteView({
               <p className="mt-3 text-muted-foreground max-w-2xl">{config.subtitle}</p>
             )}
           </div>
-          <LensSearch initialQuery={search.lensQuery} />
+          <LensSearch initialQuery={model ? undefined : search.lensQuery} />
           <LensLinesCatalog
-            modelSlug={search.model}
+            modelSlug={model?.slug}
             initialFilters={appliedFilters}
             appliedSort={search.sort ?? "default"}
             appliedPriceMin={search.priceMin}
             appliedPriceMax={search.priceMax}
             page={search.page ?? 1}
-            onStateChange={onStateChange}
+            onStateChange={(next) => {
+              if (model && next.clearModel) {
+                void navigate({
+                  to: ".",
+                  search: (previous: CatalogSearch) =>
+                    applyCatalogState({ ...previous, lensQuery: undefined }, next),
+                });
+                return;
+              }
+              onStateChange(next);
+            }}
           />
         </div>
         {city === "spb" && <CatalogSeoContent sectionPath={sectionPath} />}
@@ -161,8 +179,14 @@ export function CatalogRouteView({
               ? "Контактные линзы в Санкт-Петербурге"
               : catalogSectionTitle(sectionPath, config.title)
         }
-        subtitle={isContactLensRoot || isColoredContactLens || landing ? undefined : config.subtitle}
-        adminActions={landing !== "brand" && <CatalogAdminActions sectionPath={normalizedSectionPath} city={city} />}
+        subtitle={
+          isContactLensRoot || isColoredContactLens || landing ? undefined : config.subtitle
+        }
+        adminActions={
+          landing !== "brand" && (
+            <CatalogAdminActions sectionPath={normalizedSectionPath} city={city} />
+          )
+        }
         headerAfterTitle={
           landing ? (
             <FrameLandingIntro path={normalizedSectionPath} kind={landing} data={landingData} />
@@ -180,7 +204,9 @@ export function CatalogRouteView({
             <ContactLensCatalogNavigation />
           ) : undefined
         }
-        catalogId={isContactLensRoot || isColoredContactLens || landing ? "catalog-products" : undefined}
+        catalogId={
+          isContactLensRoot || isColoredContactLens || landing ? "catalog-products" : undefined
+        }
         data={result.data}
         facets={(config.facets ?? []).filter((facet) => landing !== "brand" || facet !== "brand")}
         facetFilteringEnabled={supportsFacetFiltering}
