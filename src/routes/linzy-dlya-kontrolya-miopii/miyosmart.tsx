@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MyopiaLensDetail } from "@/components/pages/MyopiaLensPage";
-import { getMyopiaDetailModel, myopiaDetailHead } from "@/data/myopia-lenses";
+import { getMyopiaDetailModel, myopiaDetailHead } from "@/lib/myopia-lenses";
 
 const model = getMyopiaDetailModel("miyosmart");
 

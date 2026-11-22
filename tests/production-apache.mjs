@@ -46,7 +46,7 @@ for (const path of [
   "/catalog_s/solntsezashchitnye_ochki/?brand=GUESS",
   "/catalog_s/kontaktnye_linzy_/?brand=Alcon",
   "/catalog_s/linzy_dlya_ochkov/?lensQuery=Stellest",
-  "/catalog_s/linzy_dlya_ochkov/?model=myopilux-plus",
+  "/catalog_s/linzy_dlya_ochkov/?lensQuery=model%3Amyopilux-plus",
   "/catalog_n/linzy_dlya_ochkov/?lensQuery=Stellest",
 ]) {
   const response = await fetch(origin + path, { redirect: "manual" });

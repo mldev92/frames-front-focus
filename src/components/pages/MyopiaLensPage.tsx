@@ -13,7 +13,7 @@ import {
   spectacleMyopiaModels,
   spectacleNotice,
   type MyopiaModel,
-} from "@/data/myopia-lenses";
+} from "@/lib/myopia-lenses";
 import { useMyopiaPrices } from "@/hooks/useMyopiaPrices";
 import { formatPrice } from "@/lib/store/cart";
 

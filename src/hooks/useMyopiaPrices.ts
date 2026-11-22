@@ -3,9 +3,10 @@ import {
   contactMyopiaModels,
   MYOPIA_CONTACT_SECTION,
   spectacleMyopiaModels,
-} from "@/data/myopia-lenses";
-import { getCatalogPage } from "@/lib/api/bitrix";
-import { fetchLensLines } from "@/lib/api/lens-recommend";
+} from "@/lib/myopia-lenses";
+import { getCatalogPage, getStoreApiUrl } from "@/lib/api/bitrix";
+import { apiFetch } from "@/lib/api/security";
+import type { LensLineCard } from "@/lib/api/lens-recommend";
 import { contactPackPrice, spectaclePairPrice } from "@/lib/myopia-prices";
 
 type Prices = Partial<Record<string, number>>;
@@ -22,7 +23,12 @@ export function useMyopiaPrices(kind?: "spectacle" | "contact") {
     }
 
     if (kind !== "contact") {
-      void fetchLensLines(signal, "spb")
+      void apiFetch(getStoreApiUrl("lens_lines.php?city=spb"), { signal })
+        .then((response) => {
+          if (!response.ok) throw new Error(`Каталог очковых линз: ${response.status}`);
+          return response.json() as Promise<{ cards: LensLineCard[] }>;
+        })
+        .then(({ cards }) => cards)
         .then((lines) =>
           update(
             Object.fromEntries(

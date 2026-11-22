@@ -160,6 +160,8 @@ mkdir -p "$transaction"
 cp "$root/.htaccess" "$transaction/htaccess"
 if [[ "$action" == deploy ]]; then
   "$php_bin" "$script_dir/merge-routing.php" "$root/.htaccess" "$script_dir" "$baseline" "$transaction/next.htaccess"
+elif [[ "$action" == deploy-code-only ]] && "$php_bin" -r '$m=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR); exit(empty($m["codeOnly"]["routingRedirects"])?1:0);' "$stage/release-manifest.json"; then
+  "$php_bin" "$script_dir/merge-routing.php" "$root/.htaccess" "$script_dir" "$baseline" "$transaction/next.htaccess" "$stage/release-manifest.json"
 fi
 readlink "$root/o100_frontend_current" > "$transaction/previous" || : > "$transaction/previous"
 if [[ -s "$state/active-transaction" ]]; then cp "$state/active-transaction" "$transaction/parent-transaction"; fi
@@ -191,7 +193,7 @@ if [[ "$action" == deploy-code-only ]]; then "$php_bin" "$script_dir/verify-code
 printf '%s\n' "$transaction" > "$state/active-transaction.next"
 printf '%s\n' pending > "$transaction/status"
 ln -sfn "$release" "$root/o100_frontend_next"
-if [[ "$action" == deploy ]]; then cp "$transaction/next.htaccess" "$root/.htaccess.next"; fi
+if [[ -f "$transaction/next.htaccess" ]]; then cp "$transaction/next.htaccess" "$root/.htaccess.next"; fi
 if [[ ! -e "$release" ]]; then mv -T "$stage" "$release"; fi
 armed=1
 revert_on_error() {
@@ -206,7 +208,7 @@ revert_on_error() {
 trap revert_on_error ERR HUP INT TERM
 mv -f "$state/active-transaction.next" "$state/active-transaction"
 mv -Tf "$root/o100_frontend_next" "$root/o100_frontend_current"
-if [[ "$action" == deploy ]]; then
+if [[ -f "$transaction/next.htaccess" ]]; then
   mv -f "$root/.htaccess.next" "$root/.htaccess"
 fi
 [[ "${O100_TEST_FAIL_AFTER_SWAP:-0}" != 1 ]]

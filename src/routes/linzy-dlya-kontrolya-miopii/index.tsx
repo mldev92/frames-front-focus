@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MyopiaLensLanding } from "@/components/pages/MyopiaLensPage";
-import { MYOPIA_PATH, MYOPIA_TITLE, myopiaPageHead } from "@/data/myopia-lenses";
+import { MYOPIA_PATH, MYOPIA_TITLE, myopiaPageHead } from "@/lib/myopia-lenses";
 
 export const Route = createFileRoute("/linzy-dlya-kontrolya-miopii/")({
   head: () =>

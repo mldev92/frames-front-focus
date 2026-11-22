@@ -2,6 +2,7 @@ export const MYOPIA_PATH = "/linzy-dlya-kontrolya-miopii/";
 export const MYOPIA_TITLE = "Линзы для контроля миопии";
 export const MYOPIA_CONTACT_SECTION = "dlya_kontrolya_miopii";
 const spectacleCatalog = "/catalog_s/linzy_dlya_ochkov/";
+const modelQueryPrefix = "model:";
 const contactCatalog = `/catalog_s/kontaktnye_linzy_/${MYOPIA_CONTACT_SECTION}/`;
 
 export const spectacleNotice =
@@ -137,6 +138,11 @@ export function getSpectacleMyopiaModel(slug?: string) {
   return spectacleMyopiaModels.find((model) => model.slug === slug);
 }
 
+export function getSpectacleMyopiaModelFromQuery(query?: string) {
+  if (!query?.startsWith(modelQueryPrefix)) return undefined;
+  return getSpectacleMyopiaModel(query.slice(modelQueryPrefix.length));
+}
+
 export function getMyopiaDetailModel(slug: string) {
   const model = [...spectacleMyopiaModels, ...contactMyopiaModels].find(
     (item) => item.slug === slug,
@@ -163,7 +169,7 @@ export function myopiaDetailsPath(model: MyopiaModel) {
 
 export function myopiaCatalogPath(model: MyopiaModel) {
   return model.kind === "spectacle"
-    ? `${spectacleCatalog}?model=${model.slug}`
+    ? `${spectacleCatalog}?lensQuery=${encodeURIComponent(modelQueryPrefix + model.slug)}`
     : `${contactCatalog}${model.catalogSlug}/`;
 }
 

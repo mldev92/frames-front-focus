@@ -5,7 +5,7 @@ import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { publishedMatches } from "./published-page.mjs";
-import { releaseMode } from "./storefront-release-mode.mjs";
+import { exactCatalogRedirect, releaseMode } from "./storefront-release-mode.mjs";
 import { appendStandaloneSitemap } from "./standalone-pages.mjs";
 import { redirectPaths } from "./catalog-link-check.mjs";
 import { robotsAllows } from "./seo-inventory.mjs";
@@ -74,7 +74,7 @@ const pageFiles = Object.keys(baseline.files).filter(
 if (pageFiles.length !== baseline.routeCount || !pageFiles.includes("index.html"))
   throw Error("Published route count mismatch");
 const routes = pageFiles.map((f) => "/" + f.slice(0, -"index.html".length));
-const { standalonePaths } = decision;
+const { standalonePaths, routingRedirects = [] } = decision;
 const robots = await readPublished("robots.txt");
 const redirects = redirectPaths(await readFile("deploy/redirects.production.txt", "utf8"));
 for (const route of standalonePaths) {
@@ -87,6 +87,17 @@ for (const route of standalonePaths) {
     throw Error("Standalone page conflicts with published routing: " + route);
   }
   routes.push(route);
+}
+for (const line of routingRedirects) {
+  const { source, target } = exactCatalogRedirect(line);
+  if (
+    routes.includes(source) ||
+    redirects.has(source) ||
+    baseline.retiredPaths.includes(source) ||
+    !routes.includes(target)
+  ) {
+    throw Error("Exact redirect conflicts with the published route list: " + source);
+  }
 }
 await mkdir("generated", { recursive: true });
 await writeFile(
@@ -213,6 +224,7 @@ const manifest = {
     parentSha: baseline.frontendSha,
     parentManifestSha256: digest(manifestBytes),
     standalonePaths,
+    ...(routingRedirects.length ? { routingRedirects } : {}),
   },
 };
 // Панель из React-компонента теперь входит в обычный бандл.

@@ -108,7 +108,6 @@ export const catalogSearchSchema = z.object({
   wearMode: z.string().optional(),
   wearingMode: z.string().optional(),
   lensType: z.string().optional(),
-  model: z.string().optional().catch(undefined),
   design: z.string().optional(),
   technology: z.string().optional(),
   purpose: z.string().optional(),
@@ -310,7 +309,6 @@ export function applyCatalogState(current: CatalogSearch, next: CatalogStateChan
     if (next.priceMax === undefined) delete output.priceMax;
     else output.priceMax = next.priceMax;
   }
-  if (next.clearModel) delete output.model;
   const page = next.page ?? 1;
   if (page <= 1) delete output.page;
   else output.page = page;
