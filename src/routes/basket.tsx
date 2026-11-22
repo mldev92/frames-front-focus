@@ -2,6 +2,7 @@ import { CartPrescription } from "@/components/CartPrescription";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { useCart, formatPrice } from "@/lib/store/cart";
+import { cartTotals } from "@/lib/cart-totals";
 import { lensCartDraft } from "@/lib/lens-cart";
 import { LensRequestForm } from "@/components/LensWizard/LensRequestForm";
 import { useState } from "react";
@@ -18,9 +19,9 @@ export const Route = createFileRoute("/basket")({
 });
 
 function CartPage() {
-  const { lines, lensSelections, setQty, remove, removeLens, totals, clear, consumeLens } = useCart();
+  const { lines, lensSelections, setQty, remove, removeLens, clear, consumeLens } = useCart();
   const [lensSubmitted, setLensSubmitted] = useState(false);
-  const { subtotal, count } = totals();
+  const { subtotal, count } = cartTotals(lines, lensSelections);
 
   if (lines.length === 0 && lensSelections.length === 0 && !lensSubmitted) {
     return (
