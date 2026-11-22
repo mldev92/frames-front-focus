@@ -40,6 +40,14 @@ test("release mode follows published route and loader dependencies across commit
   writeFileSync(route, original);
   writeFileSync("src/lib/data.ts", 'export { get } from "./prices";');
   writeFileSync("src/lib/prices.ts", "export const get=()=>100;");
+  const searchIndex = "src/data/site-search.ts";
+  const searchCode =
+    'const pageEntries=[{title:"Eye exams",keywords:["exams"]}]; export const search=()=>pageEntries;';
+  writeFileSync(searchIndex, searchCode);
+  writeFileSync(
+    "src/routes/search.tsx",
+    'import { search } from "@/data/site-search"; export const Route=createFileRoute("/search")({loader:()=>search(),component:Page});',
+  );
   const commit = () => {
     git("add", ".");
     git("-c", "user.name=Test", "-c", "user.email=test@example.invalid", "commit", "-m", "test");
@@ -52,6 +60,16 @@ test("release mode follows published route and loader dependencies across commit
   writeFileSync("src/lib/prices.ts", "export const get=()=>110;");
   assert.deepEqual(releaseMode(parent, commit()).reasons, ["src/lib/prices.ts"]);
   writeFileSync("src/lib/prices.ts", "export const get=()=>100;");
+  writeFileSync(
+    searchIndex,
+    searchCode.replace("}]", '},{title:"Pediatric eye exams",keywords:["children"]}]'),
+  );
+  assert.equal(releaseMode(parent, commit()).mode, "code-only");
+  writeFileSync(searchIndex, searchCode.replace('"Eye exams"', "getTitle()"));
+  assert.deepEqual(releaseMode(parent, commit()).reasons, [searchIndex]);
+  writeFileSync(searchIndex, searchCode.replace("()=>pageEntries", "()=>pageEntries.slice(0,1)"));
+  assert.deepEqual(releaseMode(parent, commit()).reasons, [searchIndex]);
+  writeFileSync(searchIndex, searchCode);
   const promotions = "src/data/promotions.ts";
   writeFileSync(promotions, 'export const href="/sale/";');
   assert.equal(releaseMode(parent, commit()).mode, "code-only");
