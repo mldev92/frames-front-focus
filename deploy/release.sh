@@ -86,6 +86,10 @@ baseline=${4:?approved routing SHA256}
 if [[ -n "${O100_EXPECTED_FRONTEND:-}" ]]; then
   [[ "$(cat "$root/o100_frontend_current/.release-sha")" == "$O100_EXPECTED_FRONTEND" ]] || { echo 'Frontend drift; deployment refused' >&2; exit 3; }
 fi
+if [[ -n "${O100_EXPECTED_PARENT_MANIFEST:-}" ]]; then
+  [[ "$(sha256sum "$root/o100_frontend_current/release-manifest.json" | cut -d' ' -f1)" == "$O100_EXPECTED_PARENT_MANIFEST" ]] || { echo 'Parent manifest drift' >&2; exit 3; }
+  "$php_bin" -r '$m=json_decode(file_get_contents($argv[1]),true,512,JSON_THROW_ON_ERROR); exit($m["sha"] === $argv[2] ? 0 : 3);' "$(dirname "$root")/.o100-backend-release.json" "${O100_EXPECTED_BACKEND:?}"
+fi
 release="$root/o100_frontend_releases/$sha"
 if [[ -e "$release" ]]; then
   [[ "$action" == deploy-code-only && -d "$release" && ! -L "$release" ]] || { echo 'Immutable release already exists' >&2; exit 3; }
