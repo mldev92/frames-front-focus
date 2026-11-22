@@ -1,25 +1,10 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync, mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import path from "node:path";
+import { readFileSync } from "node:fs";
 import { setTimeout as delay } from "node:timers/promises";
 
-// Локальный деплой использует тот же проверенный артефакт, что и Actions.
-const [sha, routing, execute] = process.argv.slice(2);
-const backend = JSON.parse(readFileSync(0, "utf8").replace(/^\uFEFF/, ""));
-const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
-const refs = git(
-  "for-each-ref",
-  "--points-at",
-  sha,
-  "--format=%(refname:strip=3)",
-  "refs/remotes/origin",
-)
-  .split(/\r?\n/)
-  .filter((r) => r && r !== "HEAD");
-if (!refs.length) throw Error("A published branch pointing to the requested commit is required");
+const repo = "mldev92/frames-front-focus";
 async function workflow(name, inputs) {
-  const url = execFileSync("gh", ["workflow", "run", name, "--ref", "main", "--json"], {
+  const url = execFileSync("gh", ["workflow", "run", name, "--repo", repo, "--ref", "main", "--json"], {
     input: JSON.stringify(inputs),
     encoding: "utf8",
     stdio: ["pipe", "pipe", "inherit"],
@@ -32,7 +17,7 @@ async function workflow(name, inputs) {
     try {
       head = execFileSync(
         "gh",
-        ["run", "view", id, "--json", "headBranch", "--jq", ".headBranch"],
+        ["run", "view", id, "--repo", repo, "--json", "headBranch", "--jq", ".headBranch"],
         {
           encoding: "utf8",
           stdio: ["ignore", "pipe", "pipe"],
@@ -46,32 +31,25 @@ async function workflow(name, inputs) {
     }
   }
   if (head !== "main") throw Error("The release workflow did not run from main");
-  execFileSync("gh", ["run", "watch", id, "--exit-status", "--interval", "20"], {
+  execFileSync("gh", ["run", "watch", id, "--repo", repo, "--exit-status", "--interval", "20"], {
     stdio: "inherit",
   });
   return id;
 }
-const binding = { backend_sha: backend.sha, routing_sha256: routing };
-const run = await workflow("prepare-production.yml", {
-  ...binding,
-  storefront_ref: sha,
-  backend_manifest: JSON.stringify(backend),
-});
-const directory = mkdtempSync(path.join(tmpdir(), "o100-code-receipt-"));
-execFileSync(
-  "gh",
-  ["run", "download", run, "--name", "production-candidate-checksum", "--dir", directory],
-  { stdio: "inherit" },
-);
-const checksum = readFileSync(path.join(directory, "production-release.tgz.sha256"), "utf8").match(
-  /^([a-f0-9]{64})  production-release\.tgz\s*$/,
-)?.[1];
-if (!checksum) throw Error("Invalid candidate checksum");
-console.log("Candidate:", run, "SHA256:", checksum);
-if (execute === "execute")
-  await workflow("deploy-production.yml", {
-    ...binding,
-    expected_sha: sha,
-    candidate_run_id: run,
-    artifact_sha256: checksum,
-  });
+
+const request = JSON.parse(readFileSync(0, "utf8").replace(/^\uFEFF/, ""));
+if (request.rollback) {
+  await workflow("rollback-production.yml", { deployed_sha: request.sha });
+} else {
+  const inputs = { storefront_ref: request.sha };
+  if (request.snapshotRun) {
+    inputs.api_snapshot_run_id = request.snapshotRun;
+    inputs.api_snapshot_sha256 = request.snapshotDigest;
+  }
+  const id = request.candidateRun || await workflow("prepare-production.yml", inputs);
+  if (request.execute) {
+    const publication = { candidate_run_id: id };
+    if (request.sha) publication.expected_sha = request.sha;
+    await workflow("deploy-production.yml", publication);
+  }
+}
