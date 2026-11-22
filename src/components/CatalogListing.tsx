@@ -50,6 +50,7 @@ export interface CatalogStateChange {
   priceMin?: number;
   priceMax?: number;
   page?: number;
+  clearModel?: boolean;
 }
 
 interface ListingProps {

@@ -70,7 +70,7 @@ const APPOINTMENT_CLINICS = [
   {
     id: "kirochnaya",
     clinicUid: "f5b3c5f1-6529-11ef-9f2f-2cf05d761a4a",
-    label: "Санкт-Петербург, ул. Кирочная, 17 (м. Чернышевского)",
+    label: "Санкт-Петербург, ул. Кирочная, 17 (м. Чернышевская)",
   },
 ] as const;
 
@@ -1199,6 +1199,7 @@ function ChoiceCard({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={selected}
       className={cn(
         "relative min-w-0 text-left p-4 sm:p-5 rounded-[1.25rem] transition-all duration-300 active:scale-[0.98] hover:-translate-y-0.5",
         selected

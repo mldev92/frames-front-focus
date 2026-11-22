@@ -103,6 +103,7 @@ export function CatalogRouteView({
           </div>
           <LensSearch initialQuery={search.lensQuery} />
           <LensLinesCatalog
+            modelSlug={search.model}
             initialFilters={appliedFilters}
             appliedSort={search.sort ?? "default"}
             appliedPriceMin={search.priceMin}

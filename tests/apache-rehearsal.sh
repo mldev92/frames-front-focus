@@ -36,12 +36,13 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ /bitrix/urlrewrite.php [L]
 BASELINE
 cp "$root/.htaccess" /evidence/legacy.htaccess
-mkdir -p /candidate/assets /candidate/catalog_s/opravy/deep-product /candidate/catalog_n/opravy/deep-product
+mkdir -p /candidate/assets /candidate/catalog_s/opravy/deep-product /candidate/catalog_n/opravy/deep-product /candidate/catalog_s/linzy_dlya_ochkov
 for file in index.html _shell.html 404.html; do printf '%s\n' 'REACT' > "/candidate/$file"; done
 printf '%s\n' 'SPB-CATALOG <a href="/catalog_s/opravy/deep-product/" data-product-id="1">Товар</a>' > /candidate/catalog_s/opravy/index.html
 printf '%s\n' 'NVK-CATALOG <a href="/catalog_n/opravy/deep-product/" data-product-id="2">Товар</a>' > /candidate/catalog_n/opravy/index.html
 printf '%s\n' 'DEEP-SPB' > /candidate/catalog_s/opravy/deep-product/index.html
 printf '%s\n' 'DEEP-NVK' > /candidate/catalog_n/opravy/deep-product/index.html
+printf '%s\n' 'SPECTACLE-CATALOG' > /candidate/catalog_s/linzy_dlya_ochkov/index.html
 printf '%s\n' 'ASSET' > /candidate/assets/test-hash.js
 printf '%s\n' '<urlset>' '</urlset>' > /candidate/sitemap.xml
 printf '%s\n' 'User-agent: *' > /candidate/robots.txt
@@ -98,6 +99,15 @@ curl -s -D /tmp/headers -o /dev/null "$O100_SMOKE_ORIGIN/catalog_s/kontaktnye_li
 grep -q '/catalog_s/kontaktnye_linzy_/prozrachnye/biofinity_6_sht/?utm_source=rehearsal' /tmp/headers
 curl -s -D /tmp/headers -o /dev/null "$O100_SMOKE_ORIGIN/blog/pochemyMi.php/?cutover_probe=1"
 grep -Fq 'Location: https://optika100.com/o-nas/?cutover_probe=1#pochemu-my' /tmp/headers || { cat /tmp/headers; exit 1; }
+check 301 '/catalog_s/linzy_dlea%20ochkov/'
+check 301 '/catalog_s/linzy_dlea%20ochkov?utm_source=rehearsal'
+curl -s -D /tmp/headers -o /dev/null "$O100_SMOKE_ORIGIN/catalog_s/linzy_dlea%20ochkov?utm_source=rehearsal"
+grep -Fq 'Location: https://optika100.com/catalog_s/linzy_dlya_ochkov/?utm_source=rehearsal' /tmp/headers || { cat /tmp/headers; exit 1; }
+check 404 '/catalog_s/linzy_dlea%20ochkov/unrelated/'
+check 200 '/catalog_s/linzy_dlya_ochkov/'
+grep -q SPECTACLE-CATALOG /tmp/response
+check 200 '/catalog_s/linzy_dlya_ochkov/?model=myopilux-plus'
+grep -q REACT /tmp/response
 check 404 /catalog_s/kontaktnye_linzy_/biofinity_6_sht/unrelated/
 curl -s -H 'Authorization: Bearer rehearsal' "$O100_SMOKE_ORIGIN/api/store/csrf.php?auth=1" | grep -q 'Bearer rehearsal'
 check 200 /catalog_s/opravy/deep-product/

@@ -97,7 +97,7 @@ const faq = [
 ];
 
 const relatedLinks = [
-  { label: "Линзы для контроля миопии", href: "/stellest-katalog-s-linzami/" },
+  { label: "Линзы для контроля миопии", href: "/linzy-dlya-kontrolya-miopii/" },
   { label: "Биометрия глаза", href: "/biometriya-glaza/" },
   { label: "Диагностика зрения", href: "/kabinet-diagnostiki-spb/" },
   { label: "Детские очковые линзы", href: "/catalog_s/linzy_dlya_ochkov/detskie/" },

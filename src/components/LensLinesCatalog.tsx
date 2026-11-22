@@ -1,3 +1,4 @@
+import { getSpectacleMyopiaModel } from "@/data/myopia-lenses";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import {
@@ -89,6 +90,7 @@ function indexLabel(indexes: number[]): string {
 }
 
 interface LensLinesCatalogProps {
+  modelSlug?: string;
   initialFilters: Partial<Record<FacetKey, string[]>>;
   appliedSort: NonNullable<CatalogQuery["sort"]>;
   appliedPriceMin?: number;
@@ -121,6 +123,7 @@ function FilterSection({ title, children }: { title: string; children: ReactNode
 }
 
 export function LensLinesCatalog({
+  modelSlug,
   initialFilters,
   appliedSort,
   appliedPriceMin,
@@ -129,7 +132,14 @@ export function LensLinesCatalog({
   onStateChange,
 }: LensLinesCatalogProps) {
   const city = useCityStore((state) => state.city);
-  const [cards, setCards] = useState<LensLineCard[] | null>(null);
+  const [catalogLines, setCatalogLines] = useState<LensLineCard[] | null>(null);
+  const model = getSpectacleMyopiaModel(modelSlug);
+  const cards = useMemo(
+    () => model
+      ? catalogLines?.filter(({ id }) => model.catalogLineIds.includes(id)) ?? null
+      : catalogLines,
+    [catalogLines, model],
+  );
   const [error, setError] = useState(false);
   const [reload, setReload] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -141,7 +151,7 @@ export function LensLinesCatalog({
     const ctl = new AbortController();
     setError(false);
     fetchLensLines(ctl.signal)
-      .then((loaded) => setCards(loaded))
+      .then(setCatalogLines)
       .catch((e: unknown) => {
         if ((e as Error).name !== "AbortError") setError(true);
       });
@@ -220,7 +230,7 @@ export function LensLinesCatalog({
   };
   const clearAll = () => {
     setPriceDraft([priceBounds.min, priceBounds.max]);
-    onStateChange({ filters: {}, sort: "default", priceMin: undefined, priceMax: undefined });
+    onStateChange({ filters: {}, sort: "default", priceMin: undefined, priceMax: undefined, clearModel: true });
   };
   const commitPrice = (value: [number, number]) => {
     onStateChange({
@@ -391,8 +401,18 @@ export function LensLinesCatalog({
           </div>
         </div>
 
-        {activeChips.length > 0 && (
+        {(model || activeChips.length > 0) && (
           <div className="mb-5 flex flex-wrap gap-2">
+            {model && (
+              <button
+                type="button"
+                onClick={() => onStateChange({ clearModel: true })}
+                className="inline-flex items-center gap-1 rounded-full border border-ink/20 bg-cream px-3 py-1 text-xs hover:border-ink"
+                aria-label={`Снять фильтр ${model.brand} ${model.name}`}
+              >
+                {model.brand} {model.name} <X aria-hidden="true" className="h-3 w-3" />
+              </button>
+            )}
             {activeChips.map(({ facet, value }) => (
               <button
                 key={`${facet}:${value}`}
