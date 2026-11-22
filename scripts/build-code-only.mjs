@@ -102,6 +102,7 @@ const preload = (name) => new URL(name, import.meta.url).href;
 const env = {
   ...process.env,
   O100_PUBLISHED_DIR: parent,
+  VITE_RELEASE_SHA: sha,
   VITE_BITRIX_API: "https://optika100.com",
   O100_BUILD_ORIGIN: "https://optika100.com",
   O100_BUILD_MODE: "replay",

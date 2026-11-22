@@ -23,6 +23,9 @@ export function StorefrontFreshness() {
       if (document.visibilityState === "hidden" || pending || Date.now() - lastRefresh < 1000) return;
       const path = router.state.location.pathname;
       if (path !== "/" && !/^\/catalog_[sn]\//.test(path)) return;
+      // Переход уже читает API: повторный invalidate отменял и запускал
+      // тот же loader заново. Завершившийся переход получает свежий ответ.
+      if (router.state.isLoading) return;
       pending = true;
       lastRefresh = Date.now();
       invalidateProductPrices();
