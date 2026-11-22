@@ -3,7 +3,7 @@ import json
 import os
 import sys
 from decimal import Decimal, InvalidOperation
-from urllib.error import URLError
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
@@ -38,8 +38,11 @@ def fetch(login, password):
         raise ValueError("Configure BEGET_API_LOGIN and BEGET_API_PASSWORD in the production environment")
     body = urlencode({"login": login, "passwd": password, "output_format": "json"}).encode()
     request = Request("https://api.beget.com/api/user/getAccountInfo", data=body, method="POST")
-    with build_opener(NoRedirect).open(request, timeout=20) as reply:
-        data = reply.read(65537)
+    try:
+        with build_opener(NoRedirect).open(request, timeout=20) as reply:
+            data = reply.read(65537)
+    except HTTPError as error:
+        raise ValueError(f"Beget disk quota request failed (HTTP {error.code})") from None
     if len(data) > 65536:
         raise ValueError("Oversized Beget response")
     return available_bytes(json.loads(data, parse_float=Decimal))

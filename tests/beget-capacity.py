@@ -2,6 +2,7 @@
 import io
 import runpy
 import unittest
+from urllib.error import HTTPError
 from pathlib import Path
 from unittest.mock import patch
 from urllib.parse import parse_qs
@@ -25,6 +26,15 @@ class BegetCapacity(unittest.TestCase):
                     return io.BytesIO(b'{"status":"success","answer":{"status":"success","result":{"plan_quota":"100","user_quota":80.5}}}')
             env["build_opener"] = lambda handler: Opener()
             self.assertEqual(api["fetch"]("test", "A+B&?"), 18_500_000)
+
+    def test_redirect(self):
+        class Redirect:
+            def open(self, request, timeout):
+                raise HTTPError(request.full_url, 301, "Moved", {}, None)
+        with patch.dict(api["fetch"].__globals__, build_opener=lambda handler: Redirect()):
+            with self.assertRaisesRegex(ValueError, r"^Beget disk quota request failed \(HTTP 301\)$"):
+                api["fetch"]("test", "private")
+        self.assertIsNone(api["NoRedirect"]().redirect_request(None, None, 301, "", {}, "https://example.org/"))
 
     def test_invalid(self):
         for invalid in [None, {}, {"status":"error"}, {"status":"success","answer":{"status":"error"}},
