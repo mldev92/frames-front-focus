@@ -36,7 +36,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Rehearse account and filesystem capacity checks
-        run: bash tests/release-capacity.sh
+        run: python3 tests/beget-capacity.py && bash tests/release-capacity.sh
       - name: Verify archive and retention guards
         run: python3 tests/production-retention.py
       - name: Rehearse Apache routing and rollback
