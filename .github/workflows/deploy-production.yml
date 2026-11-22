@@ -130,20 +130,8 @@ jobs:
           printf '%s\n' "$SSH_KEY" > ~/.ssh/optika-production
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
-      - name: Upload candidate and execute guarded switch
-        if: steps.artifact.outputs.parent == ''
-        working-directory: source
-        run: |
-          ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
-          required=$(python3 ../controller/scripts/release-capacity.py production-release.tgz production-tools.tgz )
-          bytes=$(jq -er .bytes <<< "$required")
-          files=$(jq -er .files <<< "$required")
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "php8.1 /dev/stdin '$PRODUCTION_ROOT' '$bytes' '$files'" < ../controller/deploy/check-release-capacity.php
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
-          scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && { (while sleep 15; do echo RELEASE_HEARTBEAT; done) & heartbeat=\$!; trap 'kill \$heartbeat 2>/dev/null || true' EXIT; O100_EXPECTED_FRONTEND='$APPROVED_PARENT' O100_EXPECTED_PARENT_MANIFEST='$APPROVED_PARENT_HASH' O100_EXPECTED_BACKEND='$O100_BACKEND_SHA' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz; }"
-          # Кандидат уже сохранён в Actions. После успешной проверки убираем временную копию архива с хостинга.
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && rm -- production-release.tgz"
+      - name: Recover interrupted transfer cleanup
+        run: bash controller/scripts/remote-transfer.sh recover
       - name: Package changes against their published parent
         if: steps.artifact.outputs.parent != ''
         timeout-minutes: 20
@@ -209,6 +197,39 @@ jobs:
           compression-level: 0
           retention-days: 1
           if-no-files-found: error
+      - name: Read Beget account disk allowance
+        id: quota
+        env:
+          BEGET_API_LOGIN: ${{ secrets.BEGET_API_LOGIN }}
+          BEGET_API_PASSWORD: ${{ secrets.BEGET_API_PASSWORD }}
+        run: |
+          available=$(python3 controller/scripts/beget-free-bytes.py)
+          echo "bytes=$available" >> "$GITHUB_OUTPUT"
+      - name: Check disk space before staging
+        working-directory: source
+        env:
+          ACCOUNT_BYTES: ${{ steps.quota.outputs.bytes }}
+          PARENT: ${{ steps.artifact.outputs.parent }}
+        run: |
+          set -Eeuo pipefail
+          options=()
+          if [[ -n "$PARENT" ]]; then options=(--parent "$RUNNER_TEMP/parent.json" --batch changes.rsync.xz); fi
+          required=$(python3 ../controller/scripts/release-capacity.py production-release.tgz production-tools.tgz "${options[@]}")
+          bytes=$(jq -er .bytes <<< "$required")
+          files=$(jq -er .files <<< "$required")
+          [[ "$ACCOUNT_BYTES" =~ ^[0-9]+$ ]]
+          ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "php8.1 /dev/stdin '$PRODUCTION_ROOT' '$bytes' '$files' '$ACCOUNT_BYTES'" < ../controller/deploy/check-release-capacity.php
+      - name: Register private transfer directories
+        id: staging
+        run: bash controller/scripts/remote-transfer.sh start
+      - name: Transfer and activate full release
+        if: steps.artifact.outputs.parent == ''
+        working-directory: source
+        run: |
+          set -Eeuo pipefail
+          transfer=../controller/scripts/remote-transfer.sh
+          tar -cf - production-tools.tgz production-release.tgz production-release.tgz.sha256 | bash "$transfer" receive
+          bash "$transfer" activate full "$APPROVED_PARENT" "$APPROVED_PARENT_HASH" "$O100_BACKEND_SHA" "$O100_ROUTING_SHA256"
       - name: Transfer code changes and activate against their published parent
         if: steps.artifact.outputs.parent != ''
         timeout-minutes: 20
@@ -220,21 +241,9 @@ jobs:
         working-directory: source
         run: |
           set -Eeuo pipefail
+          transfer=../controller/scripts/remote-transfer.sh
           [[ "$TRANSFER_ARTIFACT" =~ ^[0-9]+$ && "$TRANSFER_DIGEST" =~ ^[a-f0-9]{64}$ ]]
-          remote="$SSH_USER@$SSH_HOST"
-          ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ServerAliveInterval=15)
-          upload="o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          incoming="$PRODUCTION_ROOT/o100_frontend_releases/.incoming-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          parent_release="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT"
-          parent_manifest=$(jq -r '.codeOnly.parentManifestSha256' release-manifest.json)
-          [[ "$parent_manifest" =~ ^[a-f0-9]{64}$ ]]
-          required=$(python3 ../controller/scripts/release-capacity.py production-release.tgz production-tools.tgz --parent "$RUNNER_TEMP/parent.json" --batch changes.rsync.xz)
-          bytes=$(jq -er .bytes <<< "$required")
-          files=$(jq -er .files <<< "$required")
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "php8.1 /dev/stdin '$PRODUCTION_ROOT' '$bytes' '$files'" < ../controller/deploy/check-release-capacity.php
-          ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '/tmp/$upload'"
-          scp "${ssh_opts[@]}" production-tools.tgz "$remote:$upload/"
-          # Передаём только краткоживущую ссылку. Токен GitHub остаётся на runner.
+          tar -cf - production-tools.tgz | bash "$transfer" receive
           status=$(curl --silent --show-error --fail --max-time 20 --dump-header "$RUNNER_TEMP/transfer.headers" \
             --output /dev/null --write-out '%{http_code}' -H "Authorization: Bearer $GH_TOKEN" \
             "$GITHUB_API_URL/repos/$GITHUB_REPOSITORY/actions/artifacts/$TRANSFER_ARTIFACT/zip")
@@ -242,11 +251,8 @@ jobs:
           url=$(awk 'tolower($1) == "location:" {sub(/\r$/, ""); print $2}' "$RUNNER_TEMP/transfer.headers")
           [[ "$url" =~ ^https://[^[:space:]\"\\]+$ ]]
           echo "::add-mask::$url"
-          printf 'url = "%s"\n' "$url" | ssh "${ssh_opts[@]}" "$remote" "set -e; umask 077; cd '/tmp/$upload'; curl --silent --show-error --fail --proto '=https' --max-time 900 --output transfer.zip --config -; echo '$TRANSFER_DIGEST  transfer.zip' | sha256sum -c -; unzip -q transfer.zip changes.rsync.xz; rm -- transfer.zip; xz -d changes.rsync.xz"
-          # Rsync заменяет изменённые файлы через временные имена и сохраняет родительский выпуск.
-          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c -; echo '$O100_TRANSFER_RSYNC_SHA256  /usr/bin/rsync' | sha256sum -c -; umask 022; mkdir '$incoming'; cp -rl '$parent_release/.' '$incoming/'; /usr/bin/rsync -rcz --delete --no-whole-file --protocol=30 --read-batch='/tmp/$upload/changes.rsync' '$incoming/'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_EXPECTED_PARENT_MANIFEST='$APPROVED_PARENT_HASH' O100_EXPECTED_BACKEND='$O100_BACKEND_SHA' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' '$incoming' --adopt-upload"
-      - name: Remove private code-only transfer directory
-        if: always() && steps.artifact.outputs.parent != ''
-        working-directory: source
-        run: |
-          ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "rm -rf -- 'o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT' '/tmp/o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT' '$PRODUCTION_ROOT/o100_frontend_releases/.incoming-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT'"
+          printf 'url = "%s"\n' "$url" | bash "$transfer" download "$TRANSFER_DIGEST"
+          bash "$transfer" activate delta "$PARENT" "$APPROVED_PARENT_HASH" "$O100_BACKEND_SHA" "$O100_ROUTING_SHA256" "$O100_TRANSFER_RSYNC_SHA256"
+      - name: Clean this transfer
+        if: always() && (steps.staging.outcome == 'success' || steps.staging.outcome == 'failure' || steps.staging.outcome == 'cancelled')
+        run: bash controller/scripts/remote-transfer.sh finish
