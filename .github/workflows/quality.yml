@@ -35,7 +35,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Get maintained activation script for transfer rehearsal
+        uses: actions/checkout@v4
+        with:
+          ref: release/storefront
+          path: .release-rehearsal
+          sparse-checkout: deploy/release.sh
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
       - name: Rehearse account and filesystem capacity checks
+        env:
+          O100_RELEASE_TOOLS: .release-rehearsal
         run: bash tests/release-capacity.sh
       - name: Verify archive and retention guards
         run: python3 tests/production-retention.py

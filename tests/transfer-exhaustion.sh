@@ -38,7 +38,9 @@ for n in $(seq 1 90); do
     printf 'new\n' > "$work/fixture/$n/index.html"
 done
 transfer() { bash deploy/release-transfer.sh "$1" "$root" "$attempt" "$sha" "${@:2}"; }
-tar -czf "$work/production-tools.tgz" deploy/release.sh
+export O100_PHP=php
+printf '{"sha":"%s"}\n' "$parent" > "$mountpoint/.o100-backend-release.json"
+tar -czf "$work/production-tools.tgz" -C "${O100_RELEASE_TOOLS:-.}" deploy/release.sh
 tar -czf "$work/production-release.tgz" -C "$work/fixture" .
 (cd "$work" && sha256sum production-release.tgz > production-release.tgz.sha256)
 # После удаления первого каталога принудительно прерываем сам процесс уборки.
