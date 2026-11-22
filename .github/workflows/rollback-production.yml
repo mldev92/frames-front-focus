@@ -10,12 +10,14 @@ concurrency:
   cancel-in-progress: false
 jobs:
   rollback:
+    if: github.ref == 'refs/heads/main'
     environment: production
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.deployed_sha }}
+          ref: release/storefront
+          persist-credentials: false
       - name: Restore saved routing and previous frontend
         env:
           DEPLOYED_SHA: ${{ inputs.deployed_sha }}

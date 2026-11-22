@@ -35,6 +35,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Rehearse account and filesystem capacity checks
+        run: bash tests/release-capacity.sh
       - name: Rehearse Apache routing and rollback
         run: |
           set -Eeuo pipefail

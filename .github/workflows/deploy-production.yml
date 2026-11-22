@@ -4,10 +4,10 @@ on:
     inputs:
       expected_sha:
         description: Approved frontend SHA
-        required: true
+        required: false
       candidate_run_id:
         description: Verified prepare-production workflow run ID
-        required: false
+        required: true
       parent_candidate_run_id:
         description: Optional override for resolving the published parent artifact
         required: false
@@ -16,12 +16,9 @@ on:
         required: false
       backend_sha:
         description: Deployed and verified backend SHA
-        required: true
+        required: false
       routing_sha256:
         description: Approved live htaccess SHA256
-        required: true
-      toolbar_baseline:
-        description: Verified live baseline JSON for the admin toolbar release without a catalog build
         required: false
 permissions:
   contents: read
@@ -31,13 +28,13 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/main'
     environment: production
     runs-on: ubuntu-latest
     env:
       FRONTEND_SHA: ${{ inputs.expected_sha }}
       O100_BACKEND_SHA: ${{ inputs.backend_sha }}
       O100_ROUTING_SHA256: ${{ inputs.routing_sha256 }}
-      O100_TOOLBAR_BASELINE: ${{ inputs.toolbar_baseline }}
       O100_TRANSFER_RSYNC_SHA256: a8e24fdd6bcfd58ab582251d5f648997fc305cb847d0a1c14f5ac40ef2f460c1
       SSH_HOST: ${{ secrets.PRODUCTION_SSH_HOST }}
       SSH_USER: ${{ secrets.PRODUCTION_SSH_USER }}
@@ -45,30 +42,77 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.expected_sha }}
-      - name: Verify inputs
+          path: controller
+          persist-credentials: false
+      - name: Verify candidate run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.candidate_run_id }}
         run: |
-          [[ "$FRONTEND_SHA" =~ ^[a-f0-9]{40}$ && "$O100_BACKEND_SHA" =~ ^[a-f0-9]{40}$ && "$O100_ROUTING_SHA256" =~ ^[a-f0-9]{64}$ ]]
-          test "$(git rev-parse HEAD)" = "$FRONTEND_SHA"
+          set -Eeuo pipefail
+          [[ "$RUN_ID" =~ ^[0-9]+$ ]]
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID" > "$RUNNER_TEMP/run.json"
+          jq -e --arg repo "$GITHUB_REPOSITORY" '
+            .repository.full_name == $repo and .head_repository.full_name == $repo and
+            .path == ".github/workflows/prepare-production.yml" and .head_branch == "main" and
+            (.event == "workflow_dispatch" or .event == "workflow_run") and
+            .status == "completed" and .conclusion == "success"
+          ' "$RUNNER_TEMP/run.json"
       - uses: actions/download-artifact@v4
-        if: ${{ inputs.toolbar_baseline == '' }}
         with:
           name: production-candidate
           run-id: ${{ inputs.candidate_run_id }}
           github-token: ${{ github.token }}
+          path: approved
+      - name: Resolve approved release
+        id: source
+        env:
+          REQUESTED_HASH: ${{ inputs.artifact_sha256 }}
+        run: |
+          set -Eeuo pipefail
+          cd approved
+          digest=$(sha256sum production-release.tgz | cut -d' ' -f1)
+          [[ "$(cat production-release.tgz.sha256)" == "$digest  production-release.tgz" ]]
+          [[ -z "$REQUESTED_HASH" || "$REQUESTED_HASH" == "$digest" ]]
+          tar -xOf production-release.tgz ./release-manifest.json > "$RUNNER_TEMP/manifest.json"
+          sha=$(jq -er .frontendSha "$RUNNER_TEMP/manifest.json")
+          backend=$(jq -er .backendSha "$RUNNER_TEMP/manifest.json")
+          routing=$(jq -er .routingBaseline "$RUNNER_TEMP/manifest.json")
+          parent=$(jq -er .parent candidate-parent.json)
+          parent_hash=$(jq -er .manifest candidate-parent.json)
+          [[ "$parent" =~ ^[a-f0-9]{40}$ && "$parent_hash" =~ ^[a-f0-9]{64}$ ]]
+          [[ -z "$FRONTEND_SHA" || "$FRONTEND_SHA" == "$sha" ]]
+          [[ -z "$O100_BACKEND_SHA" || "$O100_BACKEND_SHA" == "$backend" ]]
+          [[ -z "$O100_ROUTING_SHA256" || "$O100_ROUTING_SHA256" == "$routing" ]]
+          echo "ARTIFACT_SHA256=$digest" >> "$GITHUB_ENV"
+          echo "APPROVED_PARENT=$parent" >> "$GITHUB_ENV"
+          echo "APPROVED_PARENT_HASH=$parent_hash" >> "$GITHUB_ENV"
+          [[ "$sha" =~ ^[a-f0-9]{40}$ && "$backend" =~ ^[a-f0-9]{40}$ && "$routing" =~ ^[a-f0-9]{64}$ ]]
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "FRONTEND_SHA=$sha" >> "$GITHUB_ENV"
+          echo "O100_BACKEND_SHA=$backend" >> "$GITHUB_ENV"
+          echo "O100_ROUTING_SHA256=$routing" >> "$GITHUB_ENV"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.source.outputs.sha }}
+          path: source
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Confirm reviewed storefront history
+        run: git -C source merge-base --is-ancestor HEAD origin/release/storefront
       - name: Verify approved artifact
         id: artifact
-        if: ${{ inputs.toolbar_baseline == '' }}
-        env:
-          ARTIFACT_SHA256: ${{ inputs.artifact_sha256 }}
+        working-directory: source
         run: |
           set -Eeuo pipefail
           [[ "$ARTIFACT_SHA256" =~ ^[a-f0-9]{64}$ ]]
+          cp ../approved/{production-release.tgz,apache-production.log} .
           printf '%s  production-release.tgz\n' "$ARTIFACT_SHA256" | sha256sum -c -
           tar -xOf production-release.tgz ./.release-sha | grep -Fx "$FRONTEND_SHA"
           tar -xOf production-release.tgz ./release-manifest.json > release-manifest.json
           parent=$(jq -r '.codeOnly.parentSha // empty' release-manifest.json)
           if [[ -n "$parent" ]]; then [[ "$parent" =~ ^[a-f0-9]{40}$ ]]; fi
+          [[ -z "$parent" || "$parent" == "$APPROVED_PARENT" ]]
           echo "parent=$parent" >> "$GITHUB_OUTPUT"
           node -e 'const m=JSON.parse(require("fs").readFileSync("release-manifest.json")); if(m.backendSha!==process.env.O100_BACKEND_SHA || m.routingBaseline!==process.env.O100_ROUTING_SHA256) process.exit(1)'
           node -e 'const fs=require("fs"),m=JSON.parse(fs.readFileSync("release-manifest.json")),log=fs.readFileSync("apache-production.log","utf8"); if(!log.includes(`PASS: Apache served all ${m.routeCount} manifest routes byte-for-byte;`)) throw new Error("Full Apache acceptance evidence is missing")'
@@ -79,6 +123,7 @@ jobs:
         env:
           SSH_KEY: ${{ secrets.PRODUCTION_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.PRODUCTION_KNOWN_HOSTS }}
+        working-directory: source
         run: |
           test -n "$KNOWN_HOSTS"
           install -d -m 700 ~/.ssh
@@ -86,12 +131,17 @@ jobs:
           printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/optika-production ~/.ssh/known_hosts
       - name: Upload candidate and execute guarded switch
-        if: inputs.toolbar_baseline == '' && steps.artifact.outputs.parent == ''
+        if: steps.artifact.outputs.parent == ''
+        working-directory: source
         run: |
           ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
+          required=$(python3 ../controller/scripts/release-capacity.py production-release.tgz production-tools.tgz )
+          bytes=$(jq -er .bytes <<< "$required")
+          files=$(jq -er .files <<< "$required")
+          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "php8.1 /dev/stdin '$PRODUCTION_ROOT' '$bytes' '$files'" < ../controller/deploy/check-release-capacity.php
           ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "mkdir -p ~/o100-upload-$FRONTEND_SHA"
           scp "${ssh_opts[@]}" production-release.tgz production-release.tgz.sha256 production-tools.tgz "$SSH_USER@$SSH_HOST:~/o100-upload-$FRONTEND_SHA/"
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && { (while sleep 15; do echo RELEASE_HEARTBEAT; done) & heartbeat=\$!; trap 'kill \$heartbeat 2>/dev/null || true' EXIT; O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz; }"
+          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd ~/o100-upload-$FRONTEND_SHA && sha256sum -c production-release.tgz.sha256 && tar -xzf production-tools.tgz && { (while sleep 15; do echo RELEASE_HEARTBEAT; done) & heartbeat=\$!; trap 'kill \$heartbeat 2>/dev/null || true' EXIT; O100_EXPECTED_FRONTEND='$APPROVED_PARENT' O100_EXPECTED_PARENT_MANIFEST='$APPROVED_PARENT_HASH' O100_EXPECTED_BACKEND='$O100_BACKEND_SHA' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' production-release.tgz; }"
       - name: Package changes against their published parent
         if: steps.artifact.outputs.parent != ''
         timeout-minutes: 20
@@ -99,6 +149,7 @@ jobs:
           PARENT: ${{ steps.artifact.outputs.parent }}
           PARENT_RUN_OVERRIDE: ${{ inputs.parent_candidate_run_id }}
           GH_TOKEN: ${{ github.token }}
+        working-directory: source
         run: |
           set -Eeuo pipefail
           parent_manifest=$(jq -er '.codeOnly.parentManifestSha256' release-manifest.json)
@@ -134,6 +185,7 @@ jobs:
               | tar -xf - -C published --no-same-owner --no-same-permissions
           fi
           printf '%s  published/release-manifest.json\n' "$parent_manifest" | sha256sum -c -
+          cp published/release-manifest.json "$RUNNER_TEMP/parent.json"
           grep -Fx "$PARENT" published/.release-sha
           # Формат batch должен совпадать на обеих сторонах, даже при одинаковом протоколе.
           scp "${ssh_opts[@]}" "$remote:/usr/bin/rsync" transfer-rsync
@@ -151,7 +203,7 @@ jobs:
         id: transfer
         with:
           name: production-transfer-${{ github.run_attempt }}
-          path: changes.rsync.xz
+          path: source/changes.rsync.xz
           compression-level: 0
           retention-days: 1
           if-no-files-found: error
@@ -163,6 +215,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TRANSFER_ARTIFACT: ${{ steps.transfer.outputs.artifact-id }}
           TRANSFER_DIGEST: ${{ steps.transfer.outputs.artifact-digest }}
+        working-directory: source
         run: |
           set -Eeuo pipefail
           [[ "$TRANSFER_ARTIFACT" =~ ^[0-9]+$ && "$TRANSFER_DIGEST" =~ ^[a-f0-9]{64}$ ]]
@@ -173,6 +226,10 @@ jobs:
           parent_release="$PRODUCTION_ROOT/o100_frontend_releases/$PARENT"
           parent_manifest=$(jq -r '.codeOnly.parentManifestSha256' release-manifest.json)
           [[ "$parent_manifest" =~ ^[a-f0-9]{64}$ ]]
+          required=$(python3 ../controller/scripts/release-capacity.py production-release.tgz production-tools.tgz --parent "$RUNNER_TEMP/parent.json" --batch changes.rsync.xz)
+          bytes=$(jq -er .bytes <<< "$required")
+          files=$(jq -er .files <<< "$required")
+          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "php8.1 /dev/stdin '$PRODUCTION_ROOT' '$bytes' '$files'" < ../controller/deploy/check-release-capacity.php
           ssh "${ssh_opts[@]}" "$remote" "umask 077; mkdir '$upload' && mkdir '/tmp/$upload'"
           scp "${ssh_opts[@]}" production-tools.tgz "$remote:$upload/"
           # Передаём только краткоживущую ссылку. Токен GitHub остаётся на runner.
@@ -185,28 +242,9 @@ jobs:
           echo "::add-mask::$url"
           printf 'url = "%s"\n' "$url" | ssh "${ssh_opts[@]}" "$remote" "set -e; umask 077; cd '/tmp/$upload'; curl --silent --show-error --fail --proto '=https' --max-time 900 --output transfer.zip --config -; echo '$TRANSFER_DIGEST  transfer.zip' | sha256sum -c -; unzip -q transfer.zip changes.rsync.xz; rm -- transfer.zip; xz -d changes.rsync.xz"
           # Rsync заменяет изменённые файлы через временные имена и сохраняет родительский выпуск.
-          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c -; echo '$O100_TRANSFER_RSYNC_SHA256  /usr/bin/rsync' | sha256sum -c -; umask 022; mkdir '$incoming'; cp -rl '$parent_release/.' '$incoming/'; /usr/bin/rsync -rcz --delete --no-whole-file --protocol=30 --read-batch='/tmp/$upload/changes.rsync' '$incoming/'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' '$incoming' --adopt-upload"
+          ssh "${ssh_opts[@]}" "$remote" "set -e; cd '$upload'; echo '$parent_manifest  $parent_release/release-manifest.json' | sha256sum -c -; echo '$O100_TRANSFER_RSYNC_SHA256  /usr/bin/rsync' | sha256sum -c -; umask 022; mkdir '$incoming'; cp -rl '$parent_release/.' '$incoming/'; /usr/bin/rsync -rcz --delete --no-whole-file --protocol=30 --read-batch='/tmp/$upload/changes.rsync' '$incoming/'; tar -xzf production-tools.tgz; O100_EXPECTED_FRONTEND='$PARENT' O100_EXPECTED_PARENT_MANIFEST='$APPROVED_PARENT_HASH' O100_EXPECTED_BACKEND='$O100_BACKEND_SHA' O100_SMOKE_ORIGIN=https://optika100.com bash deploy/release.sh deploy-code-only '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256' '$incoming' --adopt-upload"
       - name: Remove private code-only transfer directory
         if: always() && steps.artifact.outputs.parent != ''
+        working-directory: source
         run: |
           ssh -i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes "$SSH_USER@$SSH_HOST" "rm -rf -- 'o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT' '/tmp/o100-code-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT' '$PRODUCTION_ROOT/o100_frontend_releases/.incoming-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT'"
-      - name: Release admin toolbar against the approved static storefront
-        if: ${{ inputs.toolbar_baseline != '' }}
-        run: |
-          set -Eeuo pipefail
-          read -r parent parent_manifest backend_manifest pause guard < <(jq -er '[.frontend, .frontendManifest, .backendManifest, .pause, .guard] | @tsv' <<< "$O100_TOOLBAR_BASELINE")
-          [[ "$parent" =~ ^[a-f0-9]{40}$ ]]
-          for hash in "$parent_manifest" "$backend_manifest" "$pause" "$guard"; do [[ "$hash" =~ ^[a-f0-9]{64}$ ]]; done
-          bash -n deploy/release.sh
-          php -l deploy/admin-toolbar-overlay.php && php -l deploy/accept-catalog-release.php && php -l deploy/verify-release.php
-          node --check deploy/admin-toolbar.js
-          docker run -d --name toolbar-apache -v "$PWD:/frontend:ro" php:8.1-apache bash -c 'a2enmod rewrite && apache2-foreground'
-          for attempt in $(seq 1 30); do docker exec toolbar-apache curl -s http://127.0.0.1/ >/dev/null && break; sleep 1; done
-          docker exec toolbar-apache bash /frontend/tests/apache-rehearsal.sh
-          tar -czf production-tools.tgz deploy/{release.sh,verify-release.php,accept-catalog-release.php,admin-toolbar-overlay.php,admin-toolbar.js,production.htaccess,redirects.production.txt,merge-routing.php,link-unchanged.php,tar-extract.sh}
-          tools_hash=$(sha256sum production-tools.tgz | cut -d' ' -f1)
-          ssh_opts=(-i ~/.ssh/optika-production -o BatchMode=yes -o StrictHostKeyChecking=yes -o ConnectTimeout=15 -o ServerAliveInterval=15 -o ServerAliveCountMax=4)
-          stage="\$HOME/o100-toolbar-$FRONTEND_SHA"
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "umask 077; mkdir \"$stage\""
-          scp "${ssh_opts[@]}" production-tools.tgz "$SSH_USER@$SSH_HOST:o100-toolbar-$FRONTEND_SHA/"
-          ssh "${ssh_opts[@]}" "$SSH_USER@$SSH_HOST" "set -e; cd \"$stage\"; printf '%s  production-tools.tgz\\n' '$tools_hash' | sha256sum -c -; tar -xzf production-tools.tgz; O100_SMOKE_ORIGIN=https://optika100.com O100_EXPECTED_FRONTEND='$parent' O100_PARENT_MANIFEST_SHA256='$parent_manifest' O100_BACKEND_SHA='$O100_BACKEND_SHA' O100_BACKEND_MANIFEST_SHA256='$backend_manifest' O100_EXPECTED_PAUSE_SHA256='$pause' O100_EXPECTED_1C_GUARD_SHA256='$guard' bash deploy/release.sh deploy-toolbar '$PRODUCTION_ROOT' '$FRONTEND_SHA' '$O100_ROUTING_SHA256'"
