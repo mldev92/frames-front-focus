@@ -38,13 +38,11 @@ function prevenciaRank(offer: LensRecommendCard): number {
 
 async function loadStellestOffers(city: CityCode, signal?: AbortSignal) {
   const { matches } = await fetchLensSearch("Stellest", { city, limit: 100 }, signal);
-  return matches.filter((offer) => offer.line.toLowerCase().includes("stellest"));
-}
-
-function orderStellestOffers(offers: LensRecommendCard[]) {
-  return [...offers].sort((a, b) => prevenciaRank(a) - prevenciaRank(b)
-    || (a.priceRub ?? Infinity) - (b.priceRub ?? Infinity)
-    || a.line.localeCompare(b.line, "ru"));
+  return matches
+    .filter((offer) => offer.line.toLowerCase().includes("stellest"))
+    .sort((a, b) => prevenciaRank(a) - prevenciaRank(b)
+      || (a.priceRub ?? Infinity) - (b.priceRub ?? Infinity)
+      || a.line.localeCompare(b.line, "ru"));
 }
 
 export const Route = createFileRoute("/stellest-katalog-s-linzami")({
@@ -310,8 +308,8 @@ function StellestLensCatalog({
   const { data: offers, isError } = useQuery({
     queryKey: ["stellest-spectacle-lenses", city],
     queryFn: ({ signal }) => loadStellestOffers(city, signal),
-    initialData: initialOffers,
-    select: orderStellestOffers,
+    initialData: () => initialOffers && [...initialOffers]
+      .sort((a, b) => prevenciaRank(a) - prevenciaRank(b)),
   });
 
   if (isError && !offers) return <p className="text-center">Каталог временно недоступен. Уточните варианты в салоне.</p>;
