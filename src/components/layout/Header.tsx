@@ -5,8 +5,11 @@ import { HeaderSearch } from "./HeaderSearch";
 import { useCart } from "@/lib/store/cart";
 import { cartTotals } from "@/lib/cart-totals";
 import { cn } from "@/lib/utils";
-import { contactForCity, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
-import { HEADER_NAV_ITEMS, HeaderMegaPanel, isMegaNavItem } from "./HeaderMegaMenu";
+import { NK_SALONS, PRIMARY_SALON } from "@/data/contact";
+import { HEADER_NAV_ITEMS, HeaderMegaPanel, isMegaNavItem, type HeaderNavItem } from "./HeaderMegaMenu";
+import { AdminEditAction } from "@/components/AdminEditableArea";
+import { useAdminEditMode } from "@/lib/admin-edit-mode";
+import { siteContentEditor, storefrontContact, useStorefrontContent } from "@/lib/storefront-content";
 import { SiteLogo } from "./SiteLogo";
 import { useCityStore, type RegionCode, REGION_LABELS } from "@/lib/store/city";
 import { regionalLocationHref, regionalSiteHref } from "@/lib/city-routing";
@@ -22,18 +25,6 @@ const CITIES: { code: RegionCode; label: string }[] = [
   { code: "all", label: "Вся Россия" },
 ];
 
-const PROMOS = [
-  {
-    text: "ДО 25% НА ПРОГРЕССИВНЫЕ ЛИНЗЫ ESSILOR",
-    href: "/catalog_s/linzy_dlya_ochkov/?brand=ESSILOR&lensType=Прогрессивные&technology=Varilux&discount=25",
-  },
-  { text: "ДО 90% НА ЛИНЗЫ STELLEST", href: "/stellest-katalog-s-linzami/" },
-  {
-    text: "MISIGHT 1 DAY 90: 20 ЛИНЗ В ПОДАРОК И СКИДКА 2 000 ₽",
-    href: "/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/",
-  },
-];
-
 type FacetLoadState =
   | { status: "loading" }
   | { status: "ready"; summary: CatalogFacetSummary }
@@ -42,6 +33,8 @@ type FacetLoadState =
 const facetSummaryCache = new Map<string, Promise<CatalogFacetSummary>>();
 
 export function Header() {
+  const editing = useAdminEditMode();
+  const content = useStorefrontContent();
   const { lines, lensSelections, open: openCart, saved } = useCart();
   const { count } = cartTotals(lines, lensSelections);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -114,31 +107,36 @@ export function Header() {
   const localSalon = cityCode === "nvk" ? NK_SALONS[0] : PRIMARY_SALON;
   const [promoIdx, setPromoIdx] = useState(0);
   const [promoVisible, setPromoVisible] = useState(true);
-  const contact = contactForCity(cityCode);
+  const contact = storefrontContact(cityCode, content);
   // Акции в шапке одинаковые во всех регионах и ведут туда же, что в Санкт-Петербурге.
-  const cityPromos = PROMOS;
+  const cityPromos = content.header_promos.links;
   const currentPromo = cityPromos[promoIdx % cityPromos.length];
-  const navigationItems = HEADER_NAV_ITEMS.filter(
-    (item) => cityCode !== "nvk" || item.label !== "Линзы для очков",
-  );
+  const navigationItems: HeaderNavItem[] = content.header.links
+    .map(([label, href]) => ({ label, href, mega: HEADER_NAV_ITEMS.find((item) => item.href === href)?.mega }))
+    .filter((item) => cityCode !== "nvk" || item.mega?.kind !== "glasses");
 
   useEffect(() => {
+    if (cityPromos.length < 2) return;
+    let fadeTimer: ReturnType<typeof setTimeout>;
     const intervalId = setInterval(() => {
       setPromoVisible(false);
-      setTimeout(() => {
+      fadeTimer = setTimeout(() => {
         setPromoIdx((index) => (index + 1) % cityPromos.length);
         setPromoVisible(true);
       }, 300);
     }, 4000);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      clearInterval(intervalId);
+      clearTimeout(fadeTimer);
+    };
   }, [cityPromos.length]);
 
-  const openMegaItem = HEADER_NAV_ITEMS.find(
+  const openMegaItem = navigationItems.find(
     (item) => item.href === openMegaHref && isMegaNavItem(item),
   );
 
-  const loadMegaFacets = (item: (typeof HEADER_NAV_ITEMS)[number]) => {
+  const loadMegaFacets = (item: HeaderNavItem) => {
     if (!isMegaNavItem(item) || item.mega.kind === "accessories") return;
     const segment = catalogSegmentFromHref(item.mega.allHref);
     if (!segment) return;
@@ -254,13 +252,13 @@ export function Header() {
               )}
             </div>
 
-            <span className="opacity-40">·</span>
+            {currentPromo && <span className="opacity-40">·</span>}
 
-            <a
-              href={currentPromo.href}
+            {currentPromo && <a
+              href={currentPromo[1]}
               className="truncate uppercase tracking-wide transition-colors hover:opacity-100"
               style={{
-                opacity: promoVisible ? 0.75 : 0,
+                opacity: promoVisible || cityPromos.length === 1 ? 0.75 : 0,
                 transition: "opacity 0.3s ease",
                 maxWidth: "min(420px, calc(100vw - 150px))",
                 display: "inline-block",
@@ -270,8 +268,8 @@ export function Header() {
                 minWidth: 0,
               }}
             >
-              {currentPromo.text}
-            </a>
+              {currentPromo[0]}
+            </a>}
           </div>
 
           <a
@@ -318,6 +316,14 @@ export function Header() {
 
       <header className="sticky top-[var(--o100-admin-panel-offset,0px)] z-40 border-b border-border bg-background/95 backdrop-blur">
         <div className="mx-auto max-w-[1600px] px-4 lg:px-8">
+          {editing && (
+            <div className="flex flex-wrap gap-1 border-b border-border py-1">
+              <AdminEditAction href={siteContentEditor("header")} label="Редактировать главное меню сайта" action="Редактировать меню" />
+              <AdminEditAction href={siteContentEditor("header_promos")} label="Редактировать акции в шапке" action="Редактировать акции" />
+              <AdminEditAction href={siteContentEditor("phone")} label="Редактировать общий телефон" action="Редактировать телефон" />
+              <AdminEditAction href={siteContentEditor(`contact_${cityCode}`)} label="Редактировать контакты региона" action="Редактировать контакты" />
+            </div>
+          )}
           <div
             className="relative flex h-16 items-center justify-between gap-4"
             onMouseLeave={() => setOpenMegaHref(null)}
@@ -332,7 +338,7 @@ export function Header() {
 
             <SiteLogo imageClassName="h-7 sm:h-9 xl:h-10" />
 
-            <nav className="hidden h-full min-w-0 flex-1 items-stretch justify-center gap-0 px-1 xl:flex 2xl:gap-1 2xl:px-3">
+            <nav className={cn("hidden h-full min-w-0 flex-1 items-stretch justify-center-safe gap-0 overflow-x-auto px-1 [scrollbar-width:none] xl:flex 2xl:gap-1 2xl:px-3", editing && "outline outline-1 -outline-offset-1 outline-muted-foreground")}>
               {navigationItems.map((item) => {
                 const hasMega = isMegaNavItem(item);
                 const isOpen = openMegaItem?.href === item.href;
@@ -476,7 +482,7 @@ export function Header() {
               </button>
             </div>
 
-            <nav className="flex flex-col gap-1">
+            <nav className={cn("flex flex-col gap-1", editing && "rounded outline outline-1 outline-offset-4 outline-muted-foreground")}>
               {navigationItems.map((item) => (
                 <a
                   key={item.href}

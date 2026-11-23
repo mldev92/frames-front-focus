@@ -12,6 +12,8 @@ import {
   HeartHandshake,
 } from "lucide-react";
 import { SalonsSection } from "@/components/SalonsSection";
+import { AdminEditAction, AdminEditableArea } from "@/components/AdminEditableArea";
+import { AdminProductAction } from "@/components/AdminProductAction";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { VIRTUAL_TRY_ON_ENABLED } from "@/lib/runtime";
@@ -23,15 +25,15 @@ import { Calendar, Users, Award, Phone } from "lucide-react";
 import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
+import { siteContentEditor, storefrontContact, useStorefrontContent } from "@/lib/storefront-content";
 import {
-  CONTACT,
-  contactForCity,
   META_EXTREMIST_NOTE,
   NEWS_CHANNELS,
   NK_SALONS,
   PRIMARY_SALON,
 } from "@/data/contact";
-import { DEFAULT_REGION, useCityStore } from "@/lib/store/city";
+import { DEFAULT_REGION, useCityStore, type RegionCode } from "@/lib/store/city";
+import { useAdminEditMode } from "@/lib/admin-edit-mode";
 import { getHomepageData, getProductGallery, type HomepageLensPromo } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/")({
@@ -291,6 +293,10 @@ const CAT_CELLS = [
   },
 ];
 
+function homepageEditor(block: "popular" | "lens" | "promo", region: RegionCode) {
+  return `/bitrix/admin/o100_homepage.php?lang=ru&city=${region}#${block}`;
+}
+
 function MainV2Page() {
   const initialHomepageData = Route.useLoaderData();
   const recent = articles.slice(0, 2);
@@ -298,7 +304,10 @@ function MainV2Page() {
   const [vtoOpen, setVtoOpen] = useState(false);
   const city = useCityStore((state) => state.city);
   const region = useCityStore((state) => state.region);
-  const contact = contactForCity(city);
+  const content = useStorefrontContent();
+  const contact = storefrontContact(city, content);
+  const { hero, myopia_banner: myopiaBanner } = content;
+  const editing = useAdminEditMode();
 
   const { data: { popularModels, contactLensProducts, lensPromo } = { popularModels: [], contactLensProducts: [], lensPromo: null } } = useQuery({
     queryKey: ["homepage", city, region],
@@ -425,10 +434,8 @@ function MainV2Page() {
           }
         `}</style>
 
-        {/* Banner A — new_main_banner.png */}
-        <img src="/new_main_banner.webp" alt="" className="o100-hero-banner o100-hero-banner-a" />
-        {/* Banner B — main_banner_3.png */}
-        <img src="/main_banner_3.webp" alt="" className="o100-hero-banner o100-hero-banner-b" />
+        <img src={hero.image_first} alt="" className="o100-hero-banner o100-hero-banner-a" />
+        <img src={hero.image_second} alt="" className="o100-hero-banner o100-hero-banner-b" />
         {/* Warm "sun" glow on the right — pulsing light source */}
         <div aria-hidden className="o100-hero-sun" />
         {/* Soft left-side wash so text stays legible (pulsing intensity, drifts laterally) */}
@@ -446,12 +453,12 @@ function MainV2Page() {
           }}
         >
           <Reveal>
-            <div style={{ maxWidth: 520 }}>
+            <AdminEditableArea className="max-w-[520px]" href={siteContentEditor("hero")} label="Редактировать главный баннер" action="Редактировать баннер">
               <span
                 className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
                 style={{ color: "var(--brand)" }}
               >
-                Новая коллекция · Осень 2026
+                {hero.eyebrow}
               </span>
               <h1
                 className="font-serif font-bold tracking-[-0.02em] text-foreground"
@@ -461,9 +468,9 @@ function MainV2Page() {
                   marginBottom: 24,
                 }}
               >
-                Видеть мир
+                {hero.headline}
                 <br />
-                на <span style={{ color: "var(--brand)" }}>100%</span>
+                {hero.subline} <span style={{ color: "var(--brand)" }}>{hero.accent}</span>
               </h1>
               <p
                 className="text-muted-foreground"
@@ -474,7 +481,7 @@ function MainV2Page() {
                   marginBottom: 32,
                 }}
               >
-                Современные очки, профессиональный подбор и&nbsp;забота о&nbsp;вашем зрении.
+                {hero.description}
               </p>
 
               <div className="flex flex-wrap gap-3">
@@ -484,7 +491,7 @@ function MainV2Page() {
                   className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity cursor-pointer"
                   style={{ background: "var(--brand)" }}
                 >
-                  Записаться на проверку
+                  {hero.button}
                 </button>
                 {VIRTUAL_TRY_ON_ENABLED && <a
                   href={catalogHref("opravy", city)}
@@ -595,7 +602,7 @@ function MainV2Page() {
                   </div>
                 </div>
               </div>
-            </div>
+            </AdminEditableArea>
           </Reveal>
         </div>
       </section>
@@ -800,7 +807,9 @@ function MainV2Page() {
           .group:hover .o100-podrobnee{color:var(--foreground)!important}
         `}</style>
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <MainV2HitsCarousel products={popularModels} />
+          <AdminEditableArea href={homepageEditor("popular", region)} label="Редактировать подборку популярных моделей" action="Редактировать подборку">
+            <MainV2HitsCarousel products={popularModels} />
+          </AdminEditableArea>
         </div>
       </section>
 
@@ -974,13 +983,13 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           6a. CONTACT LENS CAROUSEL — real products from catalog data
          ───────────────────────────────────────────────────────────── */}
-      {contactLensProducts.length > 0 && (
+      {(contactLensProducts.length > 0 || editing) && (
         <section
           id="lens-promo"
           style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
         >
           <div className="mx-auto max-w-7xl px-4 lg:px-8">
-            <MainV2ContactLensCarousel products={contactLensProducts} promo={lensPromo} />
+            <MainV2ContactLensCarousel products={contactLensProducts} promo={lensPromo} region={region} />
           </div>
         </section>
       )}
@@ -1001,7 +1010,7 @@ function MainV2Page() {
               style={{ minHeight: 380 }}
             >
               <img
-                src="/main_bottom_child_banner.webp"
+                src={myopiaBanner.image}
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
@@ -1017,11 +1026,12 @@ function MainV2Page() {
                 className="relative h-full flex flex-col justify-start p-8 lg:p-10"
                 style={{ maxWidth: 420 }}
               >
+                <AdminEditAction className="mb-2 self-start" href={siteContentEditor("myopia_banner")} label="Редактировать баннер про контроль миопии" action="Редактировать баннер" />
                 <div
                   className="text-[11px] uppercase tracking-[0.2em] mb-3"
                   style={{ color: "var(--brand)" }}
                 >
-                  Забота о зрении
+                  {myopiaBanner.eyebrow}
                 </div>
                 <h3
                   className="font-serif text-foreground"
@@ -1032,22 +1042,21 @@ function MainV2Page() {
                     letterSpacing: "-0.01em",
                   }}
                 >
-                  Контроль миопии
-                  <br />у детей и подростков
+                  {myopiaBanner.headline}
+                  <br />{myopiaBanner.subline}
                 </h3>
                 <p
                   className="text-muted-foreground"
                   style={{ fontSize: 14, lineHeight: 1.55, marginBottom: 24 }}
                 >
-                  Сравните очковые и контактные линзы для контроля миопии и узнайте, как проходит
-                  подбор в Санкт-Петербурге.
+                  {myopiaBanner.description}
                 </p>
                 <a
-                  href="/linzy-dlya-kontrolya-miopii/"
+                  href={myopiaBanner.link}
                   className="inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold text-white self-start hover:opacity-90 transition-opacity"
                   style={{ background: "var(--brand)" }}
                 >
-                  Сравнить линзы
+                  {myopiaBanner.button}
                 </a>
               </div>
             </div>
@@ -1173,10 +1182,10 @@ function MainV2Page() {
                 Свяжитесь с нами
               </div>
               <a
-                href={CONTACT.phone.href}
+                href={contact.phone.href}
                 className="text-lg font-semibold text-foreground hover:text-brand transition-colors"
               >
-                {CONTACT.phone.label}
+                {contact.phone.label}
               </a>
               <p className="text-xs text-muted-foreground mt-1 mb-4">
                 {city === "nvk" ? NK_SALONS[0].hours : PRIMARY_SALON.hours}
@@ -1599,6 +1608,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
         boxShadow: "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)",
       }}
     >
+      <AdminProductAction id={product.id} name={product.name} />
       <div className="relative block aspect-square">
         <a
           href={productRoute}
@@ -1804,9 +1814,11 @@ function MainV2HitsCarousel({ products }: { products: Product[] }) {
 function MainV2ContactLensCarousel({
   products,
   promo,
+  region,
 }: {
   products: Product[];
   promo: HomepageLensPromo | null;
+  region: RegionCode;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const city = useCityStore((state) => state.city);
@@ -1862,7 +1874,11 @@ function MainV2ContactLensCarousel({
         }
       `}</style>
       <Reveal className="flex items-end justify-between gap-4 mb-8 lg:mb-10">
-        <div>
+        <AdminEditableArea
+          href={region === "nvk" ? undefined : homepageEditor("promo", "spb")}
+          label="Редактировать оформление акции на контактные линзы"
+          action="Редактировать акцию"
+        >
           <div
             className="text-[11px] uppercase tracking-[0.22em] mb-3"
             style={{ color: "var(--brand)" }}
@@ -1905,7 +1921,7 @@ function MainV2ContactLensCarousel({
               )}
             </div>
           )}
-        </div>
+        </AdminEditableArea>
         <div className="flex items-center gap-4">
           <a
             href={regionalCatalogHref(lensPromo.href, city)}
@@ -1947,19 +1963,25 @@ function MainV2ContactLensCarousel({
         </div>
       </Reveal>
       <Reveal delay={120}>
-        <div
-          ref={scroller}
-          className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory o100-lens-scroller -mx-4 px-4 lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        <AdminEditableArea
+          href={homepageEditor("lens", region)}
+          label="Редактировать подборку контактных линз"
+          action="Редактировать подборку"
         >
-          {products.map((product) => (
-            <div
-              key={product.slug}
-              className="snap-start shrink-0 w-[72%] first:ml-2 last:mr-2 sm:w-[44%] md:w-[31%] lg:w-[23.5%] lg:first:ml-6 lg:last:mr-6"
-            >
-              <MainV2ContactLensCard product={product} />
-            </div>
-          ))}
-        </div>
+          <div
+            ref={scroller}
+            className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory o100-lens-scroller -mx-4 px-4 lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {products.map((product) => (
+              <div
+                key={product.slug}
+                className="snap-start shrink-0 w-[72%] first:ml-2 last:mr-2 sm:w-[44%] md:w-[31%] lg:w-[23.5%] lg:first:ml-6 lg:last:mr-6"
+              >
+                <MainV2ContactLensCard product={product} />
+              </div>
+            ))}
+          </div>
+        </AdminEditableArea>
       </Reveal>
       <div className="mt-6 sm:hidden">
         <a
@@ -2008,6 +2030,7 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
         boxShadow: "var(--shadow-sm)",
       }}
     >
+      <AdminProductAction id={product.id} name={product.name} />
       <div
         className="relative aspect-square overflow-hidden"
         style={{

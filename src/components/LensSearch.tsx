@@ -14,7 +14,7 @@ import {
   offerSpecs,
 } from "@/components/LensWizard/LensWizard";
 import { formatPrice, useCart } from "@/lib/store/cart";
-import { CONTACT } from "@/data/contact";
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { PriceSavings } from "@/components/PriceSavings";
 import { useCityStore } from "@/lib/store/city";
@@ -46,6 +46,7 @@ export function LensSearch({ initialQuery = "" }: { initialQuery?: string }) {
 
   const q = query.trim();
   const city = useCityStore((state) => state.city);
+  const phoneHref = useStorefrontContact(city).phone.href;
 
   useEffect(() => {
     abortRef.current?.abort();
@@ -141,7 +142,7 @@ export function LensSearch({ initialQuery = "" }: { initialQuery?: string }) {
         <>
           <ul className="@container mt-4 divide-y divide-border rounded-xl border border-border bg-background">
             {rows.map((offer) => (
-              <LensSearchRow key={offer.id} offer={offer} onShowDetail={setDetailOffer} onBook={() => setAppointmentOpen(true)} />
+              <LensSearchRow key={offer.id} offer={offer} phoneHref={phoneHref} onShowDetail={setDetailOffer} onBook={() => setAppointmentOpen(true)} />
             ))}
           </ul>
           <div className="mt-3 flex items-center justify-between gap-4">
@@ -176,10 +177,12 @@ export function LensSearch({ initialQuery = "" }: { initialQuery?: string }) {
 
 export function LensSearchRow({
   offer,
+  phoneHref,
   onShowDetail,
   onBook,
 }: {
   offer: LensRecommendCard;
+  phoneHref: string;
   /** Открыть карточку-справку о линзе («в поиске нет информации», её 02.10). */
   onShowDetail?: (offer: LensRecommendCard) => void;
   onBook?: () => void;
@@ -252,7 +255,7 @@ export function LensSearchRow({
       </div>
       <div className="flex flex-wrap gap-2 @2xl:w-[175px] @2xl:shrink-0">
         <button type="button" onClick={() => addLens(offer)} className="rounded-full bg-brand px-3 py-2 text-xs font-medium text-white">В корзину</button>
-        <a href={CONTACT.phone.href} className="rounded-full border border-border px-3 py-2 text-xs">Позвонить</a>
+        <a href={phoneHref} className="rounded-full border border-border px-3 py-2 text-xs">Позвонить</a>
         {onBook && <button type="button" onClick={onBook} className="rounded-full border border-border px-3 py-2 text-xs">Записаться к врачу</button>}
       </div>
     </li>

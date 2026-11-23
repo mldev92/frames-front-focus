@@ -1,8 +1,9 @@
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { useCityStore, type CityCode } from "@/lib/store/city";
 import { ArrowRight, Phone, Clock } from "lucide-react";
 import { ContactActionButtons, yandexMapsSearchHref } from "@/components/ContactActionButtons";
 import { YandexMap } from "@/components/YandexMap";
-import { CONTACT, NK_SALONS, SPB_SALONS } from "@/data/contact";
+import { NK_SALONS, SPB_SALONS } from "@/data/contact";
 
 const SPB_SALON = SPB_SALONS[0];
 
@@ -280,6 +281,7 @@ const SalonCard = ({
 );
 
 export function SalonsSection() {
+  const contact = useStorefrontContact("spb");
   const city = useCityStore((state) => state.city);
   const setCity = useCityStore((state) => state.setRegion);
 
@@ -398,7 +400,7 @@ export function SalonsSection() {
                 name={SPB_SALON.address}
                 addressNote="Центр города, рядом с метро Чернышевская"
                 hours={SPB_SALON.hours}
-                phone={CONTACT.phone.label}
+                phone={contact.phone.label}
                 metro
                 metroName={SPB_SALON.metro}
                 imageLabel={SPB_SALON.imageLabel}
@@ -408,8 +410,8 @@ export function SalonsSection() {
                 twogisScore="5.0"
                 twogisStars={5}
                 routeHref={yandexMapsSearchHref(SPB_SALON.routeQuery)}
-                phoneHref={CONTACT.phone.href}
-                phoneLabel={CONTACT.phone.label}
+                phoneHref={contact.phone.href}
+                phoneLabel={contact.phone.label}
               />
             </div>
           </div>
@@ -436,7 +438,7 @@ export function SalonsSection() {
                   name={salon.address}
                   addressNote={salon.name}
                   hours={salon.hours}
-                  phone={CONTACT.phone.label}
+                  phone={contact.phone.label}
                   imageLabel={salon.imageLabel}
                   imageSrc={salon.imageSrc}
                   yandexScore="5.0"
@@ -444,8 +446,8 @@ export function SalonsSection() {
                   twogisScore={index === 1 ? "5.0" : "4.8"}
                   twogisStars={index === 1 ? 5 : 4}
                   routeHref={yandexMapsSearchHref(salon.routeQuery)}
-                  phoneHref={CONTACT.phone.href}
-                  phoneLabel={CONTACT.phone.label}
+                  phoneHref={contact.phone.href}
+                  phoneLabel={contact.phone.label}
                   twogisHalf={index !== 1}
                 />
               ))}
@@ -470,7 +472,7 @@ export function SalonsSection() {
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             <a
-              href={CONTACT.phone.href}
+              href={contact.phone.href}
               className="salon-cta-primary"
               style={{
                 display: "inline-flex",

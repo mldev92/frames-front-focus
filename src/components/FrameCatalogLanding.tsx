@@ -1,6 +1,7 @@
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { useState } from "react";
 import type { CatalogPage } from "@/lib/api/bitrix";
-import { CONTACT, PRIMARY_SALON } from "@/data/contact";
+import { PRIMARY_SALON } from "@/data/contact";
 import { frameBreadcrumbs } from "@/data/frame-catalog-seo";
 import { FRAME_BRAND_LANDINGS, frameBrandForPath } from "@/data/frame-brand-landings";
 import { frameCategoryForPath } from "@/data/frame-category-landings";
@@ -135,6 +136,7 @@ function BrandDirectory({ path, data }: { path: string; data: CatalogPage }) {
 }
 
 export function FrameLandingFooter({ path, kind, data }: Props) {
+  const contact = useStorefrontContact("spb");
   const price = framePriceRange(data);
   const brand = frameBrandForPath(path);
   const category = frameCategoryForPath(path);
@@ -181,7 +183,7 @@ export function FrameLandingFooter({ path, kind, data }: Props) {
     },
     {
       q: "Где примерить оправу в Санкт-Петербурге?",
-      a: `${PRIMARY_SALON.address}, метро ${PRIMARY_SALON.metro}. ${PRIMARY_SALON.hours}. Перед поездкой уточните наличие выбранной модели по телефону ${CONTACT.phone.label}.`,
+      a: `${PRIMARY_SALON.address}, метро ${PRIMARY_SALON.metro}. ${PRIMARY_SALON.hours}. Перед поездкой уточните наличие выбранной модели по телефону ${contact.phone.label}.`,
     },
   ];
   if (brand) faq.unshift({ q: brand.question, a: brand.answer });
@@ -354,10 +356,10 @@ export function FrameLandingFooter({ path, kind, data }: Props) {
           поможет оценить посадку и подобрать линзы по вашему рецепту.
         </p>
         <a
-          href={CONTACT.phone.href}
+          href={contact.phone.href}
           className="inline-flex rounded-full bg-ink px-5 py-3 text-sm text-white"
         >
-          Позвонить {CONTACT.phone.label}
+          Позвонить {contact.phone.label}
         </a>
       </section>
     </div>

@@ -3,7 +3,9 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { ContactActionButtons, yandexMapsSearchHref } from "@/components/ContactActionButtons";
 import { YandexMap } from "@/components/YandexMap";
-import { contactForCity, NK_SALONS, SPB_SALONS } from "@/data/contact";
+import { NK_SALONS, SPB_SALONS } from "@/data/contact";
+import { AdminEditAction } from "@/components/AdminEditableArea";
+import { siteContentEditor, useStorefrontContact } from "@/lib/storefront-content";
 import { useCityStore } from "@/lib/store/city";
 
 export const Route = createFileRoute("/contacts")({
@@ -308,7 +310,8 @@ function ContactsPage() {
   const regionalCityHydrated = useCityStore((state) => state.hydrated);
   const setRegionalCity = useCityStore((state) => state.setRegion);
   const [city, setCity] = useState<"spb" | "nk">(() => (regionalCity === "nvk" ? "nk" : "spb"));
-  const contact = contactForCity(city === "nk" ? "nvk" : "spb");
+  const contactCity = city === "nk" ? "nvk" : "spb";
+  const contact = useStorefrontContact(contactCity);
 
   useEffect(() => {
     if (regionalCityHydrated) setCity(regionalCity === "nvk" ? "nk" : "spb");
@@ -394,6 +397,8 @@ function ContactsPage() {
 
       {/* CONTACT BAR */}
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px" }}>
+        <AdminEditAction className="mb-2 mr-2" href={siteContentEditor("phone")} label="Редактировать общий телефон" action="Редактировать телефон" />
+        <AdminEditAction className="mb-2" href={siteContentEditor(`contact_${contactCity}`)} label="Редактировать контакты региона" action="Редактировать контакты" />
         <div
           className="flex flex-wrap"
           style={{ gap: 16, marginTop: -28, position: "relative", zIndex: 2 }}

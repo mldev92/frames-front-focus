@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import { X, MessageCircle, Phone, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { contactForCity, NK_SALONS, PRIMARY_SALON } from "@/data/contact";
+import { NK_SALONS, PRIMARY_SALON } from "@/data/contact";
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { useCityStore } from "@/lib/store/city";
 import { useCart } from "@/lib/store/cart";
 import { CallbackModal } from "./CallbackModal";
 
-const channelsFor = (contact: ReturnType<typeof contactForCity>) =>
+const channelsFor = (contact: ReturnType<typeof useStorefrontContact>) =>
   [
     {
       name: "Telegram",
@@ -34,7 +35,7 @@ const channelsFor = (contact: ReturnType<typeof contactForCity>) =>
 
 export function MessengerFAB() {
   const city = useCityStore((state) => state.city);
-  const contact = contactForCity(city);
+  const contact = useStorefrontContact(city);
   const localSalon = city === "nvk" ? NK_SALONS[0] : PRIMARY_SALON;
   const channels = channelsFor(contact);
   const [open, setOpen] = useState(false);

@@ -1,92 +1,53 @@
 import { useState } from "react";
 import { Mail, MessageCircle, Send } from "lucide-react";
+import { AdminEditAction, AdminEditableArea } from "@/components/AdminEditableArea";
 import { AppointmentModal } from "@/components/AppointmentModal";
-import { contactForCity } from "@/data/contact";
 import { SiteLogo } from "./SiteLogo";
 import { useCityStore } from "@/lib/store/city";
 import { serviceHref } from "@/data/services";
 import { regionalSiteHref } from "@/lib/city-routing";
+import { siteContentEditor, storefrontContact, useStorefrontContent } from "@/lib/storefront-content";
 
-const COLS = [
-  {
-    title: "Каталог",
-    links: [
-      ["Оправы", "/catalog_s/opravy/"],
-      ["Солнцезащитные очки", "/catalog_s/solntsezashchitnye_ochki/"],
-      ["Контактные линзы", "/catalog_s/kontaktnye_linzy_/"],
-      ["Контактные линзы в СПб", "/linzy-spb/"],
-      ["Линзы для очков", "/catalog_s/linzy_dlya_ochkov/"],
-      ["Аксессуары", "/catalog_s/soputstvuyushchie_tovary/"],
-    ],
-  },
-  {
-    title: "Услуги",
-    links: [
-      ["Запись к врачу", "/uslugi/priem-vracha"],
-      ["Диагностика зрения", "/kabinet-diagnostiki-spb/"],
-      ["Биометрия глаза", "/biometriya-glaza/"],
-      ["Линзы для контроля миопии", "/linzy-dlya-kontrolya-miopii/"],
-      ["Stellest каталог с линзами", "/stellest-katalog-s-linzami/"],
-      ["Подбор очков", "/podbor-ochkov/"],
-      ["Ремонт очков", "/remont-ochkov/"],
-    ],
-  },
-  {
-    title: "Компания",
-    links: [
-      ["О нас", "/o-nas"],
-      ["Оптика в Санкт-Петербурге", "/optika-spb/"],
-      ["Салоны", "/contacts/"],
-      ["Блог", "/blog/"],
-      ["Покрытия очковых линз", "/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/"],
-    ],
-  },
-  {
-    title: "Помощь",
-    links: [
-      ["Оплата и получение", "/payment/"],
-      ["Гарантия", "/warranty/"],
-      ["Контакты", "/contacts/"],
-      ["Политика конфиденциальности", "/politika-konfidentsialnosti/"],
-      ["Реквизиты", "/requisites/"],
-    ],
-  },
-];
+const footerMenuKeys = ["catalog", "services", "company", "help"] as const;
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const city = useCityStore((state) => state.city);
-  const contact = contactForCity(city);
   const [appointmentOpen, setAppointmentOpen] = useState(false);
-  const cityColumns = COLS.map((column) => ({
-    ...column,
-    links: column.links.filter(
-      ([, href]) =>
-        city === "spb" ||
-        ![
-          "/catalog_s/linzy_dlya_ochkov/",
-          "/linzy-spb/",
-          "/biometriya-glaza/",
-          "/linzy-dlya-kontrolya-miopii/",
-          "/optika-spb/",
-        ].includes(href),
-    ),
-  }));
+  const content = useStorefrontContent();
+  const contact = storefrontContact(city, content);
+  const cityColumns = footerMenuKeys.map((key) => {
+    const column = content[key];
+    return {
+      ...column,
+      key,
+      links: column.links.filter(
+        ([, href]) =>
+          city === "spb" ||
+          ![
+            "/catalog_s/linzy_dlya_ochkov/",
+            "/linzy-spb/",
+            "/biometriya-glaza/",
+            "/linzy-dlya-kontrolya-miopii/",
+            "/optika-spb/",
+          ].includes(href),
+      ),
+    };
+  });
 
   return (
     <footer className="mt-24 pt-16 pb-8" style={{ background: "#FFFEFE" }}>
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 mb-12">
-          <div className="col-span-2">
+          <AdminEditableArea className="col-span-2" href={siteContentEditor("intro")} label="Редактировать текст подвала" action="Редактировать текст">
             <SiteLogo imageClassName="h-10 sm:h-12" loading="lazy" />
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
-              Сеть оптических салонов и интернет-магазин. Подбор очков и контактных линз с полным
-              циклом услуг.
+              {content.intro.text}
             </p>
-          </div>
+          </AdminEditableArea>
 
           {cityColumns.map((col) => (
-            <div key={col.title}>
+            <AdminEditableArea key={col.key} href={siteContentEditor(col.key)} label={`Редактировать меню подвала: ${col.title}`} action="Редактировать меню">
               <div className="font-serif text-sm uppercase tracking-wider mb-4">{col.title}</div>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 {col.links.map(([label, href]) => {
@@ -115,19 +76,20 @@ export function Footer() {
                   );
                 })}
               </ul>
-            </div>
+            </AdminEditableArea>
           ))}
         </div>
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs text-muted-foreground">
           <div>
-            © {currentYear} ОПТИКА 100% · {city === "spb" ? "ул. Кирочная, 17, СПб" : "Новокузнецк"}{" "}
-            ·{" "}
+            <AdminEditAction className="mr-2" href={siteContentEditor("legal")} label="Редактировать подпись в подвале" action="Редактировать подпись" />
+            © {currentYear} {content.legal.text} · {content.legal[city]} ·{" "}
             <a href={contact.email.href} className="hover:text-foreground">
               {contact.email.label}
             </a>
           </div>
           <div className="flex gap-4">
+            <AdminEditAction href={siteContentEditor(`contact_${city}`)} label="Редактировать контакты региона" action="Редактировать контакты" />
             <a
               href={contact.telegram.href}
               target="_blank"

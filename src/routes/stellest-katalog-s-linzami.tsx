@@ -1,3 +1,4 @@
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { createFileRoute } from "@tanstack/react-router";
@@ -9,7 +10,6 @@ import type { Product } from "@/data/types";
 import { contactMyopiaModels } from "@/lib/myopia-lenses";
 import { fetchLensSearch, type LensRecommendCard } from "@/lib/api/lens-recommend";
 import { formatPrice, useCart } from "@/lib/store/cart";
-import { CONTACT } from "@/data/contact";
 import { PriceSavings } from "@/components/PriceSavings";
 import { LensDetailDialog } from "@/components/LensWizard/LensWizard";
 import { CITY_LABELS, DEFAULT_REGION, useCityStore, type CityCode } from "@/lib/store/city";
@@ -303,6 +303,7 @@ function StellestLensCatalog({
   initialOffers?: LensRecommendCard[];
   onBook: () => void;
 }) {
+  const contact = useStorefrontContact(city);
   const addLens = useCart((state) => state.addLens);
   const [detailOffer, setDetailOffer] = useState<LensRecommendCard | null>(null);
   const { data: offers, isError } = useQuery({
@@ -384,7 +385,7 @@ function StellestLensCatalog({
                   Подробнее
                 </button>
                 <button type="button" className="coat-btn" onClick={() => addLens(offer)}>В корзину</button>
-                <a href={CONTACT.phone.href} className="coat-btn">Позвонить в салон</a>
+                <a href={contact.phone.href} className="coat-btn">Позвонить в салон</a>
                 <button type="button" className="coat-btn" onClick={onBook}>Записаться на приём</button>
               </div>
             </div>

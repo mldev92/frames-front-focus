@@ -69,7 +69,12 @@ test("SPb landing sources contain no Novokuznetsk store link", async () => {
 test("SEO landing FAQs cover the approved intents and feed the visible copy into FAQPage schema", async () => {
   for (const [slug, questions] of Object.entries(approvedFaqQuestions)) {
     const source = await read(`../src/routes/${slug}.tsx`);
-    assert.ok(source.includes("faqSchema(faq)"));
+    if (slug === "optika-spb") {
+      assert.match(source, /faqSchema\(faq\(CONTACT\.phone\.label\)\)/);
+      assert.match(source, /faq=\{faq\(contact\.phone\.label\)\}/);
+    } else {
+      assert.ok(source.includes("faqSchema(faq)"));
+    }
     for (const question of questions) assert.ok(source.includes(`q: "${question}"`));
   }
 });

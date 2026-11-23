@@ -6,7 +6,7 @@ import { Slider } from "./ui/slider";
 import { getCatalogBanners } from "@/data/catalog-banners";
 import { contactLensSubcategories } from "@/data/contact-lens-catalog-seo";
 import { catalogPrefix, catalogHref, regionalCatalogHref } from "@/data/categories";
-import { contactForCity } from "@/data/contact";
+import { useStorefrontContact } from "@/lib/storefront-content";
 import type { Category, Product } from "@/data/types";
 import type { CatalogPage, CatalogQuery, FacetKey as ServerFacetKey } from "@/lib/api/bitrix";
 import type { CityCode } from "@/lib/store/city";
@@ -965,7 +965,7 @@ export function CatalogListing({
   city = "spb",
   onStateChange,
 }: ListingProps) {
-  const corporateEmail = contactForCity(city).email.label;
+  const corporateEmail = useStorefrontContact(city).email.label;
   // The current page slice — the SERVER already applied every filter; this
   // component never re-filters it. Totals/counts/bounds also come from `data`.
   const products = data.products;

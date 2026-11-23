@@ -324,7 +324,12 @@ export function releaseMode(parent, target = "HEAD") {
       )
         continue;
     }
-    if (/^public\/.*\.(?:ico|png|jpe?g|webp|avif|svg|woff2?)$/i.test(file)) continue;
+    if (
+      /^public\/.*\.(?:ico|png|jpe?g|webp|avif|svg|woff2?)$/i.test(file) ||
+      file === "public/storefront-content-defaults.json"
+    ) {
+      continue;
+    }
     if (file === "package.json" || file === "bun.lock") {
       const buildInputs = (ref) => {
         const parsed = ts.parseConfigFileTextToJson(file, git("show", ref + ":" + file));

@@ -1,3 +1,4 @@
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { createFileRoute } from "@tanstack/react-router";
 import { Activity, Clock, Eye, Ruler } from "lucide-react";
 import { SeoLandingPage, type SeoFaqItem } from "@/components/pages/SeoLandingPage";
@@ -82,6 +83,7 @@ export const Route = createFileRoute("/biometriya-glaza")({
 });
 
 function BiometryPage() {
+  const contact = useStorefrontContact("spb");
   return (
     <SeoLandingPage
       eyebrow="Диагностика в Санкт-Петербурге"
@@ -169,7 +171,7 @@ function BiometryPage() {
       <p>
         Точную продолжительность уточните при записи. Биометрия на Lenstar LS 900 стоит{" "}
         {formatRub(spbBiometryPrice)}. Записаться можно по телефону{" "}
-        <a href={CONTACT.phone.href}>{CONTACT.phone.label}</a> или через форму на сайте.
+        <a href={contact.phone.href}>{contact.phone.label}</a> или через форму на сайте.
       </p>
 
       <h2>Расшифровка результатов</h2>

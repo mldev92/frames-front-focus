@@ -41,24 +41,27 @@ test("shared navigation suppresses SPb-only links and contacts for Novokuznetsk"
   const footer = await read("../src/components/layout/Footer.tsx");
   const header = await read("../src/components/layout/Header.tsx");
   const megaMenu = await read("../src/components/layout/HeaderMegaMenu.tsx");
+  const defaults = JSON.parse(await read("../public/storefront-content-defaults.json"));
 
   for (const href of ["/linzy-spb/", "/biometriya-glaza/", "/optika-spb/"]) {
     assert.ok(footer.includes(href));
   }
   assert.match(footer, /city === "spb"\s*\|\|\s*!\[/);
-  assert.match(footer, /city === "spb" \?/);
+  assert.match(footer, /content\.legal\[city\]/);
+  assert.equal(defaults.legal.spb, "ул. Кирочная, 17, СПб");
+  assert.equal(defaults.legal.nvk, "Новокузнецк");
   assert.match(header, /cityCode === "nvk" \? NK_SALONS\[0\] : PRIMARY_SALON/);
   assert.match(header, /if \(!mounted \|\| !cityHydrated\) return/);
   assert.match(header, /setTimeout\(\(\) => window\.location\.assign\(nextHref\), 0\)/);
-  assert.match(header, /item\.label !== "Линзы для очков"/);
+  assert.match(header, /cityCode !== "nvk" \|\| item\.mega\?\.kind !== "glasses"/);
   assert.match(header, /cityCode !== "nvk" && \(/);
   assert.match(header, /href=\{regionalHref\("\/#promotions"\)\}/);
   // Акции одинаковые во всех регионах: та же лента в шапке, «Все Акции» ведёт к тому же блоку.
   const routing = await read("../src/lib/city-routing.ts");
   const homepageRoute = await read("../src/routes/index.tsx");
   assert.doesNotMatch(header, /NVK_PROMOS/);
-  assert.match(header, /const cityPromos = PROMOS;/);
-  assert.match(header, /href=\{currentPromo\.href\}/);
+  assert.match(header, /const cityPromos = content\.header_promos\.links;/);
+  assert.match(header, /href=\{currentPromo\[1\]\}/);
   assert.doesNotMatch(routing, /"\/#promotions"/);
   const promoBlock = homepageRoute.slice(homepageRoute.indexOf("function MainV2PromoBlock"));
   assert.doesNotMatch(promoBlock.slice(0, promoBlock.indexOf("return (")), /return null/);
@@ -73,10 +76,14 @@ test("Novokuznetsk uses its verified contacts and disables unavailable actions",
   const homepage = await read("../src/routes/index.tsx");
   const installment = await read("../src/routes/tinkoff.tsx");
   const product = await read("../src/routes/catalog_s.$category.$slug.tsx");
+  const defaults = JSON.parse(await read("../public/storefront-content-defaults.json"));
 
   assert.match(contacts, /label: "sale@optika100\.com"/);
   assert.match(contacts, /domain=optica_100/);
   assert.match(contacts, /f9LHodD0cOI9mxgb1lKx2s5xbbX2Psd4fGNop-GbIAElZQq-ARajInTU6GA/);
+  assert.equal(defaults.contact_nvk.email, "sale@optika100.com");
+  assert.equal(defaults.contact_nvk.telegram, "optica_100");
+  assert.match(messenger, /useStorefrontContact\(city\)/);
   assert.match(messenger, /if \(city === "nvk"\) return/);
   assert.match(messenger, /city !== "nvk" && \(/);
   assert.match(checkout, /option\.code !== "t_installment" \|\| city !== "Новокузнецк"/);
