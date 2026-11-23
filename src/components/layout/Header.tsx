@@ -338,7 +338,7 @@ export function Header() {
 
             <SiteLogo imageClassName="h-7 sm:h-9 xl:h-10" />
 
-            <nav className={cn("hidden h-full min-w-0 flex-1 items-stretch justify-center gap-0 px-1 xl:flex 2xl:gap-1 2xl:px-3", editing && "outline outline-1 -outline-offset-1 outline-muted-foreground")}>
+            <nav className={cn("hidden h-full min-w-0 flex-1 items-stretch justify-center-safe gap-0 overflow-x-auto px-1 [scrollbar-width:none] xl:flex 2xl:gap-1 2xl:px-3", editing && "outline outline-1 -outline-offset-1 outline-muted-foreground")}>
               {navigationItems.map((item) => {
                 const hasMega = isMegaNavItem(item);
                 const isOpen = openMegaItem?.href === item.href;
