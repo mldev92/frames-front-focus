@@ -309,7 +309,8 @@ function StellestLensCatalog({
   const { data: offers, isError } = useQuery({
     queryKey: ["stellest-spectacle-lenses", city],
     queryFn: ({ signal }) => loadStellestOffers(city, signal),
-    initialData: initialOffers,
+    initialData: () => initialOffers && [...initialOffers]
+      .sort((a, b) => prevenciaRank(a) - prevenciaRank(b)),
   });
 
   if (isError && !offers) return <p className="text-center">Каталог временно недоступен. Уточните варианты в салоне.</p>;
