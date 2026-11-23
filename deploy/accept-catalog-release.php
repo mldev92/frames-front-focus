@@ -36,9 +36,10 @@ try {
     }
     foreach ($manifest['codeOnly']['routingRedirects'] ?? [] as $rule) {
         $parts = explode(' ', $rule);
-        $path = '/'.str_replace(['\x20', '\-', '\.'], [' ', '-', '.'], ltrim(substr($parts[1], 1, -3), '/'));
-        if ($parts[0] === 'RewriteRule') $path .= '/';
-        $location = $parts[2];
+        $redirectMatch = $parts[0] === 'RedirectMatch';
+        [$pattern, $location] = array_slice($parts, $redirectMatch ? 2 : 1, 2);
+        $path = '/'.str_replace(['\x20', '\-', '\.'], [' ', '-', '.'], ltrim(substr($pattern, 1, -3), '/'));
+        if (!$redirectMatch) $path .= '/';
         [$status, , $redirect] = $request($path);
         if ($status !== 301 || $redirect !== $location) throw new RuntimeException('Exact redirect failed: '.$path);
         [$targetStatus] = $request(parse_url($location, PHP_URL_PATH));
