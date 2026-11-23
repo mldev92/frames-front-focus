@@ -1,9 +1,11 @@
 export const MYOPIA_PATH = "/linzy-dlya-kontrolya-miopii/";
 export const MYOPIA_TITLE = "Линзы для контроля миопии";
 export const MYOPIA_CONTACT_SECTION = "dlya_kontrolya_miopii";
+export const MYOPIA_HERO_IMAGE = "/myopia/hero-myopia.jpg";
 const spectacleCatalog = "/catalog_s/linzy_dlya_ochkov/";
 const modelQueryPrefix = "model:";
-const contactCatalog = `/catalog_s/kontaktnye_linzy_/${MYOPIA_CONTACT_SECTION}/`;
+export const MYOPIA_SPECTACLE_CATALOG = `${spectacleCatalog}?lensType=${encodeURIComponent("Контроль миопии")}&expand=lensType`;
+export const MYOPIA_CONTACT_CATALOG = `/catalog_s/kontaktnye_linzy_/${MYOPIA_CONTACT_SECTION}/`;
 
 export const spectacleNotice =
   "Подходящий дизайн линз определяет врач после обследования. Линзы не излечивают миопию; результат индивидуален.";
@@ -196,8 +198,8 @@ export function getMyopiaDetailModel(slug: string) {
 
 export function myopiaDetailHead(model: MyopiaModel) {
   return myopiaPageHead(
-    `${model.brand} ${model.name}`,
-    model.description,
+    `${model.brand} ${model.name} — линзы и подбор в СПб`,
+    `${model.description} Цены и запись к детскому врачу на Кирочной, 17.`,
     myopiaDetailsPath(model),
   );
 }
@@ -211,7 +213,7 @@ export function myopiaDetailsPath(model: MyopiaModel) {
 export function myopiaCatalogPath(model: MyopiaModel) {
   return model.kind === "spectacle"
     ? `${spectacleCatalog}?lensQuery=${encodeURIComponent(modelQueryPrefix + model.slug)}`
-    : `${contactCatalog}${model.catalogSlug}/`;
+    : `${MYOPIA_CONTACT_CATALOG}${model.catalogSlug}/`;
 }
 
 export function myopiaPageHead(title: string, description: string, path: string) {
@@ -224,6 +226,13 @@ export function myopiaPageHead(title: string, description: string, path: string)
       { property: "og:title", content: pageTitle },
       { property: "og:description", content: description },
       { property: "og:url", content: canonical },
+      { property: "og:type", content: "website" },
+      ...(path === MYOPIA_PATH
+        ? [
+            { property: "og:image", content: `https://optika100.com${MYOPIA_HERO_IMAGE}` },
+            { name: "twitter:card", content: "summary_large_image" },
+          ]
+        : []),
     ],
     links: [{ rel: "canonical", href: canonical }],
   };
