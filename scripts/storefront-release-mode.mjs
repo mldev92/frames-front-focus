@@ -4,6 +4,7 @@ import { isDeepStrictEqual } from "node:util";
 import { pathToFileURL } from "node:url";
 import ts from "typescript";
 import { registry, standalonePages } from "./standalone-pages.mjs";
+import { allowStellestCanonical, stellestDataFile } from "./stellest-published-catalog.mjs";
 
 const git = (...args) =>
   execFileSync("git", args, { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
@@ -260,6 +261,10 @@ export function releaseMode(parent, target = "HEAD") {
     .split("\0")
     .filter(Boolean);
   const reasons = [];
+  const stellestCatalog = paths.includes(stellestDataFile)
+    && git("diff", "--name-status", parent, target, "--", stellestDataFile).startsWith("A\t")
+    && allowStellestCanonical(git("show", parent + ":deploy/robots.production.txt"))
+      === git("show", target + ":deploy/robots.production.txt");
   let before, after, routingRedirects;
   const additions = new Map();
   if (paths.includes(registry)) {
@@ -283,6 +288,13 @@ export function releaseMode(parent, target = "HEAD") {
     }
   }
   for (const file of paths) {
+    if (stellestCatalog && [
+      stellestDataFile,
+      "deploy/robots.production.txt",
+      "scripts/build-api-snapshot.mjs",
+      "scripts/stellest-published-catalog.mjs",
+      "src/routes/stellest-katalog-s-linzami.tsx",
+    ].includes(file)) continue;
     if (file === apacheTemplate) {
       routingRedirects = addedExactRedirects(parent, target);
       if (routingRedirects) continue;
@@ -346,6 +358,7 @@ export function releaseMode(parent, target = "HEAD") {
     reasons,
     standalonePaths: [...additions.values()],
     ...(routingRedirects ? { routingRedirects } : {}),
+    ...(stellestCatalog ? { stellestCatalog: true } : {}),
   };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

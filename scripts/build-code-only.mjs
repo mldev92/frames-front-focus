@@ -9,6 +9,7 @@ import { exactCatalogRedirect, releaseMode } from "./storefront-release-mode.mjs
 import { appendStandaloneSitemap } from "./standalone-pages.mjs";
 import { redirectPaths } from "./catalog-link-check.mjs";
 import { robotsAllows } from "./seo-inventory.mjs";
+import { allowStellestCanonical, loadStellestCatalog, stellestCanonical, stellestPage } from "./stellest-published-catalog.mjs";
 
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const parent = path.resolve(process.env.O100_PUBLISHED_DIR || process.argv[2] || "");
@@ -75,14 +76,32 @@ if (pageFiles.length !== baseline.routeCount || !pageFiles.includes("index.html"
   throw Error("Published route count mismatch");
 const routes = pageFiles.map((f) => "/" + f.slice(0, -"index.html".length));
 const { standalonePaths, routingRedirects = [] } = decision;
-const robots = await readPublished("robots.txt");
+let robots = (await readPublished("robots.txt")).toString();
+const additionalCatalogPaths = [];
+if (decision.stellestCatalog) {
+  process.env.O100_STELLEST_CATALOG = "1";
+  const { products } = loadStellestCatalog(backendSha);
+  if (!routes.includes(stellestPage)) throw Error("Stellest landing page was not published");
+  for (const product of products.values()) {
+    if (!routes.includes(product.path) || baseline.retiredPaths.includes(product.path)) {
+      throw Error("Prevencia product was not published");
+    }
+    const html = (await readPublished(product.path.slice(1) + "index.html")).toString();
+    if (!html.includes(`data-catalog-product-id="${product.id}"`)
+      || !html.includes(`rel="canonical" href="https://optika100.com${product.path}"`)) {
+      throw Error("Unexpected published Prevencia identity");
+    }
+  }
+  robots = allowStellestCanonical(robots);
+  additionalCatalogPaths.push(stellestCanonical);
+}
 const redirects = redirectPaths(await readFile("deploy/redirects.production.txt", "utf8"));
 for (const route of standalonePaths) {
   if (
     routes.includes(route) ||
     redirects.has(route) ||
     baseline.retiredPaths.includes(route) ||
-    !robotsAllows(robots.toString(), route)
+    !robotsAllows(robots, route)
   ) {
     throw Error("Standalone page conflicts with published routing: " + route);
   }
@@ -133,7 +152,7 @@ const client = "dist/client";
 await writeFile(path.join(client, "robots.txt"), robots);
 await writeFile(
   path.join(client, "sitemap.xml"),
-  appendStandaloneSitemap((await readPublished("sitemap.xml")).toString(), standalonePaths),
+  appendStandaloneSitemap((await readPublished("sitemap.xml")).toString(), standalonePaths, additionalCatalogPaths),
 );
 
 const files = {};
@@ -224,6 +243,7 @@ const manifest = {
     parentSha: baseline.frontendSha,
     parentManifestSha256: digest(manifestBytes),
     standalonePaths,
+    ...(decision.stellestCatalog ? { stellestCatalog: true } : {}),
     ...(routingRedirects.length ? { routingRedirects } : {}),
   },
 };

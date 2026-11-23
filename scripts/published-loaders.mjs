@@ -2,17 +2,19 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { publishedMatches, routeFile } from "./published-page.mjs";
+import { amendStellestMatches, loadStellestCatalog } from "./stellest-published-catalog.mjs";
 
 const parent = process.env.O100_PUBLISHED_DIR;
 const manifest = JSON.parse(readFileSync(path.join(parent, "release-manifest.json")));
 const cache = new Map();
+const stellest = loadStellestCatalog(process.env.O100_BACKEND_SHA);
 function page(pathname) {
   if (cache.has(pathname)) return cache.get(pathname);
   const file = routeFile(pathname);
   const bytes = readFileSync(path.join(parent, file));
   if (createHash("sha256").update(bytes).digest("hex") !== manifest.files[file])
     throw Error("Published page changed: " + file);
-  const matches = publishedMatches(bytes.toString("utf8"));
+  const matches = amendStellestMatches(publishedMatches(bytes.toString("utf8")), pathname, stellest);
   if (cache.size >= 32) cache.delete(cache.keys().next().value);
   cache.set(pathname, matches);
   return matches;

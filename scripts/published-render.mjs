@@ -6,6 +6,7 @@ import server from "../dist/server/server.js";
 import { matchesStandaloneRoute, publishedMatches, routeFile } from "./published-page.mjs";
 import { catalogHtmlProblems } from "./catalog-html-validation.mjs";
 import { catalogLinks, redirectPaths } from "./catalog-link-check.mjs";
+import { amendStellestMatches, loadStellestCatalog } from "./stellest-published-catalog.mjs";
 
 const [index, count] = process.argv.slice(2).map(Number);
 const { routes, standalonePaths = [] } = JSON.parse(
@@ -14,6 +15,7 @@ const { routes, standalonePaths = [] } = JSON.parse(
 const standalone = new Set(standalonePaths);
 const parent = process.env.O100_PUBLISHED_DIR;
 const manifest = JSON.parse(await readFile(path.join(parent, "release-manifest.json")));
+const stellest = loadStellestCatalog(process.env.O100_BACKEND_SHA);
 const allowed = new Set([
   ...routes,
   ...redirectPaths(await readFile("deploy/redirects.production.txt", "utf8")),
@@ -72,7 +74,7 @@ for (let i = index; i < routes.length; i += count) {
         throw Error("Standalone page must have one matching canonical and no product identity");
       }
     } else {
-      if (!isDeepStrictEqual(publishedMatches(source), matches))
+      if (!isDeepStrictEqual(amendStellestMatches(publishedMatches(source), route, stellest), matches))
         throw Error("Route or catalog data changed");
       if (source.match(identity)?.[1] !== html.match(identity)?.[1])
         throw Error("Product identity changed");
