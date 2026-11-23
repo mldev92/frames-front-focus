@@ -12,7 +12,7 @@ import { formatPrice, useCart } from "@/lib/store/cart";
 import { CONTACT } from "@/data/contact";
 import { PriceSavings } from "@/components/PriceSavings";
 import { LensDetailDialog } from "@/components/LensWizard/LensWizard";
-import { DEFAULT_REGION, useCityStore } from "@/lib/store/city";
+import { DEFAULT_REGION, useCityStore, type CityCode } from "@/lib/store/city";
 
 import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
 import stellestHtml from "@/content/stellest-katalog-s-linzami.html?raw";
@@ -213,7 +213,7 @@ function StellestCatalogPage() {
         dangerouslySetInnerHTML={stellestInnerHtml}
       />
       {catalogTarget && createPortal(
-        <StellestLensCatalog onBook={() => setAptOpen(true)} />,
+        <StellestLensCatalog key={city} city={city} onBook={() => setAptOpen(true)} />,
         catalogTarget,
       )}
       {liveLensTarget && myopiaContactLenses.length > 0 && createPortal(
@@ -251,8 +251,7 @@ function StellestContactLenses({ products }: { products: Product[] }) {
   );
 }
 
-function StellestLensCatalog({ onBook }: { onBook: () => void }) {
-  const city = useCityStore((state) => state.city);
+function StellestLensCatalog({ city, onBook }: { city: CityCode; onBook: () => void }) {
   const addLens = useCart((state) => state.addLens);
   const [offers, setOffers] = useState<LensRecommendCard[] | null>(null);
   const [detailOffer, setDetailOffer] = useState<LensRecommendCard | null>(null);
@@ -260,10 +259,7 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
 
   useEffect(() => {
     const controller = new AbortController();
-    setOffers(null);
-    setDetailOffer(null);
-    setError(false);
-    fetchLensSearch("Stellest", { limit: 100 }, controller.signal)
+    fetchLensSearch("Stellest", { city, limit: 100 }, controller.signal)
       .then((result) => {
         setOffers(result.matches
           .filter((offer) => offer.line.toLowerCase().includes("stellest"))
@@ -286,6 +282,7 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
         const plano = offer.line.toLowerCase().includes("plano");
         const tint = offer.line.toLowerCase().includes("tint");
         const rock = offer.line === "AS Stellest Airwear" && offer.coating === "Crizal Rock";
+        const rockDiscount = rock ? (city === "spb" ? 20 : offer.discountPercent) : null;
         const title = plano
           ? "ESSILOR AS Stellest Airwear Plano Crizal Prevencia"
           : `ESSILOR ${offer.line} ${offer.coating}`;
@@ -311,13 +308,13 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
               <h3>{title}</h3>
               <p>{plano ? "Профилактика миопии · Sph 0,0 / Cyl 0,0" : tint
                 ? "Тонированные линзы Stellest" : "Очковые линзы для контроля миопии"}</p>
-              {city === "spb" && (plano || tint || rock) && (
+              {((city === "spb" && (plano || tint)) || (rockDiscount ?? 0) > 0) && (
                 <p className="stellest-offer-condition">
                   {plano ? "Скидка 50%" : tint
                     ? offer.line.includes("2.0")
                       ? "Скидка 50% при покупке прозрачных линз Stellest 2.0"
                       : "Скидка 90% при покупке прозрачных линз Stellest"
-                    : "Скидка 20%"}
+                    : `Скидка ${Math.round(rockDiscount ?? 0)}%`}
                 </p>
               )}
               <div className="coat-price-row">
