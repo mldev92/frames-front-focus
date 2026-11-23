@@ -39,6 +39,7 @@ test("release mode follows published route and loader dependencies across commit
     "src/content",
     "src/data",
     "deploy",
+    "public",
   ])
     mkdirSync(dir, { recursive: true });
   const route = "src/routes/product.tsx";
@@ -82,6 +83,7 @@ test("release mode follows published route and loader dependencies across commit
   writeFileSync(rawPath, "<h1>Было</h1>");
   writeFileSync(route, original.replace("old", "new"));
   writeFileSync("src/components/Button.tsx", "export const Button=()=>null;");
+  writeFileSync("public/storefront-footer-defaults.json", '{"intro":{"text":"Оптика"}}');
   assert.equal(releaseMode(parent, commit()).mode, "code-only");
   writeFileSync("src/lib/prices.ts", "export const get=()=>110;");
   assert.deepEqual(releaseMode(parent, commit()).reasons, ["src/lib/prices.ts"]);
