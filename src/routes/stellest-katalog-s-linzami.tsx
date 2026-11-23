@@ -12,13 +12,38 @@ import { formatPrice, useCart } from "@/lib/store/cart";
 import { CONTACT } from "@/data/contact";
 import { PriceSavings } from "@/components/PriceSavings";
 import { LensDetailDialog } from "@/components/LensWizard/LensWizard";
-import { DEFAULT_REGION, useCityStore } from "@/lib/store/city";
+import { CITY_LABELS, DEFAULT_REGION, useCityStore, type CityCode } from "@/lib/store/city";
 
 import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
 import stellestHtml from "@/content/stellest-katalog-s-linzami.html?raw";
 
-const stellestInnerHtml = { __html: stellestHtml };
+const [stellestIntro, stellestDetails] = stellestHtml.split("<!-- STELLEST_CATALOG -->");
 const myopiaContactSkus = new Set(contactMyopiaModels.map((model) => model.catalogSlug));
+const prevenciaOffers = [
+  { line: "AS Stellest Airwear", slug: "as_stellest_crizal_prevencia" },
+  { line: "AS Stellest 2.0 Airwear", slug: "as_stellest_2_0_crizal_prevencia" },
+  { line: "AS Stellest Airwear Plano" },
+];
+
+function prevenciaOption(offer: LensRecommendCard) {
+  return offer.coating === "Crizal Prevencia"
+    ? prevenciaOffers.find((option) => option.line === offer.line)
+    : undefined;
+}
+
+function prevenciaRank(offer: LensRecommendCard): number {
+  const option = prevenciaOption(offer);
+  return option ? prevenciaOffers.indexOf(option) : prevenciaOffers.length;
+}
+
+async function loadStellestOffers(city: CityCode, signal?: AbortSignal) {
+  const { matches } = await fetchLensSearch("Stellest", { city, limit: 100 }, signal);
+  return matches
+    .filter((offer) => offer.line.toLowerCase().includes("stellest"))
+    .sort((a, b) => prevenciaRank(a) - prevenciaRank(b)
+      || (a.priceRub ?? Infinity) - (b.priceRub ?? Infinity)
+      || a.line.localeCompare(b.line, "ru"));
+}
 
 export const Route = createFileRoute("/stellest-katalog-s-linzami")({
   head: () => ({
@@ -33,17 +58,27 @@ export const Route = createFileRoute("/stellest-katalog-s-linzami")({
       { property: "og:image", content: "/stellest/hero-child-stellest.webp" },
     ],
   }),
-  loader: () => getStellestLensProducts("spb", DEFAULT_REGION),
+  loader: async ({ abortController }) => {
+    const [contactLenses, spectacleLenses] = await Promise.all([
+      getStellestLensProducts("spb", DEFAULT_REGION),
+      loadStellestOffers("spb", abortController.signal).catch((error: unknown) => {
+        if (abortController.signal.aborted || import.meta.env.VITE_PRERENDER_BUILD === "true") {
+          throw error;
+        }
+        return undefined;
+      }),
+    ]);
+    return { contactLenses, spectacleLenses };
+  },
   component: StellestCatalogPage,
 });
 
 function StellestCatalogPage() {
   const [aptOpen, setAptOpen] = useState(false);
-  const [catalogTarget, setCatalogTarget] = useState<HTMLElement | null>(null);
   const [liveLensTarget, setLiveLensTarget] = useState<HTMLElement | null>(null);
   const city = useCityStore((state) => state.city);
   const region = useCityStore((state) => state.region);
-  const loaderLenses = Route.useLoaderData();
+  const { contactLenses: loaderLenses, spectacleLenses } = Route.useLoaderData();
   const { data: lensProducts = [] } = useQuery({
     queryKey: ["stellest-contact-lenses", city, region],
     queryFn: () => getStellestLensProducts(city, region),
@@ -56,7 +91,6 @@ function StellestCatalogPage() {
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    setCatalogTarget(root.querySelector<HTMLElement>("#stellest-lens-catalog"));
     setLiveLensTarget(root.querySelector<HTMLElement>("#stellest-contact-lens-live"));
 
     const cleanups: Array<() => void> = [];
@@ -207,15 +241,24 @@ function StellestCatalogPage() {
   return (
     <>
       <style>{stellestCss}</style>
-      <div
-        ref={rootRef}
-        className="stellest-page"
-        dangerouslySetInnerHTML={stellestInnerHtml}
-      />
-      {catalogTarget && createPortal(
-        <StellestLensCatalog onBook={() => setAptOpen(true)} />,
-        catalogTarget,
-      )}
+      <div ref={rootRef} className="stellest-page">
+        <div className="contents" dangerouslySetInnerHTML={{ __html: stellestIntro }} />
+        <section className="section section-cream" id="stellest-offers">
+          <div className="container">
+            <div className="section-head">
+              <h2>Линзы Essilor Stellest и цены</h2>
+              <p>{CITY_LABELS[city]} · цены за одну линзу. Параметры рецепта подтвердит специалист.</p>
+            </div>
+            <StellestLensCatalog
+              key={city}
+              city={city}
+              initialOffers={city === "spb" ? spectacleLenses : undefined}
+              onBook={() => setAptOpen(true)}
+            />
+          </div>
+        </section>
+        <div className="contents" dangerouslySetInnerHTML={{ __html: stellestDetails }} />
+      </div>
       {liveLensTarget && myopiaContactLenses.length > 0 && createPortal(
         <StellestContactLenses products={myopiaContactLenses} />,
         liveLensTarget,
@@ -251,32 +294,24 @@ function StellestContactLenses({ products }: { products: Product[] }) {
   );
 }
 
-function StellestLensCatalog({ onBook }: { onBook: () => void }) {
-  const city = useCityStore((state) => state.city);
+function StellestLensCatalog({
+  city,
+  initialOffers,
+  onBook,
+}: {
+  city: CityCode;
+  initialOffers?: LensRecommendCard[];
+  onBook: () => void;
+}) {
   const addLens = useCart((state) => state.addLens);
-  const [offers, setOffers] = useState<LensRecommendCard[] | null>(null);
   const [detailOffer, setDetailOffer] = useState<LensRecommendCard | null>(null);
-  const [error, setError] = useState(false);
+  const { data: offers, isError } = useQuery({
+    queryKey: ["stellest-spectacle-lenses", city],
+    queryFn: ({ signal }) => loadStellestOffers(city, signal),
+    initialData: initialOffers,
+  });
 
-  useEffect(() => {
-    const controller = new AbortController();
-    setOffers(null);
-    setDetailOffer(null);
-    setError(false);
-    fetchLensSearch("Stellest", { limit: 100 }, controller.signal)
-      .then((result) => {
-        setOffers(result.matches
-          .filter((offer) => offer.line.toLowerCase().includes("stellest"))
-          .sort((a, b) => (a.priceRub ?? Infinity) - (b.priceRub ?? Infinity)
-            || a.line.localeCompare(b.line, "ru")));
-      })
-      .catch((reason: unknown) => {
-        if ((reason as Error).name !== "AbortError") setError(true);
-      });
-    return () => controller.abort();
-  }, [city]);
-
-  if (error) return <p className="text-center">Каталог временно недоступен. Уточните варианты в салоне.</p>;
+  if (isError && !offers) return <p className="text-center">Каталог временно недоступен. Уточните варианты в салоне.</p>;
   if (!offers) return <p className="text-center">Загружаем варианты Stellest…</p>;
   if (!offers.length) return <p className="text-center">Варианты Stellest уточняются. Свяжитесь с салоном.</p>;
 
@@ -286,6 +321,9 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
         const plano = offer.line.toLowerCase().includes("plano");
         const tint = offer.line.toLowerCase().includes("tint");
         const rock = offer.line === "AS Stellest Airwear" && offer.coating === "Crizal Rock";
+        const rockDiscount = rock ? (city === "spb" ? 20 : offer.discountPercent) : null;
+        const slug = prevenciaOption(offer)?.slug;
+        const productUrl = city === "spb" && slug ? `/catalog_s/linzy_dlya_ochkov/detskie/${slug}/` : null;
         const title = plano
           ? "ESSILOR AS Stellest Airwear Plano Crizal Prevencia"
           : `ESSILOR ${offer.line} ${offer.coating}`;
@@ -308,16 +346,16 @@ function StellestLensCatalog({ onBook }: { onBook: () => void }) {
             <div className="coat-photo"><img src={image} alt="" loading="lazy" /></div>
             <div className="coat-body">
               <div className="coat-num">Essilor Stellest · {offer.index?.toFixed(2) ?? "1.59"}</div>
-              <h3>{title}</h3>
-              <p>{plano ? "Профилактика миопии · Sph 0,0 / Cyl 0,0" : tint
+              <h3>{productUrl ? <a href={productUrl}>{title}</a> : title}</h3>
+              <p>{plano ? "Без диоптрий · Sph 0,0 / Cyl 0,0" : tint
                 ? "Тонированные линзы Stellest" : "Очковые линзы для контроля миопии"}</p>
-              {city === "spb" && (plano || tint || rock) && (
+              {((city === "spb" && (plano || tint)) || (rockDiscount ?? 0) > 0) && (
                 <p className="stellest-offer-condition">
                   {plano ? "Скидка 50%" : tint
                     ? offer.line.includes("2.0")
                       ? "Скидка 50% при покупке прозрачных линз Stellest 2.0"
                       : "Скидка 90% при покупке прозрачных линз Stellest"
-                    : "Скидка 20%"}
+                    : `Скидка ${Math.round(rockDiscount ?? 0)}%`}
                 </p>
               )}
               <div className="coat-price-row">

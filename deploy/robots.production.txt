@@ -52,6 +52,7 @@ Disallow: /personal/*
 Disallow: /salony-nk.php
 Disallow: */?*
 Disallow: */filter/*
+Allow: /catalog_s/linzy_dlya_ochkov/detskie/as_stellest_crizal_prevencia/$
 Disallow: */as_stellest_crizal_prevencia/
 Disallow: */as_stellest_crizal_sun_xprotect_/
 Disallow: */as_stellest_crizal_rock/
@@ -113,6 +114,7 @@ Disallow: /personal/*
 Disallow: /salony-nk.php
 Disallow: */?*
 Disallow: */filter/*
+Allow: /catalog_s/linzy_dlya_ochkov/detskie/as_stellest_crizal_prevencia/$
 Disallow: */as_stellest_crizal_prevencia/
 Disallow: */as_stellest_crizal_sun_xprotect_/
 Disallow: */as_stellest_crizal_rock/

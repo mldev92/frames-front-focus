@@ -19,13 +19,13 @@ export function standalonePages(value) {
   return [...value].sort();
 }
 
-export function appendStandaloneSitemap(sitemap, paths) {
-  if (!paths.length) return sitemap;
+export function appendStandaloneSitemap(sitemap, paths, additionalCatalogPaths = []) {
+  if (!paths.length && !additionalCatalogPaths.length) return sitemap;
   const end = sitemap.indexOf("</urlset>");
   if (end < 0 || !/^<\/urlset>\s*$/.test(sitemap.slice(end))) {
     throw Error("Published sitemap is not a URL set");
   }
-  const entries = standalonePages(paths).map((path) => {
+  const entries = [...standalonePages(paths), ...additionalCatalogPaths].map((path) => {
     const url = `https://optika100.com${path}`;
     if (
       sitemap.includes(`<loc>${url}</loc>`) ||

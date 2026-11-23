@@ -32,3 +32,35 @@ export function productMetaDescription(
   const lastSpace = prefix.lastIndexOf(" ");
   return `${lastSpace > 120 ? prefix.slice(0, lastSpace) : prefix}…`;
 }
+
+export function isStellestPrevenciaProduct(product: Pick<Product, "category" | "slug">): boolean {
+  return product.category === "linzy-dlya-ochkov"
+    && /^as_stellest_(?:2_0_)?crizal_prevencia$/.test(product.slug);
+}
+
+export function stellestPrevenciaProductScripts(product: Product, canonical: string) {
+  if (!isStellestPrevenciaProduct(product) || !Number.isFinite(product.price) || product.price <= 0) {
+    return [];
+  }
+  const availability = product.inStock === undefined
+    ? undefined
+    : `https://schema.org/${product.inStock ? "InStock" : "OutOfStock"}`;
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    url: canonical,
+    image: product.images[0] ? new URL(product.images[0], canonical).href : undefined,
+    description: productMetaDescription(product),
+    brand: { "@type": "Brand", name: "Essilor" },
+    sku: product.slug,
+    offers: {
+      "@type": "Offer",
+      url: canonical,
+      price: product.price,
+      priceCurrency: "RUB",
+      availability,
+    },
+  };
+  return [{ type: "application/ld+json", children: JSON.stringify(schema).replace(/</g, "\\u003c") }];
+}

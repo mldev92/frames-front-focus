@@ -37,7 +37,33 @@ if ($parent['backendSha'] === $manifest['backendSha']) {
 foreach (['catalogFingerprint','inventorySha256','inventoryGeneratedAt','settings','retiredPaths','queryAcceptancePaths'] as $key) {
     if (!isset($parent[$key]) || $manifest[$key] !== $parent[$key]) throw new RuntimeException('Changed published baseline: '.$key);
 }
-if ($manifest['files']['robots.txt'] !== $parent['files']['robots.txt']) throw new RuntimeException('Changed published robots.txt');
+$robotsHash = $parent['files']['robots.txt'];
+$stellestPath = '/catalog_s/linzy_dlya_ochkov/detskie/as_stellest_crizal_prevencia/';
+$additionalCatalogPaths = [];
+if (($binding['stellestCatalog'] ?? false) === true) {
+    $productPath = ltrim($stellestPath, '/').'index.html';
+    if (!isset($parent['files'][$productPath]) || in_array($stellestPath, $parent['retiredPaths'], true)) {
+        throw new RuntimeException('Prevencia product missing from the published catalog');
+    }
+    $published = file_get_contents($current.'/'.$productPath);
+    if (hash('sha256', $published) !== $parent['files'][$productPath]
+        || !str_contains($published, 'data-catalog-product-id="56365"')
+        || !str_contains($published, 'rel="canonical" href="https://optika100.com'.$stellestPath.'"')) {
+        throw new RuntimeException('Invalid published Prevencia product identity');
+    }
+    $robots = file_get_contents($current.'/robots.txt');
+    $allow = 'Allow: '.$stellestPath.'$';
+    if (hash('sha256', $robots) !== $robotsHash || str_contains($robots, $allow)) {
+        throw new RuntimeException('Unexpected published robots.txt');
+    }
+    $eol = str_contains($robots, "\r\n") ? "\r\n" : "\n";
+    $restriction = 'Disallow: */as_stellest_crizal_prevencia/'.$eol;
+    $robots = str_replace($restriction, $allow.$eol.$restriction, $robots, $count);
+    if ($count !== 2) throw new RuntimeException('Invalid Prevencia restrictions');
+    $robotsHash = hash('sha256', $robots);
+    $additionalCatalogPaths[] = $stellestPath;
+}
+if ($manifest['files']['robots.txt'] !== $robotsHash) throw new RuntimeException('Changed published robots.txt');
 $routes = static function(array $files): array {
     $names = array_filter(array_keys($files), fn($p) => $p === 'index.html' || str_ends_with($p, '/index.html'));
     sort($names, SORT_STRING);
@@ -70,13 +96,14 @@ if ($routes($manifest['files']) !== $newRoutes || $manifest['routeCount'] !== $p
     throw new RuntimeException('Changed published routes outside standalone page additions');
 }
 $sitemapHash = $parent['files']['sitemap.xml'];
-if ($pages) {
+$sitemapPaths = array_merge($pages, $additionalCatalogPaths);
+if ($sitemapPaths) {
     $sitemap = file_get_contents($current.'/sitemap.xml');
     $end = strpos($sitemap, '</urlset>');
     if (hash('sha256', $sitemap) !== $sitemapHash || $end === false || !preg_match('~^</urlset>\s*$~D', substr($sitemap, $end))) {
         throw new RuntimeException('Invalid published sitemap');
     }
-    foreach ($pages as $path) {
+    foreach ($sitemapPaths as $path) {
         $url = 'https://optika100.com'.$path;
         if (str_contains($sitemap, '<loc>'.$url.'</loc>') || str_contains($sitemap, '<loc>'.rtrim($url, '/').'</loc>')) {
             throw new RuntimeException('Standalone page already in published sitemap');

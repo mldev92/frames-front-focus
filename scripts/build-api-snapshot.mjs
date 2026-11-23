@@ -14,6 +14,10 @@ export function apiKey(input, origin) {
   if (url.origin !== origin || url.username || url.password || url.hash) throw Error('Snapshot request is outside the approved API');
   if (/^\/sitemap(?:[-_.][A-Za-z0-9_.-]+)?\.xml$/.test(url.pathname) && !url.search) return url.pathname;
   if (!url.pathname.startsWith('/api/store/')) throw Error('Snapshot request is outside the approved API');
+  if (url.pathname === '/api/store/lens_search.php') {
+    url.searchParams.sort();
+    if (url.search === '?city=spb&limit=100&q=Stellest') return url.pathname + url.search;
+  }
   if (!endpoints.has(url.pathname.slice('/api/store/'.length))) throw Error('Snapshot permits only public catalog reads');
   if (new Set(url.searchParams.keys()).size !== [...url.searchParams.keys()].length) throw Error('Duplicate API parameters are forbidden');
   url.searchParams.sort();

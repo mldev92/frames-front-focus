@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
 import { catalogSectionMetadata } from "@/data/catalog-seo";
-import { productMetaDescription, productCanonicalUrl } from "@/lib/product-seo";
+import { productMetaDescription, productCanonicalUrl, stellestPrevenciaProductScripts } from "@/lib/product-seo";
 import { frameCatalogSchemas } from "@/data/frame-catalog-seo";
 import { categoryForCatalogPath } from "@/data/categories";
 import { ProductPage } from "@/routes/catalog_s.$category.$slug";
@@ -28,7 +28,9 @@ export const Route = createFileRoute("/catalog_s/$")({
     if (loaderData.kind === "product") {
       const product = loaderData.data.product;
       const description = productMetaDescription(product);
+      const productUrl = productCanonicalUrl(product, canonical);
       return {
+        scripts: stellestPrevenciaProductScripts(product, productUrl),
         meta: [
           { title: `${product.brand} ${product.name} — купить · ОПТИКА 100%` },
           { name: "description", content: description },
@@ -36,7 +38,7 @@ export const Route = createFileRoute("/catalog_s/$")({
           { property: "og:title", content: `${product.brand} ${product.name}` },
           { property: "og:image", content: product.images[0] },
         ],
-        links: [{ rel: "canonical", href: productCanonicalUrl(product, canonical) }],
+        links: [{ rel: "canonical", href: productUrl }],
       };
     }
     const category = categoryForCatalogPath(loaderData.sectionPath);

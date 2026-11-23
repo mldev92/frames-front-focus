@@ -45,6 +45,11 @@ test('sitemap covers eligible canonicals independent of stock, and excludes bloc
 test('reviewed robots opens Novokuznetsk while preserving product-specific restrictions', async () => {
   const robots=await readFile(new URL('../deploy/robots.production.txt',import.meta.url),'utf8');
   assert.equal(robotsAllows(robots,'/catalog_n/opravy/frame/'),true);
+  const prevencia = '/catalog_s/linzy_dlya_ochkov/detskie/as_stellest_crizal_prevencia/';
+  const yandex = robots.replace(/^[^]*?User-agent:\s*Yandex\s*$/im, 'User-agent: *');
+  assert.equal(robotsAllows(robots,prevencia),true);
+  assert.equal(robotsAllows(yandex,prevencia),true);
+  assert.equal(robotsAllows(robots,prevencia.replace('/detskie','')),false);
   assert.equal(robotsAllows(robots,'/catalog_n/linzy_dlya_ochkov/as_stellest_crizal_rock/'),false);
   assert.doesNotMatch(robots,/Disallow: \/catalog_n\/\*/);
 });
