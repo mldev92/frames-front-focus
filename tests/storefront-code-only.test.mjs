@@ -32,7 +32,14 @@ test("release mode follows published route and loader dependencies across commit
   const git = (...args) =>
     execFileSync("git", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] }).trim();
   git("init");
-  for (const dir of ["src/routes", "src/lib", "src/components", "src/data", "deploy"])
+  for (const dir of [
+    "src/routes",
+    "src/lib",
+    "src/components",
+    "src/content",
+    "src/data",
+    "deploy",
+  ])
     mkdirSync(dir, { recursive: true });
   const route = "src/routes/product.tsx";
   const original =
@@ -57,7 +64,22 @@ test("release mode follows published route and loader dependencies across commit
   const apacheBaseline = "# BEGIN O100 FRONTEND\nRewriteEngine On\n";
   const redirect = String.raw`RewriteRule ^catalog_s/linzy_dlea\x20ochkov/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/ [R=301,END]`;
   writeFileSync(apache, apacheBaseline);
+  const rawPath = "src/content/stellest-katalog-s-linzami.html";
+  const contentRoute = "src/routes/stellest-katalog-s-linzami.tsx";
+  const templateRoute =
+    'import { createFileRoute } from "@tanstack/react-router"; import html from "@/content/stellest-katalog-s-linzami.html?raw"; export const Route = createFileRoute("/stellest-katalog-s-linzami")({component: () => html});';
+  writeFileSync(rawPath, "<h1>Было</h1>");
+  writeFileSync(contentRoute, templateRoute);
   const parent = commit();
+  writeFileSync(rawPath, "<h1>Стало</h1>");
+  assert.equal(releaseMode(parent, commit()).mode, "code-only");
+  writeFileSync(
+    contentRoute,
+    templateRoute.replace("component: () => html", "loader: () => html, component: () => null"),
+  );
+  assert.ok(releaseMode(parent, commit()).reasons.includes(rawPath));
+  writeFileSync(contentRoute, templateRoute);
+  writeFileSync(rawPath, "<h1>Было</h1>");
   writeFileSync(route, original.replace("old", "new"));
   writeFileSync("src/components/Button.tsx", "export const Button=()=>null;");
   assert.equal(releaseMode(parent, commit()).mode, "code-only");

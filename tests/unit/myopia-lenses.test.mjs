@@ -4,6 +4,7 @@ import {
   contactMyopiaModels,
   getSpectacleMyopiaModel,
   getSpectacleMyopiaModelFromQuery,
+  getMyopiaDetailModel,
   myopiaCatalogPath,
   myopiaDetailsPath,
   spectacleMyopiaModels,
@@ -21,6 +22,17 @@ test("myopia models have distinct details and model-specific catalog destination
       getSpectacleMyopiaModelFromQuery(path.searchParams.get("lensQuery")).slug,
       model.slug,
     );
+  }
+});
+
+test("У каждой новой страницы модели свой раздел о подборе", () => {
+  const models = [...spectacleMyopiaModels, ...contactMyopiaModels]
+    .filter((model) => myopiaDetailsPath(model).startsWith("/linzy-dlya-kontrolya-miopii/"))
+    .map((model) => getMyopiaDetailModel(model.slug));
+  assert.equal(models.length, 6);
+  assert.equal(new Set(models.map((model) => model.fitting.heading)).size, 6);
+  for (const model of models) {
+    assert.notEqual(model.description, model.fitting.text);
   }
 });
 

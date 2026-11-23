@@ -1039,15 +1039,15 @@ function MainV2Page() {
                   className="text-muted-foreground"
                   style={{ fontSize: 14, lineHeight: 1.55, marginBottom: 24 }}
                 >
-                  Эффективные методики замедления прогрессирования близорукости и сохранения
-                  здоровья глаз.
+                  Сравните очковые и контактные линзы для контроля миопии и узнайте, как проходит
+                  подбор в Санкт-Петербурге.
                 </p>
                 <a
-                  href="/stellest-katalog-s-linzami/"
+                  href="/linzy-dlya-kontrolya-miopii/"
                   className="inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold text-white self-start hover:opacity-90 transition-opacity"
                   style={{ background: "var(--brand)" }}
                 >
-                  Узнать больше
+                  Сравнить линзы
                 </a>
               </div>
             </div>

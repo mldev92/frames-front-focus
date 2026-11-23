@@ -16,7 +16,11 @@ interface ModelCopy {
   name: string;
   design: string;
   description: string;
-  fitting: string;
+  fitting: {
+    heading: string;
+    text: string;
+    source?: { label: string; href: string };
+  };
 }
 
 export interface SpectacleMyopiaModel extends ModelCopy {
@@ -44,7 +48,10 @@ export const spectacleMyopiaModels: readonly SpectacleMyopiaModel[] = [
     design: "H.A.L.T.",
     description:
       "Центральная зона корректирует близорукость, а окружающие её асферические микролинзы создают оптический сигнал для контроля прогрессирования миопии.",
-    fitting: "Врач оценивает рецепт и подбирает вариант линз после обследования.",
+    fitting: {
+      heading: "Как подбирают Stellest",
+      text: "Врач оценивает рецепт и подбирает вариант линз после обследования.",
+    },
     catalogLineIds: ["asstellestairwear", "asstellestairweartint"],
     conditionalLineIds: ["asstellestairweartint"],
     detailsPath: "/stellest-katalog-s-linzami/",
@@ -57,8 +64,10 @@ export const spectacleMyopiaModels: readonly SpectacleMyopiaModel[] = [
     design: "Дополнительная оптическая сила для близи",
     description:
       "Детские линзы для поддержки зрения вблизи. Дополнительная оптическая сила помогает при зрительной работе на близком расстоянии.",
-    fitting:
-      "Врач оценивает аккомодацию и совместную работу глаз. У Myopilux Plus собственный оптический дизайн и показания, которые врач учитывает при выборе линз.",
+    fitting: {
+      heading: "Зачем проверяют зрение вблизи",
+      text: "Дополнительная оптическая сила нужна для работы на близком расстоянии. Врач проверяет, как глаза фокусируются при чтении и как они работают вместе, затем решает, подходит ли ребёнку такой дизайн. На приём можно взять привычные очки и предыдущий рецепт.",
+    },
     catalogLineIds: ["myopiluxplusorma", "myopiluxplusormix"],
   },
   {
@@ -69,8 +78,14 @@ export const spectacleMyopiaModels: readonly SpectacleMyopiaModel[] = [
     design: "C.A.R.E.",
     description:
       "Очковые линзы с центральной зоной коррекции и кольцевыми оптическими элементами для контроля миопии у детей.",
-    fitting:
-      "На обследовании врач определяет параметры коррекции и оценивает, подходит ли ребёнку дизайн MyoCare.",
+    fitting: {
+      heading: "Что означает C.A.R.E.",
+      text: "На поверхности MyoCare зоны коррекции чередуются с кольцевыми элементами. В каталоге представлены линзы MyoCare по параметрам рецепта. На приёме уточните, какая модель и какие параметры указаны в вашем назначении.",
+      source: {
+        label: "Как устроены линзы MyoCare по данным ZEISS",
+        href: "https://www.zeiss.com/vision-care/en/need-new-lenses/myopia-management-lenses.html",
+      },
+    },
     catalogLineIds: ["zeissmyocare"],
   },
   {
@@ -81,8 +96,14 @@ export const spectacleMyopiaModels: readonly SpectacleMyopiaModel[] = [
     design: "D.I.M.S.",
     description:
       "Центральная зона обеспечивает коррекцию зрения, а многочисленные сегменты вокруг неё формируют миопический дефокус.",
-    fitting:
-      "После обследования врач определяет параметры линз и обсуждает с родителями дальнейшее наблюдение.",
+    fitting: {
+      heading: "Какие варианты MiYOSMART можно сравнить",
+      text: "В каталоге есть прозрачные, фотохромные и поляризационные варианты. После обследования обсудите, где ребёнок будет носить очки чаще всего и какой вариант доступен по его рецепту.",
+      source: {
+        label: "Как работает технология D.I.M.S. по данным Hoya",
+        href: "https://www.hoyavision.com/de/produkte/miyosmart/miyosmart-faq/",
+      },
+    },
     catalogLineIds: [
       "miyosmartck-a-ec-bet-e",
       "pe-e-typ-e-miyosmart-ec-bet-e",
@@ -101,8 +122,14 @@ export const contactMyopiaModels: readonly ContactMyopiaModel[] = [
     description:
       "Мягкие однодневные контактные линзы с зонами коррекции зрения и зонами миопического дефокуса.",
     note: "Используйте новую пару каждый день. Нужны подбор и обучение у специалиста.",
-    fitting:
-      "На приёме специалист проверяет посадку линз и обучает ребёнка и родителей надеванию и снятию.",
+    fitting: {
+      heading: "Что происходит на первой примерке MiSight",
+      text: "Специалист проверяет, как линза сидит на глазу и как ребёнок в ней видит. На обучении ребёнок пробует надеть и снять линзы, а родитель узнаёт, как ему помочь. Производитель рекомендует иметь под рукой запасные линзы или очки.",
+      source: {
+        label: "Инструкция CooperVision для пользователей MiSight",
+        href: "https://coopervision.com/sites/coopervision.com/files/media-document/pib01039_misight_patient_information_booklet_us_rev_a_1.pdf",
+      },
+    },
     packSize: 30,
     catalogSlug: "misight_1_day_30sht_",
   },
@@ -115,7 +142,14 @@ export const contactMyopiaModels: readonly ContactMyopiaModel[] = [
     description:
       "Однодневные контактные линзы с расширенной глубиной фокуса. Возможность применения для конкретного ребёнка оценивает врач.",
     note: "После снятия линзы утилизируют. Хранение и очистка не требуются.",
-    fitting: "Специалист определяет оптическую силу и проверяет посадку линз на глазах ребёнка.",
+    fitting: {
+      heading: "Что подбирают в линзах SEED EDOF",
+      text: "Производитель выпускает варианты с разной глубиной фокуса. На примерке специалист проверяет посадку и качество зрения на разных расстояниях. Применимость для ребёнка нужно сверить с инструкцией к конкретной упаковке.",
+      source: {
+        label: "Варианты и характеристики линз по данным SEED",
+        href: "https://www.seed.co.jp/en/products/contact/soft/1daypure_edof.html",
+      },
+    },
     packSize: 32,
     catalogSlug: "seed_1_day_pure_edof_32sht_1",
   },
@@ -128,7 +162,14 @@ export const contactMyopiaModels: readonly ContactMyopiaModel[] = [
     description:
       "Мягкие бифокальные контактные линзы. Параметры, режим замены и применимость для контроля миопии уточняются при подборе.",
     note: "Ухаживайте за линзами и заменяйте их согласно инструкции к выбранной линзе.",
-    fitting: "На приёме специалист проверяет посадку и объясняет, как ухаживать за линзами.",
+    fitting: {
+      heading: "Как уточнить режим замены Prima Bio",
+      text: "В линейке Prima Bio Bi-focal есть варианты с разным режимом замены. Здесь указана упаковка из шести линз. На приёме сверьте название и режим замены с назначением и попросите специалиста показать, как ухаживать за выбранной моделью.",
+      source: {
+        label: "Бифокальные модели в каталоге OKVision",
+        href: "https://okvision.ru/catalog/bifokalnye/",
+      },
+    },
     packSize: 6,
     catalogSlug: "prima_bio_bi_focal_6sht_",
   },
