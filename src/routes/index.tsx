@@ -12,6 +12,8 @@ import {
   HeartHandshake,
 } from "lucide-react";
 import { SalonsSection } from "@/components/SalonsSection";
+import { AdminEditableArea } from "@/components/AdminEditableArea";
+import { AdminProductAction } from "@/components/AdminProductAction";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
 import { VIRTUAL_TRY_ON_ENABLED } from "@/lib/runtime";
@@ -31,7 +33,8 @@ import {
   NK_SALONS,
   PRIMARY_SALON,
 } from "@/data/contact";
-import { DEFAULT_REGION, useCityStore } from "@/lib/store/city";
+import { DEFAULT_REGION, useCityStore, type RegionCode } from "@/lib/store/city";
+import { useAdminEditMode } from "@/lib/admin-edit-mode";
 import { getHomepageData, getProductGallery, type HomepageLensPromo } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/")({
@@ -291,6 +294,10 @@ const CAT_CELLS = [
   },
 ];
 
+function homepageEditor(block: "popular" | "lens" | "promo", region: RegionCode) {
+  return `/bitrix/admin/o100_homepage.php?lang=ru&city=${region}#${block}`;
+}
+
 function MainV2Page() {
   const initialHomepageData = Route.useLoaderData();
   const recent = articles.slice(0, 2);
@@ -299,6 +306,7 @@ function MainV2Page() {
   const city = useCityStore((state) => state.city);
   const region = useCityStore((state) => state.region);
   const contact = contactForCity(city);
+  const editing = useAdminEditMode();
 
   const { data: { popularModels, contactLensProducts, lensPromo } = { popularModels: [], contactLensProducts: [], lensPromo: null } } = useQuery({
     queryKey: ["homepage", city, region],
@@ -800,7 +808,9 @@ function MainV2Page() {
           .group:hover .o100-podrobnee{color:var(--foreground)!important}
         `}</style>
         <div className="mx-auto max-w-7xl px-4 lg:px-8">
-          <MainV2HitsCarousel products={popularModels} />
+          <AdminEditableArea href={homepageEditor("popular", region)} label="Редактировать подборку популярных моделей" action="Редактировать подборку">
+            <MainV2HitsCarousel products={popularModels} />
+          </AdminEditableArea>
         </div>
       </section>
 
@@ -974,13 +984,13 @@ function MainV2Page() {
       {/* ─────────────────────────────────────────────────────────────
           6a. CONTACT LENS CAROUSEL — real products from catalog data
          ───────────────────────────────────────────────────────────── */}
-      {contactLensProducts.length > 0 && (
+      {(contactLensProducts.length > 0 || editing) && (
         <section
           id="lens-promo"
           style={{ background: "var(--cream)", padding: "clamp(56px, 7vw, 96px) 0" }}
         >
           <div className="mx-auto max-w-7xl px-4 lg:px-8">
-            <MainV2ContactLensCarousel products={contactLensProducts} promo={lensPromo} />
+            <MainV2ContactLensCarousel products={contactLensProducts} promo={lensPromo} region={region} />
           </div>
         </section>
       )}
@@ -1599,6 +1609,7 @@ function MainV2ProductCard({ product }: { product: Product }) {
         boxShadow: "0 1px 2px rgba(0,0,0,0.02), 0 8px 24px -16px rgba(0,0,0,0.08)",
       }}
     >
+      <AdminProductAction id={product.id} name={product.name} />
       <div className="relative block aspect-square">
         <a
           href={productRoute}
@@ -1804,9 +1815,11 @@ function MainV2HitsCarousel({ products }: { products: Product[] }) {
 function MainV2ContactLensCarousel({
   products,
   promo,
+  region,
 }: {
   products: Product[];
   promo: HomepageLensPromo | null;
+  region: RegionCode;
 }) {
   const scroller = useRef<HTMLDivElement>(null);
   const city = useCityStore((state) => state.city);
@@ -1862,7 +1875,11 @@ function MainV2ContactLensCarousel({
         }
       `}</style>
       <Reveal className="flex items-end justify-between gap-4 mb-8 lg:mb-10">
-        <div>
+        <AdminEditableArea
+          href={region === "nvk" ? undefined : homepageEditor("promo", "spb")}
+          label="Редактировать оформление акции на контактные линзы"
+          action="Редактировать акцию"
+        >
           <div
             className="text-[11px] uppercase tracking-[0.22em] mb-3"
             style={{ color: "var(--brand)" }}
@@ -1905,7 +1922,7 @@ function MainV2ContactLensCarousel({
               )}
             </div>
           )}
-        </div>
+        </AdminEditableArea>
         <div className="flex items-center gap-4">
           <a
             href={regionalCatalogHref(lensPromo.href, city)}
@@ -1947,19 +1964,25 @@ function MainV2ContactLensCarousel({
         </div>
       </Reveal>
       <Reveal delay={120}>
-        <div
-          ref={scroller}
-          className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory o100-lens-scroller -mx-4 px-4 lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        <AdminEditableArea
+          href={homepageEditor("lens", region)}
+          label="Редактировать подборку контактных линз"
+          action="Редактировать подборку"
         >
-          {products.map((product) => (
-            <div
-              key={product.slug}
-              className="snap-start shrink-0 w-[72%] first:ml-2 last:mr-2 sm:w-[44%] md:w-[31%] lg:w-[23.5%] lg:first:ml-6 lg:last:mr-6"
-            >
-              <MainV2ContactLensCard product={product} />
-            </div>
-          ))}
-        </div>
+          <div
+            ref={scroller}
+            className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory o100-lens-scroller -mx-4 px-4 lg:mx-0 lg:px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          >
+            {products.map((product) => (
+              <div
+                key={product.slug}
+                className="snap-start shrink-0 w-[72%] first:ml-2 last:mr-2 sm:w-[44%] md:w-[31%] lg:w-[23.5%] lg:first:ml-6 lg:last:mr-6"
+              >
+                <MainV2ContactLensCard product={product} />
+              </div>
+            ))}
+          </div>
+        </AdminEditableArea>
       </Reveal>
       <div className="mt-6 sm:hidden">
         <a
@@ -2008,6 +2031,7 @@ function MainV2ContactLensCard({ product }: { product: Product }) {
         boxShadow: "var(--shadow-sm)",
       }}
     >
+      <AdminProductAction id={product.id} name={product.name} />
       <div
         className="relative aspect-square overflow-hidden"
         style={{
