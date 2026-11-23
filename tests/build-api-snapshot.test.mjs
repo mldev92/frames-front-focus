@@ -37,6 +37,10 @@ test('разные города, разделы и варианты не сме�
   assert.notEqual(apiKey(key.replace('opravy','other'),binding.origin),key);
   for(const value of ['/api/store/orders.php','/api/store/product.php?slug=a&slug=b','https://other.test/api/store/product.php','/bitrix/admin/1c_exchange.php','/upload/private.xml','/sitemap.xml?token=x']) assert.throws(()=>apiKey(value,binding.origin));
   assert.equal(apiKey('/sitemap-iblock-1.xml',binding.origin),'/sitemap-iblock-1.xml');
+  const stellest = '/api/store/lens_search.php?q=Stellest&limit=100&city=spb';
+  assert.equal(apiKey(stellest,binding.origin),'/api/store/lens_search.php?city=spb&limit=100&q=Stellest');
+  assert.throws(()=>apiKey(stellest.replace('spb','nvk'),binding.origin));
+  assert.throws(()=>apiKey(stellest+'&q=Other',binding.origin));
 });
 
 test('общая очередь нескольких Node-процессов: один запрос на ключ, не чаще 1/сек; replay без upstream',async t=>{
