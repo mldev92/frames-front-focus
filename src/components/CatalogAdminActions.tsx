@@ -25,6 +25,7 @@ export function CatalogAdminActions({ sectionPath, city }: { sectionPath: string
   const catalog = `lang=ru&type=catalog&IBLOCK_ID=${city === "nvk" ? 2 : 7}`;
   const sectionActions = [
     { href: `iblock_section_edit.php?${catalog}&ID=${sectionId}`, label: "Редактировать раздел" },
+    { href: `iblock_section_edit.php?${catalog}&ID=0&IBLOCK_SECTION_ID=${sectionId}&find_section_section=${sectionId}`, label: "Добавить подраздел" },
     { href: `cat_product_list.php?${catalog}&find_section_section=${sectionId}`, label: "Товары раздела" },
     { href: `cat_product_edit.php?${catalog}&ID=0&IBLOCK_SECTION_ID=${sectionId}&filter_section=${sectionId}`, label: "Добавить товар" },
   ];
