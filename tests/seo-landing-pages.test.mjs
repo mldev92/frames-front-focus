@@ -156,11 +156,12 @@ test("site search can discover the biometry landing page", async () => {
   assert.match(searchIndex, /"биометрия глаза"/);
 });
 
-test("site search includes published articles and the child-myopia information page", async () => {
+test("site search has distinct entries for myopia comparison and Essilor Stellest", async () => {
   const searchIndex = await read("../src/data/site-search.ts");
   assert.match(searchIndex, /articles\.map/);
   assert.match(searchIndex, /type: "Статья"/);
-  assert.match(searchIndex, /title: "Контроль миопии у детей"/);
+  assert.match(searchIndex, /title: "Линзы для контроля миопии"[\s\S]*?href: "\/linzy-dlya-kontrolya-miopii\/"/);
+  assert.match(searchIndex, /title: "Линзы Essilor Stellest для детей"[\s\S]*?href: "\/stellest-katalog-s-linzami\/"/);
   assert.match(searchIndex, /href: "\/stellest-katalog-s-linzami\/"/);
   assert.match(searchIndex, /"миопия у детей"/);
   assert.match(searchIndex, /"perifocal-perifokal"/);

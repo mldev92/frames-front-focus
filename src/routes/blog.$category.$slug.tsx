@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { getArticle, getArticlesByCategory } from "@/data/articles";
 import type { Article } from "@/data/types";
 import { LensCoatingsArticlePage } from "@/components/pages/LensCoatingsArticlePage";
+import { PROGRESSIVE_CATALOG, progressiveArticles } from "@/lib/progressive-lenses";
 
 const LENS_COATINGS_CATEGORY = "linzy-dlya-ochkov";
 const LENS_COATINGS_SLUG = "pokrytiya-linz-dlya-ochkov";
@@ -42,6 +43,9 @@ function ArticlePage() {
     return <LensCoatingsArticlePage />;
   }
 
+  const showProgressiveCatalog =
+    article.categorySlug === LENS_COATINGS_CATEGORY &&
+    progressiveArticles.some(({ slug }) => slug === article.slug);
   const more = getArticlesByCategory(article.categorySlug)
     .filter((a) => a.slug !== article.slug)
     .slice(0, 3);
@@ -118,6 +122,17 @@ function ArticlePage() {
             </a>
           </div>
         </div>
+      )}
+
+      {showProgressiveCatalog && (
+        <aside className="mx-auto max-w-3xl px-4 pb-10 lg:px-8" aria-label="Каталог прогрессивных линз">
+          <div className="space-y-2 rounded-2xl border border-border bg-cream p-5 sm:p-6">
+            <p className="font-serif text-xl">Сравните прогрессивные линзы и цены</p>
+            <a href={PROGRESSIVE_CATALOG} className="inline-flex min-h-11 items-center gap-1 font-semibold text-brand underline-offset-4 hover:underline">
+              Открыть каталог прогрессивных линз <ChevronRight className="size-4" aria-hidden="true" />
+            </a>
+          </div>
+        </aside>
       )}
 
       <section className="bg-surface">

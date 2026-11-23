@@ -18,6 +18,30 @@ const presentation = new Set([
 ]);
 const print = ts.createPrinter({ removeComments: true });
 const apacheTemplate = "deploy/production.htaccess";
+const redirectTemplate = "deploy/redirects.production.txt";
+const progressiveRedirectPrefix = String.raw`RedirectMatch 301 ^/ochkovye\-linzy/dizayn/progressivnye\.php/?$ https://optika100.com`;
+const progressiveCategory = "/catalog_s/linzy_dlya_ochkov/progressivnye/";
+const progressivePrevious = "/blog/linzy-dlya-ochkov/progressivnye-linzy/";
+const progressiveRedirect = progressiveRedirectPrefix + progressiveCategory;
+
+export function exactReleaseRedirect(line) {
+  if (line === progressiveRedirect) {
+    return {
+      source: "/ochkovye-linzy/dizayn/progressivnye.php/",
+      target: progressiveCategory,
+      retarget: true,
+    };
+  }
+  return exactCatalogRedirect(line);
+}
+
+function retargetsProgressiveRedirect(parent, target) {
+  const before = git("show", parent + ":" + redirectTemplate).split(/\r?\n/);
+  const after = git("show", target + ":" + redirectTemplate).split(/\r?\n/);
+  const previous = progressiveRedirectPrefix + progressivePrevious;
+  if (before.filter((line) => line === previous).length !== 1) return false;
+  return isDeepStrictEqual(before.map((line) => line === previous ? progressiveRedirect : line), after);
+}
 const exactRedirect =
   /^RewriteRule \^(catalog_[sn]\/(?:[a-z0-9_-]+(?:\\x20[a-z0-9_-]+)*\/)*[a-z0-9_-]+(?:\\x20[a-z0-9_-]+)*)\/\?\$ https:\/\/optika100\.com(\/(?:[a-z0-9_-]+\/)+) \[R=301,END\]$/;
 
@@ -296,8 +320,15 @@ export function releaseMode(parent, target = "HEAD") {
       "src/routes/stellest-katalog-s-linzami.tsx",
     ].includes(file)) continue;
     if (file === apacheTemplate) {
-      routingRedirects = addedExactRedirects(parent, target);
-      if (routingRedirects) continue;
+      const added = addedExactRedirects(parent, target);
+      if (added) {
+        routingRedirects = [...(routingRedirects ?? []), ...added];
+        continue;
+      }
+    }
+    if (file === redirectTemplate && retargetsProgressiveRedirect(parent, target)) {
+      routingRedirects = [...(routingRedirects ?? []), progressiveRedirect];
+      continue;
     }
     if (
       buildTools.has(file) ||
@@ -345,6 +376,7 @@ export function releaseMode(parent, target = "HEAD") {
     if (
       /^src\/(?:components\/|hooks\/|lib\/|routes\/|styles\.css$)/.test(file) ||
       file === "src/data/promotions.ts" ||
+      file === "src/data/catalog-seo.ts" ||
       file === "src/content/stellest-katalog-s-linzami.html"
     ) {
       before ??= contract(parent);

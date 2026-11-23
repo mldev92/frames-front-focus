@@ -160,17 +160,16 @@ function ModelPrice({ model, price }: { model: MyopiaModel; price?: number }) {
 }
 
 function CatalogButton({ model, variant }: { model: MyopiaModel; variant?: "outline" }) {
-  const newTab = model.kind === "contact";
   return (
     <Button asChild variant={variant} className="min-h-11 min-w-0 whitespace-normal">
       <a
         href={myopiaCatalogPath(model)}
-        target={newTab ? "_blank" : undefined}
-        rel={newTab ? "noopener noreferrer" : undefined}
+        target="_blank"
+        rel="noopener noreferrer"
         aria-label={`Перейти в каталог — ${model.brand} ${model.name}`}
       >
         Перейти в каталог
-        {newTab && <ExternalLink aria-hidden="true" />}
+        <ExternalLink aria-hidden="true" />
       </a>
     </Button>
   );
@@ -415,8 +414,8 @@ export function MyopiaLensLanding() {
               <p className="text-muted-foreground">3 производителя, 4 линейки линз</p>
             </div>
             <Button asChild variant="outline" className="min-h-11 bg-background">
-              <a href={MYOPIA_SPECTACLE_CATALOG}>
-                Все цены на очковые линзы <ArrowRight aria-hidden="true" />
+              <a href={MYOPIA_SPECTACLE_CATALOG} target="_blank" rel="noopener noreferrer">
+                Все цены на очковые линзы <ExternalLink aria-hidden="true" />
               </a>
             </Button>
           </div>

@@ -5,7 +5,7 @@ import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 import { publishedMatches } from "./published-page.mjs";
-import { exactCatalogRedirect, releaseMode } from "./storefront-release-mode.mjs";
+import { exactReleaseRedirect, releaseMode } from "./storefront-release-mode.mjs";
 import { appendStandaloneSitemap } from "./standalone-pages.mjs";
 import { redirectPaths } from "./catalog-link-check.mjs";
 import { robotsAllows } from "./seo-inventory.mjs";
@@ -108,10 +108,10 @@ for (const route of standalonePaths) {
   routes.push(route);
 }
 for (const line of routingRedirects) {
-  const { source, target } = exactCatalogRedirect(line);
+  const { source, target, retarget = false } = exactReleaseRedirect(line);
   if (
     routes.includes(source) ||
-    redirects.has(source) ||
+    redirects.has(source) !== retarget ||
     baseline.retiredPaths.includes(source) ||
     !routes.includes(target)
   ) {
