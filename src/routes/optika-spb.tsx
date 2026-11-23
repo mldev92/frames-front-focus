@@ -1,3 +1,4 @@
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { createFileRoute } from "@tanstack/react-router";
 import { Clock, Glasses, MapPin, Stethoscope } from "lucide-react";
 import { SeoLandingPage, type SeoFaqItem } from "@/components/pages/SeoLandingPage";
@@ -10,7 +11,7 @@ const description =
   "Салон оптики в Санкт-Петербурге: подбор и покупка очков, контактных линз, солнцезащитных очков, диагностика и биометрия зрения. Адрес салона, запись на приём.";
 const breadcrumbs = [{ label: "Главная", href: "/" }, { label: "Оптика в Санкт-Петербурге" }];
 
-const faq: SeoFaqItem[] = [
+const faq = (phone: string): SeoFaqItem[] => [
   {
     q: "Где находится салон в Санкт-Петербурге?",
     a: "Салон находится по адресу ул. Кирочная, 17, рядом с метро «Чернышевская». Он работает ежедневно с 10:00 до 20:00.",
@@ -25,7 +26,7 @@ const faq: SeoFaqItem[] = [
   },
   {
     q: "Как записаться на диагностику зрения?",
-    a: "Записаться можно через кнопку записи на этой странице или по телефону 8-800-700-0214. Предварительная запись помогает выбрать удобное время визита.",
+    a: `Записаться можно через кнопку записи на этой странице или по телефону ${phone}. Предварительная запись помогает выбрать удобное время визита.`,
   },
   {
     q: "Можно ли заказать очки по готовому рецепту?",
@@ -71,12 +72,13 @@ export const Route = createFileRoute("/optika-spb")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [{ rel: "canonical", href: canonical }],
-    scripts: [breadcrumbSchema(breadcrumbs), faqSchema(faq), localBusinessSchema],
+    scripts: [breadcrumbSchema(breadcrumbs), faqSchema(faq(CONTACT.phone.label)), localBusinessSchema],
   }),
   component: OptikaSpbPage,
 });
 
 function OptikaSpbPage() {
+  const contact = useStorefrontContact("spb");
   return (
     <SeoLandingPage
       eyebrow="Салон на Кирочной, 17"
@@ -96,7 +98,7 @@ function OptikaSpbPage() {
         { icon: Glasses, title: "Очки и линзы", text: "Каталог оправ, линз и солнцезащитных очков", href: "/catalog_s/opravy/" },
         { icon: Clock, title: "Ежедневно", text: PRIMARY_SALON.hours, href: "/contacts/" },
       ]}
-      faq={faq}
+      faq={faq(contact.phone.label)}
       primaryCta={{ label: "Выбрать оправу", href: "/catalog_s/opravy/" }}
       appointmentLabel="Записаться на приём"
     >
@@ -166,8 +168,8 @@ function OptikaSpbPage() {
         странице <a href={PRIMARY_SALON.productionPath}>салона на Кирочной, 17</a>.
       </p>
       <p>
-        Телефон: <a href={CONTACT.phone.href}>{CONTACT.phone.label}</a>. Электронная почта:
-        <a href={CONTACT.email.href}> {CONTACT.email.label}</a>.
+        Телефон: <a href={contact.phone.href}>{contact.phone.label}</a>. Электронная почта:
+        <a href={contact.email.href}> {contact.email.label}</a>.
       </p>
     </SeoLandingPage>
   );

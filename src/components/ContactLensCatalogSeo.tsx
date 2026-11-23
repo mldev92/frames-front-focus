@@ -1,5 +1,6 @@
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { ChevronRight, Eye, ShieldCheck, Stethoscope, Truck } from "lucide-react";
-import { CONTACT, PRIMARY_SALON } from "@/data/contact";
+import { PRIMARY_SALON } from "@/data/contact";
 import { contactLensCatalogFaq, contactLensSubcategories } from "@/data/contact-lens-catalog-seo";
 import type { CatalogPage } from "@/lib/api/bitrix";
 
@@ -125,6 +126,7 @@ export function ContactLensCatalogGuide({ total }: { total: number }) {
 }
 
 export function ContactLensCatalogFooter() {
+  const contact = useStorefrontContact("spb");
   return (
     <section className="mx-auto max-w-7xl px-6 pb-16 pt-12" aria-label="Как выбрать и носить контактные линзы">
       <article className="max-w-5xl space-y-8 text-[15px] leading-7 text-foreground/85 [&_a]:text-brand [&_a]:underline-offset-4 [&_a:hover]:underline [&_h2]:font-serif [&_h2]:text-3xl [&_h2]:leading-tight [&_h3]:text-lg [&_h3]:font-semibold">
@@ -165,7 +167,7 @@ export function ContactLensCatalogFooter() {
           <h2>Салон в Санкт-Петербурге</h2>
           <p className="mt-4">
             Салон расположен по адресу <a href={PRIMARY_SALON.productionPath}>ул. Кирочная, 17</a>, рядом с метро «Чернышевская».
-            Телефон: <a href={CONTACT.phone.href}>{CONTACT.phone.label}</a>, email: <a href={CONTACT.email.href}>{CONTACT.email.label}</a>.
+            Телефон: <a href={contact.phone.href}>{contact.phone.label}</a>, email: <a href={contact.email.href}>{contact.email.label}</a>.
             Здесь можно получить заказ самовывозом и подобрать контактные линзы; актуальные условия доставки подтверждаются при оформлении.
           </p>
           <p className="mt-3">

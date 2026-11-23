@@ -1,6 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowRight, Gift, Info, Star } from "lucide-react";
-import { CONTACT } from "@/data/contact";
+import { useStorefrontContact } from "@/lib/storefront-content";
 
 export const Route = createFileRoute("/loyalty")({
   beforeLoad: () => {
@@ -16,6 +16,7 @@ const PROGRAM_NOTES = [
 ] as const;
 
 function LoyaltyPage() {
+  const contact = useStorefrontContact("spb");
   return (
     <div className="mx-auto max-w-5xl px-4 lg:px-8 py-12 space-y-10">
       <section
@@ -88,11 +89,11 @@ function LoyaltyPage() {
             Поможем уточнить условия программы лояльности
           </h2>
           <div className="mt-6 space-y-3 text-sm text-muted-foreground">
-            <a href={CONTACT.phone.href} className="block rounded-2xl border border-border bg-cream px-4 py-3 text-foreground transition-colors hover:border-brand/35">
-              {CONTACT.phone.label}
+            <a href={contact.phone.href} className="block rounded-2xl border border-border bg-cream px-4 py-3 text-foreground transition-colors hover:border-brand/35">
+              {contact.phone.label}
             </a>
-            <a href={CONTACT.email.href} className="block rounded-2xl border border-border bg-cream px-4 py-3 text-foreground transition-colors hover:border-brand/35">
-              {CONTACT.email.label}
+            <a href={contact.email.href} className="block rounded-2xl border border-border bg-cream px-4 py-3 text-foreground transition-colors hover:border-brand/35">
+              {contact.email.label}
             </a>
           </div>
           <div className="mt-6 flex flex-wrap gap-3">

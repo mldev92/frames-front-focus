@@ -1,3 +1,4 @@
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { useState } from "react";
 import {
   ArrowDown,
@@ -15,7 +16,7 @@ import {
 } from "lucide-react";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { Button } from "@/components/ui/button";
-import { CONTACT, PRIMARY_SALON } from "@/data/contact";
+import { PRIMARY_SALON } from "@/data/contact";
 import { doctorServicePrice, spbBiometryPrice } from "@/data/doctor-prices";
 import { useMyopiaPrices } from "@/hooks/useMyopiaPrices";
 import {
@@ -228,6 +229,7 @@ function PediatricBooking({ service = "glasses" }: { service?: "glasses" | "cont
 }
 
 function ClinicContact() {
+  const contact = useStorefrontContact("spb");
   return (
     <address className="space-y-2 text-sm not-italic leading-relaxed">
       <p className="flex items-start gap-2">
@@ -237,9 +239,9 @@ function ClinicContact() {
       <p>{PRIMARY_SALON.hours}</p>
       <a
         className="font-semibold underline underline-offset-4 hover:text-brand"
-        href={CONTACT.phone.href}
+        href={contact.phone.href}
       >
-        {CONTACT.phone.label}
+        {contact.phone.label}
       </a>
     </address>
   );

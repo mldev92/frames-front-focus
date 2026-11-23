@@ -19,7 +19,7 @@ import {
 import { brandDisplayLabel, LensDetailDialog } from "@/components/LensWizard/LensWizard";
 import { LensSearchRow } from "@/components/LensSearch";
 import { formatPrice, useCart } from "@/lib/store/cart";
-import { CONTACT } from "@/data/contact";
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { PriceSavings } from "@/components/PriceSavings";
 import { useCityStore } from "@/lib/store/city";
@@ -132,6 +132,7 @@ export function LensLinesCatalog({
   onStateChange,
 }: LensLinesCatalogProps) {
   const city = useCityStore((state) => state.city);
+  const phoneHref = useStorefrontContact(city).phone.href;
   const [catalogLines, setCatalogLines] = useState<LensLineCard[] | null>(null);
   const model = getSpectacleMyopiaModel(modelSlug);
   const cards = useMemo(
@@ -429,7 +430,7 @@ export function LensLinesCatalog({
         {shown.length > 0 ? (
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {shown.map((card) => (
-              <LensLineCardView key={card.id} card={card} onBook={() => setAppointmentOpen(true)} />
+              <LensLineCardView key={card.id} card={card} phoneHref={phoneHref} onBook={() => setAppointmentOpen(true)} />
             ))}
           </div>
         ) : (
@@ -530,7 +531,7 @@ export function LensLinesCatalog({
   );
 }
 
-function LensLineCardView({ card, onBook }: { card: LensLineCard; onBook: () => void }) {
+function LensLineCardView({ card, phoneHref, onBook }: { card: LensLineCard; phoneHref: string; onBook: () => void }) {
   const [open, setOpen] = useState(false);
   const [offers, setOffers] = useState<LensRecommendCard[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -675,7 +676,7 @@ function LensLineCardView({ card, onBook }: { card: LensLineCard; onBook: () => 
       <div className="mt-3 grid grid-cols-2 gap-2 text-center text-xs">
         <button type="button" disabled={adding} onClick={() => void addFirstOffer()}
           className="rounded-full bg-brand px-3 py-2.5 font-semibold text-white disabled:opacity-50">{adding ? "Добавляем…" : "В корзину"}</button>
-        <a href={CONTACT.phone.href} className="rounded-full border border-border px-3 py-2.5">Позвонить</a>
+        <a href={phoneHref} className="rounded-full border border-border px-3 py-2.5">Позвонить</a>
         <button type="button" onClick={() => document.dispatchEvent(new CustomEvent("open-callback", { detail: { subject: `Консультация по линзам ${card.title}` } }))}
           className="rounded-full border border-border px-3 py-2.5">Консультация по телефону</button>
         <button type="button" onClick={onBook} className="rounded-full border border-border px-3 py-2.5">Записаться к врачу</button>
@@ -691,7 +692,7 @@ function LensLineCardView({ card, onBook }: { card: LensLineCard; onBook: () => 
           {offers && visibleOffers(offers).length > 0 && (
             <ul className="@container divide-y divide-border rounded-xl border border-border bg-background">
               {visibleOffers(offers).map((offer) => (
-                <LensSearchRow key={offer.id} offer={offer} onShowDetail={setDetailOffer} onBook={onBook} />
+                <LensSearchRow key={offer.id} offer={offer} phoneHref={phoneHref} onShowDetail={setDetailOffer} onBook={onBook} />
               ))}
             </ul>
           )}

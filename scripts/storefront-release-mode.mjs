@@ -314,7 +314,7 @@ export function releaseMode(parent, target = "HEAD") {
     }
     if (
       /^public\/.*\.(?:ico|png|jpe?g|webp|avif|svg|woff2?)$/i.test(file) ||
-      file === "public/storefront-footer-defaults.json"
+      file === "public/storefront-content-defaults.json"
     ) {
       continue;
     }

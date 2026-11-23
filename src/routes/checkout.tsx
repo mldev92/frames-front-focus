@@ -23,7 +23,7 @@ import { useCart, formatPrice } from "@/lib/store/cart";
 import { cartTotals } from "@/lib/cart-totals";
 import { useCityStore } from "@/lib/store/city";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { CONTACT } from "@/data/contact";
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { CityAutocomplete } from "@/components/CityAutocomplete";
 import { formatPhone, isPhoneComplete } from "@/lib/checkout-phone";
 import {
@@ -194,6 +194,7 @@ const PAYMENT_OPTIONS: Array<{ code: PaymentCode; label: string; sub: string }> 
 function Checkout() {
   const isMobile = useIsMobile();
   const regionalCity = useCityStore((state) => state.city);
+  const contact = useStorefrontContact(regionalCity);
   const regionalCityHydrated = useCityStore((state) => state.hydrated);
   const { lines, setQty, consume, legacySyncStatus } = useCart();
   const { subtotal } = cartTotals(lines);
@@ -1305,7 +1306,7 @@ function Checkout() {
               <TrustBadge icon={<Truck size={15} />} text="Бесплатный самовывоз из салона" />
               <TrustBadge
                 icon={<Phone size={15} />}
-                text={`Поддержка специалистов ${CONTACT.phone.label}`}
+                text={`Поддержка специалистов ${contact.phone.label}`}
               />
             </div>
           </div>
