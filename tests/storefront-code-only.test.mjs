@@ -65,6 +65,11 @@ test("release mode follows published route and loader dependencies across commit
   const apacheBaseline = "# BEGIN O100 FRONTEND\nRewriteEngine On\n";
   const redirect = String.raw`RewriteRule ^catalog_s/linzy_dlea\x20ochkov/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/ [R=301,END]`;
   writeFileSync(apache, apacheBaseline);
+  const redirects = "deploy/redirects.production.txt";
+  const legacyPrefix = String.raw`RedirectMatch 301 ^/ochkovye\-linzy/dizayn/progressivnye\.php/?$ https://optika100.com`;
+  const legacyOriginal = legacyPrefix + "/blog/linzy-dlya-ochkov/progressivnye-linzy/";
+  const legacyRetarget = legacyPrefix + "/catalog_s/linzy_dlya_ochkov/progressivnye/";
+  writeFileSync(redirects, legacyOriginal + "\n");
   const rawPath = "src/content/stellest-katalog-s-linzami.html";
   const contentRoute = "src/routes/stellest-katalog-s-linzami.tsx";
   const templateRoute =
@@ -72,6 +77,13 @@ test("release mode follows published route and loader dependencies across commit
   writeFileSync(rawPath, "<h1>Было</h1>");
   writeFileSync(contentRoute, templateRoute);
   const parent = commit();
+  writeFileSync(redirects, legacyRetarget + "\n");
+  assert.deepEqual(releaseMode(parent, commit()), {
+    mode: "code-only", reasons: [], standalonePaths: [], routingRedirects: [legacyRetarget],
+  });
+  writeFileSync(redirects, legacyRetarget + "\n# unrelated change\n");
+  assert.deepEqual(releaseMode(parent, commit()).reasons, [redirects]);
+  writeFileSync(redirects, legacyOriginal + "\n");
   writeFileSync(rawPath, "<h1>Стало</h1>");
   assert.equal(releaseMode(parent, commit()).mode, "code-only");
   writeFileSync(

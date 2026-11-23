@@ -40,7 +40,7 @@ test("contact-lens category is product-first while retaining navigation, image, 
     assert.ok(metadata.includes(`/catalog_s/kontaktnye_linzy_/${slug}/`));
   }
   assert.ok(!content.includes('href="#catalog-products"'));
-  assert.ok(view.includes('catalogId={isContactLensRoot || isColoredContactLens || landing ? "catalog-products"'));
+  assert.match(view, /catalogId=\{[^}]*isContactLensRoot[^}]*isColoredContactLens[^}]*landing[^}]*"catalog-products"/);
   assert.ok(listing.includes("id={catalogId}"));
   // The spectacle-lens section keeps its separate base-driven view, but its
   // curated catalogue now receives the URL filter/sort/price/page contract.

@@ -6,10 +6,16 @@ import { frameCategoryForPath } from "./frame-category-landings.ts";
 export interface CatalogSeoEntry {
   metaTitle: string;
   metaDescription: string;
-  content: "colored" | "multifocal" | "women-frames" | "brand-frames" | "frame-category";
+  content: "colored" | "multifocal" | "women-frames" | "brand-frames" | "frame-category" | "progressive";
 }
 
 const sectionSeo: Record<string, CatalogSeoEntry> = {
+  "linzy_dlya_ochkov/progressivnye": {
+    metaTitle: "Прогрессивные линзы для очков — купить в Санкт-Петербурге · ОПТИКА 100%",
+    metaDescription:
+      "Прогрессивные линзы Essilor, Varilux и Hoyalux. Сравните модели, цены и покрытия в каталоге ОПТИКА 100% и узнайте, как подобрать линзы для дали, компьютера и чтения.",
+    content: "progressive",
+  },
   "opravy/zhenskie": {
     metaTitle: "Женские оправы для очков в Санкт-Петербурге — Оптика 100%",
     metaDescription:

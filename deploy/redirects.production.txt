@@ -26,7 +26,7 @@ RedirectMatch 301 ^/ochkovye\-linzy/dizayn/asfericheskie\-linzy\.php/?$ https://
 RedirectMatch 301 ^/ochkovye\-linzy/dizayn/linzy\-dlya\-komfortnoy\-raboty\-za\-kompyuterom\.php/?$ https://optika100.com/blog/linzy-dlya-ochkov/linzy-dlya-ochkov-crizal-eyezen-zashchita-i-komfort-glaz-pri-rabote-s-ekranami/
 RedirectMatch 301 ^/ochkovye\-linzy/dizayn/ofisnye\.php/?$ https://optika100.com/blog/linzy-dlya-ochkov/ofisnye-linzy/
 RedirectMatch 301 ^/ochkovye\-linzy/dizayn/perifocal\-perifokal\.php/?$ https://optika100.com/blog/linzy-dlya-ochkov/perifocal-perifokal/
-RedirectMatch 301 ^/ochkovye\-linzy/dizayn/progressivnye\.php/?$ https://optika100.com/blog/linzy-dlya-ochkov/progressivnye-linzy/
+RedirectMatch 301 ^/ochkovye\-linzy/dizayn/progressivnye\.php/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/progressivnye/
 RedirectMatch 301 ^/ochkovye\-linzy/dizayn/?$ https://optika100.com/blog/linzy-dlya-ochkov/vidy-ochkovykh-linz/
 RedirectMatch 301 ^/ochkovye\-linzy/pokrytiya\.php/?$ https://optika100.com/blog/linzy-dlya-ochkov/pokrytiya-linz-dlya-ochkov/
 RedirectMatch 301 ^/ochkovye\-linzy/solntsezashchitnye\-linzy/dlya\-vozhdeniya\.php/?$ https://optika100.com/catalog_s/linzy_dlya_ochkov/

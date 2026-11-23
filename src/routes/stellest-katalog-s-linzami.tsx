@@ -45,16 +45,17 @@ async function loadStellestOffers(city: CityCode, signal?: AbortSignal) {
       || a.line.localeCompare(b.line, "ru"));
 }
 
+const stellestTitle = "Линзы Essilor Stellest для детей в СПб — цены и подбор · ОПТИКА 100%";
+const stellestDescription =
+  "Подбор очковых линз Essilor Stellest в Санкт-Петербурге, на Кирочной, 17. Модели, покрытия, цены, технология H.A.L.T. и запись на диагностику.";
+
 export const Route = createFileRoute("/stellest-katalog-s-linzami")({
   head: () => ({
     meta: [
-      { title: "Контроль миопии Stellest · ОПТИКА 100%" },
-      {
-        name: "description",
-        content:
-          "Линзы Essilor Stellest для контроля миопии у детей. Как устроены линзы, что показало исследование и как записаться на диагностику в ОПТИКА 100%.",
-      },
-      { property: "og:title", content: "Контроль миопии Stellest · ОПТИКА 100%" },
+      { title: stellestTitle },
+      { name: "description", content: stellestDescription },
+      { property: "og:title", content: stellestTitle },
+      { property: "og:description", content: stellestDescription },
       { property: "og:image", content: "/stellest/hero-child-stellest.webp" },
     ],
   }),
