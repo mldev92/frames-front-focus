@@ -84,7 +84,7 @@ function ModelCard({ model, price }: { model: MyopiaModel; price?: number }) {
   );
 }
 
-function PediatricBooking() {
+function PediatricBooking({ service = "glasses" }: { service?: "glasses" | "contacts" }) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -98,7 +98,7 @@ function PediatricBooking() {
       <AppointmentModal
         open={open}
         onOpenChange={setOpen}
-        initialSelection={{ salonId: PRIMARY_SALON.id, ageType: "child" }}
+        initialSelection={{ salonId: PRIMARY_SALON.id, ageType: "child", service }}
       />
     </>
   );
@@ -115,6 +115,14 @@ export function MyopiaLensLanding() {
           Очковые и контактные линзы для детей в Санкт-Петербурге. Сравните оптические дизайны и
           обсудите подходящий вариант с врачом на приёме.
         </p>
+        <nav aria-label="Разделы страницы" className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" className="min-h-11">
+            <a href="#myopia-spectacles">Линзы для очков</a>
+          </Button>
+          <Button asChild variant="outline" className="min-h-11">
+            <a href="#myopia-contacts">Контактные линзы</a>
+          </Button>
+        </nav>
       </header>
 
       <section aria-labelledby="myopia-spectacles" className="space-y-5">
@@ -184,8 +192,13 @@ export function MyopiaLensDetail({ model }: { model: MyopiaModel }) {
         <p className="leading-relaxed text-muted-foreground">{model.description}</p>
       </header>
       <section className="space-y-3 rounded-2xl border border-border bg-card p-5 sm:p-6">
-        <h2 className="font-serif text-2xl">Подбор и использование</h2>
-        <p className="leading-relaxed">{model.fitting}</p>
+        <h2 className="font-serif text-2xl">{model.fitting.heading}</h2>
+        <p className="leading-relaxed">{model.fitting.text}</p>
+        {model.fitting.source && (
+          <a className="text-sm underline underline-offset-4" href={model.fitting.source.href}>
+            {model.fitting.source.label}
+          </a>
+        )}
         {model.kind === "contact" && <p className="leading-relaxed">{model.note}</p>}
         <p className="text-sm leading-relaxed text-muted-foreground">
           {model.kind === "spectacle" ? spectacleNotice : contactNotice}
@@ -194,7 +207,7 @@ export function MyopiaLensDetail({ model }: { model: MyopiaModel }) {
       <ModelPrice model={model} price={price} />
       <div className="flex flex-wrap gap-3">
         <CatalogButton model={model} />
-        <PediatricBooking />
+        <PediatricBooking service={model.kind === "contact" ? "contacts" : "glasses"} />
       </div>
     </article>
   );

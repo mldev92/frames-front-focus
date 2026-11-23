@@ -6,6 +6,7 @@ import { AppointmentModal } from "@/components/AppointmentModal";
 import { getStellestLensProducts } from "@/lib/api/bitrix";
 import { productCardHref } from "@/data/categories";
 import type { Product } from "@/data/types";
+import { contactMyopiaModels } from "@/lib/myopia-lenses";
 import { fetchLensSearch, type LensRecommendCard } from "@/lib/api/lens-recommend";
 import { formatPrice, useCart } from "@/lib/store/cart";
 import { CONTACT } from "@/data/contact";
@@ -17,6 +18,7 @@ import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
 import stellestHtml from "@/content/stellest-katalog-s-linzami.html?raw";
 
 const stellestInnerHtml = { __html: stellestHtml };
+const myopiaContactSkus = new Set(contactMyopiaModels.map((model) => model.catalogSlug));
 
 export const Route = createFileRoute("/stellest-katalog-s-linzami")({
   head: () => ({
@@ -25,7 +27,7 @@ export const Route = createFileRoute("/stellest-katalog-s-linzami")({
       {
         name: "description",
         content:
-          "Контроль миопии у детей: линзы Essilor Stellest, MiSight 1 Day, диагностика и наблюдение в ОПТИКА 100%.",
+          "Линзы Essilor Stellest для контроля миопии у детей. Как устроены линзы, что показало исследование и как записаться на диагностику в ОПТИКА 100%.",
       },
       { property: "og:title", content: "Контроль миопии Stellest · ОПТИКА 100%" },
       { property: "og:image", content: "/stellest/hero-child-stellest.webp" },
@@ -48,8 +50,7 @@ function StellestCatalogPage() {
     initialData: region === DEFAULT_REGION ? loaderLenses : undefined,
     placeholderData: region === "spb" ? () => loaderLenses : undefined,
   });
-  // Если в админке для города ничего не выбрано, остаются статичные карточки из HTML.
-  const showLiveLenses = lensProducts.length > 0 && liveLensTarget !== null;
+  const myopiaContactLenses = lensProducts.filter((product) => myopiaContactSkus.has(product.slug));
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -180,35 +181,6 @@ function StellestCatalogPage() {
       addClick(button, quizReset);
     });
 
-    root.querySelectorAll<HTMLElement>(".cert-carousel").forEach((carousel) => {
-      const slides = Array.from(carousel.querySelectorAll<HTMLElement>(".cert-slide"));
-      const dots = Array.from(carousel.querySelectorAll<HTMLButtonElement>(".cert-dot"));
-      let current = Math.max(
-        0,
-        slides.findIndex((slide) => slide.classList.contains("active")),
-      );
-
-      const goTo = (index: number) => {
-        if (!slides.length) return;
-
-        slides[current]?.classList.remove("active");
-        dots[current]?.classList.remove("active");
-        current = (index + slides.length) % slides.length;
-        slides[current].classList.add("active");
-        dots[current]?.classList.add("active");
-      };
-
-      const prev = carousel.querySelector<HTMLButtonElement>(".cert-prev");
-      const next = carousel.querySelector<HTMLButtonElement>(".cert-next");
-
-      if (prev) addClick(prev, () => goTo(current - 1));
-      if (next) addClick(next, () => goTo(current + 1));
-
-      dots.forEach((dot, index) => {
-        addClick(dot, () => goTo(Number(dot.dataset.idx ?? index)));
-      });
-    });
-
     root.querySelectorAll<HTMLButtonElement>(".faq-q").forEach((button) => {
       addClick(button, () => {
         const item = button.closest(".faq-item");
@@ -232,11 +204,6 @@ function StellestCatalogPage() {
     return () => cleanups.forEach((cleanup) => cleanup());
   }, []);
 
-  useEffect(() => {
-    const staticGrid = rootRef.current?.querySelector<HTMLElement>("#stellest-contact-lens-static");
-    if (staticGrid) staticGrid.style.display = showLiveLenses ? "none" : "";
-  }, [showLiveLenses]);
-
   return (
     <>
       <style>{stellestCss}</style>
@@ -249,8 +216,8 @@ function StellestCatalogPage() {
         <StellestLensCatalog onBook={() => setAptOpen(true)} />,
         catalogTarget,
       )}
-      {showLiveLenses && createPortal(
-        <StellestContactLenses products={lensProducts} />,
+      {liveLensTarget && myopiaContactLenses.length > 0 && createPortal(
+        <StellestContactLenses products={myopiaContactLenses} />,
         liveLensTarget,
       )}
       <AppointmentModal open={aptOpen} onOpenChange={setAptOpen} />

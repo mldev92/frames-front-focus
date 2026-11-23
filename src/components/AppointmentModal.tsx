@@ -95,13 +95,14 @@ const APPOINTMENT_SALONS: AppointmentSalon[] = APPOINTMENT_CLINICS.map((clinic) 
 interface Props {
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  initialSelection?: { salonId: VerifiedSalon["id"]; ageType: AgeType };
+  initialSelection?: { salonId: VerifiedSalon["id"]; ageType: AgeType; service?: ServiceType };
 }
 
 export function AppointmentModal({ open, onOpenChange, initialSelection }: Props) {
   const city = useCityStore((state) => state.city);
   const salonCity = city === "nvk" ? "nk" : "spb";
   const initialAgeType = initialSelection?.ageType ?? "adult";
+  const initialService = initialSelection?.service ?? "glasses";
   const initialSalon = initialSelection
     ? APPOINTMENT_SALONS.find((salon) => salon.id === initialSelection.salonId) ?? null
     : null;
@@ -112,7 +113,7 @@ export function AppointmentModal({ open, onOpenChange, initialSelection }: Props
   const [ageType, setAgeType] = useState<AgeType>(initialAgeType);
   const [salonOpen, setSalonOpen] = useState(false);
 
-  const [service, setService] = useState<ServiceType>("glasses");
+  const [service, setService] = useState<ServiceType>(initialService);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [slotsError, setSlotsError] = useState("");
   const [slots, setSlots] = useState<AppointmentSlot[]>([]);
@@ -288,7 +289,7 @@ export function AppointmentModal({ open, onOpenChange, initialSelection }: Props
     setChosenSalon(initialSalon);
     setAgeType(initialAgeType);
     setSalonOpen(false);
-    setService("glasses");
+    setService(initialService);
     setSlotsLoading(false);
     setSlotsError("");
     slotsRef.current = [];

@@ -180,6 +180,7 @@ function contract(ref) {
   }
   function dependency(importer, module) {
     if (!module.startsWith("@/") && !module.startsWith(".")) return;
+    module = module.replace(/\?raw$/, "");
     const base = module.startsWith("@/")
       ? "src/" + module.slice(2)
       : path.posix.join(path.posix.dirname(importer), module);
@@ -326,7 +327,8 @@ export function releaseMode(parent, target = "HEAD") {
     // Параметры сборки, инвентарь, SEO и серверные маршруты проверяются полным путём.
     if (
       /^src\/(?:components\/|hooks\/|lib\/|routes\/|styles\.css$)/.test(file) ||
-      file === "src/data/promotions.ts"
+      file === "src/data/promotions.ts" ||
+      file === "src/content/stellest-katalog-s-linzami.html"
     ) {
       before ??= contract(parent);
       after ??= contract(target);
