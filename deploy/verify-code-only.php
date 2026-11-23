@@ -73,7 +73,6 @@ $pages = $binding['standalonePaths'] ?? [];
 if (!is_array($pages) || !array_is_list($pages)) throw new RuntimeException('Invalid standalone page list');
 $parentRoutes = $routes($parent['files']);
 $newRoutes = $parentRoutes;
-$entries = '';
 foreach ($pages as $path) {
     if (!is_string($path) || !preg_match('~^/(?:[a-z][a-z0-9]*(?:-[a-z0-9]+)*/)+$~D', $path)
         || preg_match('~^/(api|assets|auth|basket|bitrix|catalog|checkout|local|o100|order|payment|personal|robots|sale|search|sitemap|upload|verification)(?:-|/)~', $path)
@@ -88,7 +87,6 @@ foreach ($pages as $path) {
     $file = ltrim($path, '/').'index.html';
     if (in_array($file, $newRoutes, true)) throw new RuntimeException('Duplicate standalone page path');
     $newRoutes[] = $file;
-    $entries .= '  <url><loc>https://optika100.com'.$path."</loc></url>\n";
 }
 sort($newRoutes, SORT_STRING);
 if ($routes($manifest['files']) !== $newRoutes || $manifest['routeCount'] !== $parent['routeCount'] + count($pages)
@@ -98,6 +96,7 @@ if ($routes($manifest['files']) !== $newRoutes || $manifest['routeCount'] !== $p
 $sitemapHash = $parent['files']['sitemap.xml'];
 $sitemapPaths = array_merge($pages, $additionalCatalogPaths);
 if ($sitemapPaths) {
+    $entries = '';
     $sitemap = file_get_contents($current.'/sitemap.xml');
     $end = strpos($sitemap, '</urlset>');
     if (hash('sha256', $sitemap) !== $sitemapHash || $end === false || !preg_match('~^</urlset>\s*$~D', substr($sitemap, $end))) {
@@ -106,8 +105,9 @@ if ($sitemapPaths) {
     foreach ($sitemapPaths as $path) {
         $url = 'https://optika100.com'.$path;
         if (str_contains($sitemap, '<loc>'.$url.'</loc>') || str_contains($sitemap, '<loc>'.rtrim($url, '/').'</loc>')) {
-            throw new RuntimeException('Standalone page already in published sitemap');
+            throw new RuntimeException('Page already in published sitemap');
         }
+        $entries .= '  <url><loc>'.$url."</loc></url>\n";
     }
     $sitemapHash = hash('sha256', substr_replace($sitemap, $entries, $end, 0));
 }
