@@ -20,7 +20,8 @@ import type { LucideIcon } from "lucide-react";
 import { yandexMapsSearchHref } from "@/components/ContactActionButtons";
 import { Reveal } from "@/components/Reveal";
 import { YandexMap } from "@/components/YandexMap";
-import { contactForCity, NK_SALONS, SPB_SALONS } from "@/data/contact";
+import { NK_SALONS, SPB_SALONS } from "@/data/contact";
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { REPAIR_PRICES_DATE, repairPriceColumns } from "@/data/repair-prices";
 import { useCityStore } from "@/lib/store/city";
 
@@ -100,7 +101,7 @@ const secondaryButton =
   "inline-flex items-center justify-center rounded-full border border-border px-6 py-3 text-sm font-medium transition-colors hover:border-foreground hover:bg-foreground hover:text-primary-foreground";
 export function RepairPage() {
   const city = useCityStore((state) => state.city);
-  const contact = contactForCity(city);
+  const contact = useStorefrontContact(city);
   const localSalon = city === "nvk" ? NK_SALONS[0] : SPB_SALONS[0];
   const cityInPrepositional = city === "nvk" ? "Новокузнецке" : "Санкт-Петербурге";
   const priceColumns = repairPriceColumns(city);

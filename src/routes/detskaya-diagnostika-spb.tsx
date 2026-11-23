@@ -1,3 +1,4 @@
+import { useStorefrontContact } from "@/lib/storefront-content";
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Check, ChevronRight } from "lucide-react";
@@ -168,6 +169,7 @@ const bookingButton =
   "rounded-full bg-brand px-4 py-3 text-center text-sm font-semibold text-brand-foreground transition-opacity hover:opacity-90 sm:px-6";
 
 function PediatricEyeExamsPage() {
+  const contact = useStorefrontContact("spb");
   const [bookingOpen, setBookingOpen] = useState(false);
   const openBooking = () => setBookingOpen(true);
 
@@ -206,10 +208,10 @@ function PediatricEyeExamsPage() {
                 {bookingLabel}
               </button>
               <a
-                href={CONTACT.phone.href}
+                href={contact.phone.href}
                 className="px-2 py-3 text-sm font-semibold hover:underline"
               >
-                {CONTACT.phone.label}
+                {contact.phone.label}
               </a>
             </div>
           </div>
@@ -336,10 +338,10 @@ function PediatricEyeExamsPage() {
                 {bookingLabel}
               </button>
               <a
-                href={CONTACT.phone.href}
+                href={contact.phone.href}
                 className="px-2 py-3 text-sm font-semibold hover:underline"
               >
-                {CONTACT.phone.label}
+                {contact.phone.label}
               </a>
             </div>
           </div>

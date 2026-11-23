@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CONTACT, LEGAL_DETAILS } from "@/data/contact";
+import { LEGAL_DETAILS } from "@/data/contact";
+import { useStorefrontContact } from "@/lib/storefront-content";
 
 export const Route = createFileRoute("/requisites")({
   head: () => ({
@@ -15,16 +16,16 @@ export const Route = createFileRoute("/requisites")({
   component: RequisitesPage,
 });
 
-const rows: [string, string][] = [
-  ["Наименование", LEGAL_DETAILS.name],
-  ["ИНН", LEGAL_DETAILS.inn],
-  ["ОГРНИП", LEGAL_DETAILS.ogrnip],
-  ["Адрес", LEGAL_DETAILS.address],
-  ["Телефон", CONTACT.phone.label],
-  ["E-mail", CONTACT.email.label],
-];
-
 function RequisitesPage() {
+  const contact = useStorefrontContact("spb");
+  const rows = [
+    ["Наименование", LEGAL_DETAILS.name],
+    ["ИНН", LEGAL_DETAILS.inn],
+    ["ОГРНИП", LEGAL_DETAILS.ogrnip],
+    ["Адрес", LEGAL_DETAILS.address],
+    ["Телефон", contact.phone.label],
+    ["E-mail", contact.email.label],
+  ];
   return (
     <div className="mx-auto max-w-3xl px-4 lg:px-8 py-12">
       <h1 className="font-serif text-4xl lg:text-5xl">Реквизиты</h1>

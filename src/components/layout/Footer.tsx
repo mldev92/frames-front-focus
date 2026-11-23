@@ -1,39 +1,23 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import { Mail, MessageCircle, Send } from "lucide-react";
-import { AdminEditableArea } from "@/components/AdminEditableArea";
+import { AdminEditAction, AdminEditableArea } from "@/components/AdminEditableArea";
 import { AppointmentModal } from "@/components/AppointmentModal";
-import { contactForCity } from "@/data/contact";
 import { SiteLogo } from "./SiteLogo";
 import { useCityStore } from "@/lib/store/city";
 import { serviceHref } from "@/data/services";
 import { regionalSiteHref } from "@/lib/city-routing";
-import footerDefaults from "../../../public/storefront-footer-defaults.json";
+import { siteContentEditor, storefrontContact, useStorefrontContent } from "@/lib/storefront-content";
 
 const footerMenuKeys = ["catalog", "services", "company", "help"] as const;
-
-function footerEditor(block: keyof typeof footerDefaults) {
-  return `/bitrix/admin/o100_footer.php?block=${block}`;
-}
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
   const city = useCityStore((state) => state.city);
-  const contact = contactForCity(city);
   const [appointmentOpen, setAppointmentOpen] = useState(false);
-  const { data: savedBlocks } = useQuery<Partial<typeof footerDefaults>>({
-    queryKey: ["storefront-footer-content"],
-    enabled: !import.meta.env.SSR,
-    retry: false,
-    queryFn: async ({ signal }) => {
-      const response = await fetch("/api/store/footer.php", { credentials: "omit", signal });
-      if (!response.ok) throw new Error("Footer content is unavailable");
-      return response.json();
-    },
-  });
-  const intro = savedBlocks?.intro ?? footerDefaults.intro;
+  const content = useStorefrontContent();
+  const contact = storefrontContact(city, content);
   const cityColumns = footerMenuKeys.map((key) => {
-    const column = savedBlocks?.[key] ?? footerDefaults[key];
+    const column = content[key];
     return {
       ...column,
       key,
@@ -55,15 +39,15 @@ export function Footer() {
     <footer className="mt-24 pt-16 pb-8" style={{ background: "#FFFEFE" }}>
       <div className="mx-auto max-w-7xl px-4 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-10 mb-12">
-          <AdminEditableArea className="col-span-2" href={footerEditor("intro")} label="Редактировать текст подвала" action="Редактировать текст">
+          <AdminEditableArea className="col-span-2" href={siteContentEditor("intro")} label="Редактировать текст подвала" action="Редактировать текст">
             <SiteLogo imageClassName="h-10 sm:h-12" loading="lazy" />
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
-              {intro.text}
+              {content.intro.text}
             </p>
           </AdminEditableArea>
 
           {cityColumns.map((col) => (
-            <AdminEditableArea key={col.key} href={footerEditor(col.key)} label={`Редактировать меню подвала: ${col.title}`} action="Редактировать меню">
+            <AdminEditableArea key={col.key} href={siteContentEditor(col.key)} label={`Редактировать меню подвала: ${col.title}`} action="Редактировать меню">
               <div className="font-serif text-sm uppercase tracking-wider mb-4">{col.title}</div>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 {col.links.map(([label, href]) => {
@@ -98,13 +82,14 @@ export function Footer() {
 
         <div className="border-t border-border pt-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 text-xs text-muted-foreground">
           <div>
-            © {currentYear} ОПТИКА 100% · {city === "spb" ? "ул. Кирочная, 17, СПб" : "Новокузнецк"}{" "}
-            ·{" "}
+            <AdminEditAction className="mr-2" href={siteContentEditor("legal")} label="Редактировать подпись в подвале" action="Редактировать подпись" />
+            © {currentYear} {content.legal.text} · {content.legal[city]} ·{" "}
             <a href={contact.email.href} className="hover:text-foreground">
               {contact.email.label}
             </a>
           </div>
           <div className="flex gap-4">
+            <AdminEditAction href={siteContentEditor(`contact_${city}`)} label="Редактировать контакты региона" action="Редактировать контакты" />
             <a
               href={contact.telegram.href}
               target="_blank"

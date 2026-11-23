@@ -25,9 +25,8 @@ import { Calendar, Users, Award, Phone } from "lucide-react";
 import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
+import { useStorefrontContact } from "@/lib/storefront-content";
 import {
-  CONTACT,
-  contactForCity,
   META_EXTREMIST_NOTE,
   NEWS_CHANNELS,
   NK_SALONS,
@@ -305,7 +304,7 @@ function MainV2Page() {
   const [vtoOpen, setVtoOpen] = useState(false);
   const city = useCityStore((state) => state.city);
   const region = useCityStore((state) => state.region);
-  const contact = contactForCity(city);
+  const contact = useStorefrontContact(city);
   const editing = useAdminEditMode();
 
   const { data: { popularModels, contactLensProducts, lensPromo } = { popularModels: [], contactLensProducts: [], lensPromo: null } } = useQuery({
@@ -1183,10 +1182,10 @@ function MainV2Page() {
                 Свяжитесь с нами
               </div>
               <a
-                href={CONTACT.phone.href}
+                href={contact.phone.href}
                 className="text-lg font-semibold text-foreground hover:text-brand transition-colors"
               >
-                {CONTACT.phone.label}
+                {contact.phone.label}
               </a>
               <p className="text-xs text-muted-foreground mt-1 mb-4">
                 {city === "nvk" ? NK_SALONS[0].hours : PRIMARY_SALON.hours}

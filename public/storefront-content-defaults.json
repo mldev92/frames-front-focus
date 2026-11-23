@@ -1,5 +1,35 @@
 {
   "intro": { "text": "Сеть оптических салонов и интернет-магазин. Подбор очков и контактных линз с полным циклом услуг." },
+  "legal": { "text": "ОПТИКА 100%", "spb": "ул. Кирочная, 17, СПб", "nvk": "Новокузнецк" },
+  "phone": { "number": "8-800-700-0214" },
+  "contact_spb": {
+    "email": "sale-spb@optika100.com",
+    "telegram": "optica100_spb",
+    "max": "https://max.ru/u/f9LHodD0cOI_EAJSmZrDRX2jCU-Utq7h8zwAFsU9joaV_FY1vzI0MufrfVg"
+  },
+  "contact_nvk": {
+    "email": "sale@optika100.com",
+    "telegram": "optica_100",
+    "max": "https://max.ru/u/f9LHodD0cOI9mxgb1lKx2s5xbbX2Psd4fGNop-GbIAElZQq-ARajInTU6GA"
+  },
+  "header": {
+    "links": [
+      ["Оправы", "/catalog_s/opravy/"],
+      ["Солнцезащитные очки", "/catalog_s/solntsezashchitnye_ochki/"],
+      ["Контактные линзы", "/catalog_s/kontaktnye_linzy_/"],
+      ["Линзы для очков", "/catalog_s/linzy_dlya_ochkov/"],
+      ["Аксессуары", "/catalog_s/soputstvuyushchie_tovary/"],
+      ["Услуги", "/#services"],
+      ["Салоны", "/contacts/"]
+    ]
+  },
+  "header_promos": {
+    "links": [
+      ["ДО 25% НА ПРОГРЕССИВНЫЕ ЛИНЗЫ ESSILOR", "/catalog_s/linzy_dlya_ochkov/?brand=ESSILOR&lensType=Прогрессивные&technology=Varilux&discount=25"],
+      ["ДО 90% НА ЛИНЗЫ STELLEST", "/stellest-katalog-s-linzami/"],
+      ["MISIGHT 1 DAY 90: 20 ЛИНЗ В ПОДАРОК И СКИДКА 2 000 ₽", "/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/"]
+    ]
+  },
   "catalog": {
     "title": "Каталог",
     "links": [
