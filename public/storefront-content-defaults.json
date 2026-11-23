@@ -30,6 +30,25 @@
       ["MISIGHT 1 DAY 90: 20 ЛИНЗ В ПОДАРОК И СКИДКА 2 000 ₽", "/catalog_s/kontaktnye_linzy_/dlya_kontrolya_miopii/misight_1_day_90sht_/"]
     ]
   },
+  "hero": {
+    "image_first": "/new_main_banner.webp",
+    "image_second": "/main_banner_3.webp",
+    "eyebrow": "Новая коллекция · Осень 2026",
+    "headline": "Видеть мир",
+    "subline": "на",
+    "accent": "100%",
+    "description": "Современные очки, профессиональный подбор и забота о вашем зрении.",
+    "button": "Записаться на проверку"
+  },
+  "myopia_banner": {
+    "image": "/main_bottom_child_banner.webp",
+    "eyebrow": "Забота о зрении",
+    "headline": "Контроль миопии",
+    "subline": "у детей и подростков",
+    "description": "Сравните очковые и контактные линзы для контроля миопии и узнайте, как проходит подбор в Санкт-Петербурге.",
+    "button": "Сравнить линзы",
+    "link": "/linzy-dlya-kontrolya-miopii/"
+  },
   "catalog": {
     "title": "Каталог",
     "links": [

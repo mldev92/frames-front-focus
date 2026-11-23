@@ -27,7 +27,7 @@ export function storefrontContact(city: CityCode, content: Pick<typeof defaults,
   const { email, telegram, max } = content[`contact_${city}`];
   return {
     phone: { label: number, href: `tel:${number.replace(/[^+\d]/g, "")}` },
-    email: { label: email, href: `mailto:${email}` },
+    email: { label: email, href: `mailto:${encodeURIComponent(email).replace(/%40/g, "@")}` },
     telegram: { label: `@${telegram}`, href: `tg://resolve?domain=${telegram}` },
     max: { label: "MAX", href: max },
   };

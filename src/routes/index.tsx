@@ -12,7 +12,7 @@ import {
   HeartHandshake,
 } from "lucide-react";
 import { SalonsSection } from "@/components/SalonsSection";
-import { AdminEditableArea } from "@/components/AdminEditableArea";
+import { AdminEditAction, AdminEditableArea } from "@/components/AdminEditableArea";
 import { AdminProductAction } from "@/components/AdminProductAction";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { VirtualTryOnModal } from "@/components/VirtualTryOnModal";
@@ -25,7 +25,7 @@ import { Calendar, Users, Award, Phone } from "lucide-react";
 import { promotions } from "@/data/promotions";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import type { Product } from "@/data/types";
-import { useStorefrontContact } from "@/lib/storefront-content";
+import { siteContentEditor, storefrontContact, useStorefrontContent } from "@/lib/storefront-content";
 import {
   META_EXTREMIST_NOTE,
   NEWS_CHANNELS,
@@ -304,7 +304,9 @@ function MainV2Page() {
   const [vtoOpen, setVtoOpen] = useState(false);
   const city = useCityStore((state) => state.city);
   const region = useCityStore((state) => state.region);
-  const contact = useStorefrontContact(city);
+  const content = useStorefrontContent();
+  const contact = storefrontContact(city, content);
+  const { hero, myopia_banner: myopiaBanner } = content;
   const editing = useAdminEditMode();
 
   const { data: { popularModels, contactLensProducts, lensPromo } = { popularModels: [], contactLensProducts: [], lensPromo: null } } = useQuery({
@@ -432,10 +434,8 @@ function MainV2Page() {
           }
         `}</style>
 
-        {/* Banner A — new_main_banner.png */}
-        <img src="/new_main_banner.webp" alt="" className="o100-hero-banner o100-hero-banner-a" />
-        {/* Banner B — main_banner_3.png */}
-        <img src="/main_banner_3.webp" alt="" className="o100-hero-banner o100-hero-banner-b" />
+        <img src={hero.image_first} alt="" className="o100-hero-banner o100-hero-banner-a" />
+        <img src={hero.image_second} alt="" className="o100-hero-banner o100-hero-banner-b" />
         {/* Warm "sun" glow on the right — pulsing light source */}
         <div aria-hidden className="o100-hero-sun" />
         {/* Soft left-side wash so text stays legible (pulsing intensity, drifts laterally) */}
@@ -453,12 +453,12 @@ function MainV2Page() {
           }}
         >
           <Reveal>
-            <div style={{ maxWidth: 520 }}>
+            <AdminEditableArea className="max-w-[520px]" href={siteContentEditor("hero")} label="Редактировать главный баннер" action="Редактировать баннер">
               <span
                 className="inline-block text-[11px] font-semibold uppercase tracking-[0.18em] mb-5"
                 style={{ color: "var(--brand)" }}
               >
-                Новая коллекция · Осень 2026
+                {hero.eyebrow}
               </span>
               <h1
                 className="font-serif font-bold tracking-[-0.02em] text-foreground"
@@ -468,9 +468,9 @@ function MainV2Page() {
                   marginBottom: 24,
                 }}
               >
-                Видеть мир
+                {hero.headline}
                 <br />
-                на <span style={{ color: "var(--brand)" }}>100%</span>
+                {hero.subline} <span style={{ color: "var(--brand)" }}>{hero.accent}</span>
               </h1>
               <p
                 className="text-muted-foreground"
@@ -481,7 +481,7 @@ function MainV2Page() {
                   marginBottom: 32,
                 }}
               >
-                Современные очки, профессиональный подбор и&nbsp;забота о&nbsp;вашем зрении.
+                {hero.description}
               </p>
 
               <div className="flex flex-wrap gap-3">
@@ -491,7 +491,7 @@ function MainV2Page() {
                   className="inline-flex items-center gap-2 rounded-full px-7 py-3.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity cursor-pointer"
                   style={{ background: "var(--brand)" }}
                 >
-                  Записаться на проверку
+                  {hero.button}
                 </button>
                 {VIRTUAL_TRY_ON_ENABLED && <a
                   href={catalogHref("opravy", city)}
@@ -602,7 +602,7 @@ function MainV2Page() {
                   </div>
                 </div>
               </div>
-            </div>
+            </AdminEditableArea>
           </Reveal>
         </div>
       </section>
@@ -1010,7 +1010,7 @@ function MainV2Page() {
               style={{ minHeight: 380 }}
             >
               <img
-                src="/main_bottom_child_banner.webp"
+                src={myopiaBanner.image}
                 alt=""
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
@@ -1026,11 +1026,12 @@ function MainV2Page() {
                 className="relative h-full flex flex-col justify-start p-8 lg:p-10"
                 style={{ maxWidth: 420 }}
               >
+                <AdminEditAction className="mb-2 self-start" href={siteContentEditor("myopia_banner")} label="Редактировать баннер про контроль миопии" action="Редактировать баннер" />
                 <div
                   className="text-[11px] uppercase tracking-[0.2em] mb-3"
                   style={{ color: "var(--brand)" }}
                 >
-                  Забота о зрении
+                  {myopiaBanner.eyebrow}
                 </div>
                 <h3
                   className="font-serif text-foreground"
@@ -1041,22 +1042,21 @@ function MainV2Page() {
                     letterSpacing: "-0.01em",
                   }}
                 >
-                  Контроль миопии
-                  <br />у детей и подростков
+                  {myopiaBanner.headline}
+                  <br />{myopiaBanner.subline}
                 </h3>
                 <p
                   className="text-muted-foreground"
                   style={{ fontSize: 14, lineHeight: 1.55, marginBottom: 24 }}
                 >
-                  Сравните очковые и контактные линзы для контроля миопии и узнайте, как проходит
-                  подбор в Санкт-Петербурге.
+                  {myopiaBanner.description}
                 </p>
                 <a
-                  href="/linzy-dlya-kontrolya-miopii/"
+                  href={myopiaBanner.link}
                   className="inline-flex items-center gap-1.5 rounded-full px-6 py-3 text-sm font-semibold text-white self-start hover:opacity-90 transition-opacity"
                   style={{ background: "var(--brand)" }}
                 >
-                  Сравнить линзы
+                  {myopiaBanner.button}
                 </a>
               </div>
             </div>
