@@ -106,6 +106,10 @@ export function CatalogRouteView({
   if (isLensRoot || isProgressive) {
     const appliedFilters = searchToFilters(search);
     const model = isLensRoot ? getSpectacleMyopiaModelFromQuery(search.lensQuery) : undefined;
+    const subtitle = config.subtitle;
+    const progressiveWord = PROGRESSIVE_LENS_TYPE.toLocaleLowerCase("ru");
+    const linkIndex =
+      isLensRoot && city === "spb" ? (subtitle?.indexOf(progressiveWord) ?? -1) : -1;
     return (
       <>
         <div className="w-full py-10" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
@@ -117,17 +121,24 @@ export function CatalogRouteView({
             {isProgressive ? (
               <ProgressiveCatalogIntro />
             ) : (
-              config.subtitle && (
-                <p className="mt-3 text-muted-foreground max-w-2xl">{config.subtitle}</p>
+              subtitle && (
+                <p className="mt-3 text-muted-foreground max-w-2xl">
+                  {linkIndex === -1 ? (
+                    subtitle
+                  ) : (
+                    <>
+                      {subtitle.slice(0, linkIndex)}
+                      <a
+                        className="text-brand underline underline-offset-4"
+                        href={PROGRESSIVE_CATALOG}
+                      >
+                        {progressiveWord}
+                      </a>
+                      {subtitle.slice(linkIndex + progressiveWord.length)}
+                    </>
+                  )}
+                </p>
               )
-            )}
-            {isLensRoot && city === "spb" && (
-              <a
-                className="mt-3 inline-block font-semibold text-brand underline underline-offset-4"
-                href={PROGRESSIVE_CATALOG}
-              >
-                Прогрессивные линзы для очков
-              </a>
             )}
           </div>
           {isLensRoot && <LensSearch initialQuery={model ? undefined : search.lensQuery} />}
