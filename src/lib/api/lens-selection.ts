@@ -1,5 +1,6 @@
-import { requestKey } from "@/lib/request-key";
+import { lensRequestKey } from "@/lib/lens-request-key";
 import { securePost, securePostForm } from "@/lib/api/security";
+import { withStoreWrite } from "@/lib/api/store-write";
 
 export interface LensSelectionRequestDraft {
   /**
@@ -77,14 +78,18 @@ export async function submitLensSelectionRequest(
     prescriptionLater: options.prescriptionLater ?? false,
     sourceUrl: typeof window === "undefined" ? "" : window.location.href,
   };
-  const keyedPayload = { ...payload, requestKey: await requestKey("lens", payload, options.file) };
-  // With a file the request goes multipart (payload JSON + the file); without
-  // one it stays the plain JSON POST it has always been.
+  const keyedPayload = { ...payload, requestKey: await lensRequestKey(payload, options.file) };
+  let result: LensSelectionRequestResponse;
   if (options.file) {
     const form = new FormData();
     form.append("payload", JSON.stringify(keyedPayload));
     form.append("prescriptionFile", options.file);
-    return securePostForm<LensSelectionRequestResponse>("lens_selection_request.php", form);
+    result = await withStoreWrite(() => securePostForm<LensSelectionRequestResponse>("lens_selection_request.php", form));
+  } else {
+    result = await withStoreWrite(() => securePost<LensSelectionRequestResponse>("lens_selection_request.php", keyedPayload));
   }
-  return securePost<LensSelectionRequestResponse>("lens_selection_request.php", keyedPayload);
+  if (result?.status !== "ok" || typeof result.requestId !== "string" || !result.requestId) {
+    throw new Error("Не удалось подтвердить сохранение заявки. Повторите отправку.");
+  }
+  return result;
 }

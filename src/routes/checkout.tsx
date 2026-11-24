@@ -15,7 +15,6 @@ import {
   ShoppingCart,
   Shield,
   Phone,
-  Check,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -37,6 +36,7 @@ import type { CheckoutStep, StepState } from "@/lib/checkout-steps";
 import { getMe } from "@/lib/api/account";
 import { SdekPickupMap } from "@/components/SdekPickupMap";
 import { checkCoupon, createOrder, getOrderDeliveryOptions, getOrderPickupPoints, quoteOrder } from "@/lib/api/bitrix";
+import { withStoreWrite } from "@/lib/api/store-write";
 import type { CouponResult, DeliveryQuoteOption, PickupPointOption, CreateOrderInput, OrderQuote } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/checkout")({
@@ -196,7 +196,7 @@ function Checkout() {
   const regionalCity = useCityStore((state) => state.city);
   const contact = useStorefrontContact(regionalCity);
   const regionalCityHydrated = useCityStore((state) => state.hydrated);
-  const { lines, setQty, consume, legacySyncStatus } = useCart();
+  const { lines, lensSelections, setQty, consume, legacySyncStatus } = useCart();
   const { subtotal } = cartTotals(lines);
 
   const [step, setStep] = useState<CheckoutStep>("region");
@@ -302,7 +302,7 @@ function Checkout() {
     const codes: Array<DeliveryCode | undefined> = isSpb ? SPB_CDEK_CODES : CDEK_CODES;
     Promise.allSettled(
       codes.map((deliveryCode) =>
-        getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode }),
+        withStoreWrite(() => getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode })),
       ),
     )
       .then(async (initialResults) => {
@@ -321,7 +321,7 @@ function Checkout() {
           // Старый серверный снимок мог исчезнуть, хотя Bitrix-корзина ещё жива.
           results = await Promise.allSettled(
             codes.map((deliveryCode) =>
-              getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode }),
+              withStoreWrite(() => getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode })),
             ),
           );
           if (cancelled) return;
@@ -384,7 +384,7 @@ function Checkout() {
     setPickupError("");
     setFocusedPickupPointId(pickupPoint?.id ?? null);
     try {
-      const result = await getOrderPickupPoints({ city });
+      const result = await withStoreWrite(() => getOrderPickupPoints({ city }));
       setPickupPoints(result.points);
       if (result.points.length === 0) setPickupError("В этом городе пока нет доступных пунктов выдачи СДЭК.");
     } catch (error) {
@@ -508,7 +508,7 @@ function Checkout() {
       await withCheckoutLock(async () => {
         const attempt = readAttempt();
         if (!attempt) { setHasAttempt(false); return; }
-        const status = await checkAttempt(attempt.id);
+        const status = await withStoreWrite(() => checkAttempt(attempt.id));
         if (status.status === "complete" && status.result) {
           await useCart.persist.rehydrate();
           consume(attempt.input.lines, attempt.id); forgetAttempt(attempt.id); setHasAttempt(false);
@@ -546,7 +546,7 @@ function Checkout() {
       await withCheckoutLock(async () => {
         const previous = readAttempt();
         if (previous) {
-          const status = await checkAttempt(previous.id);
+          const status = await withStoreWrite(() => checkAttempt(previous.id));
           if (status.status === "complete" && status.result) {
             await useCart.persist.rehydrate();
             consume(previous.input.lines, previous.id); forgetAttempt(previous.id); setHasAttempt(false);
@@ -556,7 +556,7 @@ function Checkout() {
           if (status.status === "cancelled") { forgetAttempt(previous.id); setHasAttempt(false); }
           else if (orderFingerprint(previous.input) !== orderFingerprint(input)) {
             if (!window.confirm("Предыдущий заказ не сохранён. Начать новую попытку с изменёнными данными?")) return;
-            await cancelAttempt(previous.id);
+            await withStoreWrite(() => cancelAttempt(previous.id));
             forgetAttempt(previous.id); setHasAttempt(false); setReview(null);
           }
         }
@@ -567,7 +567,7 @@ function Checkout() {
         }
         const fingerprint = orderFingerprint(input);
         if (!review || review.fingerprint !== fingerprint || review.quote.expiresAt * 1000 <= Date.now()) {
-          const quote = await quoteOrder(input);
+          const quote = await withStoreWrite(() => quoteOrder(input));
           setReview({ input, quote, fingerprint }); setAcceptPending(false);
           toast.info("Проверьте рассчитанную стоимость и подтвердите заказ."); return;
         }
@@ -576,7 +576,10 @@ function Checkout() {
         const attempt = saveAttempt(approved);
         localStorage.setItem(ATTEMPT_STORAGE_KEY, JSON.stringify({ ...attempt, input: approved }));
         setHasAttempt(true);
-        const result = await createOrder(approved, attempt.id);
+        const result = await withStoreWrite(() => createOrder(approved, attempt.id));
+        if (result?.ok !== true || typeof result.accountNumber !== "string" || !result.accountNumber) {
+          throw new Error("Не удалось подтвердить создание заказа. Проверьте сохранённую попытку.");
+        }
         await useCart.persist.rehydrate();
         consume(input.lines, attempt.id); forgetAttempt(attempt.id); setHasAttempt(false);
         setCompletedOrder(result.accountNumber);
@@ -597,6 +600,18 @@ function Checkout() {
         </p>
         <Link to="/" className="mt-8 inline-flex rounded-full bg-brand px-7 py-3 text-white">
           Вернуться на главную
+        </Link>
+      </div>
+    );
+  }
+
+  if (lines.length === 0 && lensSelections.length > 0 && !hasAttempt) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+        <h1 className="font-serif text-4xl">Оформление линз</h1>
+        <p className="mt-4 text-muted-foreground">Добавьте рецепт в корзине и отправьте заявку специалисту.</p>
+        <Link to="/basket" hash="lens-order" className="mt-6 inline-flex rounded-full bg-brand px-6 py-3 text-white">
+          Оформить линзы и добавить рецепт
         </Link>
       </div>
     );
@@ -1010,6 +1025,7 @@ function Checkout() {
                 ))}
                 <div>
                   <label
+                    htmlFor="order-comment"
                     style={{
                       display: "block",
                       fontSize: "13px",
@@ -1017,13 +1033,17 @@ function Checkout() {
                       marginBottom: "6px",
                     }}
                   >
-                    Особые пожелания
+                    {lines.some((line) => line.category === "linzy-dlya-ochkov")
+                      ? "Параметры рецепта или комментарий"
+                      : "Особые пожелания"}
                   </label>
                   <textarea
+                    id="order-comment"
                     placeholder="Комментарий к заказу..."
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     rows={3}
+                    maxLength={1000}
                     className="w-full bg-background border border-border"
                     style={{
                       borderRadius: "8px",
@@ -1233,32 +1253,21 @@ function Checkout() {
                 marginBottom: "16px",
               }}
             >
-              <button
-                type="button"
-                onClick={() => setAgreed((v) => !v)}
-                style={{
-                  width: "20px",
-                  height: "20px",
-                  borderRadius: "4px",
-                  border: agreed ? "none" : "2px solid var(--border)",
-                  backgroundColor: agreed ? "var(--brand)" : "transparent",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  cursor: "pointer",
-                  marginTop: "2px",
-                  padding: 0,
-                }}
-              >
-                {agreed && <Check size={13} color="white" strokeWidth={3} />}
-              </button>
+              <input
+                id="order-consent"
+                type="checkbox"
+                aria-describedby="order-consent-terms"
+                checked={agreed}
+                onChange={(event) => setAgreed(event.target.checked)}
+                className="mt-0.5 size-5 shrink-0 cursor-pointer accent-brand"
+              />
               <p
                 className="text-muted-foreground"
                 style={{ fontSize: "12px", lineHeight: "1.5", margin: 0 }}
               >
-                Я согласен(а) с{" "}
+                <label htmlFor="order-consent" className="cursor-pointer">Я согласен(а) с</label>{" "}
                 <a
+                  id="order-consent-terms"
                   href="/politika-konfidentsialnosti/"
                   className="text-brand"
                   style={{ textDecoration: "underline" }}
@@ -1852,7 +1861,7 @@ function CouponField({
     setChecking(true);
     setError(null);
     try {
-      const result = await checkCoupon({ lines, coupon: code });
+      const result = await withStoreWrite(() => checkCoupon({ lines, coupon: code }));
       if (result.applied) {
         onApplied({ code: result.code, applied: true, discount: result.discount, message: result.message });
         toast.success(`Промокод применён: −${formatPrice(result.discount)}`);

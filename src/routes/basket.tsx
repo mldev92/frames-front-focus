@@ -6,7 +6,7 @@ import { cartTotals } from "@/lib/cart-totals";
 import { lensCartDraft } from "@/lib/lens-cart";
 import { LensRequestForm } from "@/components/LensWizard/LensRequestForm";
 import { useState } from "react";
-import { PriceSavings } from "@/components/PriceSavings";
+import { LensCartLine } from "@/components/LensCartLine";
 
 export const Route = createFileRoute("/basket")({
   head: () => ({
@@ -19,7 +19,7 @@ export const Route = createFileRoute("/basket")({
 });
 
 function CartPage() {
-  const { lines, lensSelections, setQty, remove, removeLens, clear, consumeLens } = useCart();
+  const { lines, lensSelections, setQty, remove, clear, consumeLens } = useCart();
   const [lensSubmitted, setLensSubmitted] = useState(false);
   const { subtotal, count } = cartTotals(lines, lensSelections);
 
@@ -127,25 +127,30 @@ function CartPage() {
           >
             Перейти к оформлению
           </Link>
+          {lensSelections.length > 0 && (
+            <a href="#lens-order" className="mt-3 block text-center text-sm text-brand hover:underline">
+              Оформить подбор очковых линз
+            </a>
+          )}
         </aside>
       </div>}
       {(lensSelections.length > 0 || lensSubmitted) && (
-        <section className="mt-10 border-t border-border pt-8">
-          <h2 className="font-serif text-2xl">Очковые линзы · {lensSelections.length}</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Подбор линз — отдельная заявка специалисту. Товары выше оформляются отдельным заказом. Специалист проверит рецепт, совместимость и окончательную стоимость линз.</p>
-          <div className="mt-5 divide-y divide-border border-y border-border">
-            {lensSelections.map((item) => (
-              <div key={item.id} className="flex items-start justify-between gap-4 py-4">
-                <div><div className="text-sm font-medium">{item.brand} {item.name}</div>
-                  <div className="text-xs text-muted-foreground">{item.index && `Индекс ${item.index} · `}{[item.coating, item.treatment].filter(Boolean).join(" · ")} · {item.qty} пара</div>
-                  <div className="mt-1 text-sm">{item.pricePerLens === null ? "Цена по запросу" : `Ориентир: ${formatPrice(item.pricePerLens * 2 * item.qty)}`}</div>
-                  <PriceSavings oldPrice={item.priceBeforeDiscountPerLens ?? null} price={item.pricePerLens} discountPercent={item.discountPercent ?? null} quantity={2 * item.qty} className="mt-1" />
+        <section id="lens-order" className="mt-10 scroll-mt-24 border-t border-border pt-8">
+          <h2 className="font-serif text-2xl">Очковые линзы</h2>
+          {lensSelections.length > 0 && (
+            <div className="mt-5 divide-y divide-border border-y border-border">
+              {lensSelections.map((item) => (
+                <div key={item.id} className="py-4">
+                  <LensCartLine item={item} />
                 </div>
-                <button type="button" onClick={() => removeLens(item.id)} aria-label="Удалить линзы" className="text-muted-foreground hover:text-brand"><Trash2 className="h-4 w-4" /></button>
-              </div>
-            ))}
-          </div>
-          <LensRequestForm draft={lensCartDraft(lensSelections)} onSent={() => { setLensSubmitted(true); consumeLens(lensSelections); }} />
+              ))}
+            </div>
+          )}
+          <LensRequestForm
+            draft={lensCartDraft(lensSelections)}
+            fromBasket
+            onSent={() => { setLensSubmitted(true); consumeLens(lensSelections); }}
+          />
         </section>
       )}
     </div>

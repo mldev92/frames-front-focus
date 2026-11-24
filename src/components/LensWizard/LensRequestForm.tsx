@@ -8,12 +8,15 @@ import {
   type LensSelectionRequestDraft,
 } from "@/lib/api/lens-selection";
 
-// Prescription upload (Ошибки 2.3, п.7): JPG/PNG/PDF up to 8 MB. Kept in sync
-// with the server's own limits in lens_selection_request.php.
+// Ограничения должны совпадать с настройками lens_selection_request.php.
 const RX_MAX_BYTES = 8 * 1024 * 1024;
 const RX_ACCEPT = "image/jpeg,image/png,application/pdf,.jpg,.jpeg,.png,.pdf";
 
-export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequestDraft; onSent?: () => void }) {
+export function LensRequestForm({ draft, onSent, fromBasket = false }: {
+  draft: LensSelectionRequestDraft;
+  onSent?: () => void;
+  fromBasket?: boolean;
+}) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -24,6 +27,7 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
   const [fileError, setFileError] = useState("");
   const [rxLater, setRxLater] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const submitting = useRef(false);
   const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState("");
   const [requestId, setRequestId] = useState("");
@@ -77,6 +81,8 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting.current || fileError) return;
+    submitting.current = true;
     setStatus("sending");
     setError("");
 
@@ -103,6 +109,8 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
           : "Не удалось отправить заявку. Попробуйте ещё раз.",
       );
       setStatus("idle");
+    } finally {
+      submitting.current = false;
     }
   }
 
@@ -114,9 +122,11 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
         aria-live="polite"
       >
         <CheckCircle2 className="h-8 w-8 text-brand" />
-        <h2 className="mt-4 font-serif text-2xl">Заявка сохранена</h2>
+        <h2 className="mt-4 font-serif text-2xl">{fromBasket ? "Заявка на линзы принята" : "Заявка сохранена"}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Специалист проверит рецепт, выбранную оправу и доступные линзы, затем свяжется с вами.
+          {fromBasket
+            ? "Специалист свяжется с вами, чтобы подтвердить линзы и стоимость."
+            : "Специалист проверит рецепт, выбранную оправу и доступные линзы, затем свяжется с вами."}
         </p>
         {requestId && <p className="mt-3 text-xs text-muted-foreground">Номер: {requestId}</p>}
       </section>
@@ -125,9 +135,11 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
 
   return (
     <section id="lens-request-form" className="mt-6 scroll-mt-24 rounded-xl border border-border p-5 sm:p-6">
-      <h2 className="font-serif text-2xl">Передать подбор специалисту</h2>
+      <h2 className="font-serif text-2xl">{fromBasket ? "Оформление линз" : "Передать подбор специалисту"}</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Отправим выбранные параметры вместе с рецептом. Менеджер уточнит модели и итоговую стоимость.
+        {fromBasket
+          ? "Приложите рецепт или укажите его параметры. Специалист подтвердит наличие и стоимость перед оплатой."
+          : "Отправим выбранные параметры вместе с рецептом. Менеджер уточнит модели и итоговую стоимость."}
       </p>
 
       <form onSubmit={handleSubmit} className="mt-5 space-y-4">
@@ -173,7 +185,7 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="lens-request-comment">Комментарий</Label>
+          <Label htmlFor="lens-request-comment">{fromBasket ? "Параметры рецепта или комментарий" : "Комментарий"}</Label>
           <textarea
             id="lens-request-comment"
             value={comment}
@@ -181,13 +193,13 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
             maxLength={1000}
             rows={3}
             className="w-full resize-y rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring"
-            placeholder="Например, удобное время для звонка"
+            placeholder={fromBasket ? "Укажите параметры из рецепта и глаз, для которого нужна линза" : "Например, удобное время для звонка"}
           />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="lens-request-rx">Фото или скан рецепта</Label>
-          <p className="text-xs text-muted-foreground">
+          <p id="lens-request-rx-help" className="text-xs text-muted-foreground">
             Необязательно. JPG, PNG или PDF до 8 МБ — приложите сейчас или передайте позже.
           </p>
           {!rxLater && (
@@ -198,6 +210,8 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
                 type="file"
                 accept={RX_ACCEPT}
                 onChange={handleFile}
+                aria-describedby={fileError ? "lens-request-rx-help lens-request-rx-error" : "lens-request-rx-help"}
+                aria-invalid={Boolean(fileError)}
                 className="block w-full cursor-pointer text-sm text-muted-foreground file:mr-3 file:cursor-pointer file:rounded-full file:border-0 file:bg-brand/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand hover:file:bg-brand/15"
               />
               {file && (
@@ -212,7 +226,12 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
                   </button>
                 </div>
               )}
-              {fileError && <p className="text-sm text-destructive">{fileError}</p>}
+              {fileError && <div className="flex flex-wrap items-baseline gap-x-3 text-sm">
+                <p id="lens-request-rx-error" className="text-destructive" role="alert">{fileError}</p>
+                <button type="button" onClick={clearFile} className="font-medium text-brand hover:underline">
+                  Продолжить без файла
+                </button>
+              </div>}
             </>
           )}
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -266,11 +285,11 @@ export function LensRequestForm({ draft, onSent }: { draft: LensSelectionRequest
 
         <button
           type="submit"
-          disabled={status === "sending"}
+          disabled={status === "sending" || Boolean(fileError)}
           className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-brand px-6 py-3 text-sm font-semibold text-brand-foreground transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
         >
           {status === "sending" && <LoaderCircle className="h-4 w-4 animate-spin" />}
-          {status === "sending" ? "Отправляем…" : "Отправить заявку"}
+          {status === "sending" ? "Отправляем…" : fromBasket ? "Отправить заявку на линзы" : "Отправить заявку"}
         </button>
       </form>
     </section>
