@@ -24,6 +24,7 @@ import { catalogHref } from "@/data/categories";
 import { contactLensSubcategories } from "@/data/contact-lens-catalog-seo";
 import { EXPANDABLE_FACET_PARAMS } from "@/lib/catalog-route";
 import { regionalSiteHref } from "@/lib/city-routing";
+import { PROGRESSIVE_CATALOG, PROGRESSIVE_LENS_TYPE } from "@/lib/progressive-lenses";
 import { cn } from "@/lib/utils";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import type { CatalogFacetSummary } from "@/lib/api/bitrix";
@@ -219,7 +220,9 @@ const menuHref = (category: Parameters<typeof catalogHref>[0], params?: Record<s
 
 const frameHref = (category: FrameCategory, params?: Record<string, string>) =>
   menuHref(category, params);
-const regionalMenuHref = (href: string, city: CityCode) => regionalSiteHref(href, city);
+const progressiveFilterHref = menuHref("linzy-dlya-ochkov", { lensType: PROGRESSIVE_LENS_TYPE });
+const regionalMenuHref = (href: string, city: CityCode) =>
+  city === "spb" && href === progressiveFilterHref ? PROGRESSIVE_CATALOG : regionalSiteHref(href, city);
 const regionalMenuLabel = (label: string, city: CityCode) => {
   if (city !== "nvk") return label;
   if (label === "Контактные линзы в Санкт-Петербурге") return "Контактные линзы в Новокузнецке";
@@ -925,10 +928,10 @@ const GLASSES_MENU: GlassesMegaMenu = {
       icon: <LensTypeIcon kind="single" />,
     },
     {
-      label: "Прогрессивные",
+      label: PROGRESSIVE_LENS_TYPE,
       meta: "Плавный переход даль↔близь",
       count: "8",
-      href: menuHref("linzy-dlya-ochkov", { lensType: "Прогрессивные" }),
+      href: progressiveFilterHref,
       icon: <LensTypeIcon kind="progressive" />,
     },
     {
@@ -990,7 +993,7 @@ const GLASSES_MENU: GlassesMegaMenu = {
     { label: "Асферический", href: menuHref("linzy-dlya-ochkov", { design: "Асферический" }) },
     { label: "Бифокальный", href: menuHref("linzy-dlya-ochkov", { design: "Бифокальный" }) },
     { label: "Индивидуальный", href: menuHref("linzy-dlya-ochkov", { design: "Индивидуальный" }) },
-    { label: "Прогрессивный", href: menuHref("linzy-dlya-ochkov", { lensType: "Прогрессивные" }) },
+    { label: "Прогрессивный", href: progressiveFilterHref },
     { label: "Сферический", href: menuHref("linzy-dlya-ochkov", { design: "Сферический" }) },
   ],
   purposes: [

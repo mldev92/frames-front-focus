@@ -3,6 +3,8 @@ import test from "node:test";
 import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import ts from "typescript";
+import { filterLensLines } from "../src/lib/lens-lines-filter.ts";
+import * as progressiveLenses from "../src/lib/progressive-lenses.ts";
 
 const require = createRequire(import.meta.url);
 async function loadModule(path, mocks, env) {
@@ -10,6 +12,9 @@ async function loadModule(path, mocks, env) {
     "@/lib/frame-landing": { frameLanding: () => undefined, frameLandingQuery: (_path, query) => query },
     "@/lib/search-query": { canonicalSearchQuery: (query) => query.trim() },
     "@/lib/storefront-media": { storefrontUploadUrl: (value) => value },
+    "@/lib/api/lens-recommend": {},
+    "@/lib/lens-lines-filter": { filterLensLines },
+    "@/lib/progressive-lenses": progressiveLenses,
     ...mocks,
   };
   const source = (await readFile(new URL(path, import.meta.url), "utf8"))
@@ -44,6 +49,34 @@ test("браузер сохраняет сообщение о временно �
   const route = await loadModule("../src/lib/catalog-route.ts", { "@/lib/api/bitrix": failingApi },
     { SSR: false, VITE_PRERENDER_BUILD: "true" });
   assert.deepEqual(await route.loadCatalogPage("opravy", {}, "spb"), { state: "index_not_ready" });
+});
+
+test("посадочная прогрессивных линз получает данные для HTML только на сервере", async () => {
+  const calls = [];
+  const section = progressiveLenses.PROGRESSIVE_SECTION;
+  const mocks = {
+    "@/lib/api/bitrix": failingApi,
+    "@/lib/api/lens-recommend": {
+      fetchLensLines: async (signal, city) => {
+        calls.push({ signal, city });
+        return [
+          { id: "progressive", designs: ["progressive"], filterData: {} },
+          { id: "single", designs: ["single"], filterData: {} },
+        ];
+      },
+    },
+  };
+  const signal = new AbortController().signal;
+  const server = await loadModule("../src/lib/catalog-route.ts", mocks,
+    { SSR: true, VITE_PRERENDER_BUILD: "true" });
+  const page = await server.resolveCatalogRoute(section, {}, "spb", signal);
+  assert.equal(page.kind, "catalog");
+  assert.deepEqual(page.result.initialCards.map(({ id }) => id), ["progressive"]);
+  assert.deepEqual(calls, [{ signal, city: "spb" }]);
+
+  const browser = await loadModule("../src/lib/catalog-route.ts", mocks, { SSR: false });
+  assert.deepEqual((await browser.resolveCatalogRoute(section, {}, "spb")).result, { state: "lens_lines" });
+  assert.equal(calls.length, 1);
 });
 
 test("пустой существующий раздел сохраняется, отсутствующий товар не становится каталогом", async () => {

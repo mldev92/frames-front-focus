@@ -199,6 +199,46 @@ test("incomplete photochromic color facet is not displayed", () => {
   assert.equal(LENS_LINE_FACET_ORDER.includes("photochromicColor"), false);
 });
 
+test("scoping a catalog to Progressive preserves the same eligible offers and pair prices", () => {
+  const mixed = card({
+    designs: ["single", "progressive"],
+    filterVariants: [
+      {
+        offerId: "single",
+        design: "single",
+        priceRub: 5000,
+        filterData: card().filterData,
+      },
+      {
+        offerId: "progressive",
+        design: "progressive",
+        priceRub: 8000,
+        filterData: { ...card().filterData, availability: ["order"] },
+      },
+    ].map((variant) => ({
+      index: 1.5,
+      treatment: "Прозрачные",
+      coating: "",
+      priceBeforeDiscountRub: null,
+      discountPercent: null,
+      ...variant,
+    })),
+  });
+  const unfiltered = [mixed, photo];
+  const baseFilter = { lensType: ["Прогрессивные"] };
+  const scoped = filterLensLines(unfiltered, baseFilter);
+  const selected = { brand: ["ESSILOR"] };
+  const expected = filterLensLines(unfiltered, { ...baseFilter, ...selected }, 15000, 17000);
+  const actual = filterLensLines(scoped, selected, 15000, 17000);
+
+  assert.deepEqual(actual, expected);
+  assert.equal(actual[0].fromPriceRub * 2, 16000);
+  assert.equal(actual[0].availability, "order");
+  assert.deepEqual(actual[0].filterVariants.map((variant) => variant.offerId), ["progressive"]);
+  assert.equal(filterLensLines(scoped, {}, 9000, 11000).length, 0);
+  assert.deepEqual(lensLineFacetOptions(scoped, "brand"), ["ESSILOR"]);
+});
+
 test("header summary uses the same canonical facets as the lens-line grid", () => {
   const summary = lensLineFacetSummary(cards);
   assert.equal(summary.total, 2);

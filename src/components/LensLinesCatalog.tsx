@@ -22,7 +22,7 @@ import { formatPrice, useCart } from "@/lib/store/cart";
 import { useStorefrontContact } from "@/lib/storefront-content";
 import { AppointmentModal } from "@/components/AppointmentModal";
 import { PriceSavings } from "@/components/PriceSavings";
-import { useCityStore } from "@/lib/store/city";
+import type { CityCode } from "@/lib/store/city";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Slider } from "@/components/ui/slider";
@@ -90,6 +90,9 @@ function indexLabel(indexes: number[]): string {
 }
 
 interface LensLinesCatalogProps {
+  city: CityCode;
+  initialCards?: LensLineCard[];
+  fixedLensType?: string;
   modelSlug?: string;
   initialFilters: Partial<Record<FacetKey, string[]>>;
   appliedSort: NonNullable<CatalogQuery["sort"]>;
@@ -123,6 +126,9 @@ function FilterSection({ title, children }: { title: string; children: ReactNode
 }
 
 export function LensLinesCatalog({
+  city,
+  initialCards,
+  fixedLensType,
   modelSlug,
   initialFilters,
   appliedSort,
@@ -131,30 +137,29 @@ export function LensLinesCatalog({
   page,
   onStateChange,
 }: LensLinesCatalogProps) {
-  const city = useCityStore((state) => state.city);
   const phoneHref = useStorefrontContact(city).phone.href;
-  const [catalogLines, setCatalogLines] = useState<LensLineCard[] | null>(null);
+  const [catalogLines, setCatalogLines] = useState<LensLineCard[] | null>(initialCards ?? null);
   const model = getSpectacleMyopiaModel(modelSlug);
-  const cards = useMemo(
-    () => model
-      ? catalogLines?.filter(({ id }) => model.catalogLineIds.includes(id)) ?? null
-      : catalogLines,
-    [catalogLines, model],
-  );
+  const cards = useMemo(() => {
+    if (!catalogLines) return null;
+    if (fixedLensType) return filterLensLines(catalogLines, { lensType: [fixedLensType] });
+    return model ? catalogLines.filter(({ id }) => model.catalogLineIds.includes(id)) : catalogLines;
+  }, [catalogLines, fixedLensType, model]);
   const [error, setError] = useState(false);
   const [reload, setReload] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileFilters, setMobileFilters] = useState(false);
-  const [priceDraft, setPriceDraft] = useState<[number, number]>([0, 0]);
   const [appointmentOpen, setAppointmentOpen] = useState(false);
 
   useEffect(() => {
     const ctl = new AbortController();
     setError(false);
-    fetchLensLines(ctl.signal)
-      .then(setCatalogLines)
+    fetchLensLines(ctl.signal, city)
+      .then((lines) => {
+        if (!ctl.signal.aborted) setCatalogLines(lines);
+      })
       .catch((e: unknown) => {
-        if ((e as Error).name !== "AbortError") setError(true);
+        if (!ctl.signal.aborted && (e as Error).name !== "AbortError") setError(true);
       });
     return () => ctl.abort();
   }, [reload, city]);
@@ -170,6 +175,11 @@ export function LensLinesCatalog({
       max: prices.length ? Math.ceil(Math.max(...prices) / 50) * 50 : 0,
     };
   }, [cards]);
+
+  const [priceDraft, setPriceDraft] = useState<[number, number]>(() => [
+    appliedPriceMin ?? priceBounds.min,
+    appliedPriceMax ?? priceBounds.max,
+  ]);
 
   useEffect(() => {
     setPriceDraft([appliedPriceMin ?? priceBounds.min, appliedPriceMax ?? priceBounds.max]);
@@ -197,7 +207,8 @@ export function LensLinesCatalog({
     );
   }
 
-  const filters = initialFilters as Partial<Record<string, string[]>>;
+  const filters = { ...initialFilters };
+  if (fixedLensType) delete filters.lensType;
   const filtered = filterLensLines(
     cards,
     filters,
@@ -298,6 +309,7 @@ export function LensLinesCatalog({
       </FilterSection>
 
       {LENS_LINE_FACET_ORDER.map((facet) => {
+        if (fixedLensType && facet === "lensType") return null;
         const options = lensLineFacetOptions(cards, facet)
           .map((value) => ({
             value,
@@ -579,7 +591,10 @@ function LensLineCardView({ card, phoneHref, onBook }: { card: LensLineCard; pho
   const brandMark = lensLineBrandMark(card);
 
   return (
-    <article className="flex flex-col rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-[0_6px_24px_-12px_rgb(0_0_0/0.12)]">
+    <article
+      data-lens-line-id={card.id}
+      className="flex flex-col rounded-2xl border border-border bg-card p-5 transition-shadow hover:shadow-[0_6px_24px_-12px_rgb(0_0_0/0.12)]"
+    >
       <div className="mb-5 flex h-20 items-center justify-start bg-white">
         <img
           src={brandMark.src}
