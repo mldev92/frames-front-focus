@@ -5,6 +5,7 @@ import { pathToFileURL } from "node:url";
 import ts from "typescript";
 import { registry, standalonePages } from "./standalone-pages.mjs";
 import { allowStellestCanonical, stellestDataFile } from "./stellest-published-catalog.mjs";
+import { progressiveDataFile } from "./progressive-published-catalog.mjs";
 
 const git = (...args) =>
   execFileSync("git", args, { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
@@ -23,6 +24,17 @@ const progressiveRedirectPrefix = String.raw`RedirectMatch 301 ^/ochkovye\-linzy
 const progressiveCategory = "/catalog_s/linzy_dlya_ochkov/progressivnye/";
 const progressivePrevious = "/blog/linzy-dlya-ochkov/progressivnye-linzy/";
 const progressiveRedirect = progressiveRedirectPrefix + progressiveCategory;
+
+// Разовая замена данных загрузчика только для опубликованной страницы.
+// Любые другие изменения этих файлов снова требуют полного снимка.
+const progressiveSource = new Map([
+  ["scripts/build-api-snapshot.mjs", "fc96db614720ce20818e7ee20f2bbd20aa9d4b00"],
+  ["scripts/seo-acceptance-cases.mjs", "233abc7e6a1960dc626fd9748f8db6048749850e"],
+  ["scripts/validate-production-build.mjs", "3b07544bae4621755e035d6b2f85ff99c3861a87"],
+  ["src/lib/api/lens-recommend.ts", "ac15e602eb9bc1f670032b051f6465fd59eac1f9"],
+  ["src/lib/catalog-route.ts", "ae34845778d991b0216dad36b28506638fcb451b"],
+  ["src/lib/progressive-lenses.ts", "d1f277e060a19131c774143b42e80eb3fe4f51fe"],
+]);
 
 export function exactReleaseRedirect(line) {
   if (line === progressiveRedirect) {
@@ -89,6 +101,7 @@ const buildTools = new Set([
     "published-loaders",
     "published-render",
     "standalone-pages",
+    "progressive-published-catalog",
     "storefront-release-mode",
     "build-code-only",
     "code-only-workflow",
@@ -289,6 +302,12 @@ export function releaseMode(parent, target = "HEAD") {
     && git("diff", "--name-status", parent, target, "--", stellestDataFile).startsWith("A\t")
     && allowStellestCanonical(git("show", parent + ":deploy/robots.production.txt"))
       === git("show", target + ":deploy/robots.production.txt");
+  const progressiveCatalog = parent === "10425d91595ba40910729e1110ccc7293996ba2e"
+    && paths.includes(progressiveDataFile)
+    && git("diff", "--name-status", parent, target, "--", progressiveDataFile).startsWith("A\t")
+    && [...progressiveSource].every(([file, blob]) =>
+      git("ls-tree", target, "--", file).trim() === `100644 blob ${blob}\t${file}`)
+    && JSON.parse(git("show", target + ":" + progressiveDataFile)).parent === parent;
   let before, after, routingRedirects;
   const additions = new Map();
   if (paths.includes(registry)) {
@@ -312,6 +331,7 @@ export function releaseMode(parent, target = "HEAD") {
     }
   }
   for (const file of paths) {
+    if (progressiveCatalog && (file === progressiveDataFile || progressiveSource.has(file))) continue;
     if (stellestCatalog && [
       stellestDataFile,
       "deploy/robots.production.txt",
@@ -396,6 +416,7 @@ export function releaseMode(parent, target = "HEAD") {
     standalonePaths: [...additions.values()],
     ...(routingRedirects ? { routingRedirects } : {}),
     ...(stellestCatalog ? { stellestCatalog: true } : {}),
+    ...(progressiveCatalog ? { progressiveCatalog: true } : {}),
   };
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

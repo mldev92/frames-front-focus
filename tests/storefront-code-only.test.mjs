@@ -7,6 +7,7 @@ import path from "node:path";
 import { matchesStandaloneRoute, publishedMatches, routeFile } from "../scripts/published-page.mjs";
 import { releaseMode } from "../scripts/storefront-release-mode.mjs";
 import { appendStandaloneSitemap, registry } from "../scripts/standalone-pages.mjs";
+import { amendProgressiveMatches, progressivePage } from "../scripts/progressive-published-catalog.mjs";
 
 test("published loader data is decoded as data, including aliases and missing values", () => {
   const payload =
@@ -19,6 +20,22 @@ test("published loader data is decoded as data, including aliases and missing va
   assert.throws(() => publishedMatches(payload.replace("success", "error")), /incomplete/);
   assert.equal(routeFile("/catalog_s/VX%20Start/"), "catalog_s/VX Start/index.html");
   assert.throws(() => routeFile("/%2e%2e/"));
+});
+
+test("офлайн-выпуск заменяет данные только опубликованного раздела прогрессивных линз", () => {
+  const sectionPath = "linzy_dlya_ochkov/progressivnye";
+  const matches = [
+    { id: "__root__", data: undefined },
+    { id: "catalog", data: { kind: "catalog", sectionPath, result: { state: "ok", data: {} } } },
+    { id: "another", data: { kind: "catalog", sectionPath: "other", result: { state: "ok" } } },
+  ];
+  const cards = [{ id: "line" }];
+  const original = structuredClone(matches);
+  assert.deepEqual(amendProgressiveMatches(matches, progressivePage + "old-product/", cards), original);
+  amendProgressiveMatches(matches, progressivePage, cards);
+  assert.deepEqual(matches[1].data.result, { state: "lens_lines", initialCards: cards });
+  assert.deepEqual([matches[0], matches[2]], [original[0], original[2]]);
+  assert.throws(() => amendProgressiveMatches(matches, progressivePage, cards), /Unexpected published/);
 });
 
 test("release mode follows published route and loader dependencies across commits", (t) => {
