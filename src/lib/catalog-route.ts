@@ -13,6 +13,9 @@ import type { CityCode } from "@/lib/store/city";
 import type { Product } from "@/data/types";
 import type { CatalogStateChange } from "@/components/CatalogListing";
 import { frameLanding, frameLandingQuery, frameApiSection } from "@/lib/frame-landing";
+import { fetchLensLines, type LensLineCard } from "@/lib/api/lens-recommend";
+import { filterLensLines } from "@/lib/lens-lines-filter";
+import { PROGRESSIVE_LENS_TYPE, PROGRESSIVE_SECTION } from "@/lib/progressive-lenses";
 
 const numOrStr = z
   .preprocess((value) => (typeof value === "number" ? String(value) : value), z.string())
@@ -168,7 +171,7 @@ export function searchToFilters(search: CatalogSearch): Partial<Record<FacetKey,
 
 export type LoaderResult =
   | { state: "ok"; data: CatalogPageData; landingData?: CatalogPageData }
-  | { state: "lens_lines" }
+  | { state: "lens_lines"; initialCards?: LensLineCard[] }
   | { state: "index_not_ready" }
   | { state: "error"; message: string };
 
@@ -242,6 +245,26 @@ export async function resolveCatalogRoute(
   if (sectionSegments.length === 0) return null;
 
   const sectionPath = sectionSegments.join("/");
+  if (city === "spb" && sectionPath === PROGRESSIVE_SECTION) {
+    const result: LoaderResult = { state: "lens_lines" };
+    if (import.meta.env.SSR) {
+      try {
+        result.initialCards = filterLensLines(await fetchLensLines(signal, city), {
+          lensType: [PROGRESSIVE_LENS_TYPE],
+        });
+      } catch (error) {
+        if (import.meta.env.VITE_PRERENDER_BUILD === "true" || signal?.aborted) throw error;
+        console.error("[catalog-route] progressive lens lines failed:", error);
+      }
+    }
+    return {
+      kind: "catalog",
+      sectionPath,
+      section: sectionSegments.at(-1)!,
+      legacyFilterPath,
+      result,
+    };
+  }
   if (city === "spb" && !legacyFilterPath && frameLanding(sectionPath)) {
     return {
       kind: "catalog",

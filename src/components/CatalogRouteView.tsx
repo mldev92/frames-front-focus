@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { CatalogListing, type CatalogStateChange } from "@/components/CatalogListing";
 import { CatalogSeoContent } from "@/components/CatalogSeoContent";
-import { ProgressiveCatalogGuide, ProgressiveCatalogIntro } from "@/components/ProgressiveCatalogContent";
+import {
+  ProgressiveCatalogGuide,
+  ProgressiveCatalogIntro,
+} from "@/components/ProgressiveCatalogContent";
 import { CatalogAdminActions } from "@/components/CatalogAdminActions";
 import {
   ContactLensCatalogFooter,
@@ -27,7 +30,11 @@ import {
   type LoaderResult,
 } from "@/lib/catalog-route";
 import { getSpectacleMyopiaModelFromQuery } from "@/lib/myopia-lenses";
-import { PROGRESSIVE_SECTION } from "@/lib/progressive-lenses";
+import {
+  PROGRESSIVE_CATALOG,
+  PROGRESSIVE_LENS_TYPE,
+  PROGRESSIVE_SECTION,
+} from "@/lib/progressive-lenses";
 import { useCityStore, type CityCode } from "@/lib/store/city";
 
 interface CatalogRouteViewProps {
@@ -96,43 +103,64 @@ export function CatalogRouteView({
   const isLensRoot = normalizedSectionPath === "linzy_dlya_ochkov";
   const isProgressive = city === "spb" && normalizedSectionPath === PROGRESSIVE_SECTION;
 
-  // Каталог 74 линеек работает от единой базы подборщика. Он не должен
-  // падать из-за состояния больше не показываемого Bitrix-индекса.
-  if (isLensRoot) {
+  if (isLensRoot || isProgressive) {
     const appliedFilters = searchToFilters(search);
-    const model = getSpectacleMyopiaModelFromQuery(search.lensQuery);
+    const model = isLensRoot ? getSpectacleMyopiaModelFromQuery(search.lensQuery) : undefined;
     return (
       <>
         <div className="w-full py-10" style={{ paddingLeft: "24px", paddingRight: "24px" }}>
+          {isProgressive && <CatalogAdminActions sectionPath={normalizedSectionPath} city={city} />}
           <div className="mb-8">
             <h1 className="font-serif text-4xl lg:text-5xl">
               {catalogSectionTitle(sectionPath, config.title)}
             </h1>
-            {config.subtitle && (
-              <p className="mt-3 text-muted-foreground max-w-2xl">{config.subtitle}</p>
+            {isProgressive ? (
+              <ProgressiveCatalogIntro />
+            ) : (
+              config.subtitle && (
+                <p className="mt-3 text-muted-foreground max-w-2xl">{config.subtitle}</p>
+              )
+            )}
+            {isLensRoot && city === "spb" && (
+              <a
+                className="mt-3 inline-block font-semibold text-brand underline underline-offset-4"
+                href={PROGRESSIVE_CATALOG}
+              >
+                Прогрессивные линзы для очков
+              </a>
             )}
           </div>
-          <LensSearch initialQuery={model ? undefined : search.lensQuery} />
-          <LensLinesCatalog
-            modelSlug={model?.slug}
-            initialFilters={appliedFilters}
-            appliedSort={search.sort ?? "default"}
-            appliedPriceMin={search.priceMin}
-            appliedPriceMax={search.priceMax}
-            page={search.page ?? 1}
-            onStateChange={(next) => {
-              if (model && next.clearModel) {
-                void navigate({
-                  to: ".",
-                  search: (previous: CatalogSearch) =>
-                    applyCatalogState({ ...previous, lensQuery: undefined }, next),
-                });
-                return;
-              }
-              onStateChange(next);
-            }}
-          />
+          {isLensRoot && <LensSearch initialQuery={model ? undefined : search.lensQuery} />}
+          <div
+            id={isProgressive ? "catalog-products" : undefined}
+            className={isProgressive ? "scroll-mt-24" : undefined}
+          >
+            <LensLinesCatalog
+              key={`${city}:${normalizedSectionPath}`}
+              city={city}
+              initialCards={result.state === "lens_lines" ? result.initialCards : undefined}
+              fixedLensType={isProgressive ? PROGRESSIVE_LENS_TYPE : undefined}
+              modelSlug={model?.slug}
+              initialFilters={appliedFilters}
+              appliedSort={search.sort ?? "default"}
+              appliedPriceMin={search.priceMin}
+              appliedPriceMax={search.priceMax}
+              page={search.page ?? 1}
+              onStateChange={(next) => {
+                if (model && next.clearModel) {
+                  void navigate({
+                    to: ".",
+                    search: (previous: CatalogSearch) =>
+                      applyCatalogState({ ...previous, lensQuery: undefined }, next),
+                  });
+                  return;
+                }
+                onStateChange(next);
+              }}
+            />
+          </div>
         </div>
+        {isProgressive && <ProgressiveCatalogGuide />}
         {city === "spb" && <CatalogSeoContent sectionPath={sectionPath} />}
       </>
     );
@@ -182,13 +210,17 @@ export function CatalogRouteView({
               ? "Контактные линзы в Санкт-Петербурге"
               : catalogSectionTitle(sectionPath, config.title)
         }
-        subtitle={isContactLensRoot || isColoredContactLens || isProgressive || landing ? undefined : config.subtitle}
-        adminActions={landing !== "brand" && <CatalogAdminActions sectionPath={normalizedSectionPath} city={city} />}
+        subtitle={
+          isContactLensRoot || isColoredContactLens || landing ? undefined : config.subtitle
+        }
+        adminActions={
+          landing !== "brand" && (
+            <CatalogAdminActions sectionPath={normalizedSectionPath} city={city} />
+          )
+        }
         headerAfterTitle={
           landing ? (
             <FrameLandingIntro path={normalizedSectionPath} kind={landing} data={landingData} />
-          ) : isProgressive ? (
-            <ProgressiveCatalogIntro />
           ) : isContactLensRoot || isColoredContactLens ? (
             <ContactLensCatalogIntro
               data={result.data}
@@ -203,7 +235,9 @@ export function CatalogRouteView({
             <ContactLensCatalogNavigation />
           ) : undefined
         }
-        catalogId={isContactLensRoot || isColoredContactLens || isProgressive || landing ? "catalog-products" : undefined}
+        catalogId={
+          isContactLensRoot || isColoredContactLens || landing ? "catalog-products" : undefined
+        }
         data={result.data}
         facets={(config.facets ?? []).filter((facet) => landing !== "brand" || facet !== "brand")}
         facetFilteringEnabled={supportsFacetFiltering}
@@ -221,7 +255,6 @@ export function CatalogRouteView({
       />
       {isContactLensRoot && <ContactLensCatalogGuide total={result.data.total} />}
       {isContactLensRoot && <ContactLensCatalogFooter />}
-      {isProgressive && <ProgressiveCatalogGuide products={result.data.products} />}
       {landing && (
         <FrameLandingFooter path={normalizedSectionPath} kind={landing} data={landingData} />
       )}

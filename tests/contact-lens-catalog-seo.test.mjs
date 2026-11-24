@@ -53,7 +53,7 @@ test("contact-lens category is product-first while retaining navigation, image, 
   assert.ok(content.includes('data.total.toLocaleString("ru-RU")'));
   assert.ok(content.includes("однодневные, двухнедельные и месячные контактные линзы"));
   assert.ok(content.includes("оттеночные и непрозрачные цветные линзы"));
-  assert.ok(view.includes("if (isLensRoot)"));
+  assert.ok(view.includes("if (isLensRoot || isProgressive)"));
   assert.ok(view.includes("initialFilters={appliedFilters}"));
   assert.ok(view.includes("appliedPriceMin={search.priceMin}"));
   assert.ok(view.includes("onStateChange={onStateChange}"));

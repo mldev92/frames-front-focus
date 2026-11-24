@@ -1,8 +1,7 @@
+import { useState } from "react";
 import { ArrowDown, ArrowRight, ChevronDown } from "lucide-react";
+import { AppointmentModal } from "@/components/AppointmentModal";
 import { Button } from "@/components/ui/button";
-import { productCardHref } from "@/data/categories";
-import type { Product } from "@/data/types";
-import { formatRub } from "@/lib/format-rub";
 import { progressiveArticles } from "@/lib/progressive-lenses";
 
 const zones = [
@@ -15,21 +14,50 @@ const levels = [
   {
     title: "Базовые",
     text: "Для повседневных задач. При подборе учитывают рецепт и размер оправы.",
-    example: "essilor_essentials_everyday_1_5_trio",
   },
   {
     title: "С расширенными зонами",
     text: "Дизайны с разным распределением зон для дали, экрана и чтения. Специалист помогает выбрать баланс под ваши задачи.",
-    example: "varilux_comfort_max_orma_crizal_easy_pro_uv",
   },
   {
     title: "Индивидуальные",
     text: "При расчёте учитывают рецепт, параметры выбранной оправы и то, как она сидит на лице.",
-    example: "hoyalux_id_myself_hi_vision_longlife",
   },
 ] as const;
 
+const selectionFactors = [
+  ["Рецепт", "Учитывают силу коррекции, астигматизм и аддидацию — добавку для зрения вблизи."],
+  [
+    "Повседневные задачи",
+    "Расскажите, сколько времени вы читаете, работаете за экраном или проводите за рулём.",
+  ],
+  [
+    "Оправа и посадка",
+    "Специалист измеряет межзрачковое расстояние и высоту установки линзы в выбранной оправе.",
+  ],
+] as const;
+
+const brands = [
+  [
+    "Essilor",
+    "Линейки Essentials и Varilux. У Varilux есть серии Liberty, Comfort Max, Physio и X с разными дизайнами и покрытиями.",
+  ],
+  [
+    "Hoya",
+    "Линейки Hoyalux, включая Balansis, Daynamic, iD LifeStyle и iD MySelf. У отдельных вариантов доступны покрытия Hi-Vision и фотохром Sensity.",
+  ],
+  [
+    "ZEISS",
+    "В линейке Progressive DriveSafe есть дизайн, ориентированный на вождение. Условия подбора уточняйте для выбранной линзы.",
+  ],
+] as const;
+
 const questions = [
+  {
+    title: "Можно ли подобрать линзы при астигматизме?",
+    answer:
+      "Подходящие варианты зависят от параметров рецепта. Специалист проверит, какие линзы можно изготовить с нужной цилиндрической коррекцией.",
+  },
   {
     title: "Чем прогрессивные линзы отличаются от офисных?",
     answer:
@@ -53,11 +81,12 @@ const questions = [
 ] as const;
 
 export function ProgressiveCatalogIntro() {
+  const [appointmentOpen, setAppointmentOpen] = useState(false);
   return (
-    <div className="-mt-4 mb-6 space-y-4">
+    <div className="mt-3 space-y-4">
       <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
-        Прогрессивные линзы Essilor, Varilux и Hoyalux для дали, средней дистанции и чтения.
-        Сравните модели по цене, бренду и покрытию.
+        Прогрессивные линзы для дали, средней дистанции и чтения. Сравните линейки по цене за пару,
+        бренду и покрытию или запишитесь на подбор в Санкт-Петербурге.
       </p>
       <div className="flex flex-wrap gap-2">
         <Button asChild className="min-h-11">
@@ -65,17 +94,21 @@ export function ProgressiveCatalogIntro() {
             Смотреть модели <ArrowDown aria-hidden="true" />
           </a>
         </Button>
-        <Button asChild variant="outline" className="min-h-11">
-          <a href="#progressive-guide">
-            Как выбрать линзы <ArrowDown aria-hidden="true" />
-          </a>
+        <Button
+          type="button"
+          variant="outline"
+          className="min-h-11"
+          onClick={() => setAppointmentOpen(true)}
+        >
+          Записаться на подбор
         </Button>
       </div>
+      <AppointmentModal open={appointmentOpen} onOpenChange={setAppointmentOpen} />
     </div>
   );
 }
 
-export function ProgressiveCatalogGuide({ products }: { products: readonly Product[] }) {
+export function ProgressiveCatalogGuide() {
   return (
     <section
       id="progressive-guide"
@@ -92,47 +125,74 @@ export function ProgressiveCatalogGuide({ products }: { products: readonly Produ
             оптическая сила меняется плавно сверху вниз. Это даёт возможность пользоваться одними
             очками для разных расстояний.
           </p>
-          <ul className="grid gap-3 sm:grid-cols-3">
-            {zones.map(([title, text]) => (
-              <li key={title} className="space-y-2 rounded-xl border border-border bg-card p-4">
-                <h3 className="font-semibold">{title}</h3>
-                <p className="text-sm text-muted-foreground">{text}</p>
-              </li>
-            ))}
-          </ul>
+          <figure className="grid items-center gap-5 rounded-xl border border-border bg-card p-5 sm:grid-cols-[minmax(0,12rem)_1fr]">
+            <svg viewBox="0 0 200 240" className="mx-auto w-full max-w-48" aria-hidden="true">
+              <defs>
+                <linearGradient id="progressive-lens-zones" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop
+                    offset="0%"
+                    className="[stop-color:var(--color-brand)]"
+                    stopOpacity="0.08"
+                  />
+                  <stop
+                    offset="100%"
+                    className="[stop-color:var(--color-brand)]"
+                    stopOpacity="0.4"
+                  />
+                </linearGradient>
+              </defs>
+              <ellipse
+                cx="100"
+                cy="120"
+                rx="88"
+                ry="111"
+                fill="url(#progressive-lens-zones)"
+                className="stroke-brand"
+                strokeWidth="2"
+              />
+              <path
+                d="M100 64v120"
+                className="stroke-brand/20"
+                strokeWidth="24"
+                strokeLinecap="round"
+              />
+              <g textAnchor="middle" fontSize="14" fontWeight="600" className="fill-foreground">
+                <text x="100" y="54">
+                  Даль
+                </text>
+                <text x="100" y="125">
+                  Средняя зона
+                </text>
+                <text x="100" y="202">
+                  Близь
+                </text>
+              </g>
+            </svg>
+            <figcaption>
+              <dl className="space-y-4">
+                {zones.map(([title, text]) => (
+                  <div key={title}>
+                    <dt className="font-semibold">{title}</dt>
+                    <dd className="mt-1 text-sm text-muted-foreground">{text}</dd>
+                  </div>
+                ))}
+              </dl>
+            </figcaption>
+          </figure>
         </div>
 
         <div className="space-y-4">
           <h2 className="font-serif text-3xl">Три уровня прогрессивных линз</h2>
           <div className="grid gap-3 md:grid-cols-3">
-            {levels.map((level) => {
-              const model = products.find((product) => product.slug === level.example);
-              return (
-                <article
-                  key={level.title}
-                  className="flex min-w-0 flex-col gap-3 rounded-xl border border-border bg-card p-4 sm:p-5"
-                >
-                  <h3 className="font-serif text-xl">{level.title}</h3>
-                  <p className="grow text-sm leading-relaxed text-muted-foreground">{level.text}</p>
-                  {model && (
-                    <div className="space-y-1 border-t border-border pt-3 text-sm">
-                      <p className="font-medium">Пример из каталога</p>
-                      <a
-                        href={productCardHref(model)}
-                        className="break-words text-brand underline underline-offset-4"
-                      >
-                        {model.name}
-                      </a>
-                      {Number.isFinite(model.price) && model.price > 0 && (
-                        <p className="font-semibold tabular-nums">
-                          Цена в каталоге — {formatRub(model.price)}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </article>
-              );
-            })}
+            {levels.map(({ title, text }) => (
+              <article
+                key={title}
+                className="space-y-2 rounded-xl border border-border bg-card p-4 sm:p-5"
+              >
+                <h3 className="font-serif text-xl">{title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground">{text}</p>
+              </article>
+            ))}
           </div>
         </div>
 
@@ -143,10 +203,6 @@ export function ProgressiveCatalogGuide({ products }: { products: readonly Produ
               Такой дизайн стоит обсудить при пресбиопии, если нужно видеть вдаль и вблизи в одних
               очках. На подборе расскажите, сколько времени вы проводите за экраном, читаете или
               водите.
-            </p>
-            <p className="leading-relaxed text-muted-foreground">
-              Essilor выпускает линзы Essentials и Varilux. В каталоге также есть Hoyalux от Hoya.
-              Сравнивайте дизайн, доступные покрытия и параметры по рецепту.
             </p>
           </div>
           <div className="space-y-3">
@@ -160,6 +216,30 @@ export function ProgressiveCatalogGuide({ products }: { products: readonly Produ
               <li>Для хорошей посадки важны точный рецепт, положение линз и подходящая оправа.</li>
             </ul>
           </div>
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="font-serif text-3xl">Как выбрать прогрессивные линзы</h2>
+          <dl className="grid gap-4 sm:grid-cols-3">
+            {selectionFactors.map(([title, text]) => (
+              <div key={title}>
+                <dt className="font-semibold">{title}</dt>
+                <dd className="mt-1 text-sm leading-relaxed text-muted-foreground">{text}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        <div className="space-y-4">
+          <h2 className="font-serif text-3xl">Сравнение производителей</h2>
+          <dl className="grid gap-3 sm:grid-cols-3">
+            {brands.map(([brand, text]) => (
+              <div key={brand} className="space-y-2 rounded-xl border border-border bg-card p-4">
+                <dt className="font-semibold">{brand}</dt>
+                <dd className="text-sm leading-relaxed text-muted-foreground">{text}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
 
         <div className="space-y-4">

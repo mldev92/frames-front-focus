@@ -1,5 +1,6 @@
 export const PROGRESSIVE_SECTION = "linzy_dlya_ochkov/progressivnye";
 export const PROGRESSIVE_CATALOG = `/catalog_s/${PROGRESSIVE_SECTION}/`;
+export const PROGRESSIVE_LENS_TYPE = "Прогрессивные";
 
 export const progressiveArticles = [
   { slug: "progressivnye-linzy", title: "Как работают прогрессивные линзы" },

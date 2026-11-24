@@ -136,7 +136,7 @@ test("header menu uses canonical catalog values for repaired shortcuts", async (
     'brand: "Cooper Vision"',
     'brand: "Bausch & Lomb"',
     'lensType: "Однофокальные"',
-    'lensType: "Прогрессивные"',
+    'lensType: PROGRESSIVE_LENS_TYPE',
     'lensType: "Контроль миопии"',
     'purpose: "Для компьютера и гаджетов"',
     'purpose: "Контроль миопии у детей"',

@@ -9,6 +9,7 @@ import { openSnapshot, startGateway, apiKey, digest } from '../scripts/build-api
 
 const binding = { origin:'https://optika100.com',inventorySha256:'a'.repeat(64),backendSha:'b'.repeat(40),routingSha256:'c'.repeat(64) };
 const key = '/api/store/product.php?city=spb&section=opravy&slug=one';
+const progressive = '/api/store/lens_lines.php?city=spb';
 async function directory(t) {
   const root = await mkdtemp(path.join(tmpdir(),'o100-api-snapshot-'));
   t.after(async () => {
@@ -41,6 +42,9 @@ test('разные города, разделы и варианты не сме�
   assert.equal(apiKey(stellest,binding.origin),'/api/store/lens_search.php?city=spb&limit=100&q=Stellest');
   assert.throws(()=>apiKey(stellest.replace('spb','nvk'),binding.origin));
   assert.throws(()=>apiKey(stellest+'&q=Other',binding.origin));
+  assert.equal(apiKey(progressive,binding.origin),progressive);
+  assert.throws(()=>apiKey(progressive.replace('spb','nvk'),binding.origin));
+  assert.throws(()=>apiKey(progressive+'&id=example',binding.origin));
 });
 
 test('общая очередь нескольких Node-процессов: один запрос на ключ, не чаще 1/сек; replay без upstream',async t=>{
@@ -57,7 +61,7 @@ test('общая очередь нескольких Node-процессов: о
   const capture=await startGateway({snapshot,assertLease:()=>{},fetchImpl:(url,init)=>fetch(origin+new URL(url).pathname+new URL(url).search,init)});
   const env={O100_BUILD_MODE:'capture',O100_BUILD_ORIGIN:binding.origin,O100_BUILD_GATEWAY:capture.url};
   try {
-    const inputs=[key,key,key.replace('spb','nvk'),key.replace('opravy','other'),key];
+    const inputs=[key,key,key.replace('spb','nvk'),progressive,key];
     const values=await Promise.all(inputs.map(k=>worker(binding.origin+k,env)));
     assert.ok(values.every(v=>v.startsWith('200:')));
     assert.equal(starts.length,3);assert.equal(maxActive,1);
@@ -70,6 +74,8 @@ test('общая очередь нескольких Node-процессов: о
   try {
     const output=await worker(binding.origin+key,{...env,O100_BUILD_MODE:'replay',O100_BUILD_GATEWAY:replay.url});
     assert.match(output,/200:/);assert.equal(replay.stats.upstreamRequests,0);assert.equal(starts.length,3);
+    const lenses = await (await fetch(replay.url + progressive)).json();
+    assert.deepEqual(lenses, { path: progressive });
     assert.equal((await fetch(replay.url+key.replace('one','missing'))).status,503);
     assert.throws(()=>replay.assertHealthy(),/miss/);assert.equal(starts.length,3);
   } finally {await replay.close();}

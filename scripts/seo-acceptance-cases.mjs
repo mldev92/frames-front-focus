@@ -6,6 +6,7 @@ export const seoAcceptanceCases = [
   { path: "/catalog_s/opravy/detskie_1/dlya_malchikov/", h1: "Оправы для мальчиков" },
   { path: "/catalog_s/linzy_dlya_ochkov/detskie/", h1: "Детские линзы для очков" },
   { path: "/catalog_s/linzy_dlya_ochkov/bifokalnye/", h1: "Бифокальные линзы для очков" },
+  { path: "/catalog_s/linzy_dlya_ochkov/progressivnye/", h1: "Прогрессивные линзы для очков", description: "Санкт-Петербурге" },
   { path: "/catalog_n/opravy/", h1: "Оправы", description: "Новокузнецке" },
   { path: "/catalog_n/solntsezashchitnye_ochki/detskie_1/dlya_malchikov_1/", h1: "Солнцезащитные очки для мальчиков" },
   { path: "/catalog_s/solntsezashchitnye_ochki/detskie_/dlya_malchikov_/", h1: "Солнцезащитные очки для мальчиков" },

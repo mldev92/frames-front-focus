@@ -67,6 +67,10 @@ for (const route of routes) {
   if (/^\/catalog_[sn]\//.test(route)) {
     for (const problem of catalogHtmlProblems(html)) invalid.push(`${route}: ${problem}`);
   }
+  if (route === "/catalog_s/linzy_dlya_ochkov/progressivnye/" &&
+    !/<article\b[^>]*\bdata-lens-line-id=["'][^"']+/.test(html)) {
+    invalid.push(`${route}: progressive lens families missing from initial HTML`);
+  }
   for (const href of catalogLinks(html)) {
     if (!knownCatalogPaths.has(href) && !brokenCatalogLinks.has(href)) brokenCatalogLinks.set(href, route);
   }

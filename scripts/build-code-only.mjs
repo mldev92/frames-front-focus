@@ -10,6 +10,7 @@ import { appendStandaloneSitemap } from "./standalone-pages.mjs";
 import { redirectPaths } from "./catalog-link-check.mjs";
 import { robotsAllows } from "./seo-inventory.mjs";
 import { allowStellestCanonical, loadStellestCatalog, stellestCanonical, stellestPage } from "./stellest-published-catalog.mjs";
+import { loadProgressiveCatalog, progressiveDataFile, progressivePage } from "./progressive-published-catalog.mjs";
 
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const parent = path.resolve(process.env.O100_PUBLISHED_DIR || process.argv[2] || "");
@@ -78,6 +79,14 @@ const routes = pageFiles.map((f) => "/" + f.slice(0, -"index.html".length));
 const { standalonePaths, routingRedirects = [] } = decision;
 let robots = (await readPublished("robots.txt")).toString();
 const additionalCatalogPaths = [];
+if (decision.progressiveCatalog) {
+  loadProgressiveCatalog(backendSha, baseline.frontendSha, true);
+  const sitemap = (await readPublished("sitemap.xml")).toString();
+  if (!routes.includes(progressivePage) || baseline.retiredPaths.includes(progressivePage)
+    || !sitemap.includes("<loc>https://optika100.com" + progressivePage + "</loc>")) {
+    throw Error("Progressive lens page missing from the published catalog");
+  }
+}
 if (decision.stellestCatalog) {
   process.env.O100_STELLEST_CATALOG = "1";
   const { products } = loadStellestCatalog(backendSha);
@@ -131,6 +140,7 @@ await writeFile(
 const preload = (name) => new URL(name, import.meta.url).href;
 const env = {
   ...process.env,
+  O100_PROGRESSIVE_CATALOG: decision.progressiveCatalog ? "1" : "",
   O100_PUBLISHED_DIR: parent,
   VITE_RELEASE_SHA: sha,
   VITE_BITRIX_API: "https://optika100.com",
@@ -244,6 +254,7 @@ const manifest = {
     parentManifestSha256: digest(manifestBytes),
     standalonePaths,
     ...(decision.stellestCatalog ? { stellestCatalog: true } : {}),
+    ...(decision.progressiveCatalog ? { progressiveCatalogSha256: digest(await readFile(progressiveDataFile)) } : {}),
     ...(routingRedirects.length ? { routingRedirects } : {}),
   },
 };

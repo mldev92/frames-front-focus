@@ -7,6 +7,7 @@ import { matchesStandaloneRoute, publishedMatches, routeFile } from "./published
 import { catalogHtmlProblems } from "./catalog-html-validation.mjs";
 import { catalogLinks, redirectPaths } from "./catalog-link-check.mjs";
 import { amendStellestMatches, loadStellestCatalog } from "./stellest-published-catalog.mjs";
+import { amendProgressiveMatches, loadProgressiveCatalog, progressivePage } from "./progressive-published-catalog.mjs";
 
 const [index, count] = process.argv.slice(2).map(Number);
 const { routes, standalonePaths = [] } = JSON.parse(
@@ -16,6 +17,7 @@ const standalone = new Set(standalonePaths);
 const parent = process.env.O100_PUBLISHED_DIR;
 const manifest = JSON.parse(await readFile(path.join(parent, "release-manifest.json")));
 const stellest = loadStellestCatalog(process.env.O100_BACKEND_SHA);
+const progressive = loadProgressiveCatalog(process.env.O100_BACKEND_SHA, manifest.frontendSha);
 const allowed = new Set([
   ...routes,
   ...redirectPaths(await readFile("deploy/redirects.production.txt", "utf8")),
@@ -74,7 +76,12 @@ for (let i = index; i < routes.length; i += count) {
         throw Error("Standalone page must have one matching canonical and no product identity");
       }
     } else {
-      if (!isDeepStrictEqual(amendStellestMatches(publishedMatches(source), route, stellest), matches))
+      const expected = amendProgressiveMatches(
+        amendStellestMatches(publishedMatches(source), route, stellest),
+        route,
+        progressive,
+      );
+      if (!isDeepStrictEqual(expected, matches))
         throw Error("Route or catalog data changed");
       if (source.match(identity)?.[1] !== html.match(identity)?.[1])
         throw Error("Product identity changed");
@@ -83,6 +90,10 @@ for (let i = index; i < routes.length; i += count) {
     }
     if (route.startsWith("/catalog_") && catalogHtmlProblems(html).length)
       throw Error("Invalid catalog HTML");
+    if (progressive && route === progressivePage
+      && (!html.includes('id="progressive-guide"') || !html.includes("data-lens-line-id="))) {
+      throw Error("Progressive guide or lens families missing from initial HTML");
+    }
     if (!html.includes('type="module"') || !html.includes('id="$tsr-stream-barrier"'))
       throw Error("Missing hydration assets");
     for (const link of catalogLinks(html))
