@@ -31,3 +31,27 @@ test("securePost refreshes an expired CSRF token and retries once", async () => 
     globalThis.fetch = originalFetch;
   }
 });
+
+test("a failed CSRF fetch does not block later submissions", async () => {
+  const originalFetch = globalThis.fetch;
+  let csrfRequests = 0;
+  globalThis.fetch = async (input, init = {}) => {
+    if (String(input).endsWith("/api/store/csrf.php")) {
+      csrfRequests++;
+      return csrfRequests === 1
+        ? new Response(null, { status: 503 })
+        : Response.json({ csrfToken: "fresh-token" });
+    }
+    assert.equal(init.headers["X-CSRF-Token"], "fresh-token");
+    return Response.json({ ok: true });
+  };
+
+  try {
+    const { securePost } = await import("../../src/lib/api/security.ts?csrf-recovery-test");
+    await assert.rejects(securePost("order_quote.php", {}), /503/);
+    assert.deepEqual(await securePost("order_quote.php", {}), { ok: true });
+    assert.equal(csrfRequests, 2);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

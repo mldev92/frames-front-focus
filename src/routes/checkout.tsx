@@ -15,7 +15,6 @@ import {
   ShoppingCart,
   Shield,
   Phone,
-  Check,
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -196,7 +195,7 @@ function Checkout() {
   const regionalCity = useCityStore((state) => state.city);
   const contact = useStorefrontContact(regionalCity);
   const regionalCityHydrated = useCityStore((state) => state.hydrated);
-  const { lines, setQty, consume, legacySyncStatus } = useCart();
+  const { lines, lensSelections, setQty, consume, legacySyncStatus } = useCart();
   const { subtotal } = cartTotals(lines);
 
   const [step, setStep] = useState<CheckoutStep>("region");
@@ -597,6 +596,18 @@ function Checkout() {
         </p>
         <Link to="/" className="mt-8 inline-flex rounded-full bg-brand px-7 py-3 text-white">
           Вернуться на главную
+        </Link>
+      </div>
+    );
+  }
+
+  if (lines.length === 0 && lensSelections.length > 0 && !hasAttempt) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-16 text-center">
+        <h1 className="font-serif text-4xl">Оформление линз</h1>
+        <p className="mt-4 text-muted-foreground">Добавьте рецепт в корзине и отправьте заявку специалисту.</p>
+        <Link to="/basket" hash="lens-order" className="mt-6 inline-flex rounded-full bg-brand px-6 py-3 text-white">
+          Оформить линзы и добавить рецепт
         </Link>
       </div>
     );
@@ -1010,6 +1021,7 @@ function Checkout() {
                 ))}
                 <div>
                   <label
+                    htmlFor="order-comment"
                     style={{
                       display: "block",
                       fontSize: "13px",
@@ -1017,13 +1029,17 @@ function Checkout() {
                       marginBottom: "6px",
                     }}
                   >
-                    Особые пожелания
+                    {lines.some((line) => line.category === "linzy-dlya-ochkov")
+                      ? "Параметры рецепта или комментарий"
+                      : "Особые пожелания"}
                   </label>
                   <textarea
+                    id="order-comment"
                     placeholder="Комментарий к заказу..."
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     rows={3}
+                    maxLength={1000}
                     className="w-full bg-background border border-border"
                     style={{
                       borderRadius: "8px",
@@ -1233,32 +1249,21 @@ function Checkout() {
                 marginBottom: "16px",
               }}
             >
-              <button
-                type="button"
-                onClick={() => setAgreed((v) => !v)}
-                style={{
-                  width: "20px",
-                  height: "20px",
-                  borderRadius: "4px",
-                  border: agreed ? "none" : "2px solid var(--border)",
-                  backgroundColor: agreed ? "var(--brand)" : "transparent",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                  cursor: "pointer",
-                  marginTop: "2px",
-                  padding: 0,
-                }}
-              >
-                {agreed && <Check size={13} color="white" strokeWidth={3} />}
-              </button>
+              <input
+                id="order-consent"
+                type="checkbox"
+                aria-describedby="order-consent-terms"
+                checked={agreed}
+                onChange={(event) => setAgreed(event.target.checked)}
+                className="mt-0.5 size-5 shrink-0 cursor-pointer accent-brand"
+              />
               <p
                 className="text-muted-foreground"
                 style={{ fontSize: "12px", lineHeight: "1.5", margin: 0 }}
               >
-                Я согласен(а) с{" "}
+                <label htmlFor="order-consent" className="cursor-pointer">Я согласен(а) с</label>{" "}
                 <a
+                  id="order-consent-terms"
                   href="/politika-konfidentsialnosti/"
                   className="text-brand"
                   style={{ textDecoration: "underline" }}

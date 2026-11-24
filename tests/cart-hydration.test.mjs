@@ -37,11 +37,25 @@ test('сохранённая корзина не меняет первый SSR-�
     const initialHtml = renderToString(React.createElement(Totals));
     await useCart.persist.rehydrate();
     assert.deepEqual(useCart.getState().lines, [line]);
-    assert.deepEqual(useCart.getState().totals(), { count: 4, subtotal: 2000 });
+    assert.deepEqual(useCart.getState().totals(), { count: 6, subtotal: 2000 });
     assert.equal(renderToString(React.createElement(Totals)), initialHtml, 'SSR читает начальный снимок, независимо от текущего состояния');
     assert.equal(typeof useCart.getState().repeatOrder, 'function');
     await useCart.persist.rehydrate();
-    assert.deepEqual(useCart.getState().totals(), { count: 4, subtotal: 2000 });
+    assert.deepEqual(useCart.getState().totals(), { count: 6, subtotal: 2000 });
+
+    const { lensCartDraft } = load('../src/lib/lens-cart.ts');
+    const offer = { id: 'offer-1', supplier: 'essilor', line: 'Varilux', coating: 'Crizal', priceRub: 7000 };
+    const cart = useCart.getState;
+    cart().clearLens();
+    cart().addLens(offer);
+    assert.equal(cart().lensSelections[0].qty, 2);
+    cart().setLensQty(offer.id, 1);
+    const submitted = cart().lensSelections;
+    assert.equal(cart().totals().count, 3);
+    assert.match(lensCartDraft(submitted).selection.chosenOffer, /^1 шт\. — ESSILOR Varilux.*7000 ₽ за линзу$/);
+    cart().addLens(offer);
+    cart().consumeLens(submitted);
+    assert.equal(cart().lensSelections[0].qty, 2);
   } finally { delete globalThis.localStorage; delete globalThis.window; }
 });
 

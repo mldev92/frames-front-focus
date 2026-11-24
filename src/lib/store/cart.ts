@@ -21,6 +21,7 @@ export interface LensCartSelection {
   pricePerLens: number | null;
   priceBeforeDiscountPerLens?: number | null;
   discountPercent?: number | null;
+  /** Количество отдельных линз. */
   qty: number;
 }
 
@@ -93,6 +94,7 @@ interface CartState {
     },
   ) => void;
   addLens: (offer: LensRecommendCard) => void;
+  setLensQty: (id: string, qty: number) => void;
   removeLens: (id: string) => void;
   clearLens: () => void;
   consumeLens: (items: LensCartSelection[]) => void;
@@ -199,7 +201,7 @@ export const useCart = create<CartState>()(
           lensSelections: existing
             ? state.lensSelections.map((item) => item.id === offer.id ? {
                 ...item,
-                qty: item.qty + 1,
+                qty: item.qty + 2,
                 coating: offer.coating,
                 treatment: offer.treatment,
                 pricePerLens: offer.priceRub,
@@ -216,11 +218,16 @@ export const useCart = create<CartState>()(
                 pricePerLens: offer.priceRub,
                 priceBeforeDiscountPerLens: offer.priceBeforeDiscountRub,
                 discountPercent: offer.discountPercent,
-                qty: 1,
+                qty: 2,
               }],
           isOpen: true,
         };
       }),
+      setLensQty: (id, qty) => set((state) => ({
+        lensSelections: state.lensSelections.map((item) =>
+          item.id === id ? { ...item, qty: Math.max(1, qty) } : item,
+        ),
+      })),
       removeLens: (id) => set((state) => ({ lensSelections: state.lensSelections.filter((item) => item.id !== id) })),
       clearLens: () => set({ lensSelections: [] }),
       consumeLens: (submitted) => set((state) => ({ lensSelections: state.lensSelections.flatMap((item) => {
@@ -252,7 +259,7 @@ export const useCart = create<CartState>()(
     }),
     {
       name: "optika-cart",
-      version: 3,
+      version: 4,
       // CartMigration читает localStorage после hydration; первый снимок
       // совпадает с пустой корзиной в серверном HTML.
       skipHydration: true,
@@ -261,12 +268,16 @@ export const useCart = create<CartState>()(
         legacySyncStatus: current.legacySyncStatus,
       }),
       partialize: ({ legacySyncStatus: _legacySyncStatus, ...state }) => state,
-      migrate: (persisted) => {
+      migrate: (persisted, version) => {
         const state = persisted as Partial<CartState>;
         return {
           ...state,
           importedSources: state.importedSources ?? [],
           consumedAttempts: state.consumedAttempts ?? [],
+          // До версии 4 количество очковых линз хранилось в парах.
+          lensSelections: Array.isArray(state.lensSelections)
+            ? state.lensSelections.map((item) => version < 4 ? { ...item, qty: item.qty * 2 } : item)
+            : [],
           lines: Array.isArray(state.lines)
             ? state.lines.filter(
                 (line): line is CartLine =>

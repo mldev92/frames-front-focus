@@ -78,13 +78,17 @@ export async function submitLensSelectionRequest(
     sourceUrl: typeof window === "undefined" ? "" : window.location.href,
   };
   const keyedPayload = { ...payload, requestKey: await requestKey("lens", payload, options.file) };
-  // With a file the request goes multipart (payload JSON + the file); without
-  // one it stays the plain JSON POST it has always been.
+  let result: LensSelectionRequestResponse;
   if (options.file) {
     const form = new FormData();
     form.append("payload", JSON.stringify(keyedPayload));
     form.append("prescriptionFile", options.file);
-    return securePostForm<LensSelectionRequestResponse>("lens_selection_request.php", form);
+    result = await securePostForm<LensSelectionRequestResponse>("lens_selection_request.php", form);
+  } else {
+    result = await securePost<LensSelectionRequestResponse>("lens_selection_request.php", keyedPayload);
   }
-  return securePost<LensSelectionRequestResponse>("lens_selection_request.php", keyedPayload);
+  if (result?.status !== "ok" || typeof result.requestId !== "string" || !result.requestId) {
+    throw new Error("Не удалось подтвердить сохранение заявки. Повторите отправку.");
+  }
+  return result;
 }

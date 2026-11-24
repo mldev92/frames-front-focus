@@ -2,11 +2,11 @@ import { Link } from "@tanstack/react-router";
 import { X, Minus, Plus, Trash2 } from "lucide-react";
 import { useCart, formatPrice } from "@/lib/store/cart";
 import { cartTotals } from "@/lib/cart-totals";
-import { PriceSavings } from "@/components/PriceSavings";
+import { LensCartLine } from "@/components/LensCartLine";
 import { CartPrescription } from "@/components/CartPrescription";
 
 export function CartDrawer() {
-  const { isOpen, close, lines, lensSelections, setQty, remove, removeLens } = useCart();
+  const { isOpen, close, lines, lensSelections, setQty, remove } = useCart();
   const { subtotal, count } = cartTotals(lines, lensSelections);
 
   if (!isOpen) return null;
@@ -98,15 +98,8 @@ export function CartDrawer() {
                 </div>
               ))}
               {lensSelections.map((item) => (
-                <div key={item.id} className="flex items-start justify-between gap-3 p-5">
-                  <div>
-                    <div className="text-xs text-muted-foreground">{item.brand} · очковые линзы</div>
-                    <div className="font-medium">{item.name}</div>
-                    <div className="text-xs text-muted-foreground">{item.index && `Индекс ${item.index} · `}{[item.coating, item.treatment].filter(Boolean).join(" · ")} · {item.qty} пара</div>
-                    <div className="mt-1 text-sm">{item.pricePerLens === null ? "Цена по запросу" : `Ориентир: ${formatPrice(item.pricePerLens * 2 * item.qty)}`}</div>
-                    <PriceSavings oldPrice={item.priceBeforeDiscountPerLens ?? null} price={item.pricePerLens} discountPercent={item.discountPercent ?? null} quantity={2 * item.qty} className="mt-1" />
-                  </div>
-                  <button type="button" onClick={() => removeLens(item.id)} aria-label="Удалить линзы" className="text-muted-foreground hover:text-brand"><Trash2 className="h-4 w-4" /></button>
+                <div key={item.id} className="p-5">
+                  <LensCartLine item={item} />
                 </div>
               ))}
             </div>
@@ -115,20 +108,22 @@ export function CartDrawer() {
                 <span className="text-muted-foreground">Итого</span>
                 <span className="font-medium">{formatPrice(subtotal)}</span>
               </div>}
-              {lensSelections.length > 0 && <p className="text-xs text-muted-foreground">Очковые линзы оформляются через заявку: специалист проверит рецепт и подтвердит цену.</p>}
               {lines.length > 0 && <Link
                 to="/checkout"
                 onClick={close}
                 className="block text-center bg-ink text-primary-foreground py-3 rounded-sm hover:opacity-90"
               >
-                Оформить заказ
+                {lensSelections.length > 0 ? "Оформить товары из каталога" : "Оформить заказ"}
               </Link>}
               <Link
                 to="/basket"
                 onClick={close}
-                className="block text-center text-sm text-muted-foreground hover:text-foreground"
+                hash={lensSelections.length > 0 ? "lens-order" : undefined}
+                className={lensSelections.length > 0 && lines.length === 0
+                  ? "block rounded-sm bg-ink py-3 text-center text-primary-foreground hover:opacity-90"
+                  : "block text-center text-sm text-muted-foreground hover:text-foreground"}
               >
-                {lensSelections.length > 0 ? "Оформить подбор линз" : "Перейти в корзину"}
+                {lensSelections.length > 0 ? "Оформить линзы и добавить рецепт" : "Перейти в корзину"}
               </Link>
             </footer>
           </>

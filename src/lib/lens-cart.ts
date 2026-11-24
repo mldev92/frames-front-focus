@@ -12,11 +12,11 @@ export function lensCartDraft(items: LensCartSelection[]): LensSelectionRequestD
       design: "По выбранным позициям",
       brand: [...new Set(items.map((item) => item.brand))].join(", "),
       chosenOffer: items.map((item) => [
-        `${item.qty} пара: ${item.brand} ${item.name}`,
+        `${item.qty} шт. — ${item.brand} ${item.name}`,
         item.index === null ? "" : `индекс ${item.index}`,
         item.coating,
         item.treatment,
-        item.pricePerLens === null ? "цена по запросу" : `${item.pricePerLens * 2} ₽ за пару`,
+        item.pricePerLens === null ? "цена по запросу" : `${item.pricePerLens} ₽ за линзу`,
       ].filter(Boolean).join(" · ")).join("; "),
     },
     prescription: null,
