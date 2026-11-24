@@ -47,9 +47,10 @@ test("a failed CSRF fetch does not block later submissions", async () => {
   };
 
   try {
-    const { securePost } = await import("../../src/lib/api/security.ts?csrf-recovery-test");
+    const { securePost } = await import("../../src/lib/api/security.ts");
+    const { withStoreWrite } = await import("../../src/lib/api/store-write.ts");
     await assert.rejects(securePost("order_quote.php", {}), /503/);
-    assert.deepEqual(await securePost("order_quote.php", {}), { ok: true });
+    assert.deepEqual(await withStoreWrite(() => securePost("order_quote.php", {})), { ok: true });
     assert.equal(csrfRequests, 2);
   } finally {
     globalThis.fetch = originalFetch;

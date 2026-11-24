@@ -740,13 +740,9 @@ export async function createOrder(
   input: CreateOrderInput,
   idempotencyKey: string,
 ): Promise<CreateOrderResult> {
-  const result = await securePost<CreateOrderResult>("order_create.php", input, {
+  return securePost<CreateOrderResult>("order_create.php", input, {
     "X-Idempotency-Key": idempotencyKey,
   });
-  if (result?.ok !== true || typeof result.accountNumber !== "string" || !result.accountNumber) {
-    throw new Error("Не удалось подтвердить создание заказа. Проверьте сохранённую попытку.");
-  }
-  return result;
 }
 
 export interface DeliveryQuoteOption {

@@ -60,8 +60,7 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
 
 export async function getCsrfToken(force = false): Promise<string> {
   if (force) csrfPromise = null;
-  if (csrfPromise) return csrfPromise;
-  const request = apiFetch(apiUrl("csrf.php"), {
+  csrfPromise ??= apiFetch(apiUrl("csrf.php"), {
     credentials: "include",
     cache: "no-store",
   }).then(async (response) => {
@@ -70,13 +69,7 @@ export async function getCsrfToken(force = false): Promise<string> {
     if (!data.csrfToken) throw new Error("CSRF token missing");
     return data.csrfToken;
   });
-  csrfPromise = request;
-  try {
-    return await request;
-  } catch (error) {
-    if (csrfPromise === request) csrfPromise = null;
-    throw error;
-  }
+  return csrfPromise;
 }
 
 export class StoreApiError extends Error {

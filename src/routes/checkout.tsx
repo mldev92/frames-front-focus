@@ -36,6 +36,7 @@ import type { CheckoutStep, StepState } from "@/lib/checkout-steps";
 import { getMe } from "@/lib/api/account";
 import { SdekPickupMap } from "@/components/SdekPickupMap";
 import { checkCoupon, createOrder, getOrderDeliveryOptions, getOrderPickupPoints, quoteOrder } from "@/lib/api/bitrix";
+import { withStoreWrite } from "@/lib/api/store-write";
 import type { CouponResult, DeliveryQuoteOption, PickupPointOption, CreateOrderInput, OrderQuote } from "@/lib/api/bitrix";
 
 export const Route = createFileRoute("/checkout")({
@@ -301,7 +302,7 @@ function Checkout() {
     const codes: Array<DeliveryCode | undefined> = isSpb ? SPB_CDEK_CODES : CDEK_CODES;
     Promise.allSettled(
       codes.map((deliveryCode) =>
-        getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode }),
+        withStoreWrite(() => getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode })),
       ),
     )
       .then(async (initialResults) => {
@@ -320,7 +321,7 @@ function Checkout() {
           // Старый серверный снимок мог исчезнуть, хотя Bitrix-корзина ещё жива.
           results = await Promise.allSettled(
             codes.map((deliveryCode) =>
-              getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode }),
+              withStoreWrite(() => getOrderDeliveryOptions({ city, locationCode: location.code, lines, deliveryCode })),
             ),
           );
           if (cancelled) return;
@@ -383,7 +384,7 @@ function Checkout() {
     setPickupError("");
     setFocusedPickupPointId(pickupPoint?.id ?? null);
     try {
-      const result = await getOrderPickupPoints({ city });
+      const result = await withStoreWrite(() => getOrderPickupPoints({ city }));
       setPickupPoints(result.points);
       if (result.points.length === 0) setPickupError("В этом городе пока нет доступных пунктов выдачи СДЭК.");
     } catch (error) {
@@ -507,7 +508,7 @@ function Checkout() {
       await withCheckoutLock(async () => {
         const attempt = readAttempt();
         if (!attempt) { setHasAttempt(false); return; }
-        const status = await checkAttempt(attempt.id);
+        const status = await withStoreWrite(() => checkAttempt(attempt.id));
         if (status.status === "complete" && status.result) {
           await useCart.persist.rehydrate();
           consume(attempt.input.lines, attempt.id); forgetAttempt(attempt.id); setHasAttempt(false);
@@ -545,7 +546,7 @@ function Checkout() {
       await withCheckoutLock(async () => {
         const previous = readAttempt();
         if (previous) {
-          const status = await checkAttempt(previous.id);
+          const status = await withStoreWrite(() => checkAttempt(previous.id));
           if (status.status === "complete" && status.result) {
             await useCart.persist.rehydrate();
             consume(previous.input.lines, previous.id); forgetAttempt(previous.id); setHasAttempt(false);
@@ -555,7 +556,7 @@ function Checkout() {
           if (status.status === "cancelled") { forgetAttempt(previous.id); setHasAttempt(false); }
           else if (orderFingerprint(previous.input) !== orderFingerprint(input)) {
             if (!window.confirm("Предыдущий заказ не сохранён. Начать новую попытку с изменёнными данными?")) return;
-            await cancelAttempt(previous.id);
+            await withStoreWrite(() => cancelAttempt(previous.id));
             forgetAttempt(previous.id); setHasAttempt(false); setReview(null);
           }
         }
@@ -566,7 +567,7 @@ function Checkout() {
         }
         const fingerprint = orderFingerprint(input);
         if (!review || review.fingerprint !== fingerprint || review.quote.expiresAt * 1000 <= Date.now()) {
-          const quote = await quoteOrder(input);
+          const quote = await withStoreWrite(() => quoteOrder(input));
           setReview({ input, quote, fingerprint }); setAcceptPending(false);
           toast.info("Проверьте рассчитанную стоимость и подтвердите заказ."); return;
         }
@@ -575,7 +576,10 @@ function Checkout() {
         const attempt = saveAttempt(approved);
         localStorage.setItem(ATTEMPT_STORAGE_KEY, JSON.stringify({ ...attempt, input: approved }));
         setHasAttempt(true);
-        const result = await createOrder(approved, attempt.id);
+        const result = await withStoreWrite(() => createOrder(approved, attempt.id));
+        if (result?.ok !== true || typeof result.accountNumber !== "string" || !result.accountNumber) {
+          throw new Error("Не удалось подтвердить создание заказа. Проверьте сохранённую попытку.");
+        }
         await useCart.persist.rehydrate();
         consume(input.lines, attempt.id); forgetAttempt(attempt.id); setHasAttempt(false);
         setCompletedOrder(result.accountNumber);
@@ -1857,7 +1861,7 @@ function CouponField({
     setChecking(true);
     setError(null);
     try {
-      const result = await checkCoupon({ lines, coupon: code });
+      const result = await withStoreWrite(() => checkCoupon({ lines, coupon: code }));
       if (result.applied) {
         onApplied({ code: result.code, applied: true, discount: result.discount, message: result.message });
         toast.success(`Промокод применён: −${formatPrice(result.discount)}`);
