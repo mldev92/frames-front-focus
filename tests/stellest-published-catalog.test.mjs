@@ -13,6 +13,7 @@ import {
   stellestCanonical,
   stellestDataFile,
   stellestPage,
+  stellestRock,
 } from "../scripts/stellest-published-catalog.mjs";
 import { appendStandaloneSitemap } from "../scripts/standalone-pages.mjs";
 
@@ -61,6 +62,15 @@ test("Цены меняются только для проверенных ка�
   assert.deepEqual(landing[0].data, { contactLenses, spectacleLenses: catalog.offers });
 });
 
+test("Офлайн-выпуск открывает только канонический URL Rock", () => {
+  const rule = `Disallow: */${stellestRock.slug}/`;
+  const prior = `User-agent: *\n${rule}\nUser-agent: Yandex\n${rule}\n`;
+  const robots = allowStellestCanonical(prior, stellestRock);
+  assert.equal(robotsAllows(robots, stellestRock.path), true);
+  assert.equal(robotsAllows(robots, stellestRock.path.replace("/detskie", "")), false);
+  assert.equal(robotsAllows(robots, stellestRock.path.replace("/catalog_s", "/catalog_n")), false);
+});
+
 test("Проверка PHP принимает только согласованные изменения robots и sitemap", (t) => {
   const fixture = mkdtempSync(join(tmpdir(), "o100-stellest-verify-"));
   t.after(() => {
@@ -75,9 +85,11 @@ test("Проверка PHP принимает только согласован�
     writeFileSync(file, data);
   };
   const digest = (data) => createHash("sha256").update(data).digest("hex");
-  const file = stellestCanonical.slice(1) + "index.html";
-  const product = `<link rel="canonical" href="https://optika100.com${stellestCanonical}"/><main data-catalog-product-id="56365"></main>`;
-  const restriction = "Disallow: */as_stellest_crizal_prevencia/";
+  const products = [
+    ["stellestCatalog", { id: 56365, path: stellestCanonical, slug: "as_stellest_crizal_prevencia" }],
+    ["stellestRockIndexing", stellestRock],
+  ];
+  const restriction = products.map(([, { slug }]) => `Disallow: */${slug}/`).join("\n");
   const robots = `User-agent: *\n${restriction}\nUser-agent: Yandex\n${restriction}\n`;
   const sitemap = "<urlset>\n</urlset>\n";
   const parent = {
@@ -90,34 +102,41 @@ test("Проверка PHP принимает только согласован�
     settings: {},
     retiredPaths: [],
     queryAcceptancePaths: [],
-    routeCount: 1,
+    routeCount: products.length,
     acceptancePaths: [],
-    files: { "robots.txt": digest(robots), "sitemap.xml": digest(sitemap), [file]: digest(product) },
+    files: { "robots.txt": digest(robots), "sitemap.xml": digest(sitemap) },
   };
+  for (const [, { id, path }] of products) {
+    const file = path.slice(1) + "index.html";
+    const product = `<link rel="canonical" href="https://optika100.com${path}"/><main data-catalog-product-id="${id}"></main>`;
+    parent.files[file] = digest(product);
+    write(join(published, file), product);
+  }
   const manifest = JSON.stringify(parent);
   write(join(fixture, ".o100-backend-release.json"), JSON.stringify({ sha: parent.backendSha, files: parent.backendFiles }));
   write(join(published, ".release-sha"), parent.frontendSha);
   write(join(published, "release-manifest.json"), manifest);
-  write(join(published, file), product);
   write(join(published, "robots.txt"), robots);
   write(join(published, "sitemap.xml"), sitemap);
-  const candidate = {
-    ...parent,
-    codeOnly: { parentSha: parent.frontendSha, parentManifestSha256: digest(manifest), stellestCatalog: true },
-    files: {
-      ...parent.files,
-      "robots.txt": digest(allowStellestCanonical(robots)),
-      "sitemap.xml": digest(appendStandaloneSitemap(sitemap, [], [stellestCanonical])),
-    },
-  };
-  const verify = () => {
+  const verify = (candidate) => {
     write(join(stage, "release-manifest.json"), JSON.stringify(candidate));
     return spawnSync("php", ["-d", "display_errors=stderr", "deploy/verify-code-only.php", stage, root], { encoding: "utf8" });
   };
-  const accepted = verify();
-  assert.equal(accepted.status, 0, accepted.stderr);
-  candidate.files["sitemap.xml"] = digest(appendStandaloneSitemap(sitemap, [], [stellestCanonical, "/unrelated/"]));
-  const rejected = verify();
-  assert.notEqual(rejected.status, 0);
-  assert.match(rejected.stderr, /Unexpected published sitemap change/);
+  for (const [flag, product] of products) {
+    const candidate = {
+      ...parent,
+      codeOnly: { parentSha: parent.frontendSha, parentManifestSha256: digest(manifest), [flag]: true },
+      files: {
+        ...parent.files,
+        "robots.txt": digest(allowStellestCanonical(robots, product)),
+        "sitemap.xml": digest(appendStandaloneSitemap(sitemap, [], [product.path])),
+      },
+    };
+    const accepted = verify(candidate);
+    assert.equal(accepted.status, 0, accepted.stderr);
+    candidate.files["sitemap.xml"] = digest(appendStandaloneSitemap(sitemap, [], [product.path, "/unrelated/"]));
+    const rejected = verify(candidate);
+    assert.notEqual(rejected.status, 0);
+    assert.match(rejected.stderr, /Unexpected published sitemap change/);
+  }
 });

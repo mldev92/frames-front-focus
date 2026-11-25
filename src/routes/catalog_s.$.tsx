@@ -1,7 +1,7 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
 import { catalogSectionMetadata } from "@/data/catalog-seo";
-import { productMetaDescription, productCanonicalUrl, stellestPrevenciaProductScripts } from "@/lib/product-seo";
+import { productMetaDescription, productCanonicalUrl, stellestProductScripts } from "@/lib/product-seo";
 import { frameCatalogSchemas } from "@/data/frame-catalog-seo";
 import { categoryForCatalogPath } from "@/data/categories";
 import { ProductPage } from "@/routes/catalog_s.$category.$slug";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/catalog_s/$")({
       const description = productMetaDescription(product);
       const productUrl = productCanonicalUrl(product, canonical);
       return {
-        scripts: stellestPrevenciaProductScripts(product, productUrl),
+        scripts: stellestProductScripts(product, productUrl),
         meta: [
           { title: `${product.brand} ${product.name} — купить · ОПТИКА 100%` },
           { name: "description", content: description },

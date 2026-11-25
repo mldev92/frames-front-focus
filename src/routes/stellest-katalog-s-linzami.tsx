@@ -13,6 +13,7 @@ import { formatPrice, useCart } from "@/lib/store/cart";
 import { PriceSavings } from "@/components/PriceSavings";
 import { LensDetailDialog } from "@/components/LensWizard/LensWizard";
 import { CITY_LABELS, DEFAULT_REGION, useCityStore, type CityCode } from "@/lib/store/city";
+import { stellestRockProductPath } from "@/lib/product-seo";
 
 import stellestCss from "@/content/stellest-katalog-s-linzami.css?raw";
 import stellestHtml from "@/content/stellest-katalog-s-linzami.html?raw";
@@ -326,7 +327,8 @@ function StellestLensCatalog({
         const rock = offer.line === "AS Stellest Airwear" && offer.coating === "Crizal Rock";
         const rockDiscount = rock ? (city === "spb" ? 20 : offer.discountPercent) : null;
         const slug = prevenciaOption(offer)?.slug;
-        const productUrl = city === "spb" && slug ? `/catalog_s/linzy_dlya_ochkov/detskie/${slug}/` : null;
+        const productPath = rock ? stellestRockProductPath : slug && `/catalog_s/linzy_dlya_ochkov/detskie/${slug}/`;
+        const productUrl = city === "spb" ? productPath : undefined;
         const title = plano
           ? "ESSILOR AS Stellest Airwear Plano Crizal Prevencia"
           : `ESSILOR ${offer.line} ${offer.coating}`;
