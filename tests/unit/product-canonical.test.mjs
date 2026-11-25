@@ -39,6 +39,7 @@ test('Rock offer uses the confirmed Saint Petersburg price and expiration', () =
   const product = {
     id: 56366,
     slug: 'as_stellest_crizal_rock',
+    canonicalPath: stellestRockProductPath,
     name: 'AS Stellest Crizal Rock',
     category: 'linzy-dlya-ochkov',
     price: 8760,

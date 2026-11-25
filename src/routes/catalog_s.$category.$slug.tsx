@@ -31,7 +31,7 @@ import { useCityStore, type CityCode } from "@/lib/store/city";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
 import { catalogSectionMetadata } from "@/data/catalog-seo";
 import { catalogConfig } from "@/routes/catalog_s.$category";
-import { isStellestPrevenciaProduct, productMetaDescription, productCanonicalUrl, stellestProductScripts } from "@/lib/product-seo";
+import { isStellestPrevenciaProduct, isStellestRockProduct, productMetaDescription, productCanonicalUrl, stellestProductScripts } from "@/lib/product-seo";
 import { frameCatalogSchemas } from "@/data/frame-catalog-seo";
 import {
   applyCatalogState,
@@ -182,7 +182,7 @@ export function ProductPage({
   const isLens = product.category === "kontaktnye-linzy";
   const isFrame = product.category === "opravy";
   const isSpectacleLens = product.category === "linzy-dlya-ochkov";
-  const isPrevencia = isStellestPrevenciaProduct(product);
+  const isUnitPricedStellest = isStellestPrevenciaProduct(product) || isStellestRockProduct(product);
   const showTryOn =
     VIRTUAL_TRY_ON_ENABLED && !isLens && !isSpectacleLens;
   const isMisight = product.slug.toLowerCase().includes("misight");
@@ -396,7 +396,7 @@ export function ProductPage({
 
             <div className="mt-5 flex items-baseline gap-3">
               <span className="font-serif text-3xl">{formatProductPrice(product.price, isLens ? lensQty : 1)}</span>
-              {isPrevencia && hasPrice && <span className="text-sm text-muted-foreground">за линзу</span>}
+              {isUnitPricedStellest && hasPrice && <span className="text-sm text-muted-foreground">за линзу</span>}
               {product.oldPrice && (
                 <span className="text-sm text-muted-foreground line-through">
                   {formatPrice(isLens ? product.oldPrice * lensQty : product.oldPrice)}

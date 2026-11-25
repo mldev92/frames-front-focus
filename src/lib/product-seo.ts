@@ -40,8 +40,12 @@ export function isStellestPrevenciaProduct(product: Pick<Product, "category" | "
 
 export const stellestRockProductPath = "/catalog_s/linzy_dlya_ochkov/detskie/as_stellest_crizal_rock/";
 
+export function isStellestRockProduct(product: Pick<Product, "id" | "canonicalPath">): boolean {
+  return product.id === 56366 && product.canonicalPath === stellestRockProductPath;
+}
+
 export function stellestProductScripts(product: Product, canonical: string) {
-  const rock = product.id === 56366
+  const rock = isStellestRockProduct(product)
     && canonical === "https://optika100.com" + stellestRockProductPath;
   if ((!rock && !isStellestPrevenciaProduct(product)) || !Number.isFinite(product.price) || product.price <= 0) {
     return [];
