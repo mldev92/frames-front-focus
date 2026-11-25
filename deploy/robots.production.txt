@@ -55,6 +55,7 @@ Disallow: */filter/*
 Allow: /catalog_s/linzy_dlya_ochkov/detskie/as_stellest_crizal_prevencia/$
 Disallow: */as_stellest_crizal_prevencia/
 Disallow: */as_stellest_crizal_sun_xprotect_/
+Allow: /catalog_s/linzy_dlya_ochkov/detskie/as_stellest_crizal_rock/$
 Disallow: */as_stellest_crizal_rock/
 Disallow: /catalog_s/$
 Disallow: /sale/payment/result.php*
@@ -117,6 +118,7 @@ Disallow: */filter/*
 Allow: /catalog_s/linzy_dlya_ochkov/detskie/as_stellest_crizal_prevencia/$
 Disallow: */as_stellest_crizal_prevencia/
 Disallow: */as_stellest_crizal_sun_xprotect_/
+Allow: /catalog_s/linzy_dlya_ochkov/detskie/as_stellest_crizal_rock/$
 Disallow: */as_stellest_crizal_rock/
 Disallow: /catalog_s/$
 Disallow: /sale/payment/result.php*

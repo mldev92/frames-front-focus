@@ -31,7 +31,7 @@ import { useCityStore, type CityCode } from "@/lib/store/city";
 import { CatalogRouteView } from "@/components/CatalogRouteView";
 import { catalogSectionMetadata } from "@/data/catalog-seo";
 import { catalogConfig } from "@/routes/catalog_s.$category";
-import { isStellestPrevenciaProduct, productMetaDescription, productCanonicalUrl, stellestPrevenciaProductScripts } from "@/lib/product-seo";
+import { isStellestPrevenciaProduct, productMetaDescription, productCanonicalUrl, stellestProductScripts } from "@/lib/product-seo";
 import { frameCatalogSchemas } from "@/data/frame-catalog-seo";
 import {
   applyCatalogState,
@@ -79,7 +79,7 @@ export const Route = createFileRoute("/catalog_s/$category/$slug")({
     const description = productMetaDescription(p);
     const productUrl = productCanonicalUrl(p, `https://optika100.com/catalog_s/${params.category}/${params.slug}/`);
     return {
-      scripts: stellestPrevenciaProductScripts(p, productUrl),
+      scripts: stellestProductScripts(p, productUrl),
       meta: [
         { title: `${p.brand} ${p.name} — купить · ОПТИКА 100%` },
         { name: "description", content: description },

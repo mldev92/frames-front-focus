@@ -8,10 +8,12 @@ const prevencia = [
   { id: 65359, slug: "as_stellest_2_0_crizal_prevencia", line: "AS Stellest 2.0 Airwear" },
 ].map((item) => ({ ...item, path: directory + item.slug + "/" }));
 export const stellestCanonical = prevencia[0].path;
+const rockSlug = "as_stellest_crizal_rock";
+export const stellestRock = { id: 56366, slug: rockSlug, path: directory + rockSlug + "/" };
 
-export function allowStellestCanonical(robots) {
-  const restriction = "Disallow: */as_stellest_crizal_prevencia/";
-  const allow = "Allow: " + stellestCanonical + "$";
+export function allowStellestCanonical(robots, product = prevencia[0]) {
+  const restriction = "Disallow: */" + product.slug + "/";
+  const allow = "Allow: " + product.path + "$";
   const eol = robots.includes("\r\n") ? "\r\n" : "\n";
   const lines = robots.split(eol);
   if (lines.filter((line) => line === restriction).length !== 2 || lines.includes(allow)) {

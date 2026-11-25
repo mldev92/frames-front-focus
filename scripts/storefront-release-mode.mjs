@@ -4,7 +4,7 @@ import { isDeepStrictEqual } from "node:util";
 import { pathToFileURL } from "node:url";
 import ts from "typescript";
 import { registry, standalonePages } from "./standalone-pages.mjs";
-import { allowStellestCanonical, stellestDataFile } from "./stellest-published-catalog.mjs";
+import { allowStellestCanonical, stellestDataFile, stellestRock } from "./stellest-published-catalog.mjs";
 import { progressiveDataFile } from "./progressive-published-catalog.mjs";
 
 const git = (...args) =>
@@ -19,6 +19,7 @@ const presentation = new Set([
 ]);
 const print = ts.createPrinter({ removeComments: true });
 const apacheTemplate = "deploy/production.htaccess";
+const robotsTemplate = "deploy/robots.production.txt";
 const redirectTemplate = "deploy/redirects.production.txt";
 const progressiveRedirectPrefix = String.raw`RedirectMatch 301 ^/ochkovye\-linzy/dizayn/progressivnye\.php/?$ https://optika100.com`;
 const progressiveCategory = "/catalog_s/linzy_dlya_ochkov/progressivnye/";
@@ -298,10 +299,16 @@ export function releaseMode(parent, target = "HEAD") {
     .split("\0")
     .filter(Boolean);
   const reasons = [];
+  const priorRobots = paths.includes(robotsTemplate) ? git("show", parent + ":" + robotsTemplate) : null;
+  const nextRobots = priorRobots !== null ? git("show", target + ":" + robotsTemplate) : null;
+  const rockAllowance = "Allow: " + stellestRock.path + "$";
+  const stellestRockIndexing = nextRobots?.includes(rockAllowance)
+    && !priorRobots.includes(rockAllowance)
+    && allowStellestCanonical(priorRobots, stellestRock) === nextRobots;
   const stellestCatalog = paths.includes(stellestDataFile)
     && git("diff", "--name-status", parent, target, "--", stellestDataFile).startsWith("A\t")
-    && allowStellestCanonical(git("show", parent + ":deploy/robots.production.txt"))
-      === git("show", target + ":deploy/robots.production.txt");
+    && priorRobots !== null
+    && allowStellestCanonical(priorRobots) === nextRobots;
   const progressiveCatalog = parent === "10425d91595ba40910729e1110ccc7293996ba2e"
     && paths.includes(progressiveDataFile)
     && git("diff", "--name-status", parent, target, "--", progressiveDataFile).startsWith("A\t")
@@ -332,9 +339,10 @@ export function releaseMode(parent, target = "HEAD") {
   }
   for (const file of paths) {
     if (progressiveCatalog && (file === progressiveDataFile || progressiveSource.has(file))) continue;
+    if (stellestRockIndexing && [robotsTemplate, "scripts/stellest-published-catalog.mjs"].includes(file)) continue;
     if (stellestCatalog && [
       stellestDataFile,
-      "deploy/robots.production.txt",
+      robotsTemplate,
       "scripts/build-api-snapshot.mjs",
       "scripts/stellest-published-catalog.mjs",
       "src/routes/stellest-katalog-s-linzami.tsx",
@@ -416,6 +424,7 @@ export function releaseMode(parent, target = "HEAD") {
     standalonePaths: [...additions.values()],
     ...(routingRedirects ? { routingRedirects } : {}),
     ...(stellestCatalog ? { stellestCatalog: true } : {}),
+    ...(stellestRockIndexing ? { stellestRockIndexing: true } : {}),
     ...(progressiveCatalog ? { progressiveCatalog: true } : {}),
   };
 }

@@ -9,7 +9,7 @@ import { exactReleaseRedirect, releaseMode } from "./storefront-release-mode.mjs
 import { appendStandaloneSitemap } from "./standalone-pages.mjs";
 import { redirectPaths } from "./catalog-link-check.mjs";
 import { robotsAllows } from "./seo-inventory.mjs";
-import { allowStellestCanonical, loadStellestCatalog, stellestCanonical, stellestPage } from "./stellest-published-catalog.mjs";
+import { allowStellestCanonical, loadStellestCatalog, stellestCanonical, stellestPage, stellestRock } from "./stellest-published-catalog.mjs";
 import { loadProgressiveCatalog, progressiveDataFile, progressivePage } from "./progressive-published-catalog.mjs";
 
 const digest = (bytes) => createHash("sha256").update(bytes).digest("hex");
@@ -79,6 +79,16 @@ const routes = pageFiles.map((f) => "/" + f.slice(0, -"index.html".length));
 const { standalonePaths, routingRedirects = [] } = decision;
 let robots = (await readPublished("robots.txt")).toString();
 const additionalCatalogPaths = [];
+async function checkPublishedStellest({ id, path }) {
+  if (!routes.includes(path) || baseline.retiredPaths.includes(path)) {
+    throw Error("Stellest product was not published: " + path);
+  }
+  const html = (await readPublished(path.slice(1) + "index.html")).toString();
+  if (!html.includes(`data-catalog-product-id="${id}"`)
+    || !html.includes(`rel="canonical" href="https://optika100.com${path}"`)) {
+    throw Error("Unexpected published Stellest product identity: " + path);
+  }
+}
 if (decision.progressiveCatalog) {
   loadProgressiveCatalog(backendSha, baseline.frontendSha, true);
   const sitemap = (await readPublished("sitemap.xml")).toString();
@@ -91,18 +101,14 @@ if (decision.stellestCatalog) {
   process.env.O100_STELLEST_CATALOG = "1";
   const { products } = loadStellestCatalog(backendSha);
   if (!routes.includes(stellestPage)) throw Error("Stellest landing page was not published");
-  for (const product of products.values()) {
-    if (!routes.includes(product.path) || baseline.retiredPaths.includes(product.path)) {
-      throw Error("Prevencia product was not published");
-    }
-    const html = (await readPublished(product.path.slice(1) + "index.html")).toString();
-    if (!html.includes(`data-catalog-product-id="${product.id}"`)
-      || !html.includes(`rel="canonical" href="https://optika100.com${product.path}"`)) {
-      throw Error("Unexpected published Prevencia identity");
-    }
-  }
+  for (const product of products.values()) await checkPublishedStellest(product);
   robots = allowStellestCanonical(robots);
   additionalCatalogPaths.push(stellestCanonical);
+}
+if (decision.stellestRockIndexing) {
+  await checkPublishedStellest(stellestRock);
+  robots = allowStellestCanonical(robots, stellestRock);
+  additionalCatalogPaths.push(stellestRock.path);
 }
 const redirects = redirectPaths(await readFile("deploy/redirects.production.txt", "utf8"));
 for (const route of standalonePaths) {
@@ -254,6 +260,7 @@ const manifest = {
     parentManifestSha256: digest(manifestBytes),
     standalonePaths,
     ...(decision.stellestCatalog ? { stellestCatalog: true } : {}),
+    ...(decision.stellestRockIndexing ? { stellestRockIndexing: true } : {}),
     ...(decision.progressiveCatalog ? { progressiveCatalogSha256: digest(await readFile(progressiveDataFile)) } : {}),
     ...(routingRedirects.length ? { routingRedirects } : {}),
   },

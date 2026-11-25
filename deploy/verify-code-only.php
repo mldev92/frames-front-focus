@@ -38,32 +38,37 @@ foreach (['catalogFingerprint','inventorySha256','inventoryGeneratedAt','setting
     if (!isset($parent[$key]) || $manifest[$key] !== $parent[$key]) throw new RuntimeException('Changed published baseline: '.$key);
 }
 $robotsHash = $parent['files']['robots.txt'];
-$stellestPath = '/catalog_s/linzy_dlya_ochkov/detskie/as_stellest_crizal_prevencia/';
 $additionalCatalogPaths = [];
-if (($binding['stellestCatalog'] ?? false) === true) {
+$stellestRestrictions = [
+    'stellestCatalog' => ['as_stellest_crizal_prevencia', 56365],
+    'stellestRockIndexing' => ['as_stellest_crizal_rock', 56366],
+];
+$robots = file_get_contents($current.'/robots.txt');
+if (hash('sha256', $robots) !== $robotsHash) throw new RuntimeException('Unexpected published robots.txt');
+foreach ($stellestRestrictions as $flag => [$slug, $id]) {
+    if (($binding[$flag] ?? false) !== true) continue;
+    $stellestPath = '/catalog_s/linzy_dlya_ochkov/detskie/'.$slug.'/';
     $productPath = ltrim($stellestPath, '/').'index.html';
     if (!isset($parent['files'][$productPath]) || in_array($stellestPath, $parent['retiredPaths'], true)) {
-        throw new RuntimeException('Prevencia product missing from the published catalog');
+        throw new RuntimeException('Stellest product missing from the published catalog: '.$slug);
     }
     $published = file_get_contents($current.'/'.$productPath);
     if (hash('sha256', $published) !== $parent['files'][$productPath]
-        || !str_contains($published, 'data-catalog-product-id="56365"')
+        || !str_contains($published, 'data-catalog-product-id="'.$id.'"')
         || !str_contains($published, 'rel="canonical" href="https://optika100.com'.$stellestPath.'"')) {
-        throw new RuntimeException('Invalid published Prevencia product identity');
+        throw new RuntimeException('Invalid published Stellest product identity: '.$slug);
     }
-    $robots = file_get_contents($current.'/robots.txt');
     $allow = 'Allow: '.$stellestPath.'$';
-    if (hash('sha256', $robots) !== $robotsHash || str_contains($robots, $allow)) {
+    if (str_contains($robots, $allow)) {
         throw new RuntimeException('Unexpected published robots.txt');
     }
     $eol = str_contains($robots, "\r\n") ? "\r\n" : "\n";
-    $restriction = 'Disallow: */as_stellest_crizal_prevencia/'.$eol;
+    $restriction = 'Disallow: */'.$slug.'/'.$eol;
     $robots = str_replace($restriction, $allow.$eol.$restriction, $robots, $count);
-    if ($count !== 2) throw new RuntimeException('Invalid Prevencia restrictions');
-    $robotsHash = hash('sha256', $robots);
+    if ($count !== 2) throw new RuntimeException('Invalid Stellest restrictions: '.$slug);
     $additionalCatalogPaths[] = $stellestPath;
 }
-if ($manifest['files']['robots.txt'] !== $robotsHash) throw new RuntimeException('Changed published robots.txt');
+if ($manifest['files']['robots.txt'] !== hash('sha256', $robots)) throw new RuntimeException('Changed published robots.txt');
 $routes = static function(array $files): array {
     $names = array_filter(array_keys($files), fn($p) => $p === 'index.html' || str_ends_with($p, '/index.html'));
     sort($names, SORT_STRING);

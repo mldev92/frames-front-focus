@@ -38,8 +38,12 @@ export function isStellestPrevenciaProduct(product: Pick<Product, "category" | "
     && /^as_stellest_(?:2_0_)?crizal_prevencia$/.test(product.slug);
 }
 
-export function stellestPrevenciaProductScripts(product: Product, canonical: string) {
-  if (!isStellestPrevenciaProduct(product) || !Number.isFinite(product.price) || product.price <= 0) {
+export const stellestRockProductPath = "/catalog_s/linzy_dlya_ochkov/detskie/as_stellest_crizal_rock/";
+
+export function stellestProductScripts(product: Product, canonical: string) {
+  const rock = product.id === 56366
+    && canonical === "https://optika100.com" + stellestRockProductPath;
+  if ((!rock && !isStellestPrevenciaProduct(product)) || !Number.isFinite(product.price) || product.price <= 0) {
     return [];
   }
   const availability = product.inStock === undefined
@@ -59,6 +63,7 @@ export function stellestPrevenciaProductScripts(product: Product, canonical: str
       url: canonical,
       price: product.price,
       priceCurrency: "RUB",
+      priceValidUntil: rock && product.price === 8760 ? "2027-12-31" : undefined,
       availability,
     },
   };
