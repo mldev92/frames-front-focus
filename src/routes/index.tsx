@@ -309,6 +309,12 @@ function MainV2Page() {
   const { hero, myopia_banner: myopiaBanner } = content;
   const editing = useAdminEditMode();
 
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("order") === "1") {
+      setAptOpen(true);
+    }
+  }, []);
+
   const { data: { popularModels, contactLensProducts, lensPromo } = { popularModels: [], contactLensProducts: [], lensPromo: null } } = useQuery({
     queryKey: ["homepage", city, region],
     queryFn: () => getHomepageData(city, region),
